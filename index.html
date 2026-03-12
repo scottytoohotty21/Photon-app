@@ -395,7 +395,8 @@ const furnitureDB = [
         }];
         
         let currentJob = null; let activePropId = null; let activeSeqId = null;
-
+        let inventoryItems = [];
+        let totalVolume = 0;
         function saveToDevice() {
             localStorage.setItem('photon_jobs', JSON.stringify(jobs));
         }
