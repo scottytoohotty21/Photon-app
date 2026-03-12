@@ -353,31 +353,24 @@ Calculate Cost
         const MOVE_TYPES = ["Dom-local", "Dom-Distance", "Dom-To Store", "Dom-Ex Store", "Dom-Direct/Store", "GPG", "LCL", "FCL"];
         const PACK_OPTIONS = ["Owner Pack", "Fragile (china & Glassware) pack", "Full Packing", "Full Export Pack and Wrap", "Fragile & Kitchenware Pack"];
 const furnitureDB = [
-{item:"AC unit / humidifier", volume:10},
-{item:"Armchair", volume:20},
-{item:"Artwork", volume:5},
-{item:"Baby bath", volume:5},
-{item:"Bags / cases", volume:5},
-{item:"Barometer", volume:2},
-{item:"Barrel", volume:15},
-{item:"Barstool", volume:10},
-{item:"Basket", volume:5},
-{item:"Bedside cabinet", volume:10},
-{item:"Bedside lamp", volume:3},
-{item:"Bench", volume:20},
-{item:"Bookcase small", volume:20},
-{item:"Bookcase large", volume:40},
-{item:"Chest of drawers small", volume:25},
-{item:"Chest of drawers large", volume:45},
-{item:"Coffee table", volume:15},
-{item:"Dining chair", volume:10},
-{item:"Dining table", volume:40},
-{item:"Double bed", volume:60},
-{item:"King size bed", volume:70},
-{item:"Wardrobe single", volume:60},
-{item:"Wardrobe double", volume:90},
-{item:"TV", volume:10},
-{item:"TV unit", volume:25}
+<button class="item-btn" onclick="addInventoryItem('AC unit / humidifier')">AC Unit</button>
+<button class="item-btn" onclick="addInventoryItem('Armchair')">Armchair</button>
+<button class="item-btn" onclick="addInventoryItem('Sofa 2 Seat')">Sofa 2 Seat</button>
+<button class="item-btn" onclick="addInventoryItem('Sofa 3 Seat')">Sofa 3 Seat</button>
+<button class="item-btn" onclick="addInventoryItem('Bed (Single)')">Bed (Single)</button>
+<button class="item-btn" onclick="addInventoryItem('Double bed')">Bed (Double)</button>
+<button class="item-btn" onclick="addInventoryItem('Fridge')">Fridge</button>
+<button class="item-btn" onclick="addInventoryItem('Garden Bench')">Garden Bench</button>
+<button class="item-btn" onclick="addInventoryItem('Chest of drawers large')">Chest Drawers</button>
+<button class="item-btn" onclick="addInventoryItem('Dining table')">Dining Table</button>
+<button class="item-btn" onclick="addInventoryItem('Desk')">Desk</button>
+<button class="item-btn" onclick="addInventoryItem('Bookcase large')">Bookcase</button>
+{item:"Sofa 2 Seat", volume:35},
+{item:"Sofa 3 Seat", volume:50},
+{item:"Bed (Single)", volume:40},
+{item:"Fridge", volume:25},
+{item:"Desk", volume:20},
+{item:"Garden Bench", volume:15},
 ];
         let jobs = JSON.parse(localStorage.getItem('photon_jobs')) || [{ 
             id: 101, 
@@ -632,6 +625,46 @@ let total = crew + vehicle + other;
 
 document.getElementById("total-cost").value = total;
 
+}function addInventoryItem(itemName) {
+    let item = furnitureDB.find(i => i.item.toLowerCase() === itemName.toLowerCase());
+
+    if (!item) {
+        alert("Item not found in furniture database: " + itemName);
+        return;
+    }
+
+    let existing = inventoryItems.find(i => i.item.toLowerCase() === itemName.toLowerCase());
+
+    if (existing) {
+        existing.qty += 1;
+    } else {
+        inventoryItems.push({
+            item: item.item,
+            volume: item.volume,
+            qty: 1
+        });
+    }
+
+    totalVolume = inventoryItems.reduce((sum, i) => sum + (i.volume * i.qty), 0);
+
+    updateInventoryDisplay();
+}
+
+function updateInventoryDisplay() {
+    let log = document.querySelector(".log-bar");
+    let volValue = document.querySelector(".vol-box span:last-child");
+
+    if (!log || !volValue) return;
+
+    if (inventoryItems.length === 0) {
+        log.innerText = "No items added";
+        volValue.innerText = "0";
+        return;
+    }
+
+    let lastItem = inventoryItems[inventoryItems.length - 1];
+    log.innerText = `${lastItem.qty} X ${lastItem.item.toUpperCase()}`;
+    volValue.innerText = totalVolume;
 }
         window.onload = renderDashboard;
     </script>
