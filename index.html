@@ -352,7 +352,33 @@ Calculate Cost
         const VEHICLE_TYPES = ["Shuttle van", "Transit van", "Luton / Low Loader", "7.5 tonne", "12 tonne", "15 tonne", "18 tonne", "20ft container", "40ft container"];
         const MOVE_TYPES = ["Dom-local", "Dom-Distance", "Dom-To Store", "Dom-Ex Store", "Dom-Direct/Store", "GPG", "LCL", "FCL"];
         const PACK_OPTIONS = ["Owner Pack", "Fragile (china & Glassware) pack", "Full Packing", "Full Export Pack and Wrap", "Fragile & Kitchenware Pack"];
-
+const furnitureDB = [
+{item:"AC unit / humidifier", volume:10},
+{item:"Armchair", volume:20},
+{item:"Artwork", volume:5},
+{item:"Baby bath", volume:5},
+{item:"Bags / cases", volume:5},
+{item:"Barometer", volume:2},
+{item:"Barrel", volume:15},
+{item:"Barstool", volume:10},
+{item:"Basket", volume:5},
+{item:"Bedside cabinet", volume:10},
+{item:"Bedside lamp", volume:3},
+{item:"Bench", volume:20},
+{item:"Bookcase small", volume:20},
+{item:"Bookcase large", volume:40},
+{item:"Chest of drawers small", volume:25},
+{item:"Chest of drawers large", volume:45},
+{item:"Coffee table", volume:15},
+{item:"Dining chair", volume:10},
+{item:"Dining table", volume:40},
+{item:"Double bed", volume:60},
+{item:"King size bed", volume:70},
+{item:"Wardrobe single", volume:60},
+{item:"Wardrobe double", volume:90},
+{item:"TV", volume:10},
+{item:"TV unit", volume:25}
+];
         let jobs = JSON.parse(localStorage.getItem('photon_jobs')) || [{ 
             id: 101, 
             name: "Smith, Jonathan", 
