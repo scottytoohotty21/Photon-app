@@ -132,9 +132,14 @@
             <div class="flex gap-2">
                 <button onclick="downloadFromCloud()" class="btn-crm-upload">
                     <span class="text-[7px] font-black uppercase opacity-70">Import</span>
-                    <span class="text-[9px] font-black uppercase whitespace-nowrap">Upload from CRM</span>
+                   <span class="text-[9px] font-black uppercase whitespace-nowrap">Import to CRM</span>
                 </button>
-                <button onclick="toggleManualArea()" class="bg-blue-600 text-white p-3 rounded-xl shadow-lg active:bg-red-500"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M12 4v16m8-8H4" /></svg></button>
+              <button onclick="toggleManualArea()" class="bg-blue-600 text-white px-4 py-3 rounded-xl shadow-lg flex items-center gap-2">
+<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M12 4v16m8-8H4" />
+</svg>
+<span class="text-[9px] font-black uppercase whitespace-nowrap">Add Blank File</span>
+</button>
             </div>
         </div>
 
