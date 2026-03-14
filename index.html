@@ -788,7 +788,6 @@ saveToDevice();
         if (hdrName) hdrName.innerText = currentJob.name;
     }
 }
-        function updateHeaderData(f, v) { currentJob[f] = v; saveToDevice(); }
         function loadProperty(id) { activePropId = parseInt(id); renderAddressUI(); }
         function loadSequence(id) { activeSeqId = id; renderSequenceUI(); }
         function triggerPulse(id) { const el = document.getElementById(id); if(el) { el.classList.remove('pulse-new'); void el.offsetWidth; el.classList.add('pulse-new'); } }
