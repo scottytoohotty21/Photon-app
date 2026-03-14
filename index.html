@@ -642,8 +642,6 @@ let totalVolume = 0;
     saveToDevice();
 }
 
-}
-
         function renderAddressUI() {
          const prop = currentJob.properties.find(p => p.id === activePropId);
 const isSaved = prop.isSaved;
@@ -975,17 +973,6 @@ let total = crew + vehicle + other;
 document.getElementById("total-cost").value = total;
 
 }
-function calculateMoveCost(){
-
-let crew = parseFloat(document.getElementById("crew-cost").value) || 0;
-let vehicle = parseFloat(document.getElementById("vehicle-cost").value) || 0;
-let other = parseFloat(document.getElementById("other-costs").value) || 0;
-
-let total = crew + vehicle + other;
-
-document.getElementById("total-cost").value = total;
-
-}
 
 function addVolume(amount) {
     const qtyInput = document.getElementById("inv-qty");
@@ -1041,22 +1028,6 @@ function updateInventoryDisplay(logText = "No items added") {
     }
 }
 
-}
-    let log = document.querySelector(".log-bar");
-    let volValue = document.querySelector(".vol-box span:last-child");
-
-    if (!log || !volValue) return;
-
-    if (inventoryItems.length === 0) {
-        log.innerText = "No items added";
-        volValue.innerText = "0";
-        return;
-    }
-
-    let lastItem = inventoryItems[inventoryItems.length - 1];
-    log.innerText = `${lastItem.qty} X ${lastItem.item.toUpperCase()}`;
-    volValue.innerText = totalVolume;
-}
         window.onload = renderDashboard;
     </script>
 </body>
