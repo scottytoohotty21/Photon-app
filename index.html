@@ -650,7 +650,30 @@ const isCollectionAddress = prop.id === currentJob.properties[0].id;
         function addStop(type) { currentJob.sequences.find(s => s.id == activeSeqId)[type].push(currentJob.properties[0].id); renderSequenceUI(); }
         function removeStop(type, idx) { currentJob.sequences.find(s => s.id == activeSeqId)[type].splice(idx, 1); renderSequenceUI(); }
         function updatePropLabel(v) { currentJob.properties.find(p => p.id === activePropId).label = v; }
-        function updatePropData(f, v) { currentJob.properties.find(p => p.id === activePropId)[f] = v; }
+       function updatePropData(f, v) {
+    const prop = currentJob.properties.find(p => p.id === activePropId);
+    prop[f] = v;
+
+    const isCollectionAddress = activePropId === currentJob.properties[0].id;
+
+    if (isCollectionAddress && (f === 'firstName' || f === 'surname')) {
+        const firstName = (prop.firstName || '').trim();
+        const surname = (prop.surname || '').trim();
+
+        if (surname && firstName) {
+            currentJob.name = `${surname}, ${firstName}`.toUpperCase();
+        } else if (surname) {
+            currentJob.name = surname.toUpperCase();
+        } else if (firstName) {
+            currentJob.name = firstName.toUpperCase();
+        } else {
+            currentJob.name = '';
+        }
+
+        const hdrName = document.getElementById('hdr-name');
+        if (hdrName) hdrName.innerText = currentJob.name;
+    }
+}
         function updateHeaderData(f, v) { currentJob[f] = v; saveToDevice(); }
         function loadProperty(id) { activePropId = parseInt(id); renderAddressUI(); }
         function loadSequence(id) { activeSeqId = id; renderSequenceUI(); }
