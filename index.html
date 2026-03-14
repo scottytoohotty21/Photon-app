@@ -377,20 +377,23 @@ Enter as: Surname, First Name
     <button class="item-btn" onclick="addInventoryItem('Washing Machine')">Washing Machine</button>
     <button class="item-btn" onclick="addInventoryItem('Welsh Dresser')">Welsh Dresser</button>
 </div>
-           <div class="col-span-1 grid grid-cols-1 gap-1">
-    <button class="item-btn bg-red-50 text-red-500 border-red-100 flex-col">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mb-1" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
-            <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
-        </svg>
-        <span class="text-[8px]">VOICE</span>
-        <span class="text-[7px] opacity-60">0 CLIPS</span>
-    </button>
-    <button class="item-btn item-btn-blue">AP</button>
-    <button class="item-btn item-btn-blue">CG</button>
-    <button class="item-btn item-btn-blue">BOOK</button>
-    <button class="item-btn item-btn-blue">LINEN</button>
-    <button class="item-btn item-btn-blue">W/R</button>
+ <div class="col-span-1 grid grid-cols-1 gap-1">
+
+<button class="item-btn bg-red-50 text-red-500 border-red-100 flex-col">
+VOICE
+<span class="text-[7px] opacity-60">0 CLIPS</span>
+</button>
+
+<button class="item-btn item-btn-blue" onclick="addVolume(1)">1 CUFT</button>
+<button class="item-btn item-btn-blue" onclick="addVolume(5)">5 CUFT</button>
+<button class="item-btn item-btn-blue" onclick="addVolume(10)">10 CUFT</button>
+
+<button class="item-btn item-btn-blue">AP</button>
+<button class="item-btn item-btn-blue">CG</button>
+<button class="item-btn item-btn-blue">BOOK</button>
+<button class="item-btn item-btn-blue">LINEN</button>
+<button class="item-btn item-btn-blue">W/R</button>
+
 </div>
             </div>
         </section>
@@ -968,6 +971,20 @@ document.getElementById("total-cost").value = total;
 }
 
 function updateInventoryDisplay() {
+    function addVolume(amount) {
+
+    totalVolume += amount;
+
+    let log = document.querySelector(".log-bar");
+    if (log) {
+        log.innerText = `+ ${amount} CUFT ADDED`;
+    }
+
+    let volValue = document.querySelector(".vol-box span:last-child");
+    if (volValue) {
+        volValue.innerText = totalVolume;
+    }
+}
     let log = document.querySelector(".log-bar");
     let volValue = document.querySelector(".vol-box span:last-child");
 
