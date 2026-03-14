@@ -566,9 +566,7 @@ const isCollectionAddress = prop.id === currentJob.properties[0].id;
                 </div>`;
             triggerPulse('address-editor-ui');
         }
-
-        function renderSequenceUI() {
-            function renderInventorySequenceDropdown() {
+function renderInventorySequenceDropdown() {
     const dropdown = document.getElementById('inv-seq-select');
     if (!dropdown || !currentJob) return;
 
@@ -577,7 +575,8 @@ const isCollectionAddress = prop.id === currentJob.properties[0].id;
         return `<option value="${s.id}" ${s.id == activeSeqId ? 'selected' : ''}>${label}</option>`;
     }).join('');
 }
-            const seq = currentJob.sequences.find(s => s.id == activeSeqId);
+        function renderSequenceUI() {
+    const seq = currentJob.sequences.find(s => s.id == activeSeqId); 
             const isSaved = seq.isSaved;
             const status = isSaved ? 'disabled' : '';
             const wrapper = document.getElementById('content-sequence');
