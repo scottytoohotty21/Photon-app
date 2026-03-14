@@ -331,7 +331,7 @@ Enter as: Surname, First Name
                 <button class="w-20 total-vol-box bg-red-100 !text-red-500 font-black text-xs uppercase">Undo</button>
             </div>
 
-            <div class="grid grid-cols-5 gap-2">
+            <div class="grid grid-cols-5 gap-1">
                <div class="col-span-4 grid grid-cols-4 gap-1">
                    <button class="item-btn" onclick="addInventoryItem('AC Unit')">AC Unit</button>
 <button class="item-btn" onclick="addInventoryItem('Armchair')">Armchair</button>
@@ -346,14 +346,21 @@ Enter as: Surname, First Name
 <button class="item-btn" onclick="addInventoryItem('Desk')">Desk</button>
 <button class="item-btn" onclick="addInventoryItem('Bookcase')">Bookcase</button>
                 </div>
-                <div class="col-span-1 flex flex-col gap-2">
-                    <button class="item-btn !h-[75px] bg-red-50 text-red-500 border-red-100 flex-col"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mb-1" fill="currentColor" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg><span class="text-[8px]">VOICE</span><span class="text-[7px] opacity-60">0 CLIPS</span></button>
-                    <button class="item-btn item-btn-blue">AP</button>
-                    <button class="item-btn item-btn-blue">CG</button>
-                    <button class="item-btn item-btn-blue">BOOK</button>
-                    <button class="item-btn item-btn-blue">LINEN</button>
-                    <button class="item-btn item-btn-blue">W/R</button>
-                </div>
+           <div class="col-span-1 grid grid-cols-1 gap-1">
+    <button class="item-btn bg-red-50 text-red-500 border-red-100 flex-col">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mb-1" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+            <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+        </svg>
+        <span class="text-[8px]">VOICE</span>
+        <span class="text-[7px] opacity-60">0 CLIPS</span>
+    </button>
+    <button class="item-btn item-btn-blue">AP</button>
+    <button class="item-btn item-btn-blue">CG</button>
+    <button class="item-btn item-btn-blue">BOOK</button>
+    <button class="item-btn item-btn-blue">LINEN</button>
+    <button class="item-btn item-btn-blue">W/R</button>
+</div>
             </div>
         </section>
         
