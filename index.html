@@ -292,20 +292,33 @@ Enter as: Surname, First Name
         </section>
 
         <section id="content-inventory" class="tab-content hidden">
-            <div class="grid grid-cols-12 gap-2 mb-3">
-                <div class="col-span-4">
-                    <label class="mini-label">Seq</label>
-                   <select id="inv-seq-select" class="inv-header-select"></select>
-                </div>
-                <div class="col-span-4">
-                    <label class="mini-label">Floor</label>
-                    <select class="inv-header-select"><option>Ground</option></select>
-                </div>
-                <div class="col-span-4">
-                    <label class="mini-label">Room</label>
-                    <select class="inv-header-select"><option>Hallway</option></select>
-                </div>
-            </div>
+          <div class="grid grid-cols-12 gap-2 mb-3">
+    <div class="col-span-3">
+        <label class="mini-label">Seq</label>
+        <select id="inv-seq-select" class="inv-header-select inv-top-field"></select>
+    </div>
+    <div class="col-span-3">
+        <label class="mini-label">Floor</label>
+        <select class="inv-header-select inv-top-field">
+            <option>Ground</option>
+        </select>
+    </div>
+    <div class="col-span-3">
+        <label class="mini-label">Room</label>
+        <select class="inv-header-select inv-top-field">
+            <option>Hallway</option>
+        </select>
+    </div>
+    <div class="col-span-1">
+        <label class="mini-label">Qty</label>
+        <input type="number" id="inv-qty" class="inv-header-select inv-top-field text-center" value="1" min="1">
+    </div>
+    <div class="col-span-2">
+        <label class="mini-label">Total Vol</label>
+        <div id="inv-total-volume" class="total-vol-box inv-top-field text-lg font-black">0</div>
+    </div>
+</div>
+
 
             <div class="flex gap-1 mb-3">
                 <button class="inv-room-btn active">Full List</button>
