@@ -130,8 +130,50 @@
         .item-btn { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; height: 75px; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 9px; font-weight: 900; text-transform: uppercase; color: #0f172a; padding: 5px; }
         .item-btn-blue { background: #f0f9ff; color: #0f172a; border: 1px solid #e0f2fe; }
         .log-bar { background: #e2e8f0; border: 1.5px solid #94a3b8; border-radius: 6px; padding: 8px 12px; font-size: 11px; font-weight: 900; font-style: italic; color: #1e293b; }
-        .vol-box { border: 2.5px solid #fca5a5; border-radius: 8px; height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .total-vol-box { background: #3b82f6; color: white; border-radius: 8px; height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.vol-box { border: 2.5px solid #fca5a5; border-radius: 8px; height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.total-vol-box { background: #3b82f6; color: white; border-radius: 8px; height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+
+/* --- NEW JOB HEADER --- */
+
+.job-header {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.job-client {
+    font-size: 16px;
+    font-weight: 900;
+    color: white;
+    text-transform: uppercase;
+    line-height: 1.1;
+}
+
+.job-subline {
+    font-size: 10px;
+    font-weight: 800;
+    color: #60a5fa;
+    text-transform: uppercase;
+    margin-top: 4px;
+    letter-spacing: 0.04em;
+}
+
+.job-status-pill {
+    background: #1e293b;
+    border: 1px solid #475569;
+    color: #93c5fd;
+    font-size: 9px;
+    font-weight: 900;
+    text-transform: uppercase;
+    padding: 6px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+}
     </style>
 </head>
 <body class="p-4 pb-12">
@@ -187,12 +229,16 @@ Enter as: Surname, First Name
             <div class="text-[10px] font-black text-slate-400 uppercase italic">Active Survey Entry</div>
         </div>
 
-        <div class="header-bar">
-            <div><label class="mini-label !text-slate-400">Client</label><div id="hdr-name" class="header-val uppercase">---</div></div>
-            <div><label class="mini-label !text-slate-400">Ref</label><div id="hdr-ref" class="header-val uppercase">---</div></div>
-            <div><label class="mini-label !text-blue-400">Contact Tel</label><input type="tel" id="hdr-tel" class="header-input" oninput="updateHeaderData('tel', this.value)"></div>
-            <div><label class="mini-label !text-blue-400">E-mail</label><input type="email" id="hdr-email" class="header-input" oninput="updateHeaderData('email', this.value)"></div>
-        </div>
+       <div class="job-header">
+    <div>
+        <div id="hdr-name" class="job-client">---</div>
+        <div class="job-subline">REF: <span id="hdr-ref">---</span></div>
+    </div>
+
+    <div class="job-status-pill">
+        Survey Live
+    </div>
+</div>
 
         <nav class="nav-container">
             <button onclick="switchTab('address')" id="nav-address" class="nav-btn active">1. Addresses</button>
