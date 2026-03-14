@@ -681,7 +681,12 @@ const isCollectionAddress = prop.id === currentJob.properties[0].id;
                 isManual: true 
             });
             saveToDevice();
-            renderDashboard(); toggleManualArea();
+renderDashboard();
+
+document.getElementById('m-name').value = "";
+document.getElementById('m-ref').value = "";
+
+toggleManualArea();
         }
         function exitToDashboard() { document.getElementById('view-editor').classList.add('hidden'); document.getElementById('view-dashboard').classList.remove('hidden'); renderDashboard(); }
 function calculateMoveCost(){
