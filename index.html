@@ -515,21 +515,27 @@ let totalVolume = 0;
         }
 
         function openJob(id) {
-            currentJob = jobs.find(j => j.id === id);
-            currentJob.isNew = false;
-            document.getElementById('hdr-name').innerText = currentJob.name;
-            document.getElementById('hdr-ref').innerText = currentJob.ref;
-            document.getElementById('hdr-tel').value = currentJob.tel || "";
-            document.getElementById('hdr-email').value = currentJob.email || "";
-            document.getElementById('view-dashboard').classList.add('hidden');
-            document.getElementById('view-editor').classList.remove('hidden');
-            activePropId = currentJob.properties[0].id;
-            if(!currentJob.sequences || currentJob.sequences.length === 0) addSequence();
-            else activeSeqId = currentJob.sequences[0].id;
-           renderAddressUI();
-renderInventorySequenceDropdown();
-saveToDevice();
-        }
+    currentJob = jobs.find(j => j.id === id);
+    currentJob.isNew = false;
+
+    document.getElementById('hdr-name').innerText = currentJob.name;
+    document.getElementById('hdr-ref').innerText = currentJob.ref;
+
+    document.getElementById('view-dashboard').classList.add('hidden');
+    document.getElementById('view-editor').classList.remove('hidden');
+
+    activePropId = currentJob.properties[0].id;
+
+    if (!currentJob.sequences || currentJob.sequences.length === 0) {
+        addSequence();
+    } else {
+        activeSeqId = currentJob.sequences[0].id;
+    }
+
+    renderAddressUI();
+    renderInventorySequenceDropdown();
+    saveToDevice();
+}
 
         function renderAddressUI() {
          const prop = currentJob.properties.find(p => p.id === activePropId);
