@@ -482,1047 +482,942 @@ Calculate Cost
     </main>
 
     <script>
-    const PROPERTY_TYPES = ["House", "Apartment", "Bungalow", "Office", "Shop"];
-    const VEHICLE_TYPES = ["Shuttle van", "Transit van", "Luton / Low Loader", "7.5 tonne", "12 tonne", "15 tonne", "18 tonne", "20ft container", "40ft container"];
-    const MOVE_TYPES = ["Dom-local", "Dom-Distance", "Dom-To Store", "Dom-Ex Store", "Dom-Direct/Store", "GPG", "LCL", "FCL"];
-    const PACK_OPTIONS = ["Owner Pack", "Fragile (china & Glassware) pack", "Full Packing", "Full Export Pack and Wrap", "Fragile & Kitchenware Pack"];
-    const SALUTATIONS = ["Mr", "Miss", "Mrs", "Ms", "Other"];
+        const PROPERTY_TYPES = ["House", "Apartment", "Bungalow", "Office", "Shop"];
+        const VEHICLE_TYPES = ["Shuttle van", "Transit van", "Luton / Low Loader", "7.5 tonne", "12 tonne", "15 tonne", "18 tonne", "20ft container", "40ft container"];
+        const MOVE_TYPES = ["Dom-local", "Dom-Distance", "Dom-To Store", "Dom-Ex Store", "Dom-Direct/Store", "GPG", "LCL", "FCL"];
+        const PACK_OPTIONS = ["Owner Pack", "Fragile (china & Glassware) pack", "Full Packing", "Full Export Pack and Wrap", "Fragile & Kitchenware Pack"];
+        const SALUTATIONS = ["Mr", "Miss", "Mrs", "Ms", "Other"];
 
-    const furnitureDB = [
-        {item:"AC Unit", volume:10},
-        {item:"Armchair", volume:20},
-        {item:"Sofa 2 Seat", volume:35},
-        {item:"Sofa 3 Seat", volume:50},
-        {item:"Bed (Single)", volume:40},
-        {item:"Bed (Double)", volume:60},
-        {item:"Fridge", volume:25},
-        {item:"Garden Bench", volume:15},
-        {item:"Chest Drawers", volume:45},
-        {item:"Dining Table", volume:40},
-        {item:"Desk", volume:20},
-        {item:"Bookcase", volume:40},
+const furnitureDB = [
+    {item:"AC Unit", volume:10},
+    {item:"Armchair", volume:20},
+    {item:"Sofa 2 Seat", volume:35},
+    {item:"Sofa 3 Seat", volume:50},
+    {item:"Bed (Single)", volume:40},
+    {item:"Bed (Double)", volume:60},
+    {item:"Fridge", volume:25},
+    {item:"Garden Bench", volume:15},
+    {item:"Chest Drawers", volume:45},
+    {item:"Dining Table", volume:40},
+    {item:"Desk", volume:20},
+    {item:"Bookcase", volume:40},
 
-        {item:"Barstool", volume:10},
-        {item:"Kitchen Bin", volume:10},
-        {item:"Butchers Block", volume:10},
-        {item:"Clothes Rack (Dryer)", volume:10},
-        {item:"Clothes Rail", volume:10},
-        {item:"Coffee Machine", volume:10},
-        {item:"Cooker", volume:10},
-        {item:"Dining Chair", volume:10},
-        {item:"Dishwasher", volume:10},
-        {item:"Dog Bed", volume:10},
-        {item:"Dresser", volume:10},
-        {item:"Dryer", volume:10},
-        {item:"Dustbin", volume:10},
-        {item:"Fridge (American)", volume:10},
-        {item:"Fridge / Freezer (Regular)", volume:10},
-        {item:"Fridge / Freezer (Small)", volume:10},
-        {item:"Ironing Board", volume:10},
-        {item:"Kitchen Table", volume:10},
-        {item:"Microwave", volume:10},
-        {item:"Mop / Bucket", volume:10},
-        {item:"Tumble Dryer", volume:10},
-        {item:"Washing Machine", volume:10},
-        {item:"Welsh Dresser", volume:10}
-    ];
+    {item:"Barstool", volume:10},
+    {item:"Kitchen Bin", volume:10},
+    {item:"Butchers Block", volume:10},
+    {item:"Clothes Rack (Dryer)", volume:10},
+    {item:"Clothes Rail", volume:10},
+    {item:"Coffee Machine", volume:10},
+    {item:"Cooker", volume:10},
+    {item:"Dining Chair", volume:10},
+    {item:"Dishwasher", volume:10},
+    {item:"Dog Bed", volume:10},
+    {item:"Dresser", volume:10},
+    {item:"Dryer", volume:10},
+    {item:"Dustbin", volume:10},
+    {item:"Fridge (American)", volume:10},
+    {item:"Fridge / Freezer (Regular)", volume:10},
+    {item:"Fridge / Freezer (Small)", volume:10},
+    {item:"Ironing Board", volume:10},
+    {item:"Kitchen Table", volume:10},
+    {item:"Microwave", volume:10},
+    {item:"Mop / Bucket", volume:10},
+    {item:"Tumble Dryer", volume:10},
+    {item:"Washing Machine", volume:10},
+    {item:"Welsh Dresser", volume:10}
+];
 
-    const inventoryCategories = {
-        "Full List": [
-            "AC Unit",
-            "Armchair",
-            "Sofa 2 Seat",
-            "Sofa 3 Seat",
-            "Bed (Single)",
-            "Bed (Double)",
-            "Fridge",
-            "Garden Bench",
-            "Chest Drawers",
-            "Dining Table",
-            "Desk",
-            "Bookcase",
-            "Barstool",
-            "Kitchen Bin",
-            "Butchers Block",
-            "Clothes Rack (Dryer)",
-            "Clothes Rail",
-            "Coffee Machine",
-            "Cooker",
-            "Dining Chair",
-            "Dishwasher",
-            "Dog Bed",
-            "Dresser",
-            "Dryer",
-            "Dustbin",
-            "Fridge (American)",
-            "Fridge / Freezer (Regular)",
-            "Fridge / Freezer (Small)",
-            "Ironing Board",
-            "Kitchen Table",
-            "Microwave",
-            "Mop / Bucket",
-            "Tumble Dryer",
-            "Washing Machine",
-            "Welsh Dresser"
-        ],
+const inventoryCategories = {
+    "Full List": [
+        "AC Unit",
+        "Armchair",
+        "Sofa 2 Seat",
+        "Sofa 3 Seat",
+        "Bed (Single)",
+        "Bed (Double)",
+        "Fridge",
+        "Garden Bench",
+        "Chest Drawers",
+        "Dining Table",
+        "Desk",
+        "Bookcase",
+        "Barstool",
+        "Kitchen Bin",
+        "Butchers Block",
+        "Clothes Rack (Dryer)",
+        "Clothes Rail",
+        "Coffee Machine",
+        "Cooker",
+        "Dining Chair",
+        "Dishwasher",
+        "Dog Bed",
+        "Dresser",
+        "Dryer",
+        "Dustbin",
+        "Fridge (American)",
+        "Fridge / Freezer (Regular)",
+        "Fridge / Freezer (Small)",
+        "Ironing Board",
+        "Kitchen Table",
+        "Microwave",
+        "Mop / Bucket",
+        "Tumble Dryer",
+        "Washing Machine",
+        "Welsh Dresser"
+    ],
 
-        "Upstairs": [
-            "Bed (Single)",
-            "Bed (Double)",
-            "Chest Drawers",
-            "Desk",
-            "Bookcase",
-            "Clothes Rail",
-            "Clothes Rack (Dryer)",
-            "Ironing Board",
-            "Dog Bed",
-            "Dresser"
-        ],
+    "Upstairs": [
+        "Bed (Single)",
+        "Bed (Double)",
+        "Chest Drawers",
+        "Desk",
+        "Bookcase",
+        "Clothes Rail",
+        "Clothes Rack (Dryer)",
+        "Ironing Board",
+        "Dog Bed",
+        "Dresser"
+    ],
 
-        "Downstairs": [
-            "Armchair",
-            "Sofa 2 Seat",
-            "Sofa 3 Seat",
-            "Dining Table",
-            "Dining Chair",
-            "Desk",
-            "Bookcase",
-            "Dog Bed",
-            "Barstool"
-        ],
+    "Downstairs": [
+        "Armchair",
+        "Sofa 2 Seat",
+        "Sofa 3 Seat",
+        "Dining Table",
+        "Dining Chair",
+        "Desk",
+        "Bookcase",
+        "Dog Bed",
+        "Barstool"
+    ],
 
-        "Kitchen": [
-            "Fridge",
-            "Fridge (American)",
-            "Fridge / Freezer (Regular)",
-            "Fridge / Freezer (Small)",
-            "Cooker",
-            "Dishwasher",
-            "Microwave",
-            "Coffee Machine",
-            "Kitchen Table",
-            "Dining Chair",
-            "Kitchen Bin",
-            "Dustbin",
-            "Butchers Block",
-            "Mop / Bucket",
-            "Washing Machine",
-            "Tumble Dryer",
-            "Dryer"
-        ],
+    "Kitchen": [
+        "Fridge",
+        "Fridge (American)",
+        "Fridge / Freezer (Regular)",
+        "Fridge / Freezer (Small)",
+        "Cooker",
+        "Dishwasher",
+        "Microwave",
+        "Coffee Machine",
+        "Kitchen Table",
+        "Dining Chair",
+        "Kitchen Bin",
+        "Dustbin",
+        "Butchers Block",
+        "Mop / Bucket",
+        "Washing Machine",
+        "Tumble Dryer",
+        "Dryer"
+    ],
 
-        "Outside": [
-            "Garden Bench",
-            "Dog Bed",
-            "Dustbin"
-        ]
-    };
+    "Outside": [
+        "Garden Bench",
+        "Dog Bed",
+        "Dustbin"
+    ]
+};
+        function createEmptyJob(overrides = {}) {
+    const now = new Date().toISOString();
+    const defaultProperties = createDefaultProperties();
+    const collection = defaultProperties[0] || {};
 
-    function createEmptyJob(overrides = {}) {
-        const now = new Date().toISOString();
-        const defaultProperties = createDefaultProperties();
-        const collection = defaultProperties[0] || {};
+    return {
+        id: Date.now(),
+        ref: "",
 
-        return {
-            id: Date.now(),
-            ref: "",
+        customer: {
+            displayName: "",
+            firstName: collection.firstName || "",
+            surname: collection.surname || "",
+            salutation: collection.salutation || "",
+            homePhone: collection.homePhone || "",
+            mobilePhone: collection.mobilePhone || "",
+            email: collection.email || ""
+        },
 
-            customer: {
-                displayName: "",
-                firstName: collection.firstName || "",
-                surname: collection.surname || "",
-                salutation: collection.salutation || "",
-                homePhone: collection.homePhone || "",
-                mobilePhone: collection.mobilePhone || "",
-                email: collection.email || ""
-            },
-
-            survey: {
-                status: "pending",
-                isNew: true,
-                isManual: false,
-                createdAt: now,
-                updatedAt: now,
-                notes: ""
-            },
-
-            addresses: defaultProperties,
-            sequences: [],
-
-            inventory: {
-                activeSequenceId: null,
-                activeFloor: "Ground",
-                activeRoomName: "",
-                activeCategory: "Full List",
-                items: [],
-                exclusions: [],
-                voiceNotes: [],
-                totals: {
-                    currentItemVolume: 0,
-                    totalVolume: 0
-                }
-            },
-
-            planner: {
-                moveDate: "",
-                crewSize: "",
-                vehicleType: "",
-                estimatedHours: 0
-            },
-
-            costing: {
-                crewCost: 0,
-                vehicleCost: 0,
-                otherCosts: 0,
-                totalCost: 0
-            },
-
-            sync: {
-                uploaded: false,
-                lastUploadedAt: "",
-                cloudId: "",
-                crmId: ""
-            },
-
-            // current app compatibility
-            name: "",
+        survey: {
             status: "pending",
             isNew: true,
             isManual: false,
-            notes: "",
-            properties: defaultProperties,
-            tel: "",
-            email: "",
+            createdAt: now,
+            updatedAt: now,
+            notes: ""
+        },
 
-            ...overrides
-        };
-    }
+        addresses: defaultProperties,
+        sequences: [],
 
-    let jobs = JSON.parse(localStorage.getItem('photon_jobs')) || [
-        createEmptyJob({
-            id: 101,
-            ref: "#UK-22901",
-            name: "SMITH, JONATHAN",
+        inventory: {
+            activeSequenceId: null,
+            activeFloor: "Ground",
+            activeRoomName: "",
+            activeCategory: "Full List",
+            items: [],
+            exclusions: [],
+            voiceNotes: [],
+            totals: {
+                currentItemVolume: 0,
+                totalVolume: 0
+            }
+        },
+
+        planner: {
+            moveDate: "",
+            crewSize: "",
+            vehicleType: "",
+            estimatedHours: 0
+        },
+
+        costing: {
+            crewCost: 0,
+            vehicleCost: 0,
+            otherCosts: 0,
+            totalCost: 0
+        },
+
+        sync: {
+            uploaded: false,
+            lastUploadedAt: "",
+            cloudId: "",
+            crmId: ""
+        },
+
+        // current app compatibility
+        name: "",
+        status: "pending",
+        isNew: true,
+        isManual: false,
+        notes: "",
+        properties: defaultProperties,
+        tel: "",
+        email: "",
+
+        ...overrides
+    };
+}
+   let jobs = JSON.parse(localStorage.getItem('photon_jobs')) || [
+    createEmptyJob({
+        id: 101,
+        ref: "#UK-22901",
+        name: "SMITH, JONATHAN",
+        status: "active",
+        isNew: true,
+        notes: "Client has large piano in basement. Handle with care.",
+        tel: "07700 900456",
+        email: "j.smith@example.com",
+        customer: {
+            displayName: "SMITH, JONATHAN",
+            firstName: "Jonathan",
+            surname: "Smith",
+            salutation: "",
+            homePhone: "",
+            mobilePhone: "07700 900456",
+            email: "j.smith@example.com"
+        },
+        survey: {
             status: "active",
             isNew: true,
-            notes: "Client has large piano in basement. Handle with care.",
-            tel: "07700 900456",
-            email: "j.smith@example.com",
-            customer: {
-                displayName: "SMITH, JONATHAN",
-                firstName: "Jonathan",
-                surname: "Smith",
-                salutation: "",
-                homePhone: "",
-                mobilePhone: "07700 900456",
-                email: "j.smith@example.com"
-            },
-            survey: {
-                status: "active",
-                isNew: true,
-                isManual: false,
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                notes: "Client has large piano in basement. Handle with care."
-            }
-        })
-    ];
-
-    let currentJob = null;
-    let activePropId = null;
-    let activeSeqId = null;
-    let inventoryItems = [];
-    let currentItemVolume = 0;
-    let totalVolume = 0;
-    let extraVolumeTotal = 0;
-    let currentInventoryCategory = "Full List";
-    let lastAddedItemName = null;
-    let inventoryHistory = [];
-
-    function saveToDevice() {
-        localStorage.setItem('photon_jobs', JSON.stringify(jobs));
-    }
-
-    function toTitleCase(str) {
-        return str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
-    }
-
-    function createDefaultProperties() {
-        const now = Date.now();
-        return [
-            {
-                id: now,
-                label: "Collection Address",
-                line1: "10 Downing Street",
-                country: "United Kingdom",
-                salutation: "",
-                clientName: "",
-                firstName: "",
-                surname: "",
-                homePhone: "",
-                mobilePhone: "",
-                email: "",
-                isCore: true,
-                isSaved: false
-            },
-            {
-                id: now + 1,
-                label: "Delivery Address",
-                line1: "42 Wallaby Way",
-                country: "United Kingdom",
-                contactName: "",
-                contactPhone: "",
-                isCore: true,
-                isSaved: false
-            },
-            {
-                id: now + 2,
-                label: "Store",
-                line1: "The Vaults, Unit B",
-                country: "United Kingdom",
-                contactName: "",
-                contactPhone: "",
-                isCore: true,
-                isSaved: false
-            }
-        ];
-    }
-
-    function toggleSaveState(type) {
-        if (type === 'address') {
-            const prop = currentJob.properties.find(p => p.id === activePropId);
-            prop.isSaved = !prop.isSaved;
-            renderAddressUI();
-        } else {
-            const seq = currentJob.sequences.find(s => s.id == activeSeqId);
-            seq.isSaved = !seq.isSaved;
-            renderSequenceUI();
+            isManual: false,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            notes: "Client has large piano in basement. Handle with care."
         }
-        saveToDevice();
-    }
+    })
+];
+        
+     let currentJob = null; let activePropId = null; let activeSeqId = null;
+let inventoryItems = [];
+let currentItemVolume = 0;
+let totalVolume = 0;
+let currentInventoryCategory = "Full List";
+let lastAddedItemName = null;
+let inventoryHistory = [];
 
-    function openJob(id) {
-        currentJob = jobs.find(j => j.id === id);
-        currentJob.isNew = false;
-
-        document.getElementById('hdr-name').innerText =
-            currentJob.customer?.displayName || currentJob.name || "---";
-
-        document.getElementById('hdr-ref').innerText =
-            currentJob.ref || "---";
-
-        document.getElementById('view-dashboard').classList.add('hidden');
-        document.getElementById('view-editor').classList.remove('hidden');
-
-        activePropId = currentJob.properties[0].id;
-
-        if (!currentJob.sequences || currentJob.sequences.length === 0) {
-            addSequence();
-        } else {
-            activeSeqId = currentJob.sequences[0].id;
+        function saveToDevice() {
+            localStorage.setItem('photon_jobs', JSON.stringify(jobs));
         }
 
-        currentItemVolume = 0;
-        totalVolume = 0;
-        extraVolumeTotal = 0;
-        currentInventoryCategory = "Full List";
-        lastAddedItemName = null;
-        inventoryItems = [];
-        inventoryHistory = [];
+        function toTitleCase(str) { return str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()); }
+        function createDefaultProperties() {
+            const now = Date.now();
+            return [
+{ 
+    id: now, 
+    label: "Collection Address", 
+    line1: "10 Downing Street", 
+    country: "United Kingdom", 
+    salutation: "",
+    clientName: "",
+    firstName: "",
+    surname: "",
+    homePhone: "",
+    mobilePhone: "",
+    email: "",
+    isCore: true, 
+    isSaved: false 
+},
+{ 
+    id: now+1, 
+    label: "Delivery Address", 
+    line1: "42 Wallaby Way", 
+    country: "United Kingdom", 
+    contactName: "",
+    contactPhone: "",
+    isCore: true, 
+    isSaved: false 
+},
+{ 
+    id: now+2, 
+    label: "Store", 
+    line1: "The Vaults, Unit B", 
+    country: "United Kingdom", 
+    contactName: "",
+    contactPhone: "",
+    isCore: true, 
+    isSaved: false 
+}
+            ];
+        }
 
-        renderAddressUI();
-        renderInventorySequenceDropdown();
-        renderInventoryButtons();
-        updateInventoryDisplay();
-        updateUndoButtonState();
-        syncQtyInputToLastItem();
-        saveToDevice();
+        function toggleSaveState(type) {
+            if (type === 'address') {
+                const prop = currentJob.properties.find(p => p.id === activePropId);
+                prop.isSaved = !prop.isSaved; 
+                renderAddressUI();
+            } else {
+                const seq = currentJob.sequences.find(s => s.id == activeSeqId);
+                seq.isSaved = !seq.isSaved; 
+                renderSequenceUI();
+            }
+            saveToDevice();
+        }
+
+        function openJob(id) {
+    currentJob = jobs.find(j => j.id === id);
+    currentJob.isNew = false;
+
+    document.getElementById('hdr-name').innerText =
+    currentJob.customer?.displayName || currentJob.name || "---";
+
+document.getElementById('hdr-ref').innerText =
+    currentJob.ref || "---";
+
+    document.getElementById('view-dashboard').classList.add('hidden');
+    document.getElementById('view-editor').classList.remove('hidden');
+
+    activePropId = currentJob.properties[0].id;
+
+    if (!currentJob.sequences || currentJob.sequences.length === 0) {
+        addSequence();
+    } else {
+        activeSeqId = currentJob.sequences[0].id;
     }
 
-    function renderAddressUI() {
-        const prop = currentJob.properties.find(p => p.id === activePropId);
-        const isSaved = prop.isSaved;
-        const status = isSaved ? 'disabled' : '';
-        const isCollectionAddress = prop.id === currentJob.properties[0].id;
-        const wrapper = document.getElementById('content-address');
-        isSaved ? wrapper.classList.add('is-saved') : wrapper.classList.remove('is-saved');
+   currentItemVolume = 0;
+totalVolume = 0;
+currentInventoryCategory = "Full List";
+lastAddedItemName = null;
+inventoryItems = [];
+inventoryHistory = [];
+            
+    renderAddressUI();
+renderInventorySequenceDropdown();
+renderInventoryButtons();
+updateInventoryDisplay();
+updateUndoButtonState();
+saveToDevice();
+}
 
-        const saveBtn = document.getElementById('btn-save-address');
-        saveBtn.innerText = isSaved ? 'Change' : 'Save';
-        saveBtn.className = `action-btn ${isSaved ? 'btn-change' : 'btn-save'}`;
+        function renderAddressUI() {
+         const prop = currentJob.properties.find(p => p.id === activePropId);
+const isSaved = prop.isSaved;
+const status = isSaved ? 'disabled' : '';
+const isCollectionAddress = prop.id === currentJob.properties[0].id;
+            const wrapper = document.getElementById('content-address');
+            isSaved ? wrapper.classList.add('is-saved') : wrapper.classList.remove('is-saved');
 
-        document.getElementById('prop-selector').innerHTML = currentJob.properties.map(p => `<option value="${p.id}" ${p.id === activePropId ? 'selected' : ''}>${toTitleCase(p.label)}</option>`).join('');
+            const saveBtn = document.getElementById('btn-save-address');
+            saveBtn.innerText = isSaved ? 'Change' : 'Save';
+            saveBtn.className = `action-btn ${isSaved ? 'btn-change' : 'btn-save'}`;
 
-        document.getElementById('address-editor-ui').innerHTML = `
-            <div class="bg-slate-50 p-4 rounded-xl border border-blue-100 flex justify-between items-center">
-                <div class="flex-grow"><label class="mini-label text-blue-600">Property Label</label><input type="text" ${status} oninput="updatePropLabel(this.value)" class="w-full bg-transparent text-xl font-black outline-none text-blue-900" value="${toTitleCase(prop.label)}"></div>
-                ${(!prop.isCore && !isSaved) ? `<button onclick="deleteProperty(${prop.id})" class="text-red-600 text-[9px] font-black uppercase">Delete Address</button>` : ''}
-            </div>
+            document.getElementById('prop-selector').innerHTML = currentJob.properties.map(p => `<option value="${p.id}" ${p.id === activePropId ? 'selected' : ''}>${toTitleCase(p.label)}</option>`).join('');
+            
+           document.getElementById('address-editor-ui').innerHTML = `
+    <div class="bg-slate-50 p-4 rounded-xl border border-blue-100 flex justify-between items-center">
+        <div class="flex-grow"><label class="mini-label text-blue-600">Property Label</label><input type="text" ${status} oninput="updatePropLabel(this.value)" class="w-full bg-transparent text-xl font-black outline-none text-blue-900" value="${toTitleCase(prop.label)}"></div>
+        ${(!prop.isCore && !isSaved) ? `<button onclick="deleteProperty(${prop.id})" class="text-red-600 text-[9px] font-black uppercase">Delete Address</button>` : ''}
+    </div>
 
-            ${isCollectionAddress ? `
-            <div class="bg-white border border-slate-200 rounded-xl p-4">
-                <div class="grid grid-cols-12 gap-3">
-                    <div class="col-span-2">
-                        <label class="mini-label">Salutation</label>
-                        <select ${status} onchange="updatePropData('salutation', this.value)" class="input-field">
-                            <option value="">-Select-</option>
-                            ${SALUTATIONS.map(s => `<option value="${s}" ${prop.salutation===s?'selected':''}>${s}</option>`).join('')}
+    ${isCollectionAddress ? `
+    <div class="bg-white border border-slate-200 rounded-xl p-4">
+        <div class="grid grid-cols-12 gap-3">
+  <div class="col-span-2">
+    <label class="mini-label">Salutation</label>
+    <select ${status} onchange="updatePropData('salutation', this.value)" class="input-field">
+        <option value="">-Select-</option>
+        ${SALUTATIONS.map(s => `<option value="${s}" ${prop.salutation===s?'selected':''}>${s}</option>`).join('')}
+    </select>
+</div>
+<div class="col-span-5">
+    <label class="mini-label">First Name</label>
+    <input type="text" ${status} oninput="updatePropData('firstName', this.value)" class="input-field" value="${prop.firstName || ''}">
+</div>
+<div class="col-span-5">
+    <label class="mini-label">Surname</label>
+    <input type="text" ${status} oninput="updatePropData('surname', this.value)" class="input-field" value="${prop.surname || ''}">
+</div>
+<div class="col-span-4">
+    <label class="mini-label">Home Phone</label>
+    <input type="text" ${status} oninput="updatePropData('homePhone', this.value)" class="input-field" value="${prop.homePhone || ''}">
+</div>
+<div class="col-span-4">
+    <label class="mini-label">Mobile Phone</label>
+    <input type="text" ${status} oninput="updatePropData('mobilePhone', this.value)" class="input-field" value="${prop.mobilePhone || ''}">
+</div>
+<div class="col-span-4">
+    <label class="mini-label">Email</label>
+    <input type="email" ${status} oninput="updatePropData('email', this.value)" class="input-field" value="${prop.email || ''}">
+</div>
+        </div>
+    </div>
+    ` : ''}
+
+    <div class="prop-grid">
+                    <div class="col-7"><label class="mini-label">1st line</label><input type="text" ${status} oninput="updatePropData('line1', this.value)" class="input-field" value="${prop.line1 || ''}"></div>
+                    <div class="col-5"><label class="mini-label">Road</label><input type="text" ${status} oninput="updatePropData('road', this.value)" class="input-field" value="${prop.road || ''}"></div>
+                    <div class="col-3"><label class="mini-label">Town</label><input type="text" ${status} oninput="updatePropData('city', this.value)" class="input-field" value="${prop.city || ''}"></div>
+                    <div class="col-3"><label class="mini-label">County</label><input type="text" ${status} oninput="updatePropData('county', this.value)" class="input-field" value="${prop.county || ''}"></div>
+                    <div class="col-3"><label class="mini-label">Postcode</label><input type="text" ${status} oninput="updatePropData('postcode', this.value)" class="input-field uppercase" value="${prop.postcode || ''}"></div>
+                    <div class="col-3"><label class="mini-label">Country</label><input type="text" ${status} oninput="updatePropData('country', this.value)" class="input-field" value="${prop.country || 'United Kingdom'}"></div>
+                    <div class="col-6"><label class="mini-label">Type</label><select ${status} onchange="updatePropData('type', this.value)" class="input-field"><option value="">-Select-</option>${PROPERTY_TYPES.map(t => `<option ${prop.type===t?'selected':''}>${t}</option>`).join('')}</select></div>
+                    <div class="col-6"><label class="mini-label">Vehicle Access</label><select ${status} onchange="updatePropData('access', this.value)" class="input-field"><option value="">-Select-</option>${VEHICLE_TYPES.map(v => `<option ${prop.access===v?'selected':''}>${v}</option>`).join('')}</select></div>
+                    <div class="col-3"><label class="mini-label">Floor</label><input type="text" ${status} oninput="updatePropData('floor', this.value)" class="input-field" value="${prop.floor || ''}"></div>
+                    <div class="col-3"><label class="mini-label">Stairs</label><input type="text" ${status} oninput="updatePropData('stairs', this.value)" class="input-field" value="${prop.stairs || ''}"></div>
+                    <div class="col-3"><label class="mini-label">Lift</label><input type="text" ${status} oninput="updatePropData('lift', this.value)" class="input-field" value="${prop.lift || ''}"></div>
+                    <div class="col-3"><label class="mini-label">Dist (m)</label><input type="number" ${status} oninput="updatePropData('distance', this.value)" class="input-field" value="${prop.distance || ''}"></div>
+                    <div class="col-12"><label class="mini-label">Parking & Instructions</label><textarea ${status} oninput="updatePropData('parking', this.value)" class="input-field h-20">${prop.parking || ''}</textarea></div>
+                ${!isCollectionAddress ? `
+    <div class="col-6">
+        <label class="mini-label">Contact Name</label>
+        <input type="text" ${status} oninput="updatePropData('contactName', this.value)" class="input-field" value="${prop.contactName || ''}">
+    </div>
+    <div class="col-6">
+        <label class="mini-label">Contact Phone No.</label>
+        <input type="text" ${status} oninput="updatePropData('contactPhone', this.value)" class="input-field" value="${prop.contactPhone || ''}">
+    </div>
+` : ''}
+                </div>`;
+            triggerPulse('address-editor-ui');
+        }
+function renderInventorySequenceDropdown() {
+    const dropdown = document.getElementById('inv-seq-select');
+    if (!dropdown || !currentJob) return;
+
+    dropdown.innerHTML = currentJob.sequences.map((s, idx) => {
+        const moveLabel = s.moveType || 'New Sequence';
+        const packLabel = s.packOption || 'No Packing Set';
+        const label = `Seq #${idx + 1}: ${moveLabel} / ${packLabel}`;
+        return `<option value="${s.id}" ${s.id == activeSeqId ? 'selected' : ''}>${label}</option>`;
+    }).join('');
+
+}
+       function renderInventoryButtons() {
+    const grid = document.getElementById('inventory-button-grid');
+    if (!grid) return;
+
+    const itemsToShow = inventoryCategories[currentInventoryCategory] || [];
+
+    grid.innerHTML = itemsToShow.map(itemName => {
+        return `<button class="item-btn" onclick="addInventoryItem('${itemName.replace(/'/g, "\\'")}')">${itemName}</button>`;
+    }).join('');
+}
+
+function setInventoryCategory(category, btn) {
+    currentInventoryCategory = category;
+
+    document.querySelectorAll('.inv-room-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+
+    renderInventoryButtons();
+}
+        function renderSequenceUI() {
+    const seq = currentJob.sequences.find(s => s.id == activeSeqId); 
+            const isSaved = seq.isSaved;
+            const status = isSaved ? 'disabled' : '';
+            const wrapper = document.getElementById('content-sequence');
+            isSaved ? wrapper.classList.add('is-saved') : wrapper.classList.remove('is-saved');
+
+            const saveBtn = document.getElementById('btn-save-sequence');
+            saveBtn.innerText = isSaved ? 'Change' : 'Save';
+            saveBtn.className = `action-btn !h-12 !px-6 ${isSaved ? 'btn-change' : 'btn-save'}`;
+
+            document.getElementById('seq-switcher').innerHTML = currentJob.sequences.map((s, idx) => {
+                const label = s.moveType ? `Seq #${idx+1}: ${s.moveType}` : `Seq #${idx+1}: New Sequence`;
+                return `<option value="${s.id}" ${s.id == activeSeqId ? 'selected' : ''}>${label}</option>`;
+            }).join('');
+            
+            document.getElementById('active-sequence-ui').innerHTML = `
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="mini-label">Move Type</label>
+                        <select ${status} onchange="updateSeqField('moveType', this.value)" class="input-field border-2">
+                            <option value="">-- Move Type --</option>
+                            ${MOVE_TYPES.map(m => `<option value="${m}" ${seq.moveType===m?'selected':''}>${m}</option>`).join('')}
                         </select>
                     </div>
-                    <div class="col-span-5">
-                        <label class="mini-label">First Name</label>
-                        <input type="text" ${status} oninput="updatePropData('firstName', this.value)" class="input-field" value="${prop.firstName || ''}">
-                    </div>
-                    <div class="col-span-5">
-                        <label class="mini-label">Surname</label>
-                        <input type="text" ${status} oninput="updatePropData('surname', this.value)" class="input-field" value="${prop.surname || ''}">
-                    </div>
-                    <div class="col-span-4">
-                        <label class="mini-label">Home Phone</label>
-                        <input type="text" ${status} oninput="updatePropData('homePhone', this.value)" class="input-field" value="${prop.homePhone || ''}">
-                    </div>
-                    <div class="col-span-4">
-                        <label class="mini-label">Mobile Phone</label>
-                        <input type="text" ${status} oninput="updatePropData('mobilePhone', this.value)" class="input-field" value="${prop.mobilePhone || ''}">
-                    </div>
-                    <div class="col-span-4">
-                        <label class="mini-label">Email</label>
-                        <input type="email" ${status} oninput="updatePropData('email', this.value)" class="input-field" value="${prop.email || ''}">
+                    <div>
+                        <label class="mini-label">Packing</label>
+                        <select ${status} onchange="updateSeqField('packOption', this.value)" class="input-field border-2">
+                            <option value="">-- Packing --</option>
+                            ${PACK_OPTIONS.map(p => `<option value="${p}" ${seq.packOption===p?'selected':''}>${p}</option>`).join('')}
+                        </select>
                     </div>
                 </div>
-            </div>
-            ` : ''}
-
-            <div class="prop-grid">
-                <div class="col-7"><label class="mini-label">1st line</label><input type="text" ${status} oninput="updatePropData('line1', this.value)" class="input-field" value="${prop.line1 || ''}"></div>
-                <div class="col-5"><label class="mini-label">Road</label><input type="text" ${status} oninput="updatePropData('road', this.value)" class="input-field" value="${prop.road || ''}"></div>
-                <div class="col-3"><label class="mini-label">Town</label><input type="text" ${status} oninput="updatePropData('city', this.value)" class="input-field" value="${prop.city || ''}"></div>
-                <div class="col-3"><label class="mini-label">County</label><input type="text" ${status} oninput="updatePropData('county', this.value)" class="input-field" value="${prop.county || ''}"></div>
-                <div class="col-3"><label class="mini-label">Postcode</label><input type="text" ${status} oninput="updatePropData('postcode', this.value)" class="input-field uppercase" value="${prop.postcode || ''}"></div>
-                <div class="col-3"><label class="mini-label">Country</label><input type="text" ${status} oninput="updatePropData('country', this.value)" class="input-field" value="${prop.country || 'United Kingdom'}"></div>
-                <div class="col-6"><label class="mini-label">Type</label><select ${status} onchange="updatePropData('type', this.value)" class="input-field"><option value="">-Select-</option>${PROPERTY_TYPES.map(t => `<option ${prop.type===t?'selected':''}>${t}</option>`).join('')}</select></div>
-                <div class="col-6"><label class="mini-label">Vehicle Access</label><select ${status} onchange="updatePropData('access', this.value)" class="input-field"><option value="">-Select-</option>${VEHICLE_TYPES.map(v => `<option ${prop.access===v?'selected':''}>${v}</option>`).join('')}</select></div>
-                <div class="col-3"><label class="mini-label">Floor</label><input type="text" ${status} oninput="updatePropData('floor', this.value)" class="input-field" value="${prop.floor || ''}"></div>
-                <div class="col-3"><label class="mini-label">Stairs</label><input type="text" ${status} oninput="updatePropData('stairs', this.value)" class="input-field" value="${prop.stairs || ''}"></div>
-                <div class="col-3"><label class="mini-label">Lift</label><input type="text" ${status} oninput="updatePropData('lift', this.value)" class="input-field" value="${prop.lift || ''}"></div>
-                <div class="col-3"><label class="mini-label">Dist (m)</label><input type="number" ${status} oninput="updatePropData('distance', this.value)" class="input-field" value="${prop.distance || ''}"></div>
-                <div class="col-12"><label class="mini-label">Parking & Instructions</label><textarea ${status} oninput="updatePropData('parking', this.value)" class="input-field h-20">${prop.parking || ''}</textarea></div>
-                ${!isCollectionAddress ? `
-                <div class="col-6">
-                    <label class="mini-label">Contact Name</label>
-                    <input type="text" ${status} oninput="updatePropData('contactName', this.value)" class="input-field" value="${prop.contactName || ''}">
-                </div>
-                <div class="col-6">
-                    <label class="mini-label">Contact Phone No.</label>
-                    <input type="text" ${status} oninput="updatePropData('contactPhone', this.value)" class="input-field" value="${prop.contactPhone || ''}">
-                </div>
-                ` : ''}
-            </div>`;
-        triggerPulse('address-editor-ui');
-    }
-
-    function renderInventorySequenceDropdown() {
-        const dropdown = document.getElementById('inv-seq-select');
-        if (!dropdown || !currentJob) return;
-
-        dropdown.innerHTML = currentJob.sequences.map((s, idx) => {
-            const moveLabel = s.moveType || 'New Sequence';
-            const packLabel = s.packOption || 'No Packing Set';
-            const label = `Seq #${idx + 1}: ${moveLabel} / ${packLabel}`;
-            return `<option value="${s.id}" ${s.id == activeSeqId ? 'selected' : ''}>${label}</option>`;
-        }).join('');
-    }
-
-    function renderInventoryButtons() {
-        const grid = document.getElementById('inventory-button-grid');
-        if (!grid) return;
-
-        const itemsToShow = inventoryCategories[currentInventoryCategory] || [];
-
-        grid.innerHTML = itemsToShow.map(itemName => {
-            return `<button class="item-btn" onclick="addInventoryItem('${itemName.replace(/'/g, "\\'")}')">${itemName}</button>`;
-        }).join('');
-    }
-
-    function setInventoryCategory(category, btn) {
-        currentInventoryCategory = category;
-
-        document.querySelectorAll('.inv-room-btn').forEach(b => b.classList.remove('active'));
-        if (btn) btn.classList.add('active');
-
-        renderInventoryButtons();
-    }
-
-    function renderSequenceUI() {
-        const seq = currentJob.sequences.find(s => s.id == activeSeqId);
-        const isSaved = seq.isSaved;
-        const status = isSaved ? 'disabled' : '';
-        const wrapper = document.getElementById('content-sequence');
-        isSaved ? wrapper.classList.add('is-saved') : wrapper.classList.remove('is-saved');
-
-        const saveBtn = document.getElementById('btn-save-sequence');
-        saveBtn.innerText = isSaved ? 'Change' : 'Save';
-        saveBtn.className = `action-btn !h-12 !px-6 ${isSaved ? 'btn-change' : 'btn-save'}`;
-
-        document.getElementById('seq-switcher').innerHTML = currentJob.sequences.map((s, idx) => {
-            const label = s.moveType ? `Seq #${idx+1}: ${s.moveType}` : `Seq #${idx+1}: New Sequence`;
-            return `<option value="${s.id}" ${s.id == activeSeqId ? 'selected' : ''}>${label}</option>`;
-        }).join('');
-
-        document.getElementById('active-sequence-ui').innerHTML = `
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="mini-label">Move Type</label>
-                    <select ${status} onchange="updateSeqField('moveType', this.value)" class="input-field border-2">
-                        <option value="">-- Move Type --</option>
-                        ${MOVE_TYPES.map(m => `<option value="${m}" ${seq.moveType===m?'selected':''}>${m}</option>`).join('')}
-                    </select>
-                </div>
-                <div>
-                    <label class="mini-label">Packing</label>
-                    <select ${status} onchange="updateSeqField('packOption', this.value)" class="input-field border-2">
-                        <option value="">-- Packing --</option>
-                        ${PACK_OPTIONS.map(p => `<option value="${p}" ${seq.packOption===p?'selected':''}>${p}</option>`).join('')}
-                    </select>
-                </div>
-            </div>
-            <div class="space-y-6 pt-4 border-t border-slate-200">
-                <div><label class="mini-label !text-blue-500 font-black">Collection Points</label>
-                    ${seq.collections.map((cId, i) => `<div class="flex gap-2 mb-2"><select ${status} onchange="updateStop('collections', ${i}, this.value)" class="input-field bg-blue-50">${currentJob.properties.map(p => `<option value="${p.id}" ${cId==p.id?'selected':''}>${p.label}</option>`).join('')}</select>${i>0&&!isSaved?`<button onclick="removeStop('collections',${i})" class="px-2 text-red-500">×</button>`:''}</div>`).join('')}
-                    ${!isSaved ? `<button onclick="addStop('collections')" class="add-stop-btn">+ Add Collection Stop</button>` : ''}
-                </div>
-                <div><label class="mini-label !text-green-600 font-black">Delivery Points</label>
-                    ${seq.deliveries.map((dId, i) => `<div class="flex gap-2 mb-2"><select ${status} onchange="updateStop('deliveries', ${i}, this.value)" class="input-field bg-green-50">${currentJob.properties.map(p => `<option value="${p.id}" ${dId==p.id?'selected':''}>${p.label}</option>`).join('')}</select>${i>0&&!isSaved?`<button onclick="removeStop('deliveries',${i})" class="px-2 text-red-500">×</button>`:''}</div>`).join('')}
-                    ${!isSaved ? `<button onclick="addStop('deliveries')" class="add-stop-btn">+ Add Delivery Stop</button>` : ''}
-                </div>
-            </div>`;
-        triggerPulse('active-sequence-ui');
-    }
-
-    function renderDashboard() {
-        document.getElementById('job-list').innerHTML = jobs.map(j => {
-            let seqBreakdown = j.sequences.length > 0 ? j.sequences.map(s => `
-                <div class="seq-row">
-                    <div class="flex flex-col">
-                        <span class="text-[9px] font-black uppercase italic leading-none">${s.moveType || 'New Seq'}</span>
-                        <span class="text-[8px] font-bold text-slate-400 uppercase mt-0.5">${s.packOption || 'No Packing Set'}</span>
+                <div class="space-y-6 pt-4 border-t border-slate-200">
+                    <div><label class="mini-label !text-blue-500 font-black">Collection Points</label>
+                        ${seq.collections.map((cId, i) => `<div class="flex gap-2 mb-2"><select ${status} onchange="updateStop('collections', ${i}, this.value)" class="input-field bg-blue-50">${currentJob.properties.map(p => `<option value="${p.id}" ${cId==p.id?'selected':''}>${p.label}</option>`).join('')}</select>${i>0&&!isSaved?`<button onclick="removeStop('collections',${i})" class="px-2 text-red-500">×</button>`:''}</div>`).join('')}
+                        ${!isSaved ? `<button onclick="addStop('collections')" class="add-stop-btn">+ Add Collection Stop</button>` : ''}
                     </div>
-                    <span class="text-[10px] font-black text-blue-600">${s.vol || 0} ft³</span>
-                </div>`).join('') : `<div class="text-[8px] text-slate-300 italic mt-2 uppercase font-bold">No sequences</div>`;
-
-            return `
-            <div class="job-card status-${j.status}" onclick="openJob(${j.id})">
-                <div class="flex justify-between items-start">
-                    <div class="flex-grow">
-                        <span class="pill pill-${j.status}">${j.status}</span>
-                        ${j.isManual?'<span class="pill pill-manual">Manual</span>':''}
-                        ${j.isNew?'<span class="pill pill-new">New</span>':''}
-                        <h3 class="text-xl font-black text-slate-800 uppercase leading-none mt-1">${j.name}</h3>
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Ref: ${j.ref}</p>
-                        ${j.notes ? `<div class="notes-preview">${j.notes}</div>` : ''}
-                        <div class="mt-4 border-t pt-2">${seqBreakdown}</div>
+                    <div><label class="mini-label !text-green-600 font-black">Delivery Points</label>
+                        ${seq.deliveries.map((dId, i) => `<div class="flex gap-2 mb-2"><select ${status} onchange="updateStop('deliveries', ${i}, this.value)" class="input-field bg-green-50">${currentJob.properties.map(p => `<option value="${p.id}" ${dId==p.id?'selected':''}>${p.label}</option>`).join('')}</select>${i>0&&!isSaved?`<button onclick="removeStop('deliveries',${i})" class="px-2 text-red-500">×</button>`:''}</div>`).join('')}
+                        ${!isSaved ? `<button onclick="addStop('deliveries')" class="add-stop-btn">+ Add Delivery Stop</button>` : ''}
                     </div>
-                    <div class="flex flex-col gap-2 items-end">
-                        <button onclick="event.stopPropagation(); uploadToCloud(${j.id})" class="btn-upload-glow rounded-xl text-[10px]">Upload ↑</button>
+                </div>`;
+            triggerPulse('active-sequence-ui');
+        }
+
+        function renderDashboard() {
+            document.getElementById('job-list').innerHTML = jobs.map(j => {
+                let seqBreakdown = j.sequences.length > 0 ? j.sequences.map(s => `
+                    <div class="seq-row">
+                        <div class="flex flex-col">
+                            <span class="text-[9px] font-black uppercase italic leading-none">${s.moveType || 'New Seq'}</span>
+                            <span class="text-[8px] font-bold text-slate-400 uppercase mt-0.5">${s.packOption || 'No Packing Set'}</span>
+                        </div>
+                        <span class="text-[10px] font-black text-blue-600">${s.vol || 0} ft³</span>
+                    </div>`).join('') : `<div class="text-[8px] text-slate-300 italic mt-2 uppercase font-bold">No sequences</div>`;
+                
+                return `
+                <div class="job-card status-${j.status}" onclick="openJob(${j.id})">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-grow">
+                            <span class="pill pill-${j.status}">${j.status}</span>
+                            ${j.isManual?'<span class="pill pill-manual">Manual</span>':''}
+                            ${j.isNew?'<span class="pill pill-new">New</span>':''}
+                            <h3 class="text-xl font-black text-slate-800 uppercase leading-none mt-1">${j.name}</h3>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Ref: ${j.ref}</p>
+                            ${j.notes ? `<div class="notes-preview">${j.notes}</div>` : ''}
+                            <div class="mt-4 border-t pt-2">${seqBreakdown}</div>
+                        </div>
+                        <div class="flex flex-col gap-2 items-end">
+                            <button onclick="event.stopPropagation(); uploadToCloud(${j.id})" class="btn-upload-glow rounded-xl text-[10px]">Upload ↑</button>
+                        </div>
                     </div>
-                </div>
-            </div>`;
-        }).join('');
-    }
+                </div>`;
+            }).join('');
+        }
 
-    function addSequence() {
-        const id = Date.now();
-        currentJob.sequences.push({
-            id: id,
-            moveType: "",
-            packOption: "",
-            vol: 0,
-            isSaved: false,
-            collections: [currentJob.properties[0].id],
-            deliveries: [currentJob.properties[1] ? currentJob.properties[1].id : currentJob.properties[0].id]
-        });
-        activeSeqId = id;
-        renderSequenceUI();
-        renderInventorySequenceDropdown();
-        saveToDevice();
-    }
-
-    function copySequence() {
-        const original = currentJob.sequences.find(s => s.id == activeSeqId);
-        const copy = JSON.parse(JSON.stringify(original));
-        copy.id = Date.now();
-        copy.isSaved = false;
-        currentJob.sequences.push(copy);
-        activeSeqId = copy.id;
-        renderSequenceUI();
-        renderInventorySequenceDropdown();
-        saveToDevice();
-    }
-
-    function deleteSequence() {
-        if(currentJob.sequences.length <= 1) return;
-        currentJob.sequences = currentJob.sequences.filter(s => s.id != activeSeqId);
-        activeSeqId = currentJob.sequences[0].id;
-        renderSequenceUI();
-        renderInventorySequenceDropdown();
-        saveToDevice();
-    }
-
+        function addSequence() {
+            const id = Date.now();
+            currentJob.sequences.push({ id: id, moveType: "", packOption: "", vol: 0, isSaved: false, collections: [currentJob.properties[0].id], deliveries: [currentJob.properties[1] ? currentJob.properties[1].id : currentJob.properties[0].id] });
+            activeSeqId = id;
+renderSequenceUI();
+renderInventorySequenceDropdown();
+saveToDevice();
+        }
+        function copySequence() {
+            const original = currentJob.sequences.find(s => s.id == activeSeqId);
+            const copy = JSON.parse(JSON.stringify(original));
+            copy.id = Date.now(); copy.isSaved = false;
+            currentJob.sequences.push(copy);
+activeSeqId = copy.id;
+renderSequenceUI();
+renderInventorySequenceDropdown();
+saveToDevice();
+        }
+        function deleteSequence() {
+            if(currentJob.sequences.length <= 1) return;
+            currentJob.sequences = currentJob.sequences.filter(s => s.id != activeSeqId);
+           activeSeqId = currentJob.sequences[0].id;
+renderSequenceUI();
+renderInventorySequenceDropdown();
+saveToDevice();
+        }
     function addProperty() {
-        const newId = Date.now();
-        currentJob.properties.push({
-            id: newId,
-            label: "Add Address",
-            line1: "",
-            country: "United Kingdom",
-            contactName: "",
-            contactPhone: "",
-            isCore: false,
-            isSaved: false
-        });
-        activePropId = newId;
-        renderAddressUI();
-        saveToDevice();
-    }
-
-    function deleteProperty(id) {
-        currentJob.properties = currentJob.properties.filter(p => p.id !== id);
-        activePropId = currentJob.properties[0].id;
-        renderAddressUI();
-        saveToDevice();
-    }
-
-    function updateSeqField(f, v) {
-        currentJob.sequences.find(s => s.id == activeSeqId)[f] = v;
-        renderSequenceUI();
-        renderInventorySequenceDropdown();
-        saveToDevice();
-    }
-
-    function updateStop(type, idx, val) {
-        currentJob.sequences.find(s => s.id == activeSeqId)[type][idx] = val;
-    }
-
-    function addStop(type) {
-        currentJob.sequences.find(s => s.id == activeSeqId)[type].push(currentJob.properties[0].id);
-        renderSequenceUI();
-    }
-
-    function removeStop(type, idx) {
-        currentJob.sequences.find(s => s.id == activeSeqId)[type].splice(idx, 1);
-        renderSequenceUI();
-    }
-
-    function updatePropLabel(v) {
-        currentJob.properties.find(p => p.id === activePropId).label = v;
-    }
-
-    function updatePropData(f, v) {
-        const prop = currentJob.properties.find(p => p.id === activePropId);
-        prop[f] = v;
-
-        const isCollectionAddress = activePropId === currentJob.properties[0].id;
-
-        if (isCollectionAddress && (f === 'firstName' || f === 'surname')) {
-            const firstName = (prop.firstName || '').trim();
-            const surname = (prop.surname || '').trim();
-
-            let newDisplayName = "";
-
-            if (surname && firstName) {
-                newDisplayName = `${surname}, ${firstName}`.toUpperCase();
-            } else if (surname) {
-                newDisplayName = surname.toUpperCase();
-            } else if (firstName) {
-                newDisplayName = firstName.toUpperCase();
-            }
-
-            currentJob.name = newDisplayName;
-
-            if (!currentJob.customer) currentJob.customer = {};
-            currentJob.customer.displayName = newDisplayName;
-            currentJob.customer.firstName = firstName;
-            currentJob.customer.surname = surname;
-
-            const hdrName = document.getElementById('hdr-name');
-            if (hdrName) hdrName.innerText = currentJob.customer.displayName || currentJob.name || "";
+    const newId = Date.now();
+    currentJob.properties.push({ 
+        id: newId, 
+        label: "Add Address", 
+        line1: "", 
+        country: "United Kingdom", 
+        contactName: "",
+        contactPhone: "",
+        isCore: false, 
+        isSaved: false 
+    });
+    activePropId = newId; 
+    renderAddressUI();
+    saveToDevice();
+}
+        function deleteProperty(id) {
+            currentJob.properties = currentJob.properties.filter(p => p.id !== id);
+            activePropId = currentJob.properties[0].id; renderAddressUI();
+            saveToDevice();
         }
-    }
+       function updateSeqField(f, v) {
+    currentJob.sequences.find(s => s.id == activeSeqId)[f] = v;
+    renderSequenceUI();
+    renderInventorySequenceDropdown();
+    saveToDevice();
+}
+        function updateStop(type, idx, val) { currentJob.sequences.find(s => s.id == activeSeqId)[type][idx] = val; }
+        function addStop(type) { currentJob.sequences.find(s => s.id == activeSeqId)[type].push(currentJob.properties[0].id); renderSequenceUI(); }
+        function removeStop(type, idx) { currentJob.sequences.find(s => s.id == activeSeqId)[type].splice(idx, 1); renderSequenceUI(); }
+        function updatePropLabel(v) { currentJob.properties.find(p => p.id === activePropId).label = v; }
+function updatePropData(f, v) {
+    const prop = currentJob.properties.find(p => p.id === activePropId);
+    prop[f] = v;
 
-    function loadProperty(id) {
-        activePropId = parseInt(id);
-        renderAddressUI();
-    }
+    const isCollectionAddress = activePropId === currentJob.properties[0].id;
 
-    function loadSequence(id) {
-        activeSeqId = id;
-        renderSequenceUI();
-    }
+    if (isCollectionAddress && (f === 'firstName' || f === 'surname')) {
+        const firstName = (prop.firstName || '').trim();
+        const surname = (prop.surname || '').trim();
 
-    function triggerPulse(id) {
-        const el = document.getElementById(id);
-        if(el) {
-            el.classList.remove('pulse-new');
-            void el.offsetWidth;
-            el.classList.add('pulse-new');
-        }
-    }
+        let newDisplayName = "";
 
-    function switchTab(t) {
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById('content-' + t).classList.remove('hidden');
-        document.getElementById('nav-' + t).classList.add('active');
-
-        if (t === 'sequence') renderSequenceUI();
-        if (t === 'address') renderAddressUI();
-        if (t === 'inventory') {
-            renderInventorySequenceDropdown();
-            renderInventoryButtons();
-            updateInventoryDisplay();
-            updateUndoButtonState();
-            syncQtyInputToLastItem();
-        }
-    }
-
-    function splitManualName(fullName) {
-        const cleaned = (fullName || "").trim();
-
-        if (!cleaned) {
-            return { surname: "", firstName: "" };
+        if (surname && firstName) {
+            newDisplayName = `${surname}, ${firstName}`.toUpperCase();
+        } else if (surname) {
+            newDisplayName = surname.toUpperCase();
+        } else if (firstName) {
+            newDisplayName = firstName.toUpperCase();
         }
 
-        if (cleaned.includes(",")) {
-            const parts = cleaned.split(",");
-            return {
-                surname: (parts[0] || "").trim(),
-                firstName: (parts.slice(1).join(",") || "").trim()
-            };
-        }
+        currentJob.name = newDisplayName;
 
-        const words = cleaned.split(/\s+/);
+        if (!currentJob.customer) currentJob.customer = {};
+        currentJob.customer.displayName = newDisplayName;
+        currentJob.customer.firstName = firstName;
+        currentJob.customer.surname = surname;
+
+        const hdrName = document.getElementById('hdr-name');
+        if (hdrName) hdrName.innerText = currentJob.customer.displayName || currentJob.name || "";
+    }
+}
+        function loadProperty(id) { activePropId = parseInt(id); renderAddressUI(); }
+        function loadSequence(id) { activeSeqId = id; renderSequenceUI(); }
+        function triggerPulse(id) { const el = document.getElementById(id); if(el) { el.classList.remove('pulse-new'); void el.offsetWidth; el.classList.add('pulse-new'); } }
+        
+  function switchTab(t) {
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('content-' + t).classList.remove('hidden');
+    document.getElementById('nav-' + t).classList.add('active');
+
+    if (t === 'sequence') renderSequenceUI();
+    if (t === 'address') renderAddressUI();
+   if (t === 'inventory') {
+    renderInventorySequenceDropdown();
+    renderInventoryButtons();
+    updateInventoryDisplay();
+    updateUndoButtonState();
+}
+}
+function splitManualName(fullName) {
+    const cleaned = (fullName || "").trim();
+
+    if (!cleaned) {
+        return { surname: "", firstName: "" };
+    }
+
+    if (cleaned.includes(",")) {
+        const parts = cleaned.split(",");
         return {
-            surname: words[0] || "",
-            firstName: words.slice(1).join(" ")
+            surname: (parts[0] || "").trim(),
+            firstName: (parts.slice(1).join(",") || "").trim()
         };
     }
 
-    function toggleManualArea() {
-        const area = document.getElementById('manual-entry-area');
-        area.style.display = (area.style.display === "block") ? "none" : "block";
-        document.getElementById('timestamp-val').innerText = new Date().toLocaleString('en-GB');
-    }
+    // fallback if user forgets the comma
+    const words = cleaned.split(/\s+/);
+    return {
+        surname: words[0] || "",
+        firstName: words.slice(1).join(" ")
+    };
+}
+        function toggleManualArea() { const area = document.getElementById('manual-entry-area'); area.style.display = (area.style.display === "block") ? "none" : "block"; document.getElementById('timestamp-val').innerText = new Date().toLocaleString('en-GB'); }
+function createManualJob() {
+    const name = document.getElementById('m-name').value.trim();
+    if (!name) return;
 
-    function createManualJob() {
-        const name = document.getElementById('m-name').value.trim();
-        if (!name) return;
+    const parsedName = splitManualName(name);
+    const newProperties = createDefaultProperties();
 
-        const parsedName = splitManualName(name);
-        const newProperties = createDefaultProperties();
+    newProperties[0].firstName = parsedName.firstName;
+    newProperties[0].surname = parsedName.surname;
+    newProperties[0].clientName = name;
 
-        newProperties[0].firstName = parsedName.firstName;
-        newProperties[0].surname = parsedName.surname;
-        newProperties[0].clientName = name;
+    const ref = document.getElementById('m-ref').value || "M-" + Math.floor(Math.random() * 900);
+    const displayName = name.toUpperCase();
 
-        const ref = document.getElementById('m-ref').value || "M-" + Math.floor(Math.random() * 900);
-        const displayName = name.toUpperCase();
-
-        const newJob = createEmptyJob({
-            ref: ref,
-            name: displayName,
+    const newJob = createEmptyJob({
+        ref: ref,
+        name: displayName,
+        status: "pending",
+        isNew: true,
+        isManual: true,
+        notes: "New manually created survey.",
+        properties: newProperties,
+        addresses: newProperties,
+        customer: {
+            displayName: displayName,
+            firstName: parsedName.firstName,
+            surname: parsedName.surname,
+            salutation: "",
+            homePhone: "",
+            mobilePhone: "",
+            email: ""
+        },
+        survey: {
             status: "pending",
             isNew: true,
             isManual: true,
-            notes: "New manually created survey.",
-            properties: newProperties,
-            addresses: newProperties,
-            customer: {
-                displayName: displayName,
-                firstName: parsedName.firstName,
-                surname: parsedName.surname,
-                salutation: "",
-                homePhone: "",
-                mobilePhone: "",
-                email: ""
-            },
-            survey: {
-                status: "pending",
-                isNew: true,
-                isManual: true,
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                notes: "New manually created survey."
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            notes: "New manually created survey."
+        }
+    });
+
+    jobs.unshift(newJob);
+
+    saveToDevice();
+    renderDashboard();
+
+    document.getElementById('m-name').value = "";
+    document.getElementById('m-ref').value = "";
+
+    toggleManualArea();
+}
+        function exitToDashboard() { document.getElementById('view-editor').classList.add('hidden'); document.getElementById('view-dashboard').classList.remove('hidden'); renderDashboard(); }
+function calculateMoveCost(){
+
+let crew = parseFloat(document.getElementById("crew-cost").value) || 0;
+let vehicle = parseFloat(document.getElementById("vehicle-cost").value) || 0;
+let other = parseFloat(document.getElementById("other-costs").value) || 0;
+
+let total = crew + vehicle + other;
+
+document.getElementById("total-cost").value = total;
+
+}
+
+function addVolume(amount) {
+    const qtyInput = document.getElementById("inv-qty");
+    let qty = parseInt(qtyInput?.value, 10);
+    if (isNaN(qty) || qty < 1) qty = 1;
+
+    const addedVolume = amount * qty;
+
+    inventoryHistory.push({
+        type: "volume",
+        addedVolume: addedVolume,
+        unitVolume: amount,
+        qtyAdded: qty
+    });
+
+    currentItemVolume = addedVolume;
+    totalVolume += addedVolume;
+
+    updateInventoryDisplay(`+ ${qty} X ${amount} CUFT`);
+    triggerInventoryPulse("qty", "blue");
+    triggerInventoryPulse("total", "blue");
+    triggerHaptic("light");
+
+    if (qtyInput) qtyInput.value = 1;
+    updateUndoButtonState();
+}
+function addInventoryItem(itemName) {
+    let item = furnitureDB.find(i => i.item === itemName);
+    if (!item) return;
+
+    const qtyInput = document.getElementById("inv-qty");
+    let qty = parseInt(qtyInput?.value, 10);
+    if (isNaN(qty) || qty < 1) qty = 1;
+
+    lastAddedItemName = itemName;
+
+    let existing = inventoryItems.find(i => i.item === itemName);
+    const previousQty = existing ? existing.qty : 0;
+
+    if (existing) {
+        existing.qty += qty;
+    } else {
+        inventoryItems.push({
+            item: item.item,
+            volume: item.volume,
+            qty: qty
+        });
+    }
+
+    inventoryHistory.push({
+        type: "item",
+        itemName: itemName,
+        qtyAdded: qty,
+        previousQty: previousQty
+    });
+
+    currentItemVolume = item.volume * qty;
+    totalVolume = inventoryItems.reduce((sum, i) => sum + (i.volume * i.qty), 0);
+
+    updateInventoryDisplay(`${qty} X ${item.item.toUpperCase()}`);
+    triggerInventoryPulse("qty", "blue");
+    triggerInventoryPulse("total", "blue");
+    triggerHaptic("light");
+
+    if (qtyInput) qtyInput.value = 1;
+    updateUndoButtonState();
+}
+    
+function updateLastItemQty(newQty) {
+    if (!lastAddedItemName) return;
+
+    let item = inventoryItems.find(i => i.item === lastAddedItemName);
+    if (!item) return;
+
+    let qty = parseInt(newQty, 10);
+    if (isNaN(qty) || qty < 1) qty = 1;
+
+    const previousQty = item.qty;
+    if (previousQty === qty) return;
+
+    item.qty = qty;
+
+    inventoryHistory.push({
+        type: "qty-edit",
+        itemName: item.item,
+        previousQty: previousQty,
+        newQty: qty
+    });
+
+    currentItemVolume = item.volume * qty;
+    totalVolume = inventoryItems.reduce((sum, i) => sum + (i.volume * i.qty), 0);
+
+    updateInventoryDisplay(`${qty} X ${item.item.toUpperCase()}`);
+    triggerInventoryPulse("qty", "blue");
+    triggerInventoryPulse("total", "blue");
+}
+        function triggerInventoryPulse(target = "total", type = "blue") {
+    let el = null;
+
+    if (target === "qty") {
+        el = document.getElementById("inv-qty");
+    } else if (target === "total") {
+        el = document.getElementById("inv-total-volume");
+    } else if (target === "undo") {
+        el = document.getElementById("undo-btn");
+    }
+
+    if (!el) return;
+
+    el.classList.remove("pulse-blue", "pulse-red");
+    void el.offsetWidth;
+    el.classList.add(type === "red" ? "pulse-red" : "pulse-blue");
+}
+
+function triggerHaptic(type = "light") {
+    if (!("vibrate" in navigator)) return;
+
+    if (type === "light") {
+        navigator.vibrate(20);
+    } else if (type === "medium") {
+        navigator.vibrate(35);
+    } else if (type === "error") {
+        navigator.vibrate([30, 20, 30]);
+    }
+}
+
+function updateUndoButtonState() {
+    const undoBtn = document.getElementById("undo-btn");
+    if (!undoBtn) return;
+
+    if (inventoryHistory.length > 0) {
+        undoBtn.disabled = false;
+        undoBtn.classList.remove("opacity-50", "pointer-events-none");
+    } else {
+        undoBtn.disabled = true;
+        undoBtn.classList.add("opacity-50", "pointer-events-none");
+    }
+}
+
+function undoLastInventoryAction() {
+    if (inventoryHistory.length === 0) return;
+
+    const action = inventoryHistory.pop();
+
+    if (action.type === "item") {
+        const item = inventoryItems.find(i => i.item === action.itemName);
+
+        if (item) {
+            item.qty = action.previousQty;
+
+            if (item.qty <= 0) {
+                inventoryItems = inventoryItems.filter(i => i.item !== action.itemName);
             }
-        });
-
-        jobs.unshift(newJob);
-
-        saveToDevice();
-        renderDashboard();
-
-        document.getElementById('m-name').value = "";
-        document.getElementById('m-ref').value = "";
-
-        toggleManualArea();
-    }
-
-    function exitToDashboard() {
-        document.getElementById('view-editor').classList.add('hidden');
-        document.getElementById('view-dashboard').classList.remove('hidden');
-        renderDashboard();
-    }
-
-    function calculateMoveCost() {
-        let crew = parseFloat(document.getElementById("crew-cost").value) || 0;
-        let vehicle = parseFloat(document.getElementById("vehicle-cost").value) || 0;
-        let other = parseFloat(document.getElementById("other-costs").value) || 0;
-
-        let total = crew + vehicle + other;
-
-        document.getElementById("total-cost").value = total;
-    }
-
-    function getInventoryQtyValue() {
-        const qtyInput = document.getElementById("inv-qty");
-        const rawValue = qtyInput ? qtyInput.value : "1";
-        const qty = parseInt(rawValue, 10);
-        return (isNaN(qty) || qty < 1) ? 1 : qty;
-    }
-
-    function recalculateInventoryTotals() {
-        const itemVolumeTotal = inventoryItems.reduce((sum, i) => sum + (i.volume * i.qty), 0);
-        totalVolume = itemVolumeTotal + extraVolumeTotal;
-    }
-
-    function ensureLastAddedItemStillExists() {
-        if (lastAddedItemName && inventoryItems.some(i => i.item === lastAddedItemName)) return;
-        lastAddedItemName = inventoryItems.length ? inventoryItems[inventoryItems.length - 1].item : null;
-    }
-
-    function syncQtyInputToLastItem() {
-        const qtyInput = document.getElementById("inv-qty");
-        if (!qtyInput) return;
-
-        const lastItem = lastAddedItemName
-            ? inventoryItems.find(i => i.item === lastAddedItemName)
-            : null;
-
-        qtyInput.value = lastItem ? lastItem.qty : 1;
-    }
-
-    function addVolume(amount) {
-        const qty = getInventoryQtyValue();
-        const addedVolume = amount * qty;
-
-        inventoryHistory.push({
-            type: "volume",
-            addedVolume: addedVolume,
-            unitVolume: amount,
-            qtyAdded: qty
-        });
-
-        extraVolumeTotal += addedVolume;
-        currentItemVolume = addedVolume;
-        recalculateInventoryTotals();
-
-        updateInventoryDisplay(`+ ${qty} X ${amount} CUFT`);
-        syncQtyInputToLastItem();
-        triggerInventoryPulse("qty", "blue");
-        triggerInventoryPulse("total", "blue");
-        triggerHaptic("light");
-        updateUndoButtonState();
-    }
-
-    function addInventoryItem(itemName) {
-        const item = furnitureDB.find(i => i.item === itemName);
-        if (!item) return;
-
-        const qty = getInventoryQtyValue();
-        lastAddedItemName = itemName;
-
-        let existing = inventoryItems.find(i => i.item === itemName);
-        const previousQty = existing ? existing.qty : 0;
-
-        if (existing) {
-            existing.qty += qty;
-        } else {
-            existing = {
-                item: item.item,
-                volume: item.volume,
-                qty: qty
-            };
-            inventoryItems.push(existing);
         }
 
-        inventoryHistory.push({
-            type: "item",
-            itemName: itemName,
-            qtyAdded: qty,
-            previousQty: previousQty
-        });
+        totalVolume = inventoryItems.reduce((sum, i) => sum + (i.volume * i.qty), 0);
+        currentItemVolume = 0;
 
-        currentItemVolume = existing.volume * existing.qty;
-        recalculateInventoryTotals();
-
-        updateInventoryDisplay(`${existing.qty} X ${item.item.toUpperCase()}`);
-        syncQtyInputToLastItem();
-        triggerInventoryPulse("qty", "blue");
-        triggerInventoryPulse("total", "blue");
-        triggerHaptic("light");
-        updateUndoButtonState();
+        updateInventoryDisplay(`UNDO ${action.qtyAdded} X ${action.itemName.toUpperCase()}`);
     }
 
-    function updateLastItemQty(newQty) {
-        if (!lastAddedItemName) return;
+    else if (action.type === "volume") {
+        totalVolume = Math.max(0, totalVolume - action.addedVolume);
+        currentItemVolume = 0;
 
-        const item = inventoryItems.find(i => i.item === lastAddedItemName);
-        if (!item) return;
-
-        if (newQty === "") return;
-
-        const qty = parseInt(newQty, 10);
-        if (isNaN(qty) || qty < 1) return;
-
-        const previousQty = item.qty;
-        if (previousQty === qty) return;
-
-        item.qty = qty;
-
-        inventoryHistory.push({
-            type: "qty-edit",
-            itemName: item.item,
-            previousQty: previousQty,
-            newQty: qty
-        });
-
-        currentItemVolume = item.volume * item.qty;
-        recalculateInventoryTotals();
-
-        updateInventoryDisplay(`${item.qty} X ${item.item.toUpperCase()}`);
-        triggerInventoryPulse("qty", "blue");
-        triggerInventoryPulse("total", "blue");
+        updateInventoryDisplay(`UNDO ${action.qtyAdded} X ${action.unitVolume} CUFT`);
     }
 
-    function triggerInventoryPulse(target = "total", type = "blue") {
-        let el = null;
+    else if (action.type === "qty-edit") {
+        const item = inventoryItems.find(i => i.item === action.itemName);
 
-        if (target === "qty") {
-            el = document.getElementById("inv-qty");
-        } else if (target === "total") {
-            el = document.getElementById("inv-total-volume");
-        } else if (target === "undo") {
-            el = document.getElementById("undo-btn");
+        if (item) {
+            item.qty = action.previousQty;
+            currentItemVolume = item.volume * item.qty;
         }
 
-        if (!el) return;
+        totalVolume = inventoryItems.reduce((sum, i) => sum + (i.volume * i.qty), 0);
 
-        el.classList.remove("pulse-blue", "pulse-red");
-        void el.offsetWidth;
-        el.classList.add(type === "red" ? "pulse-red" : "pulse-blue");
+        updateInventoryDisplay(`UNDO QTY ${action.itemName.toUpperCase()}`);
     }
 
-    function triggerHaptic(type = "light") {
-        if (!("vibrate" in navigator)) return;
+    triggerInventoryPulse("undo", "red");
+    triggerInventoryPulse("total", "red");
+    triggerHaptic("error");
 
-        if (type === "light") {
-            navigator.vibrate(20);
-        } else if (type === "medium") {
-            navigator.vibrate(35);
-        } else if (type === "error") {
-            navigator.vibrate([30, 20, 30]);
-        }
+    updateUndoButtonState();
+}
+function updateInventoryDisplay(logText = "No items added") {
+    let log = document.querySelector(".log-bar");
+    let volValue = document.querySelector(".vol-box span:last-child");
+    let totalVolBox = document.getElementById("inv-total-volume");
+
+    if (log) {
+        log.innerText = logText;
     }
 
-    function updateUndoButtonState() {
-        const undoBtn = document.getElementById("undo-btn");
-        if (!undoBtn) return;
-
-        if (inventoryHistory.length > 0) {
-            undoBtn.disabled = false;
-            undoBtn.classList.remove("opacity-50", "pointer-events-none");
-        } else {
-            undoBtn.disabled = true;
-            undoBtn.classList.add("opacity-50", "pointer-events-none");
-        }
+    if (volValue) {
+        volValue.innerText = currentItemVolume;
     }
 
-    function undoLastInventoryAction() {
-        if (inventoryHistory.length === 0) return;
-
-        const action = inventoryHistory.pop();
-
-        if (action.type === "item") {
-            const item = inventoryItems.find(i => i.item === action.itemName);
-
-            if (item) {
-                item.qty = action.previousQty;
-
-                if (item.qty <= 0) {
-                    inventoryItems = inventoryItems.filter(i => i.item !== action.itemName);
-                }
-            }
-
-            updateInventoryDisplay(`UNDO ${action.qtyAdded} X ${action.itemName.toUpperCase()}`);
-        }
-
-        else if (action.type === "volume") {
-            extraVolumeTotal = Math.max(0, extraVolumeTotal - action.addedVolume);
-            updateInventoryDisplay(`UNDO ${action.qtyAdded} X ${action.unitVolume} CUFT`);
-        }
-
-        else if (action.type === "qty-edit") {
-            const item = inventoryItems.find(i => i.item === action.itemName);
-
-            if (item) {
-                item.qty = action.previousQty;
-
-                if (item.qty <= 0) {
-                    inventoryItems = inventoryItems.filter(i => i.item !== action.itemName);
-                }
-            }
-
-            updateInventoryDisplay(`UNDO QTY ${action.itemName.toUpperCase()}`);
-        }
-
-        ensureLastAddedItemStillExists();
-        recalculateInventoryTotals();
-
-        const lastItem = lastAddedItemName
-            ? inventoryItems.find(i => i.item === lastAddedItemName)
-            : null;
-
-        currentItemVolume = lastItem ? (lastItem.volume * lastItem.qty) : 0;
-
-        syncQtyInputToLastItem();
-        triggerInventoryPulse("undo", "red");
-        triggerInventoryPulse("total", "red");
-        triggerHaptic("error");
-
-        updateUndoButtonState();
+    if (totalVolBox) {
+        totalVolBox.innerText = totalVolume;
     }
-
-    function updateInventoryDisplay(logText = "No items added") {
-        const log = document.querySelector(".log-bar");
-        const volValue = document.querySelector(".vol-box span:last-child");
-        const totalVolBox = document.getElementById("inv-total-volume");
-
-        if (log) {
-            log.innerText = logText;
-        }
-
-        if (volValue) {
-            volValue.innerText = currentItemVolume;
-        }
-
-        if (totalVolBox) {
-            totalVolBox.innerText = totalVolume;
-        }
-
-        syncQtyInputToLastItem();
-    }
-
-    window.onload = renderDashboard;
-</script>
+}
+        window.onload = renderDashboard;
+    </script>
 </body>
 
 </html>
