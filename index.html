@@ -661,18 +661,19 @@ const inventoryCategories = {
         sequences: [],
 
         inventory: {
-            activeSequenceId: null,
-            activeFloor: "Ground",
-            activeRoomName: "",
-            activeCategory: "Full List",
-            items: [],
-            exclusions: [],
-            voiceNotes: [],
-            totals: {
-                currentItemVolume: 0,
-                totalVolume: 0
-            }
-        },
+    activeSequenceId: null,
+    activeFloor: "Ground",
+    activeRoomName: "Hallway",
+    customRooms: [],
+    activeCategory: "Full List",
+    items: [],
+    exclusions: [],
+    voiceNotes: [],
+    totals: {
+        currentItemVolume: 0,
+        totalVolume: 0
+    }
+},
 
         planner: {
             moveDate: "",
@@ -833,8 +834,9 @@ lastAddedItemName = null;
 inventoryItems = [];
 inventoryHistory = [];
             
-    renderAddressUI();
+renderAddressUI();
 renderInventorySequenceDropdown();
+renderInventoryRoomDropdown();
 renderInventoryButtons();
 updateInventoryDisplay();
 updateUndoButtonState();
@@ -933,6 +935,75 @@ function renderInventorySequenceDropdown() {
         return `<option value="${s.id}" ${s.id == activeSeqId ? 'selected' : ''}>${label}</option>`;
     }).join('');
 
+}
+        function getRoomOptions() {
+    if (!currentJob) return DEFAULT_ROOMS;
+
+    if (!currentJob.inventory) currentJob.inventory = {};
+    if (!Array.isArray(currentJob.inventory.customRooms)) {
+        currentJob.inventory.customRooms = [];
+    }
+
+    return [...DEFAULT_ROOMS, ...currentJob.inventory.customRooms];
+}
+
+function renderInventoryRoomDropdown() {
+    const dropdown = document.getElementById('inv-room-select');
+    if (!dropdown || !currentJob) return;
+
+    if (!currentJob.inventory) currentJob.inventory = {};
+    if (!Array.isArray(currentJob.inventory.customRooms)) {
+        currentJob.inventory.customRooms = [];
+    }
+
+    const currentRoom = currentJob.inventory.activeRoomName || "Hallway";
+    const roomOptions = getRoomOptions();
+
+    dropdown.innerHTML = roomOptions.map(room => {
+        return `<option value="${room}" ${room === currentRoom ? 'selected' : ''}>${room}</option>`;
+    }).join('') + `<option value="__add_custom_room__">+ Add Custom Room</option>`;
+
+    dropdown.value = roomOptions.includes(currentRoom) ? currentRoom : "Hallway";
+}
+
+function handleRoomChange(value) {
+    if (!currentJob) return;
+
+    if (!currentJob.inventory) currentJob.inventory = {};
+    if (!Array.isArray(currentJob.inventory.customRooms)) {
+        currentJob.inventory.customRooms = [];
+    }
+
+    if (value === "__add_custom_room__") {
+        const customRoom = prompt("Enter custom room name:");
+
+        if (!customRoom) {
+            renderInventoryRoomDropdown();
+            return;
+        }
+
+        const cleanRoom = customRoom.trim();
+        if (!cleanRoom) {
+            renderInventoryRoomDropdown();
+            return;
+        }
+
+        const alreadyExists = getRoomOptions().some(
+            room => room.toLowerCase() === cleanRoom.toLowerCase()
+        );
+
+        if (!alreadyExists) {
+            currentJob.inventory.customRooms.push(cleanRoom);
+        }
+
+        currentJob.inventory.activeRoomName = cleanRoom;
+        renderInventoryRoomDropdown();
+        saveToDevice();
+        return;
+    }
+
+    currentJob.inventory.activeRoomName = value;
+    saveToDevice();
 }
        function renderInventoryButtons() {
     const grid = document.getElementById('inventory-button-grid');
@@ -1130,8 +1201,9 @@ function updatePropData(f, v) {
 
     if (t === 'sequence') renderSequenceUI();
     if (t === 'address') renderAddressUI();
-   if (t === 'inventory') {
+ if (t === 'inventory') {
     renderInventorySequenceDropdown();
+    renderInventoryRoomDropdown();
     renderInventoryButtons();
     updateInventoryDisplay();
     updateUndoButtonState();
