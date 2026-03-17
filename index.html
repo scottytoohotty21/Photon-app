@@ -322,29 +322,33 @@ Enter as: Surname, First Name
         <label class="mini-label">Seq</label>
         <select id="inv-seq-select" class="inv-header-select inv-top-field"></select>
     </div>
-   <div class="col-span-3">
-    <label class="mini-label">Floor</label>
-    <select id="inv-floor-select" onchange="handleFloorChange(this.value)" class="inv-header-select inv-top-field"></select>
-</div>
-   <div class="col-span-3">
-    <label class="mini-label">Room</label>
-    <select id="inv-room-select" onchange="handleRoomChange(this.value)" class="inv-header-select inv-top-field"></select>
-</div>
-    <div class="col-span-1">
-        <label class="mini-label">Qty</label>
-  <input
-    type="text"
-    id="inv-qty"
-    class="inv-header-select inv-top-field text-center"
-    value="1"
-    inputmode="numeric"
-    pattern="[0-9]*"
-    onclick="this.select()"
-    onfocus="this.select()"
-    oninput="updateLastItemQty(this.value)"
->
+    <div class="col-span-3">
+        <label class="mini-label">Delivery To</label>
+        <select id="inv-delivery-select" onchange="handleInventoryDeliveryChange(this.value)" class="inv-header-select inv-top-field"></select>
     </div>
     <div class="col-span-2">
+        <label class="mini-label">Floor</label>
+        <select id="inv-floor-select" onchange="handleFloorChange(this.value)" class="inv-header-select inv-top-field"></select>
+    </div>
+    <div class="col-span-2">
+        <label class="mini-label">Room</label>
+        <select id="inv-room-select" onchange="handleRoomChange(this.value)" class="inv-header-select inv-top-field"></select>
+    </div>
+    <div class="col-span-1">
+        <label class="mini-label">Qty</label>
+        <input
+            type="text"
+            id="inv-qty"
+            class="inv-header-select inv-top-field text-center"
+            value="1"
+            inputmode="numeric"
+            pattern="[0-9]*"
+            onclick="this.select()"
+            onfocus="this.select()"
+            oninput="updateLastItemQty(this.value)"
+        >
+    </div>
+    <div class="col-span-1">
         <label class="mini-label">Total Vol</label>
         <div id="inv-total-volume" class="total-vol-box inv-top-field text-lg font-black">0</div>
     </div>
@@ -670,6 +674,7 @@ const inventoryCategories = {
 
  inventory: {
     activeSequenceId: null,
+    activeDeliveryId: null,
     activeFloor: "Ground",
     activeRoomName: "Hallway",
     customRooms: [],
@@ -845,6 +850,7 @@ inventoryHistory = [];
             
 renderAddressUI();
 renderInventorySequenceDropdown();
+renderInventoryDeliveryDropdown();
 renderInventoryRoomDropdown();
 renderInventoryFloorDropdown();
 renderInventoryButtons();
@@ -945,6 +951,69 @@ function renderInventorySequenceDropdown() {
         return `<option value="${s.id}" ${s.id == activeSeqId ? 'selected' : ''}>${label}</option>`;
     }).join('');
 
+}
+       function getActiveInventorySequence() {
+    if (!currentJob || !Array.isArray(currentJob.sequences)) return null;
+
+    return currentJob.sequences.find(function(seq) {
+        return String(seq.id) === String(activeSeqId);
+    }) || null;
+}
+
+function getInventoryDeliveryOptions() {
+    const seq = getActiveInventorySequence();
+    if (!seq || !Array.isArray(seq.deliveries)) return [];
+
+    return seq.deliveries.map(function(deliveryId) {
+        const prop = currentJob.properties.find(function(p) {
+            return String(p.id) === String(deliveryId);
+        });
+
+        return {
+            id: deliveryId,
+            label: prop ? prop.label : 'Unknown Address'
+        };
+    });
+}
+
+function renderInventoryDeliveryDropdown() {
+    const dropdown = document.getElementById('inv-delivery-select');
+    if (!dropdown || !currentJob) return;
+
+    if (!currentJob.inventory) currentJob.inventory = {};
+
+    const deliveryOptions = getInventoryDeliveryOptions();
+
+    if (deliveryOptions.length === 0) {
+        dropdown.innerHTML = `<option value="">No Delivery</option>`;
+        currentJob.inventory.activeDeliveryId = null;
+        return;
+    }
+
+    let selectedDeliveryId = currentJob.inventory.activeDeliveryId;
+
+    const selectedStillExists = deliveryOptions.some(function(option) {
+        return String(option.id) === String(selectedDeliveryId);
+    });
+
+    if (!selectedDeliveryId || !selectedStillExists) {
+        selectedDeliveryId = deliveryOptions[0].id;
+        currentJob.inventory.activeDeliveryId = selectedDeliveryId;
+    }
+
+    dropdown.innerHTML = deliveryOptions.map(function(option, idx) {
+        const selected = String(option.id) === String(selectedDeliveryId) ? 'selected' : '';
+        const label = (idx + 1) + '. ' + option.label;
+        return '<option value="' + option.id + '" ' + selected + '>' + label + '</option>';
+    }).join('');
+}
+
+function handleInventoryDeliveryChange(value) {
+    if (!currentJob) return;
+    if (!currentJob.inventory) currentJob.inventory = {};
+
+    currentJob.inventory.activeDeliveryId = value;
+    saveToDevice();
 }
         function getRoomOptions() {
     if (!currentJob) return DEFAULT_ROOMS;
@@ -1238,6 +1307,7 @@ function setInventoryCategory(category, btn) {
             activeSeqId = id;
 renderSequenceUI();
 renderInventorySequenceDropdown();
+renderInventoryDeliveryDropdown();
 saveToDevice();
         }
         function copySequence() {
@@ -1248,6 +1318,7 @@ saveToDevice();
 activeSeqId = copy.id;
 renderSequenceUI();
 renderInventorySequenceDropdown();
+renderInventoryDeliveryDropdown();
 saveToDevice();
         }
         function deleteSequence() {
@@ -1256,6 +1327,7 @@ saveToDevice();
            activeSeqId = currentJob.sequences[0].id;
 renderSequenceUI();
 renderInventorySequenceDropdown();
+renderInventoryDeliveryDropdown();
 saveToDevice();
         }
     function addProperty() {
@@ -1321,7 +1393,12 @@ function updatePropData(f, v) {
     }
 }
         function loadProperty(id) { activePropId = parseInt(id); renderAddressUI(); }
-        function loadSequence(id) { activeSeqId = id; renderSequenceUI(); }
+     function loadSequence(id) {
+    activeSeqId = id;
+    renderSequenceUI();
+    renderInventorySequenceDropdown();
+    renderInventoryDeliveryDropdown();
+}
         function triggerPulse(id) { const el = document.getElementById(id); if(el) { el.classList.remove('pulse-new'); void el.offsetWidth; el.classList.add('pulse-new'); } }
         
   function switchTab(t) {
@@ -1334,6 +1411,7 @@ function updatePropData(f, v) {
     if (t === 'address') renderAddressUI();
 if (t === 'inventory') {
     renderInventorySequenceDropdown();
+    renderInventoryDeliveryDropdown();
     renderInventoryRoomDropdown();
     renderInventoryFloorDropdown();
     renderInventoryButtons();
