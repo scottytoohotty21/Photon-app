@@ -322,12 +322,10 @@ Enter as: Surname, First Name
         <label class="mini-label">Seq</label>
         <select id="inv-seq-select" class="inv-header-select inv-top-field"></select>
     </div>
-    <div class="col-span-3">
-        <label class="mini-label">Floor</label>
-        <select class="inv-header-select inv-top-field">
-            <option>Ground</option>
-        </select>
-    </div>
+   <div class="col-span-3">
+    <label class="mini-label">Floor</label>
+    <select id="inv-floor-select" onchange="handleFloorChange(this.value)" class="inv-header-select inv-top-field"></select>
+</div>
    <div class="col-span-3">
     <label class="mini-label">Room</label>
     <select id="inv-room-select" onchange="handleRoomChange(this.value)" class="inv-header-select inv-top-field"></select>
@@ -499,7 +497,17 @@ Calculate Cost
     "Loft",
     "Garden"
 ];
-
+const DEFAULT_FLOORS = [
+    "Basement",
+    "Lower Ground",
+    "Ground",
+    "First",
+    "Second",
+    "Third",
+    "Loft",
+    "Outside"
+];
+        
 const furnitureDB = [
     {item:"AC Unit", volume:10},
     {item:"Armchair", volume:20},
@@ -660,11 +668,12 @@ const inventoryCategories = {
         addresses: defaultProperties,
         sequences: [],
 
-        inventory: {
+ inventory: {
     activeSequenceId: null,
     activeFloor: "Ground",
     activeRoomName: "Hallway",
     customRooms: [],
+    customFloors: [],
     activeCategory: "Full List",
     items: [],
     exclusions: [],
@@ -837,6 +846,7 @@ inventoryHistory = [];
 renderAddressUI();
 renderInventorySequenceDropdown();
 renderInventoryRoomDropdown();
+renderInventoryFloorDropdown();
 renderInventoryButtons();
 updateInventoryDisplay();
 updateUndoButtonState();
@@ -1003,6 +1013,127 @@ function handleRoomChange(value) {
     }
 
     currentJob.inventory.activeRoomName = value;
+    saveToDevice();
+}
+        function getFloorOptions() {
+    if (!currentJob) return DEFAULT_FLOORS;
+
+    if (!currentJob.inventory) currentJob.inventory = {};
+    if (!Array.isArray(currentJob.inventory.customFloors)) {
+        currentJob.inventory.customFloors = [];
+    }
+
+    return [...DEFAULT_FLOORS, ...currentJob.inventory.customFloors];
+}
+
+function renderInventoryFloorDropdown() {
+    const dropdown = document.getElementById('inv-floor-select');
+    if (!dropdown || !currentJob) return;
+
+    if (!currentJob.inventory) currentJob.inventory = {};
+    if (!Array.isArray(currentJob.inventory.customFloors)) {
+        currentJob.inventory.customFloors = [];
+    }
+
+    const currentFloor = currentJob.inventory.activeFloor || "Ground";
+    const floorOptions = getFloorOptions();
+
+    dropdown.innerHTML =
+        floorOptions.map(floor => {
+            return `<option value="${floor}" ${floor === currentFloor ? 'selected' : ''}>${floor}</option>`;
+        }).join('') +
+        `<option value="__add_numbered_floor__">+ Add Numbered Floor</option>` +
+        `<option value="__add_custom_floor__">+ Add Custom Floor</option>`;
+
+    dropdown.value = floorOptions.includes(currentFloor) ? currentFloor : "Ground";
+}
+
+function formatNumberedFloorLabel(value) {
+    const num = parseInt(value, 10);
+    if (isNaN(num) || num < 0) return null;
+
+    if (num === 0) return "Ground";
+
+    if (num === 1) return "First";
+    if (num === 2) return "Second";
+    if (num === 3) return "Third";
+
+    const lastTwo = num % 100;
+    const lastOne = num % 10;
+
+    let suffix = "th";
+    if (lastTwo < 11 || lastTwo > 13) {
+        if (lastOne === 1) suffix = "st";
+        else if (lastOne === 2) suffix = "nd";
+        else if (lastOne === 3) suffix = "rd";
+    }
+
+    return `${num}${suffix} Floor`;
+}
+
+function handleFloorChange(value) {
+    if (!currentJob) return;
+
+    if (!currentJob.inventory) currentJob.inventory = {};
+    if (!Array.isArray(currentJob.inventory.customFloors)) {
+        currentJob.inventory.customFloors = [];
+    }
+
+    if (value === "__add_numbered_floor__") {
+        const enteredNumber = prompt("Enter floor number:");
+        if (enteredNumber === null) {
+            renderInventoryFloorDropdown();
+            return;
+        }
+
+        const floorLabel = formatNumberedFloorLabel(enteredNumber.trim());
+        if (!floorLabel) {
+            renderInventoryFloorDropdown();
+            return;
+        }
+
+        const alreadyExists = getFloorOptions().some(
+            floor => floor.toLowerCase() === floorLabel.toLowerCase()
+        );
+
+        if (!alreadyExists) {
+            currentJob.inventory.customFloors.push(floorLabel);
+        }
+
+        currentJob.inventory.activeFloor = floorLabel;
+        renderInventoryFloorDropdown();
+        saveToDevice();
+        return;
+    }
+
+    if (value === "__add_custom_floor__") {
+        const customFloor = prompt("Enter custom floor name:");
+        if (!customFloor) {
+            renderInventoryFloorDropdown();
+            return;
+        }
+
+        const cleanFloor = customFloor.trim();
+        if (!cleanFloor) {
+            renderInventoryFloorDropdown();
+            return;
+        }
+
+        const alreadyExists = getFloorOptions().some(
+            floor => floor.toLowerCase() === cleanFloor.toLowerCase()
+        );
+
+        if (!alreadyExists) {
+            currentJob.inventory.customFloors.push(cleanFloor);
+        }
+
+        currentJob.inventory.activeFloor = cleanFloor;
+        renderInventoryFloorDropdown();
+        saveToDevice();
+        return;
+    }
+
+    currentJob.inventory.activeFloor = value;
     saveToDevice();
 }
        function renderInventoryButtons() {
@@ -1201,9 +1332,10 @@ function updatePropData(f, v) {
 
     if (t === 'sequence') renderSequenceUI();
     if (t === 'address') renderAddressUI();
- if (t === 'inventory') {
+if (t === 'inventory') {
     renderInventorySequenceDropdown();
     renderInventoryRoomDropdown();
+    renderInventoryFloorDropdown();
     renderInventoryButtons();
     updateInventoryDisplay();
     updateUndoButtonState();
