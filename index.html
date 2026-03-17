@@ -328,12 +328,10 @@ Enter as: Surname, First Name
             <option>Ground</option>
         </select>
     </div>
-    <div class="col-span-3">
-        <label class="mini-label">Room</label>
-        <select class="inv-header-select inv-top-field">
-            <option>Hallway</option>
-        </select>
-    </div>
+   <div class="col-span-3">
+    <label class="mini-label">Room</label>
+    <select id="inv-room-select" onchange="handleRoomChange(this.value)" class="inv-header-select inv-top-field"></select>
+</div>
     <div class="col-span-1">
         <label class="mini-label">Qty</label>
   <input
@@ -487,6 +485,20 @@ Calculate Cost
         const MOVE_TYPES = ["Dom-local", "Dom-Distance", "Dom-To Store", "Dom-Ex Store", "Dom-Direct/Store", "GPG", "LCL", "FCL"];
         const PACK_OPTIONS = ["Owner Pack", "Fragile (china & Glassware) pack", "Full Packing", "Full Export Pack and Wrap", "Fragile & Kitchenware Pack"];
         const SALUTATIONS = ["Mr", "Miss", "Mrs", "Ms", "Other"];
+        const DEFAULT_ROOMS = [
+    "Hallway",
+    "Lounge",
+    "Dining Room",
+    "Kitchen",
+    "Main Bedroom",
+    "Bedroom 2",
+    "Bedroom 3",
+    "Bathroom",
+    "Utility",
+    "Garage",
+    "Loft",
+    "Garden"
+];
 
 const furnitureDB = [
     {item:"AC Unit", volume:10},
