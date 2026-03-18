@@ -1470,9 +1470,22 @@ function updatePropData(f, v) {
         function loadProperty(id) { activePropId = parseInt(id); renderAddressUI(); }
      function loadSequence(id) {
     activeSeqId = id;
+
+    currentItemVolume = 0;
+    totalVolume = 0;
+    inventoryItems = [];
+    inventoryHistory = [];
+    lastAddedItemName = null;
+    lastAddedRawEntryId = null;
+
+    const qtyInput = document.getElementById("inv-qty");
+    if (qtyInput) qtyInput.value = 1;
+
     renderSequenceUI();
     renderInventorySequenceDropdown();
     renderInventoryDeliveryDropdown();
+    updateInventoryDisplay("No items added");
+    updateUndoButtonState();
 }
         function triggerPulse(id) { const el = document.getElementById(id); if(el) { el.classList.remove('pulse-new'); void el.offsetWidth; el.classList.add('pulse-new'); } }
         
