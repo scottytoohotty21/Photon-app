@@ -337,7 +337,6 @@ Enter as: Surname, First Name
     <div class="col-span-1">
         <label class="mini-label">Qty</label>
        <input
-    <input
     type="text"
     id="inv-qty"
     class="inv-header-select inv-top-field text-center"
@@ -348,7 +347,6 @@ Enter as: Surname, First Name
     onfocus="this.select()"
     oninput="updateLastItemQty(this.value)"
 >
-        >
     </div>
     <div class="col-span-1">
         <label class="mini-label">Total Vol</label>
@@ -1710,6 +1708,10 @@ function updateLastItemQty(newQty) {
         const qtyInput = document.getElementById("inv-qty");
         if (qtyInput) qtyInput.value = 1;
     }, 550);
+
+    updateUndoButtonState();
+}
+
 function openVolumeOverride() {
     if (!lastAddedItemName) return;
 
@@ -1750,9 +1752,7 @@ function openVolumeOverride() {
     updateUndoButtonState();
 }
 
-    updateUndoButtonState();
-}
-       function triggerInventoryPulse(target = "total", type = "blue") {
+function triggerInventoryPulse(target = "total", type = "blue") {
     let el = null;
 
     if (target === "qty") {
@@ -1771,8 +1771,6 @@ function openVolumeOverride() {
     void el.offsetWidth;
     el.classList.add(type === "red" ? "pulse-red" : "pulse-blue");
 }
-}
-
 function triggerHaptic(type = "light") {
     if (!("vibrate" in navigator)) return;
 
