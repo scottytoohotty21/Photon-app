@@ -337,6 +337,7 @@ Enter as: Surname, First Name
     <div class="col-span-1">
         <label class="mini-label">Qty</label>
        <input
+    <input
     type="text"
     id="inv-qty"
     class="inv-header-select inv-top-field text-center"
@@ -345,7 +346,7 @@ Enter as: Surname, First Name
     pattern="[0-9]*"
     onclick="this.select()"
     onfocus="this.select()"
-    onchange="updateLastItemQty(this.value)"
+    oninput="updateLastItemQty(this.value)"
 >
         >
     </div>
@@ -764,13 +765,14 @@ const inventoryCategories = {
     })
 ];
         
-     let currentJob = null; let activePropId = null; let activeSeqId = null;
+let currentJob = null; let activePropId = null; let activeSeqId = null;
 let inventoryItems = [];
 let currentItemVolume = 0;
 let totalVolume = 0;
 let currentInventoryCategory = "Full List";
 let lastAddedItemName = null;
 let inventoryHistory = [];
+let qtyResetTimer = null;
 
         function saveToDevice() {
             localStorage.setItem('photon_jobs', JSON.stringify(jobs));
@@ -1668,14 +1670,10 @@ function updateLastItemQty(newQty) {
     if (!item) return;
 
     let qty = parseInt(newQty, 10);
-    if (isNaN(qty) || qty < 1) qty = 1;
+    if (isNaN(qty) || qty < 1) return;
 
     const previousQty = item.qty;
-    if (previousQty === qty) {
-        const qtyInput = document.getElementById("inv-qty");
-        if (qtyInput) qtyInput.value = 1;
-        return;
-    }
+    if (previousQty === qty) return;
 
     item.qty = qty;
 
@@ -1697,8 +1695,14 @@ function updateLastItemQty(newQty) {
     triggerInventoryPulse("total", "blue");
     triggerHaptic("light");
 
-    const qtyInput = document.getElementById("inv-qty");
-    if (qtyInput) qtyInput.value = 1;
+    if (qtyResetTimer) {
+        clearTimeout(qtyResetTimer);
+    }
+
+    qtyResetTimer = setTimeout(function() {
+        const qtyInput = document.getElementById("inv-qty");
+        if (qtyInput) qtyInput.value = 1;
+    }, 550);
 
     updateUndoButtonState();
 }
