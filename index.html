@@ -1581,7 +1581,7 @@ let total = crew + vehicle + other;
 document.getElementById("total-cost").value = total;
 
 }
-ffunction addBox(boxCode) {
+function addBox(boxCode) {
     const boxVolume = BOX_VOLUMES[boxCode];
     if (!boxVolume) return;
 
@@ -1635,47 +1635,6 @@ ffunction addBox(boxCode) {
         qtyAdded: qty,
         previousQty: previousQty,
         rawEntryId: rawEntryId
-    });
-
-    currentItemVolume = boxVolume * qty;
-    totalVolume = inventoryItems.reduce(function(sum, i) {
-        return sum + (i.volume * i.qty);
-    }, 0);
-
-    updateInventoryDisplay(qty + " X " + itemName);
-    triggerInventoryPulse("qty", "blue");
-    triggerInventoryPulse("total", "blue");
-    triggerHaptic("light");
-
-    if (qtyInput) qtyInput.value = 1;
-    updateUndoButtonState();
-}
-    const itemName = itemNameMap[boxCode] || (boxCode + " BOX");
-
-    lastAddedItemName = itemName;
-
-    let existing = inventoryItems.find(function(i) {
-        return i.item === itemName;
-    });
-
-    const previousQty = existing ? existing.qty : 0;
-
-    if (existing) {
-        existing.qty += qty;
-    } else {
-        inventoryItems.push({
-            item: itemName,
-            displayName: itemName,
-            volume: boxVolume,
-            qty: qty
-        });
-    }
-
-    inventoryHistory.push({
-        type: "item",
-        itemName: itemName,
-        qtyAdded: qty,
-        previousQty: previousQty
     });
 
     currentItemVolume = boxVolume * qty;
@@ -1956,7 +1915,7 @@ function updateUndoButtonState() {
     }
 }
 
-ffunction undoLastInventoryAction() {
+function undoLastInventoryAction() {
     if (inventoryHistory.length === 0) return;
 
     const action = inventoryHistory.pop();
