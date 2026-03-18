@@ -320,7 +320,7 @@ Enter as: Surname, First Name
           <div class="grid grid-cols-12 gap-2 mb-3">
     <div class="col-span-3">
         <label class="mini-label">Seq</label>
-        <select id="inv-seq-select" class="inv-header-select inv-top-field"></select>
+       <select id="inv-seq-select" onchange="loadSequence(this.value)" class="inv-header-select inv-top-field"></select>
     </div>
     <div class="col-span-3">
         <label class="mini-label">Delivery To</label>
