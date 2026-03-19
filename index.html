@@ -370,7 +370,7 @@ Enter as: Surname, First Name
                 <button class="inv-tool-btn">Damage</button>
                 <button class="inv-tool-btn">Exclude</button>
                 <button class="inv-tool-btn">Note</button>
-                <button class="inv-tool-btn">Misc</button>
+                <button class="inv-tool-btn" onclick="addMiscItem()">Misc</button>
             </div>
 
             <div class="flex gap-2 mb-4">
@@ -1828,6 +1828,80 @@ function addInventoryItem(itemName) {
     triggerInventoryPulse("qty", "blue");
     triggerInventoryPulse("total", "blue");
     triggerHaptic("light");
+
+    if (qtyInput) qtyInput.value = 1;
+    updateUndoButtonState();
+}
+function addMiscItem() {
+    if (!currentJob) return;
+
+    const itemNameInput = prompt("Enter misc item name:");
+    if (itemNameInput === null) return;
+
+    const cleanName = itemNameInput.trim();
+    if (!cleanName) return;
+
+    const volumeInput = prompt("Enter unit volume (cuft):", "10");
+    if (volumeInput === null) return;
+
+    const unitVolume = parseFloat(volumeInput);
+    if (isNaN(unitVolume) || unitVolume <= 0) return;
+
+    const qtyInput = document.getElementById("inv-qty");
+    const qty = 1;
+
+    const miscKey = "MISC-" + cleanName.toUpperCase();
+    lastAddedItemName = miscKey;
+
+    let existing = inventoryItems.find(function(i) {
+        return i.item === miscKey;
+    });
+
+    const previousQty = existing ? existing.qty : 0;
+
+    if (existing) {
+        existing.qty += qty;
+        existing.volume = unitVolume;
+    } else {
+        inventoryItems.push({
+            item: miscKey,
+            displayName: cleanName,
+            volume: unitVolume,
+            qty: qty,
+            isMisc: true
+        });
+    }
+
+    const rawEntryId = saveRawInventoryEntry({
+        sequenceId: activeSeqId,
+        deliveryId: currentJob && currentJob.inventory ? currentJob.inventory.activeDeliveryId : "",
+        roomName: currentJob && currentJob.inventory ? currentJob.inventory.activeRoomName : "",
+        floorName: currentJob && currentJob.inventory ? currentJob.inventory.activeFloor : "",
+        itemName: cleanName,
+        qty: qty,
+        unitVolume: unitVolume,
+        totalVolume: unitVolume * qty,
+        kind: "misc"
+    });
+
+    inventoryHistory.push({
+        type: "item",
+        itemName: miscKey,
+        qtyAdded: qty,
+        previousQty: previousQty,
+        rawEntryId: rawEntryId
+    });
+
+    lastAddedRawEntryId = rawEntryId;
+    currentItemVolume = unitVolume * qty;
+    totalVolume = inventoryItems.reduce(function(sum, i) {
+        return sum + (i.volume * i.qty);
+    }, 0);
+
+    updateInventoryDisplay(qty + " X " + cleanName.toUpperCase());
+    triggerInventoryPulse("current", "blue");
+    triggerInventoryPulse("total", "blue");
+    triggerHaptic("medium");
 
     if (qtyInput) qtyInput.value = 1;
     updateUndoButtonState();
