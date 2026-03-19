@@ -149,11 +149,7 @@
 }
 
 .inv-tool-btn { background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 6px; color: #64748b; font-size: 9px; font-weight: 900; text-transform: uppercase; padding: 8px 4px; text-align: center; }
-.inv-tool-btn.active {
-    background: #3b82f6;
-    color: white;
-    border-color: #2563eb;
-}
+
         .inv-room-btn { background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 6px; color: #64748b; font-size: 8px; font-weight: 900; text-transform: uppercase; padding: 12px 2px; text-align: center; flex: 1; }
         .inv-room-btn.active { background: #3b82f6; color: white; border-color: #2563eb; }
       .item-btn {
@@ -368,14 +364,14 @@ Enter as: Surname, First Name
 </div>
 
             <div class="grid grid-cols-7 gap-1 mb-3">
-    <button id="tool-dismantle" class="inv-tool-btn" onclick="toggleItemAction('dismantle')">Dismantle</button>
-    <button id="tool-expwrap" class="inv-tool-btn" onclick="toggleItemAction('expWrap')">Exp Wrap</button>
-    <button class="inv-tool-btn">Crate Tool</button>
-    <button class="inv-tool-btn">Damage</button>
-    <button class="inv-tool-btn">Exclude</button>
-    <button class="inv-tool-btn">Note</button>
-    <button class="inv-tool-btn">Misc</button>
-</div>
+                <button class="inv-tool-btn">Dismantle</button>
+                <button class="inv-tool-btn">Exp Wrap</button>
+                <button class="inv-tool-btn">Crate Tool</button>
+                <button class="inv-tool-btn">Damage</button>
+                <button class="inv-tool-btn">Exclude</button>
+                <button class="inv-tool-btn" onclick="addInventoryNote()">Note</button>
+                <button class="inv-tool-btn" onclick="addMiscItem()">Misc</button>
+            </div>
 
             <div class="flex gap-2 mb-4">
                 <div class="flex-grow log-bar">2 X SOFA 3 SEAT [EXC]</div>
@@ -1069,9 +1065,7 @@ function buildRawInventoryEntry(entryData) {
         qty: entryData.qty || 1,
         unitVolume: entryData.unitVolume || 0,
         totalVolume: entryData.totalVolume || 0,
-        kind: entryData.kind || "item",
-        dismantle: !!entryData.dismantle,
-        expWrap: !!entryData.expWrap
+        kind: entryData.kind || "item"
     };
 }
 
@@ -1096,65 +1090,14 @@ function findRawInventoryEntry(rawEntryId) {
     }) || null;
 }
 
-function getLastRawInventoryEntry() {
-    if (!lastAddedRawEntryId) return null;
-    return findRawInventoryEntry(lastAddedRawEntryId);
-}
+function removeRawInventoryEntry(rawEntryId) {
+    if (!currentJob || !currentJob.inventory || !Array.isArray(currentJob.inventory.items)) return;
 
-function syncLiveItemFlagsFromRaw() {
-    const rawEntry = getLastRawInventoryEntry();
-    if (!rawEntry || !lastAddedItemName) return;
-
-    const liveItem = inventoryItems.find(function(i) {
-        return i.item === lastAddedItemName;
+    currentJob.inventory.items = currentJob.inventory.items.filter(function(entry) {
+        return entry.id !== rawEntryId;
     });
 
-    if (!liveItem) return;
-
-    liveItem.dismantle = !!rawEntry.dismantle;
-    liveItem.expWrap = !!rawEntry.expWrap;
-}
-
-function renderActionButtonStates() {
-    const dismantleBtn = document.getElementById("tool-dismantle");
-    const expWrapBtn = document.getElementById("tool-expwrap");
-    const rawEntry = getLastRawInventoryEntry();
-
-    if (dismantleBtn) {
-        dismantleBtn.classList.toggle("active", !!(rawEntry && rawEntry.dismantle));
-    }
-
-    if (expWrapBtn) {
-        expWrapBtn.classList.toggle("active", !!(rawEntry && rawEntry.expWrap));
-    }
-}
-
-function toggleItemAction(actionName) {
-    const rawEntry = getLastRawInventoryEntry();
-    if (!rawEntry) return;
-
-    if (actionName === "dismantle") {
-        rawEntry.dismantle = !rawEntry.dismantle;
-    }
-
-    if (actionName === "expWrap") {
-        rawEntry.expWrap = !rawEntry.expWrap;
-    }
-
     saveToDevice();
-    syncLiveItemFlagsFromRaw();
-    renderActionButtonStates();
-
-    const tags = [];
-    if (rawEntry.dismantle) tags.push("[DISMANTLE]");
-    if (rawEntry.expWrap) tags.push("[EXP WRAP]");
-
-    const label = (rawEntry.itemName || "ITEM").toUpperCase();
-    const logText = tags.length ? (label + " " + tags.join(" ")) : (label + " ACTION CLEARED");
-
-    updateInventoryDisplay(logText);
-    triggerInventoryPulse("current", "blue");
-    triggerHaptic("light");
 }
     function getRawInventoryItemsForSequence(sequenceId) {
     if (!currentJob || !currentJob.inventory || !Array.isArray(currentJob.inventory.items)) {
@@ -1176,10 +1119,9 @@ function rebuildLiveInventoryFromSequence(sequenceId) {
 
     const rawItems = getRawInventoryItemsForSequence(sequenceId);
 
-        if (!rawItems.length) {
+    if (!rawItems.length) {
         updateInventoryDisplay("No items added");
         updateUndoButtonState();
-        renderActionButtonStates();
         return;
     }
 
@@ -1205,16 +1147,8 @@ function rebuildLiveInventoryFromSequence(sequenceId) {
         totalVolume += Number(entry.totalVolume || 0);
     });
 
-       const lastRaw = rawItems[rawItems.length - 1];
-    if (lastRaw) {
-        lastAddedRawEntryId = lastRaw.id;
-        lastAddedItemName = lastRaw.itemName;
-    }
-
-    syncLiveItemFlagsFromRaw();
     updateInventoryDisplay("Sequence restored");
     updateUndoButtonState();
-    renderActionButtonStates();
 }
         function getRoomOptions() {
     if (!currentJob) return DEFAULT_ROOMS;
@@ -1783,8 +1717,7 @@ function addBox(boxCode) {
     triggerInventoryPulse("total", "blue");
     triggerHaptic("light");
 
-        if (qtyInput) qtyInput.value = 1;
-    renderActionButtonStates();
+    if (qtyInput) qtyInput.value = 1;
     updateUndoButtonState();
 }
 
@@ -1836,8 +1769,7 @@ function addVolume(amount) {
     triggerInventoryPulse("total", "blue");
     triggerHaptic("light");
 
-        if (qtyInput) qtyInput.value = 1;
-    renderActionButtonStates();
+    if (qtyInput) qtyInput.value = 1;
     updateUndoButtonState();
 }
 function addInventoryItem(itemName) {
@@ -1897,8 +1829,7 @@ function addInventoryItem(itemName) {
     triggerInventoryPulse("total", "blue");
     triggerHaptic("light");
 
-        if (qtyInput) qtyInput.value = 1;
-    renderActionButtonStates();
+    if (qtyInput) qtyInput.value = 1;
     updateUndoButtonState();
 }
 function addMiscItem() {
@@ -2282,7 +2213,6 @@ function undoLastInventoryAction() {
     const qtyInput = document.getElementById("inv-qty");
     if (qtyInput) qtyInput.value = 1;
 
-    renderActionButtonStates();
     updateUndoButtonState();
 }
 function updateInventoryDisplay(logText = "No items added") {
