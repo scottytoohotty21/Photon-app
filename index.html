@@ -2100,7 +2100,10 @@ function addInventoryNote() {
         qty: 0,
         unitVolume: 0,
         totalVolume: 0,
-        kind: "note"
+        kind: "note",
+        dismantle: false,
+        expWrap: false,
+        excluded: false
     });
 
     inventoryHistory.push({
@@ -2473,40 +2476,46 @@ function renderListedInventory() {
 
     container.innerHTML = groupedSections.map(function(section) {
         const rows = section.entries.map(function(entry) {
-    if (entry.kind === "note") {
-        return `
-            <tr class="border-t border-slate-200 bg-amber-50">
-                <td class="py-2 pr-2 text-[10px] font-bold text-slate-600 uppercase">${entry.roomName || "-"}</td>
-                <td class="py-2 pr-2 text-[10px] font-bold text-slate-600 uppercase">${entry.floorName || "-"}</td>
-                <td colspan="4" class="py-2 text-[10px] font-black text-amber-700 uppercase">NOTE: ${entry.itemName || "-"}</td>
-            </tr>
-        `;
-    }
+            const isExcluded = !!entry.excluded;
+            const isNoteOnly = entry.kind === "note";
 
-    if (entry.excluded) {
-        return `
-            <tr class="border-t border-slate-200 bg-slate-50">
-                <td class="py-2 pr-2 text-[10px] font-bold text-slate-400 uppercase italic">${entry.roomName || "-"}</td>
-                <td class="py-2 pr-2 text-[10px] font-bold text-slate-400 uppercase italic">${entry.floorName || "-"}</td>
-                <td class="py-2 pr-2 text-[10px] font-black text-slate-500 uppercase italic">${entry.itemName || "-"} [EXCLUDED]</td>
-                <td class="py-2 pr-2 text-[10px] font-black text-slate-400 uppercase italic">${entry.qty || 0}</td>
-                <td class="py-2 pr-2 text-[10px] font-black text-slate-300 uppercase italic"></td>
-                <td class="py-2 text-[10px] font-black text-slate-300 uppercase italic"></td>
-            </tr>
-        `;
-    }
+            const tags = [];
 
-    return `
-        <tr class="border-t border-slate-200">
-            <td class="py-2 pr-2 text-[10px] font-bold text-slate-600 uppercase">${entry.roomName || "-"}</td>
-            <td class="py-2 pr-2 text-[10px] font-bold text-slate-600 uppercase">${entry.floorName || "-"}</td>
-            <td class="py-2 pr-2 text-[10px] font-black text-slate-900 uppercase">${entry.itemName || "-"}</td>
-            <td class="py-2 pr-2 text-[10px] font-black text-blue-600 uppercase">${entry.qty || 0}</td>
-            <td class="py-2 pr-2 text-[10px] font-black text-slate-700 uppercase">${entry.unitVolume || 0}</td>
-            <td class="py-2 text-[10px] font-black text-slate-900 uppercase">${entry.totalVolume || 0}</td>
-        </tr>
-    `;
-}).join("");
+            if (entry.dismantle) tags.push("[DISMANTLE]");
+            if (entry.expWrap) tags.push("[EXP WRAP]");
+            if (isExcluded) tags.push("[EXCLUDED]");
+            if (isNoteOnly && entry.itemName) tags.push("[NOTE: " + String(entry.itemName).toUpperCase() + "]");
+
+            const baseLabel = isNoteOnly ? "NOTE" : (entry.itemName || "-");
+            const fullLabel = `${String(baseLabel).toUpperCase()}${tags.length ? " " + tags.join(" ") : ""}`;
+
+            const rowClass = isExcluded
+                ? "border-t border-slate-200 bg-slate-50"
+                : "border-t border-slate-200";
+
+            const textClass = isExcluded
+                ? "text-slate-500 italic"
+                : "text-slate-900";
+
+            const roomClass = isExcluded
+                ? "text-slate-400 uppercase italic"
+                : "text-slate-600 uppercase";
+
+            const qtyText = isNoteOnly ? "" : (entry.qty || 0);
+            const unitVolText = (isExcluded || isNoteOnly) ? "" : (entry.unitVolume || 0);
+            const totalVolText = (isExcluded || isNoteOnly) ? "" : (entry.totalVolume || 0);
+
+            return `
+                <tr class="${rowClass}">
+                    <td class="py-2 pr-2 text-[10px] font-bold ${roomClass}">${entry.roomName || "-"}</td>
+                    <td class="py-2 pr-2 text-[10px] font-bold ${roomClass}">${entry.floorName || "-"}</td>
+                    <td class="py-2 pr-2 text-[10px] font-black uppercase ${textClass}">${fullLabel}</td>
+                    <td class="py-2 pr-2 text-[10px] font-black uppercase ${isExcluded ? 'text-slate-400 italic' : 'text-blue-600'}">${qtyText}</td>
+                    <td class="py-2 pr-2 text-[10px] font-black uppercase ${isExcluded ? 'text-slate-300 italic' : 'text-slate-700'}">${unitVolText}</td>
+                    <td class="py-2 text-[10px] font-black uppercase ${isExcluded ? 'text-slate-300 italic' : 'text-slate-900'}">${totalVolText}</td>
+                </tr>
+            `;
+        }).join("");
 
         return `
             <div class="border border-slate-200 rounded-2xl overflow-hidden">
@@ -2540,8 +2549,7 @@ function renderListedInventory() {
             </div>
         `;
     }).join("");
-} 
-        window.onload = renderDashboard;
+}        window.onload = renderDashboard;
     </script>
 </body>
 
