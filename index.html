@@ -1100,52 +1100,7 @@ function buildRawInventoryEntry(entryData) {
     };
 }
 
-function getLastRawInventoryEntry() {
-    if (!lastAddedRawEntryId) return null;
-    return findRawInventoryEntry(lastAddedRawEntryId);
-}
 
-function renderActionButtonStates() {
-    const dismantleBtn = document.getElementById("tool-dismantle");
-    const expWrapBtn = document.getElementById("tool-expwrap");
-    const rawEntry = getLastRawInventoryEntry();
-
-    if (dismantleBtn) {
-        dismantleBtn.classList.toggle("active", !!(rawEntry && rawEntry.dismantle));
-    }
-
-    if (expWrapBtn) {
-        expWrapBtn.classList.toggle("active", !!(rawEntry && rawEntry.expWrap));
-    }
-}
-
-function toggleItemAction(actionName) {
-    const rawEntry = getLastRawInventoryEntry();
-    if (!rawEntry) return;
-    if (rawEntry.kind === "note") return;
-
-    if (actionName === "dismantle") {
-        rawEntry.dismantle = !rawEntry.dismantle;
-    }
-
-    if (actionName === "expWrap") {
-        rawEntry.expWrap = !rawEntry.expWrap;
-    }
-
-    saveToDevice();
-    renderActionButtonStates();
-
-    const tags = [];
-    if (rawEntry.dismantle) tags.push("[DISMANTLE]");
-    if (rawEntry.expWrap) tags.push("[EXP WRAP]");
-
-    const label = (rawEntry.itemName || "ITEM").toUpperCase();
-    const logText = tags.length ? (label + " " + tags.join(" ")) : label;
-
-    updateInventoryDisplay(logText);
-    triggerInventoryPulse("current", "blue");
-    triggerHaptic("light");
-}
 function saveRawInventoryEntry(entryData) {
     if (!currentJob) return null;
 
