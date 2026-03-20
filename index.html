@@ -2461,9 +2461,7 @@ function groupInventoryItemsForListedView(items) {
         grouped[groupKey].entries.push(entry);
 
         const isExcluded = !!entry.excluded;
-        const isNote = entry.kind === "note";
-
-        if (!isExcluded && !isNote) {
+        if (!isExcluded) {
             grouped[groupKey].totalVolume += Number(entry.totalVolume || 0);
         }
     });
@@ -2471,24 +2469,81 @@ function groupInventoryItemsForListedView(items) {
     return Object.values(grouped);
 }
 
-else if (action.type === "note-edit") {
-    const rawEntry = findRawInventoryEntry(action.rawEntryId);
-    if (rawEntry) {
-        rawEntry.note = action.previousNote || "";
-        saveToDevice();
+function renderListedInventory() {
+    const container = document.getElementById("listed-inventory-output");
+    if (!container || !currentJob) return;
 
-        const tags = [];
-        if (rawEntry.dismantle) tags.push("[DISMANTLE]");
-        if (rawEntry.expWrap) tags.push("[EXP WRAP]");
-        if (rawEntry.excluded) tags.push("[EXCLUDED]");
-        if (rawEntry.note) tags.push("[NOTE: " + rawEntry.note.toUpperCase() + "]");
-
-        const label = (rawEntry.itemName || "ITEM").toUpperCase();
-        updateInventoryDisplay(tags.length ? (label + " " + tags.join(" ")) : label);
+    if (!currentJob.inventory || !Array.isArray(currentJob.inventory.items) || currentJob.inventory.items.length === 0) {
+        container.innerHTML = `<div class="p-12 text-center text-slate-400 font-bold italic uppercase">No inventory saved</div>`;
+        return;
     }
+
+    const groupedSections = groupInventoryItemsForListedView(currentJob.inventory.items);
+
+    if (groupedSections.length === 0) {
+        container.innerHTML = `<div class="p-12 text-center text-slate-400 font-bold italic uppercase">No inventory saved</div>`;
+        return;
+    }
+
+    container.innerHTML = groupedSections.map(function(section) {
+        const rows = section.entries.map(function(entry) {
+            const tags = [];
+
+            if (entry.dismantle) tags.push("DISMANTLE");
+            if (entry.expWrap) tags.push("EXP WRAP");
+            if (entry.excluded) tags.push("EXCLUDED");
+            if (entry.note) tags.push("NOTE: " + entry.note.toUpperCase());
+
+            const tagText = tags.length ? ` [${tags.join("] [")}]` : "";
+            const isExcluded = !!entry.excluded;
+
+            return `
+                <tr class="border-t border-slate-200 ${isExcluded ? 'bg-slate-50' : ''}">
+                    <td class="py-2 pr-2 text-[10px] font-bold uppercase ${isExcluded ? 'text-slate-400 italic' : 'text-slate-600'}">${entry.roomName || "-"}</td>
+                    <td class="py-2 pr-2 text-[10px] font-bold uppercase ${isExcluded ? 'text-slate-400 italic' : 'text-slate-600'}">${entry.floorName || "-"}</td>
+                    <td class="py-2 pr-2 text-[10px] font-black uppercase ${isExcluded ? 'text-slate-500 italic' : 'text-slate-900'}">${entry.itemName || "-"}${tagText}</td>
+                    <td class="py-2 pr-2 text-[10px] font-black uppercase ${isExcluded ? 'text-slate-400 italic' : 'text-blue-600'}">${entry.qty || 0}</td>
+                    <td class="py-2 pr-2 text-[10px] font-black uppercase ${isExcluded ? 'text-slate-300 italic' : 'text-slate-700'}">${isExcluded ? '' : (entry.unitVolume || 0)}</td>
+                    <td class="py-2 text-[10px] font-black uppercase ${isExcluded ? 'text-slate-300 italic' : 'text-slate-900'}">${isExcluded ? '' : (entry.totalVolume || 0)}</td>
+                </tr>
+            `;
+        }).join("");
+
+        return `
+            <div class="border border-slate-200 rounded-2xl overflow-hidden">
+                <div class="bg-slate-900 px-4 py-3">
+                    <div class="text-[11px] font-black text-white uppercase">${section.sequenceLabel}</div>
+                    <div class="text-[10px] font-bold text-blue-300 uppercase mt-1">Delivery To: ${section.deliveryLabel}</div>
+                </div>
+
+                <div class="p-4">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-slate-300">
+                                <th class="text-left py-2 pr-2 text-[9px] font-black text-slate-400 uppercase">Room</th>
+                                <th class="text-left py-2 pr-2 text-[9px] font-black text-slate-400 uppercase">Floor</th>
+                                <th class="text-left py-2 pr-2 text-[9px] font-black text-slate-400 uppercase">Item</th>
+                                <th class="text-left py-2 pr-2 text-[9px] font-black text-slate-400 uppercase">Qty</th>
+                                <th class="text-left py-2 pr-2 text-[9px] font-black text-slate-400 uppercase">Unit Vol</th>
+                                <th class="text-left py-2 text-[9px] font-black text-slate-400 uppercase">Total Vol</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rows}
+                        </tbody>
+                    </table>
+
+                    <div class="mt-4 pt-3 border-t border-slate-200 text-right">
+                        <span class="text-[10px] font-black text-slate-400 uppercase mr-2">Section Total</span>
+                        <span class="text-sm font-black text-blue-600">${section.totalVolume}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join("");
 }
-        window.onload = renderDashboard;
-    </script>
+
+window.onload = renderDashboard;    </script>
 </body>
 
 </html>
