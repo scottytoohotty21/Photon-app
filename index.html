@@ -1095,7 +1095,8 @@ function buildRawInventoryEntry(entryData) {
         kind: entryData.kind || "item",
         dismantle: !!entryData.dismantle,
         expWrap: !!entryData.expWrap,
-        excluded: !!entryData.excluded
+        excluded: !!entryData.excluded,
+        note: entryData.note || ""
     };
 }
 
@@ -2083,7 +2084,9 @@ function addMiscItem() {
     updateUndoButtonState();
 }
 function addInventoryNote() {
-    if (!currentJob) return;
+    const rawEntry = getLastRawInventoryEntry();
+    if (!rawEntry) return;
+    if (rawEntry.kind === "note") return;
 
     const noteInput = prompt("Enter note:");
     if (noteInput === null) return;
@@ -2091,32 +2094,26 @@ function addInventoryNote() {
     const cleanNote = noteInput.trim();
     if (!cleanNote) return;
 
-    const rawEntryId = saveRawInventoryEntry({
-        sequenceId: activeSeqId,
-        deliveryId: currentJob && currentJob.inventory ? currentJob.inventory.activeDeliveryId : "",
-        roomName: currentJob && currentJob.inventory ? currentJob.inventory.activeRoomName : "",
-        floorName: currentJob && currentJob.inventory ? currentJob.inventory.activeFloor : "",
-        itemName: cleanNote,
-        qty: 0,
-        unitVolume: 0,
-        totalVolume: 0,
-        kind: "note",
-        dismantle: false,
-        expWrap: false,
-        excluded: false
-    });
+    const previousNote = rawEntry.note || "";
+    rawEntry.note = cleanNote;
 
     inventoryHistory.push({
-        type: "note",
-        itemName: cleanNote,
-        rawEntryId: rawEntryId
+        type: "note-edit",
+        rawEntryId: rawEntry.id,
+        previousNote: previousNote,
+        newNote: cleanNote
     });
 
-    lastAddedItemName = null;
-    lastAddedRawEntryId = rawEntryId;
-    currentItemVolume = 0;
+    saveToDevice();
 
-    updateInventoryDisplay("NOTE: " + cleanNote.toUpperCase());
+    const tags = [];
+    if (rawEntry.dismantle) tags.push("[DISMANTLE]");
+    if (rawEntry.expWrap) tags.push("[EXP WRAP]");
+    if (rawEntry.excluded) tags.push("[EXCLUDED]");
+    if (rawEntry.note) tags.push("[NOTE: " + rawEntry.note.toUpperCase() + "]");
+
+    const label = (rawEntry.itemName || "ITEM").toUpperCase();
+    updateInventoryDisplay(label + " " + tags.join(" "));
     triggerInventoryPulse("current", "blue");
     triggerHaptic("light");
     renderActionButtonStates();
@@ -2375,6 +2372,22 @@ recalculateTotalVolume();
         currentItemVolume = 0;
         updateInventoryDisplay("UNDO NOTE");
     }
+    else if (action.type === "note-edit") {
+    const rawEntry = findRawInventoryEntry(action.rawEntryId);
+    if (rawEntry) {
+        rawEntry.note = action.previousNote || "";
+        saveToDevice();
+
+        const tags = [];
+        if (rawEntry.dismantle) tags.push("[DISMANTLE]");
+        if (rawEntry.expWrap) tags.push("[EXP WRAP]");
+        if (rawEntry.excluded) tags.push("[EXCLUDED]");
+        if (rawEntry.note) tags.push("[NOTE: " + rawEntry.note.toUpperCase() + "]");
+
+        const label = (rawEntry.itemName || "ITEM").toUpperCase();
+        updateInventoryDisplay(tags.length ? (label + " " + tags.join(" ")) : label);
+    }
+}
     triggerInventoryPulse("undo", "red");
     triggerInventoryPulse("total", "red");
     triggerHaptic("error");
@@ -2458,104 +2471,21 @@ function groupInventoryItemsForListedView(items) {
     return Object.values(grouped);
 }
 
-function renderListedInventory() {
-    const container = document.getElementById("listed-inventory-output");
-    if (!container || !currentJob) return;
+else if (action.type === "note-edit") {
+    const rawEntry = findRawInventoryEntry(action.rawEntryId);
+    if (rawEntry) {
+        rawEntry.note = action.previousNote || "";
+        saveToDevice();
 
-    if (!currentJob.inventory || !Array.isArray(currentJob.inventory.items) || currentJob.inventory.items.length === 0) {
-        container.innerHTML = `<div class="p-12 text-center text-slate-400 font-bold italic uppercase">No inventory saved</div>`;
-        return;
+        const tags = [];
+        if (rawEntry.dismantle) tags.push("[DISMANTLE]");
+        if (rawEntry.expWrap) tags.push("[EXP WRAP]");
+        if (rawEntry.excluded) tags.push("[EXCLUDED]");
+        if (rawEntry.note) tags.push("[NOTE: " + rawEntry.note.toUpperCase() + "]");
+
+        const label = (rawEntry.itemName || "ITEM").toUpperCase();
+        updateInventoryDisplay(tags.length ? (label + " " + tags.join(" ")) : label);
     }
-
-    const groupedSections = groupInventoryItemsForListedView(currentJob.inventory.items);
-
-    if (groupedSections.length === 0) {
-        container.innerHTML = `<div class="p-12 text-center text-slate-400 font-bold italic uppercase">No inventory saved</div>`;
-        return;
-    }
-
-    container.innerHTML = groupedSections.map(function(section) {
-        const rows = section.entries.map(function(entry) {
-            const tags = [];
-
-            if (entry.dismantle) tags.push("[DISMANTLE]");
-            if (entry.expWrap) tags.push("[EXP WRAP]");
-            if (entry.excluded) tags.push("[EXCLUDED]");
-
-            if (entry.kind === "note") {
-                tags.push("[NOTE: " + (entry.itemName || "-").toUpperCase() + "]");
-
-                return `
-                    <tr class="border-t border-slate-200 bg-amber-50">
-                        <td class="py-2 pr-2 text-[10px] font-bold text-slate-600 uppercase">${entry.roomName || "-"}</td>
-                        <td class="py-2 pr-2 text-[10px] font-bold text-slate-600 uppercase">${entry.floorName || "-"}</td>
-                        <td class="py-2 pr-2 text-[10px] font-black text-amber-700 uppercase">${tags.join(" ")}</td>
-                        <td class="py-2 pr-2 text-[10px] font-black text-amber-700 uppercase"></td>
-                        <td class="py-2 pr-2 text-[10px] font-black text-amber-700 uppercase"></td>
-                        <td class="py-2 text-[10px] font-black text-amber-700 uppercase"></td>
-                    </tr>
-                `;
-            }
-
-            const itemText = `${entry.itemName || "-"} ${tags.join(" ")}`.trim();
-
-            if (entry.excluded) {
-                return `
-                    <tr class="border-t border-slate-200 bg-slate-50">
-                        <td class="py-2 pr-2 text-[10px] font-bold text-slate-400 uppercase italic">${entry.roomName || "-"}</td>
-                        <td class="py-2 pr-2 text-[10px] font-bold text-slate-400 uppercase italic">${entry.floorName || "-"}</td>
-                        <td class="py-2 pr-2 text-[10px] font-black text-slate-500 uppercase italic">${itemText}</td>
-                        <td class="py-2 pr-2 text-[10px] font-black text-slate-400 uppercase italic">${entry.qty || 0}</td>
-                        <td class="py-2 pr-2 text-[10px] font-black text-slate-300 uppercase italic"></td>
-                        <td class="py-2 text-[10px] font-black text-slate-300 uppercase italic"></td>
-                    </tr>
-                `;
-            }
-
-            return `
-                <tr class="border-t border-slate-200">
-                    <td class="py-2 pr-2 text-[10px] font-bold text-slate-600 uppercase">${entry.roomName || "-"}</td>
-                    <td class="py-2 pr-2 text-[10px] font-bold text-slate-600 uppercase">${entry.floorName || "-"}</td>
-                    <td class="py-2 pr-2 text-[10px] font-black text-slate-900 uppercase">${itemText}</td>
-                    <td class="py-2 pr-2 text-[10px] font-black text-blue-600 uppercase">${entry.qty || 0}</td>
-                    <td class="py-2 pr-2 text-[10px] font-black text-slate-700 uppercase">${entry.unitVolume || 0}</td>
-                    <td class="py-2 text-[10px] font-black text-slate-900 uppercase">${entry.totalVolume || 0}</td>
-                </tr>
-            `;
-        }).join("");
-
-        return `
-            <div class="border border-slate-200 rounded-2xl overflow-hidden">
-                <div class="bg-slate-900 px-4 py-3">
-                    <div class="text-[11px] font-black text-white uppercase">${section.sequenceLabel}</div>
-                    <div class="text-[10px] font-bold text-blue-300 uppercase mt-1">Delivery To: ${section.deliveryLabel}</div>
-                </div>
-
-                <div class="p-4">
-                    <table class="w-full">
-                        <thead>
-                            <tr class="border-b border-slate-300">
-                                <th class="text-left py-2 pr-2 text-[9px] font-black text-slate-400 uppercase">Room</th>
-                                <th class="text-left py-2 pr-2 text-[9px] font-black text-slate-400 uppercase">Floor</th>
-                                <th class="text-left py-2 pr-2 text-[9px] font-black text-slate-400 uppercase">Item</th>
-                                <th class="text-left py-2 pr-2 text-[9px] font-black text-slate-400 uppercase">Qty</th>
-                                <th class="text-left py-2 pr-2 text-[9px] font-black text-slate-400 uppercase">Unit Vol</th>
-                                <th class="text-left py-2 text-[9px] font-black text-slate-400 uppercase">Total Vol</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${rows}
-                        </tbody>
-                    </table>
-
-                    <div class="mt-4 pt-3 border-t border-slate-200 text-right">
-                        <span class="text-[10px] font-black text-slate-400 uppercase mr-2">Section Total</span>
-                        <span class="text-sm font-black text-blue-600">${section.totalVolume}</span>
-                    </div>
-                </div>
-            </div>
-        `;
-    }).join("");
 }
         window.onload = renderDashboard;
     </script>
