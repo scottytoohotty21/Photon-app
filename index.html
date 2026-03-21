@@ -6,30 +6,7 @@
     <title>Photon Survey System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
-    <div id="damage-overlay" class="damage-overlay" onclick="closeDamageModal()">
-    <div class="damage-panel" onclick="event.stopPropagation()">
-        <div class="damage-title">Damage</div>
-        <div class="damage-subtitle">Select type or add your own note</div>
 
-        <div class="damage-grid">
-            <button type="button" id="damage-option-dented" class="damage-option-btn" onclick="selectDamageOption('Dented')">Dented</button>
-            <button type="button" id="damage-option-scratched" class="damage-option-btn" onclick="selectDamageOption('Scratched')">Scratched</button>
-            <button type="button" id="damage-option-marked" class="damage-option-btn" onclick="selectDamageOption('Marked')">Marked</button>
-            <button type="button" id="damage-option-cracked" class="damage-option-btn" onclick="selectDamageOption('Cracked')">Cracked</button>
-        </div>
-
-        <textarea
-            id="damage-custom-note"
-            class="damage-note-input"
-            placeholder="If none apply, enter damage note here..."
-        ></textarea>
-
-        <div class="damage-actions">
-            <button type="button" class="damage-cancel-btn" onclick="closeDamageModal()">Cancel</button>
-            <button type="button" class="damage-save-btn" onclick="saveDamageModal()">Save Damage</button>
-        </div>
-    </div>
-</div>
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
 
@@ -51,7 +28,7 @@
         .header-val { font-size: 10px; font-weight: 700; color: white; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .header-input { background: transparent; border: none; color: #60a5fa; font-size: 10px; font-weight: 700; width: 100%; outline: none; }
 
-        /* --- UPDATED 5-TAB NAV --- */
+        /* --- NAV --- */
         .nav-container { display: flex; gap: 4px; margin-bottom: 15px; }
         .nav-btn { 
             flex: 1; padding: 12px 1px; background: white; border: 1px solid #e2e8f0; 
@@ -69,7 +46,7 @@
         .btn-save { background: #22c55e; color: white; }
         .btn-change { background: white; color: #22c55e; border: 2px solid #22c55e; }
 
-        /* --- DASHBOARD STYLING --- */
+        /* --- DASHBOARD --- */
         .job-card { background: white; border-radius: 16px; padding: 20px; border-left: 8px solid #cbd5e1; cursor: pointer; transition: transform 0.1s; position: relative; }
         .status-active { border-left-color: #3b82f6 !important; }
         .status-pending { border-left-color: #f59e0b !important; }
@@ -77,34 +54,34 @@
         .pill-active { background: #dbeafe; color: #1e40af; }
         .pill-pending { background: #fef3c7; color: #92400e; }
         .pill-manual { background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; margin-left: 4px; }
-        
         .pill-new { background: #7e22ce !important; color: white !important; margin-left: 4px; }
         .notes-preview { font-size: 10px; color: #64748b; font-style: italic; margin-top: 8px; padding-left: 8px; border-left: 2px solid #cbd5e1; line-height: 1.2; }
 
-        /* --- UPDATED CRM BUTTON --- */
+        /* --- TOP BUTTONS --- */
         .btn-crm-upload {
             background: #10b981; color: white; border-bottom: 4px solid #047857;
             border-radius: 12px; padding: 8px 12px; transition: all 0.1s;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
         .btn-crm-upload:active { border-bottom-width: 0px; transform: translateY(4px); }
-.btn-add-file {
-    background: #3b82f6;
-    color: white;
-    border-bottom: 4px solid #1d4ed8;
-    border-radius: 12px;
-    padding: 8px 12px;
-    transition: all 0.1s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-}
 
-.btn-add-file:active {
-    border-bottom-width: 0px;
-    transform: translateY(4px);
-}
+        .btn-add-file {
+            background: #3b82f6;
+            color: white;
+            border-bottom: 4px solid #1d4ed8;
+            border-radius: 12px;
+            padding: 8px 12px;
+            transition: all 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .btn-add-file:active {
+            border-bottom-width: 0px;
+            transform: translateY(4px);
+        }
+
         .btn-upload-glow {
             background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
             color: white; font-weight: 900; text-transform: uppercase;
@@ -135,25 +112,20 @@
             100% { box-shadow: 0 0 0 15px rgba(34, 197, 94, 0); border-color: #e2e8f0; }
         }
         .pulse-new { animation: uiPulse 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
-        .pulse-blue {
-    animation: pulseBlue 0.5s ease;
-}
 
-.pulse-red {
-    animation: pulseRed 0.5s ease;
-}
+        @keyframes pulseBlue {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(59,130,246,0.45); }
+            50% { transform: scale(1.04); box-shadow: 0 0 0 10px rgba(59,130,246,0.12); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(59,130,246,0); }
+        }
+        @keyframes pulseRed {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239,68,68,0.45); }
+            50% { transform: scale(1.04); box-shadow: 0 0 0 10px rgba(239,68,68,0.12); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+        }
 
-@keyframes pulseBlue {
-    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(59,130,246,0.45); }
-    50% { transform: scale(1.04); box-shadow: 0 0 0 10px rgba(59,130,246,0.12); }
-    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(59,130,246,0); }
-}
-
-@keyframes pulseRed {
-    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239,68,68,0.45); }
-    50% { transform: scale(1.04); box-shadow: 0 0 0 10px rgba(239,68,68,0.12); }
-    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239,68,68,0); }
-}
+        .pulse-blue { animation: pulseBlue 0.5s ease; }
+        .pulse-red { animation: pulseRed 0.5s ease; }
 
         .add-property-btn {
             background: #3b82f6; color: white; border-radius: 10px; transition: 0.2s;
@@ -162,110 +134,65 @@
         }
         .btn-plus-icon { font-size: 18px; font-weight: 400; width: 30px; }
         .btn-text-block { display: flex; flex-direction: column; text-align: left; }
-        .btn-text-upper { font-weight: 900; font-size: 11px; text-transform: uppercase; line-height: 1.1; }
-        .btn-text-lower { font-weight: 900; font-size: 11px; text-transform: uppercase; line-height: 1.1; }
+        .btn-text-upper, .btn-text-lower { font-weight: 900; font-size: 11px; text-transform: uppercase; line-height: 1.1; }
 
-        /* --- INVENTORY SPECIFIC UI --- */
-.inv-header-select { background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 4px 8px; font-weight: 900; font-size: 11px; text-transform: uppercase; height: 38px; width: 100%; }
+        /* --- INVENTORY --- */
+        .inv-header-select { background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 4px 8px; font-weight: 900; font-size: 11px; text-transform: uppercase; height: 38px; width: 100%; }
+        .inv-top-field { height: 64px !important; }
 
-.inv-top-field {
-    height: 64px !important;
-}
+        .inv-tool-btn {
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            color: #64748b;
+            font-size: 9px;
+            font-weight: 900;
+            text-transform: uppercase;
+            padding: 8px 4px;
+            text-align: center;
+        }
+        .inv-tool-btn.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #2563eb;
+        }
+        .inv-tool-btn.exclude-active {
+            background: #334155;
+            color: white;
+            border-color: #0f172a;
+        }
 
-.inv-tool-btn {
-    background: #f1f5f9;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
-    color: #64748b;
-    font-size: 9px;
-    font-weight: 900;
-    text-transform: uppercase;
-    padding: 8px 4px;
-    text-align: center;
-}
-
-.inv-tool-btn.active {
-    background: #3b82f6;
-    color: white;
-    border-color: #2563eb;
-}
-
-.inv-tool-btn.exclude-active {
-    background: #334155;
-    color: white;
-    border-color: #0f172a;
-}
-
-.inv-tool-btn.active {
-    background: #3b82f6;
-    color: white;
-    border-color: #2563eb;
-}
         .inv-room-btn { background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 6px; color: #64748b; font-size: 8px; font-weight: 900; text-transform: uppercase; padding: 12px 2px; text-align: center; flex: 1; }
         .inv-room-btn.active { background: #3b82f6; color: white; border-color: #2563eb; }
-      .item-btn {
-    background: #fff;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    font-size: 9px;
-    font-weight: 900;
-    text-transform: uppercase;
-    color: #0f172a;
-    padding: 5px;
-}
+
+        .item-btn {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 9px;
+            font-weight: 900;
+            text-transform: uppercase;
+            color: #0f172a;
+            padding: 5px;
+        }
         .item-btn-blue { background: #f0f9ff; color: #0f172a; border: 1px solid #e0f2fe; }
         .log-bar { background: #e2e8f0; border: 1.5px solid #94a3b8; border-radius: 6px; padding: 8px 12px; font-size: 11px; font-weight: 900; font-style: italic; color: #1e293b; }
-.vol-box { border: 2.5px solid #fca5a5; border-radius: 8px; height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-.total-vol-box { background: #3b82f6; color: white; border-radius: 8px; height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .vol-box { border: 2.5px solid #fca5a5; border-radius: 8px; height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .total-vol-box { background: #3b82f6; color: white; border-radius: 8px; height: 50px; display: flex; align-items: center; justify-content: center; }
 
-/* --- NEW JOB HEADER --- */
-
-.job-header {
-    background: #0f172a;
-    border: 1px solid #334155;
-    border-radius: 14px;
-    padding: 14px 16px;
-    margin-bottom: 15px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.job-client {
-    font-size: 16px;
-    font-weight: 900;
-    color: white;
-    text-transform: uppercase;
-    line-height: 1.1;
-}
-
-.job-subline {
-    font-size: 10px;
-    font-weight: 800;
-    color: #60a5fa;
-    text-transform: uppercase;
-    margin-top: 4px;
-    letter-spacing: 0.04em;
-}
-
-.job-status-pill {
-    background: #1e293b;
-    border: 1px solid #475569;
-    color: #93c5fd;
-    font-size: 9px;
-    font-weight: 900;
-    text-transform: uppercase;
-    padding: 6px 10px;
-    border-radius: 999px;
-    white-space: nowrap;
-}
-    /* --- DAMAGE MODAL --- */
-.damage-overlay {
+        /* Keep undo light red even though it also has total-vol-box */
+        #undo-btn {
+            background: #fee2e2 !important;
+            color: #dc2626 !important;
+            border: 1px solid #fca5a5 !important;
+        }
+/* --- CRATE MODAL --- */
+.crate-overlay {
     display: none;
     position: fixed;
     inset: 0;
@@ -276,7 +203,7 @@
     z-index: 2000;
 }
 
-.damage-panel {
+.crate-panel {
     width: 92%;
     max-width: 360px;
     background: white;
@@ -285,7 +212,7 @@
     box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
 }
 
-.damage-title {
+.crate-title {
     font-size: 12px;
     font-weight: 900;
     text-transform: uppercase;
@@ -293,7 +220,7 @@
     text-align: center;
 }
 
-.damage-subtitle {
+.crate-subtitle {
     font-size: 10px;
     font-weight: 700;
     text-transform: uppercase;
@@ -301,58 +228,72 @@
     text-align: center;
     margin-top: 4px;
     margin-bottom: 16px;
+    line-height: 1.4;
 }
 
-.damage-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-    margin-bottom: 14px;
-}
-
-.damage-option-btn {
-    background: #f8fafc;
+.crate-unit-toggle {
+    display: flex;
     border: 1px solid #e2e8f0;
-    border-radius: 10px;
-    min-height: 52px;
-    padding: 10px 8px;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 16px;
+}
+
+.crate-unit-btn {
+    flex: 1;
+    background: #f8fafc;
+    border: none;
+    padding: 12px 10px;
     font-size: 10px;
     font-weight: 900;
     text-transform: uppercase;
-    color: #475569;
-    text-align: center;
+    color: #64748b;
 }
 
-.damage-option-btn.active {
+.crate-unit-btn.active {
     background: #3b82f6;
     color: white;
-    border-color: #2563eb;
 }
 
-.damage-note-input {
+.crate-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.crate-field-label {
+    display: block;
+    font-size: 9px;
+    font-weight: 900;
+    text-transform: uppercase;
+    color: #94a3b8;
+    margin-bottom: 6px;
+}
+
+.crate-field-input {
     width: 100%;
     border: 2px solid #e2e8f0;
     border-radius: 12px;
-    padding: 12px;
-    font-size: 12px;
-    font-weight: 700;
+    padding: 12px 8px;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 900;
     outline: none;
-    background: #fff;
-    min-height: 88px;
-    resize: none;
+    background: #f8fafc;
 }
 
-.damage-note-input:focus {
+.crate-field-input:focus {
     border-color: #3b82f6;
+    background: white;
 }
 
-.damage-actions {
+.crate-actions {
     display: flex;
     gap: 10px;
-    margin-top: 14px;
 }
 
-.damage-cancel-btn {
+.crate-cancel-btn {
     flex: 1;
     background: #f1f5f9;
     color: #475569;
@@ -364,7 +305,7 @@
     text-transform: uppercase;
 }
 
-.damage-save-btn {
+.crate-save-btn {
     flex: 1;
     background: #3b82f6;
     color: white;
@@ -375,6 +316,43 @@
     font-weight: 900;
     text-transform: uppercase;
 }
+        /* --- JOB HEADER --- */
+        .job-header {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 14px;
+            padding: 14px 16px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .job-client {
+            font-size: 16px;
+            font-weight: 900;
+            color: white;
+            text-transform: uppercase;
+            line-height: 1.1;
+        }
+        .job-subline {
+            font-size: 10px;
+            font-weight: 800;
+            color: #60a5fa;
+            text-transform: uppercase;
+            margin-top: 4px;
+            letter-spacing: 0.04em;
+        }
+        .job-status-pill {
+            background: #1e293b;
+            border: 1px solid #475569;
+            color: #93c5fd;
+            font-size: 9px;
+            font-weight: 900;
+            text-transform: uppercase;
+            padding: 6px 10px;
+            border-radius: 999px;
+            white-space: nowrap;
+        }
     </style>
 </head>
 <body class="p-4 pb-12">
@@ -548,7 +526,7 @@ Enter as: Surname, First Name
                <button
     id="undo-btn"
     onclick="undoLastInventoryAction()"
-    class="w-20 total-vol-box bg-red-100 !text-red-500 font-black text-xs uppercase"
+    class="w-20 undo-btn-style font-black text-xs uppercase"
 >
     Undo
 </button>
@@ -952,7 +930,7 @@ let lastAddedItemName = null;
 let lastAddedRawEntryId = null;
 let inventoryHistory = [];
 let qtyResetTimer = null;
-let selectedDamageOption = "";
+let selectedCrateUnit = "IN";
 
         function saveToDevice() {
             localStorage.setItem('photon_jobs', JSON.stringify(jobs));
@@ -1313,7 +1291,7 @@ function renderActionButtonStates() {
     }
 
     if (damageBtn) {
-        damageBtn.classList.toggle("active", !!(rawEntry && rawEntry.damage && String(rawEntry.damage).trim()));
+        damageBtn.classList.toggle("active", !!(rawEntry && rawEntry.damage));
     }
 }
 
@@ -1471,17 +1449,28 @@ function handleRoomChange(value) {
         currentJob.inventory.customRooms = [];
     }
 
+    if (qtyResetTimer) {
+        clearTimeout(qtyResetTimer);
+        qtyResetTimer = null;
+    }
+
     if (value === "__add_custom_room__") {
         const customRoom = prompt("Enter custom room name:");
 
         if (!customRoom) {
             renderInventoryRoomDropdown();
+            resetInventoryQtyInput();
+            lastAddedItemName = null;
+            lastAddedRawEntryId = null;
             return;
         }
 
         const cleanRoom = customRoom.trim();
         if (!cleanRoom) {
             renderInventoryRoomDropdown();
+            resetInventoryQtyInput();
+            lastAddedItemName = null;
+            lastAddedRawEntryId = null;
             return;
         }
 
@@ -1495,11 +1484,17 @@ function handleRoomChange(value) {
 
         currentJob.inventory.activeRoomName = cleanRoom;
         renderInventoryRoomDropdown();
+        resetInventoryQtyInput();
+        lastAddedItemName = null;
+        lastAddedRawEntryId = null;
         saveToDevice();
         return;
     }
 
     currentJob.inventory.activeRoomName = value;
+    resetInventoryQtyInput();
+    lastAddedItemName = null;
+    lastAddedRawEntryId = null;
     saveToDevice();
 }
         function getFloorOptions() {
@@ -2228,37 +2223,63 @@ function addOrEditCrate() {
     if (!rawEntry) return;
     if (rawEntry.kind === "note") return;
 
+    const overlay = document.getElementById("crate-overlay");
+    const lengthInput = document.getElementById("crate-length");
+    const widthInput = document.getElementById("crate-width");
+    const heightInput = document.getElementById("crate-height");
+
+    if (!overlay || !lengthInput || !widthInput || !heightInput) return;
+
     const existing = rawEntry.crateDims || {};
 
-    const unitInput = prompt(
-        "Internal Crate dims\n\nEnter unit: CM or IN",
-        existing.unit || "CM"
-    );
-    if (unitInput === null) return;
+    selectedCrateUnit = existing.unit || "IN";
+    setCrateUnit(selectedCrateUnit);
 
-    const unit = unitInput.trim().toUpperCase() === "IN" ? "IN" : "CM";
+    lengthInput.value = existing.l || "";
+    widthInput.value = existing.w || "";
+    heightInput.value = existing.h || "";
 
-    const lengthInput = prompt(
-        "Internal Crate dims\n\nLength (" + unit + ")",
-        existing.l || ""
-    );
-    if (lengthInput === null) return;
+    overlay.style.display = "flex";
+}
+function closeCrateModal() {
+    const overlay = document.getElementById("crate-overlay");
+    const lengthInput = document.getElementById("crate-length");
+    const widthInput = document.getElementById("crate-width");
+    const heightInput = document.getElementById("crate-height");
 
-    const widthInput = prompt(
-        "Internal Crate dims\n\nWidth (" + unit + ")",
-        existing.w || ""
-    );
-    if (widthInput === null) return;
+    if (overlay) overlay.style.display = "none";
+    if (lengthInput) lengthInput.value = "";
+    if (widthInput) widthInput.value = "";
+    if (heightInput) heightInput.value = "";
 
-    const heightInput = prompt(
-        "Internal Crate dims\n\nHeight (" + unit + ")",
-        existing.h || ""
-    );
-    if (heightInput === null) return;
+    selectedCrateUnit = "IN";
+    setCrateUnit("IN");
+}
 
-    const l = parseFloat(lengthInput);
-    const w = parseFloat(widthInput);
-    const h = parseFloat(heightInput);
+function setCrateUnit(unit) {
+    selectedCrateUnit = unit;
+
+    const inBtn = document.getElementById("crate-unit-in");
+    const cmBtn = document.getElementById("crate-unit-cm");
+
+    if (inBtn) inBtn.classList.toggle("active", unit === "IN");
+    if (cmBtn) cmBtn.classList.toggle("active", unit === "CM");
+}
+
+function saveCrateModal() {
+    const rawEntry = getLastRawInventoryEntry();
+    if (!rawEntry) return;
+    if (rawEntry.kind === "note") return;
+
+    const lengthInput = document.getElementById("crate-length");
+    const widthInput = document.getElementById("crate-width");
+    const heightInput = document.getElementById("crate-height");
+
+    if (!lengthInput || !widthInput || !heightInput) return;
+
+    const l = parseFloat(lengthInput.value);
+    const w = parseFloat(widthInput.value);
+    const h = parseFloat(heightInput.value);
 
     if (isNaN(l) || isNaN(w) || isNaN(h) || l <= 0 || w <= 0 || h <= 0) {
         return;
@@ -2275,14 +2296,24 @@ function addOrEditCrate() {
         : null;
 
     rawEntry.crated = true;
-    rawEntry.crateDims = { l, w, h, unit };
+    rawEntry.crateDims = {
+        l: l,
+        w: w,
+        h: h,
+        unit: selectedCrateUnit
+    };
 
     inventoryHistory.push({
         type: "crate-edit",
         rawEntryId: rawEntry.id,
         previousCrated: previousCrated,
         previousDims: previousDims,
-        newDims: { l, w, h, unit }
+        newDims: {
+            l: l,
+            w: w,
+            h: h,
+            unit: selectedCrateUnit
+        }
     });
 
     saveToDevice();
@@ -2293,126 +2324,81 @@ function addOrEditCrate() {
     if (rawEntry.expWrap) tags.push("[EXP WRAP]");
     if (rawEntry.excluded) tags.push("[EXCLUDED]");
     if (rawEntry.crated && rawEntry.crateDims) {
-        tags.push("[CRATE: " + rawEntry.crateDims.l + " x " + rawEntry.crateDims.w + " x " + rawEntry.crateDims.h + " " + rawEntry.crateDims.unit + "]");
+        tags.push(
+            "[CRATE: " +
+            rawEntry.crateDims.l + " x " +
+            rawEntry.crateDims.w + " x " +
+            rawEntry.crateDims.h + " " +
+            rawEntry.crateDims.unit + "]"
+        );
     }
+    if (rawEntry.damage) tags.push("[DAMAGE: " + rawEntry.damage.toUpperCase() + "]");
     if (rawEntry.note) tags.push("[NOTE: " + rawEntry.note.toUpperCase() + "]");
 
     const label = (rawEntry.itemName || "ITEM").toUpperCase();
     updateInventoryDisplay(label + " " + tags.join(" "));
     triggerInventoryPulse("current", "blue");
-    triggerHaptic("light");
     updateUndoButtonState();
+
+    closeCrateModal();
 }
 function addOrEditDamage() {
     const rawEntry = getLastRawInventoryEntry();
     if (!rawEntry) return;
     if (rawEntry.kind === "note") return;
 
-    selectedDamageOption = "";
+    const currentDamage = rawEntry.damage || "";
 
-    const overlay = document.getElementById("damage-overlay");
-    const customNote = document.getElementById("damage-custom-note");
+    const damageInput = prompt(
+        "Damage type:\n\nDented / Scratched / Marked / Cracked / Other",
+        currentDamage || "Dented"
+    );
+    if (damageInput === null) return;
 
-    if (!overlay || !customNote) return;
+    let cleanDamage = damageInput.trim();
+    if (!cleanDamage) return;
 
-    clearDamageOptionButtons();
+    const lower = cleanDamage.toLowerCase();
 
-    const currentDamage = (rawEntry.damage || "").trim();
+    if (lower === "other") {
+        const otherInput = prompt(
+            "Enter damage note:",
+            currentDamage &&
+            !["dented", "scratched", "marked", "cracked"].includes(currentDamage.toLowerCase())
+                ? currentDamage
+                : ""
+        );
+        if (otherInput === null) return;
 
-    if (currentDamage === "Dented" || currentDamage === "Scratched" || currentDamage === "Marked" || currentDamage === "Cracked") {
-        selectedDamageOption = currentDamage;
-        highlightDamageOption(currentDamage);
-        customNote.value = "";
+        cleanDamage = otherInput.trim();
+        if (!cleanDamage) return;
+    } else if (lower === "dented") {
+        cleanDamage = "Dented";
+    } else if (lower === "scratched") {
+        cleanDamage = "Scratched";
+    } else if (lower === "marked") {
+        cleanDamage = "Marked";
+    } else if (lower === "cracked") {
+        cleanDamage = "Cracked";
     } else {
-        customNote.value = currentDamage;
-    }
+        const confirmCustom = prompt(
+            "Custom damage note:",
+            cleanDamage
+        );
+        if (confirmCustom === null) return;
 
-    overlay.style.display = "flex";
-}
-
-function closeDamageModal() {
-    const overlay = document.getElementById("damage-overlay");
-    const customNote = document.getElementById("damage-custom-note");
-
-    if (overlay) overlay.style.display = "none";
-    if (customNote) customNote.value = "";
-
-    selectedDamageOption = "";
-    clearDamageOptionButtons();
-}
-
-function selectDamageOption(option) {
-    const customNote = document.getElementById("damage-custom-note");
-
-    if (selectedDamageOption === option) {
-        selectedDamageOption = "";
-        clearDamageOptionButtons();
-        return;
-    }
-
-    selectedDamageOption = option;
-    highlightDamageOption(option);
-
-    if (customNote) {
-        customNote.value = "";
-    }
-}
-
-function clearDamageOptionButtons() {
-    [
-        "damage-option-dented",
-        "damage-option-scratched",
-        "damage-option-marked",
-        "damage-option-cracked"
-    ].forEach(function(id) {
-        const btn = document.getElementById(id);
-        if (btn) btn.classList.remove("active");
-    });
-}
-
-function highlightDamageOption(option) {
-    clearDamageOptionButtons();
-
-    const map = {
-        "Dented": "damage-option-dented",
-        "Scratched": "damage-option-scratched",
-        "Marked": "damage-option-marked",
-        "Cracked": "damage-option-cracked"
-    };
-
-    const btnId = map[option];
-    if (!btnId) return;
-
-    const btn = document.getElementById(btnId);
-    if (btn) btn.classList.add("active");
-}
-
-function saveDamageModal() {
-    const rawEntry = getLastRawInventoryEntry();
-    if (!rawEntry) return;
-    if (rawEntry.kind === "note") return;
-
-    const customNoteEl = document.getElementById("damage-custom-note");
-    const customNote = customNoteEl ? customNoteEl.value.trim() : "";
-
-    let finalDamage = "";
-
-    if (customNote) {
-        finalDamage = customNote;
-    } else if (selectedDamageOption) {
-        finalDamage = selectedDamageOption;
-    } else {
-        return;
+        cleanDamage = confirmCustom.trim();
+        if (!cleanDamage) return;
     }
 
     const previousDamage = rawEntry.damage || "";
-    rawEntry.damage = finalDamage;
+    rawEntry.damage = cleanDamage;
 
     inventoryHistory.push({
         type: "damage-edit",
         rawEntryId: rawEntry.id,
         previousDamage: previousDamage,
-        newDamage: finalDamage
+        newDamage: cleanDamage
     });
 
     saveToDevice();
@@ -2439,62 +2425,83 @@ function saveDamageModal() {
     triggerInventoryPulse("current", "blue");
     triggerHaptic("light");
     updateUndoButtonState();
-
-    closeDamageModal();
 }
 function updateLastItemQty(newQty) {
-    if (!lastAddedItemName) return;
+    const qtyInput = document.getElementById("inv-qty");
+    if (!qtyInput) return;
 
-    let item = inventoryItems.find(function(i) {
-        return i.item === lastAddedItemName;
-    });
-    if (!item) return;
-
-    let qty = parseInt(newQty, 10);
-    if (isNaN(qty) || qty < 1) return;
-
-    const previousQty = item.qty;
-    if (previousQty === qty) return;
-
-    item.qty = qty;
+    if (!lastAddedRawEntryId) {
+        qtyInput.value = "";
+        return;
+    }
 
     const rawEntry = findRawInventoryEntry(lastAddedRawEntryId);
-    let previousRawQty = null;
-
-    if (rawEntry) {
-        previousRawQty = rawEntry.qty;
-        rawEntry.qty = qty;
-        rawEntry.totalVolume = rawEntry.unitVolume * qty;
-        saveToDevice();
+    if (!rawEntry) {
+        qtyInput.value = "";
+        return;
     }
+
+    const qty = getCleanInventoryQtyValue(newQty);
+    qtyInput.value = qty;
+
+    const previousRawQty = Number(rawEntry.qty || 1);
+    if (previousRawQty === qty) {
+        if (qtyResetTimer) clearTimeout(qtyResetTimer);
+        qtyResetTimer = setTimeout(function() {
+            resetInventoryQtyInput();
+        }, 550);
+        return;
+    }
+
+    rawEntry.qty = qty;
+    rawEntry.totalVolume = Number(rawEntry.unitVolume || 0) * qty;
 
     inventoryHistory.push({
         type: "qty-edit",
-        itemName: item.item,
-        previousQty: previousQty,
+        itemName: rawEntry.itemName,
+        previousQty: previousRawQty,
         newQty: qty,
-        rawEntryId: lastAddedRawEntryId,
+        rawEntryId: rawEntry.id,
         previousRawQty: previousRawQty
     });
 
-    currentItemVolume = item.excluded ? 0 : (item.volume * qty);
-recalculateTotalVolume();
+    saveToDevice();
 
-    const label = item.displayName || item.item;
-    updateInventoryDisplay(qty + " X " + String(label).toUpperCase());
+    syncLiveInventoryFromRawForActiveSequence();
+
+    currentItemVolume = rawEntry.excluded ? 0 : Number(rawEntry.totalVolume || 0);
+
+    const tags = [];
+    if (rawEntry.dismantle) tags.push("[DISMANTLE]");
+    if (rawEntry.expWrap) tags.push("[EXP WRAP]");
+    if (rawEntry.crated && rawEntry.crateDims) {
+        tags.push(
+            "[CRATE: " +
+            rawEntry.crateDims.l + " x " +
+            rawEntry.crateDims.w + " x " +
+            rawEntry.crateDims.h + " " +
+            rawEntry.crateDims.unit + "]"
+        );
+    }
+    if (rawEntry.damage) tags.push("[DAMAGE: " + rawEntry.damage.toUpperCase() + "]");
+    if (rawEntry.excluded) tags.push("[EXCLUDED]");
+    if (rawEntry.note) tags.push("[NOTE: " + rawEntry.note.toUpperCase() + "]");
+
+    const label = (rawEntry.itemName || "ITEM").toUpperCase();
+    updateInventoryDisplay(qty + " X " + label + (tags.length ? " " + tags.join(" ") : ""));
+
     triggerInventoryPulse("qty", "blue");
     triggerInventoryPulse("total", "blue");
-    triggerHaptic("light");
 
     if (qtyResetTimer) {
         clearTimeout(qtyResetTimer);
     }
 
     qtyResetTimer = setTimeout(function() {
-        const qtyInput = document.getElementById("inv-qty");
-        if (qtyInput) qtyInput.value = 1;
+        resetInventoryQtyInput();
     }, 550);
-renderActionButtonStates();
+
+    renderActionButtonStates();
     updateUndoButtonState();
 }
 function openVolumeOverride() {
@@ -2921,8 +2928,93 @@ function renderListedInventory() {
         `;
     }).join("");
 }
+function resetInventoryQtyInput() {
+    const qtyInput = document.getElementById("inv-qty");
+    if (qtyInput) qtyInput.value = 1;
+}
 
-window.onload = renderDashboard;    </script>
+function getCleanInventoryQtyValue(rawValue) {
+    let qty = parseInt(rawValue, 10);
+    if (isNaN(qty) || qty < 1) qty = 1;
+    return qty;
+}
+
+function syncLiveInventoryFromRawForActiveSequence() {
+    if (!currentJob) return;
+
+    inventoryItems = [];
+
+    const rawItems = getRawInventoryItemsForSequence(activeSeqId);
+
+    rawItems.forEach(function(entry) {
+        let existing = inventoryItems.find(function(i) {
+            return (
+                i.item === entry.itemName &&
+                i.roomName === entry.roomName &&
+                i.floorName === entry.floorName &&
+                String(i.deliveryId || "") === String(entry.deliveryId || "")
+            );
+        });
+
+        const unitVolume = Number(entry.unitVolume || 0);
+        const qty = Number(entry.qty || 0);
+
+        if (existing) {
+            existing.qty += qty;
+        } else {
+            inventoryItems.push({
+                item: entry.itemName,
+                displayName: entry.itemName,
+                volume: unitVolume,
+                qty: qty,
+                dismantle: !!entry.dismantle,
+                expWrap: !!entry.expWrap,
+                excluded: !!entry.excluded,
+                roomName: entry.roomName || "",
+                floorName: entry.floorName || "",
+                deliveryId: entry.deliveryId || ""
+            });
+        }
+    });
+
+    recalculateTotalVolume();
+}
+console.log("Photon script loaded once");
+window.onload = function () {
+    renderDashboard();
+};    </script>
+<!-- CRATE MODAL -->
+<div id="crate-overlay" class="crate-overlay" onclick="closeCrateModal()">
+    <div class="crate-panel" onclick="event.stopPropagation()">
+        <div class="crate-title">Crate Dimensions</div>
+        <div class="crate-subtitle">Inside measurements including space for packaging</div>
+
+        <div class="crate-unit-toggle">
+            <button type="button" id="crate-unit-in" class="crate-unit-btn active" onclick="setCrateUnit('IN')">Inches</button>
+            <button type="button" id="crate-unit-cm" class="crate-unit-btn" onclick="setCrateUnit('CM')">CM's</button>
+        </div>
+
+        <div class="crate-grid">
+            <div>
+                <label class="crate-field-label">Length</label>
+                <input type="number" id="crate-length" class="crate-field-input" placeholder="0">
+            </div>
+            <div>
+                <label class="crate-field-label">Width</label>
+                <input type="number" id="crate-width" class="crate-field-input" placeholder="0">
+            </div>
+            <div>
+                <label class="crate-field-label">Height</label>
+                <input type="number" id="crate-height" class="crate-field-input" placeholder="0">
+            </div>
+        </div>
+
+        <div class="crate-actions">
+            <button type="button" class="crate-cancel-btn" onclick="closeCrateModal()">Cancel</button>
+            <button type="button" class="crate-save-btn" onclick="saveCrateModal()">Apply Crate</button>
+        </div>
+    </div>
+</div>
 </body>
 
 </html>
