@@ -2290,7 +2290,7 @@ function updatePropData(f, v) {
 }
         function triggerPulse(id) { const el = document.getElementById(id); if(el) { el.classList.remove('pulse-new'); void el.offsetWidth; el.classList.add('pulse-new'); } }
         
-  function switchTab(t) {
+    function switchTab(t) {
     document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
     document.getElementById('content-' + t).classList.remove('hidden');
@@ -2310,7 +2310,7 @@ function updatePropData(f, v) {
         updateUndoButtonState();
     }
 
-       if (t === 'listed') {
+    if (t === 'listed') {
         listedSequenceFilter = activeSeqId ? String(activeSeqId) : "__all__";
         listedDeliveryFilter =
             currentJob &&
@@ -2321,6 +2321,8 @@ function updatePropData(f, v) {
 
         renderListedInventory();
     }
+}
+
 function splitManualName(fullName) {
     const cleaned = (fullName || "").trim();
 
