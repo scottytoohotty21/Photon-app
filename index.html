@@ -2203,8 +2203,12 @@ function openSimpleInputModal(config) {
     input.type = config.inputType || "text";
     input.inputMode = config.inputMode || "text";
 
+input.oninput = function () {
     setModalErrorText("simple-input-error-text", "");
-    overlay.style.display = "flex";
+};
+
+setModalErrorText("simple-input-error-text", "");
+overlay.style.display = "flex";
 
     setTimeout(function () {
         input.focus();
@@ -2431,7 +2435,12 @@ function saveSimpleInputModal() {
             triggerPulse('active-sequence-ui');
         }
 
-        function renderDashboard() {
+        function filterFiles() {
+    // safe fallback so dashboard search never breaks
+    return;
+}
+
+function renderDashboard() {
             document.getElementById('job-list').innerHTML = jobs.map(j => {
                 let seqBreakdown = j.sequences.length > 0 ? j.sequences.map(s => `
                     <div class="seq-row">
@@ -2881,11 +2890,19 @@ function addMiscItem() {
     volumeInput.value = "";
     setModalErrorText("misc-error-text", "");
 
-    overlay.style.display = "flex";
+    nameInput.oninput = function () {
+    setModalErrorText("misc-error-text", "");
+};
 
-    setTimeout(function () {
-        nameInput.focus();
-    }, 50);
+volumeInput.oninput = function () {
+    setModalErrorText("misc-error-text", "");
+};
+
+overlay.style.display = "flex";
+
+setTimeout(function () {
+    nameInput.focus();
+}, 50);
 }
 function setModalErrorText(elementId, message) {
     const el = document.getElementById(elementId);
@@ -3010,8 +3027,13 @@ function addInventoryNote() {
     if (!overlay || !input) return;
 
     input.value = rawEntry.note || "";
+
+input.oninput = function () {
     setModalErrorText("note-error-text", "");
-    overlay.style.display = "flex";
+};
+
+setModalErrorText("note-error-text", "");
+overlay.style.display = "flex";
 
     setTimeout(function () {
         input.focus();
@@ -3037,11 +3059,22 @@ function addOrEditCrate() {
     setCrateUnit(selectedCrateUnit);
 
     lengthInput.value = existing.l || "";
-    widthInput.value = existing.w || "";
-    heightInput.value = existing.h || "";
-    setModalErrorText("crate-error-text", "");
+widthInput.value = existing.w || "";
+heightInput.value = existing.h || "";
 
-    overlay.style.display = "flex";
+lengthInput.oninput = function () {
+    setModalErrorText("crate-error-text", "");
+};
+widthInput.oninput = function () {
+    setModalErrorText("crate-error-text", "");
+};
+heightInput.oninput = function () {
+    setModalErrorText("crate-error-text", "");
+};
+
+setModalErrorText("crate-error-text", "");
+
+overlay.style.display = "flex";
 }
 function closeCrateModal() {
     const overlay = document.getElementById("crate-overlay");
