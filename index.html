@@ -3270,7 +3270,7 @@ function addOrEditDamage() {
     if (!overlay || !customNote) return;
 
     clearDamageOptionButtons();
-
+    setModalErrorText("damage-error-text", "");
     const currentDamage = (rawEntry.damage || "").trim();
 
     if (
@@ -3298,6 +3298,7 @@ function closeDamageModal() {
 
     selectedDamageOption = "";
     clearDamageOptionButtons();
+    setModalErrorText("damage-error-text", "");
 }
 
 function selectDamageOption(option) {
@@ -3361,8 +3362,11 @@ function saveDamageModal() {
     } else if (selectedDamageOption) {
         finalDamage = selectedDamageOption;
     } else {
+        setModalErrorText("damage-error-text", "Select a damage type or enter a note");
         return;
     }
+
+    setModalErrorText("damage-error-text", "");
 
     const previousDamage = rawEntry.damage || "";
     rawEntry.damage = finalDamage;
@@ -4124,10 +4128,12 @@ window.onload = function () {
             placeholder="If none apply, enter damage note here..."
         ></textarea>
 
-        <div class="damage-actions">
-            <button type="button" class="damage-cancel-btn" onclick="closeDamageModal()">Cancel</button>
-            <button type="button" class="damage-save-btn" onclick="saveDamageModal()">Save Damage</button>
-        </div>
+        <div id="damage-error-text" class="modal-error-text"></div>
+
+<div class="damage-actions">
+    <button type="button" class="damage-cancel-btn" onclick="closeDamageModal()">Cancel</button>
+    <button type="button" class="damage-save-btn" onclick="saveDamageModal()">Save Damage</button>
+</div>
     </div>
 </div>
 <!-- MISC MODAL -->
