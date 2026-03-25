@@ -2203,6 +2203,7 @@ function openSimpleInputModal(config) {
     input.type = config.inputType || "text";
     input.inputMode = config.inputMode || "text";
 
+    setModalErrorText("simple-input-error-text", "");
     overlay.style.display = "flex";
 
     setTimeout(function () {
@@ -2223,6 +2224,7 @@ function closeSimpleInputModal() {
         input.placeholder = "";
     }
 
+    setModalErrorText("simple-input-error-text", "");
     simpleInputMode = "";
     simpleInputMeta = null;
 }
@@ -2239,7 +2241,12 @@ function saveSimpleInputModal() {
             currentJob.inventory.customRooms = [];
         }
 
-        if (!rawValue) return;
+        if (!rawValue) {
+            setModalErrorText("simple-input-error-text", "Enter a room name");
+            return;
+        }
+
+        setModalErrorText("simple-input-error-text", "");
 
         const alreadyExists = getRoomOptions().some(function(room) {
             return room.toLowerCase() === rawValue.toLowerCase();
@@ -2265,8 +2272,18 @@ function saveSimpleInputModal() {
             currentJob.inventory.customFloors = [];
         }
 
+        if (!rawValue) {
+            setModalErrorText("simple-input-error-text", "Enter a floor number");
+            return;
+        }
+
         const floorLabel = formatNumberedFloorLabel(rawValue);
-        if (!floorLabel) return;
+        if (!floorLabel) {
+            setModalErrorText("simple-input-error-text", "Enter a valid floor number");
+            return;
+        }
+
+        setModalErrorText("simple-input-error-text", "");
 
         const alreadyExists = getFloorOptions().some(function(floor) {
             return floor.toLowerCase() === floorLabel.toLowerCase();
@@ -2289,7 +2306,12 @@ function saveSimpleInputModal() {
             currentJob.inventory.customFloors = [];
         }
 
-        if (!rawValue) return;
+        if (!rawValue) {
+            setModalErrorText("simple-input-error-text", "Enter a floor name");
+            return;
+        }
+
+        setModalErrorText("simple-input-error-text", "");
 
         const alreadyExists = getFloorOptions().some(function(floor) {
             return floor.toLowerCase() === rawValue.toLowerCase();
@@ -2314,8 +2336,18 @@ function saveSimpleInputModal() {
         });
         if (!item) return;
 
+        if (!rawValue) {
+            setModalErrorText("simple-input-error-text", "Enter a unit volume");
+            return;
+        }
+
         const newVolume = parseFloat(rawValue);
-        if (isNaN(newVolume) || newVolume <= 0) return;
+        if (isNaN(newVolume) || newVolume <= 0) {
+            setModalErrorText("simple-input-error-text", "Unit volume must be greater than 0");
+            return;
+        }
+
+        setModalErrorText("simple-input-error-text", "");
 
         const previousVolume = item.volume;
         item.volume = newVolume;
@@ -2345,7 +2377,7 @@ function saveSimpleInputModal() {
         const labelText = item.displayName || item.item;
         updateInventoryDisplay(item.qty + " X " + String(labelText).toUpperCase() + " @ " + newVolume + " CUFT");
 
-                triggerInventoryPulse("current", "blue");
+        triggerInventoryPulse("current", "blue");
         triggerInventoryPulse("total", "blue");
         triggerHaptic("medium");
         updateUndoButtonState();
@@ -2978,6 +3010,7 @@ function addInventoryNote() {
     if (!overlay || !input) return;
 
     input.value = rawEntry.note || "";
+    setModalErrorText("note-error-text", "");
     overlay.style.display = "flex";
 
     setTimeout(function () {
@@ -3136,6 +3169,7 @@ function closeNoteModal() {
 
     if (overlay) overlay.style.display = "none";
     if (input) input.value = "";
+    setModalErrorText("note-error-text", "");
 }
 
 function saveNoteModal() {
@@ -3147,7 +3181,12 @@ function saveNoteModal() {
     if (!input) return;
 
     const cleanNote = input.value.trim();
-    if (!cleanNote) return;
+    if (!cleanNote) {
+        setModalErrorText("note-error-text", "Enter a note or press cancel");
+        return;
+    }
+
+    setModalErrorText("note-error-text", "");
 
     const previousNote = rawEntry.note || "";
     rawEntry.note = cleanNote;
@@ -4106,6 +4145,8 @@ window.onload = function () {
             placeholder="Type note here..."
         ></textarea>
 
+        <div id="note-error-text" class="modal-error-text"></div>
+
         <div class="note-actions">
             <button type="button" class="note-cancel-btn" onclick="closeNoteModal()">Cancel</button>
             <button type="button" class="note-save-btn" onclick="saveNoteModal()">Save Note</button>
@@ -4147,7 +4188,7 @@ window.onload = function () {
     </div>
 </div>
 
-<!-- SIMPLE INPUT MODAL -->
+<!-- SIMPLE INPUT MODAL --><!-- SIMPLE INPUT MODAL -->
 <div id="simple-input-overlay" class="simple-input-overlay" onclick="closeSimpleInputModal()">
     <div class="simple-input-panel" onclick="event.stopPropagation()">
         <div id="simple-input-title" class="simple-input-title">Enter Value</div>
@@ -4162,6 +4203,8 @@ window.onload = function () {
                 placeholder=""
             >
         </div>
+
+        <div id="simple-input-error-text" class="modal-error-text"></div>
 
         <div class="simple-input-actions">
             <button type="button" class="simple-input-cancel-btn" onclick="closeSimpleInputModal()">Cancel</button>
