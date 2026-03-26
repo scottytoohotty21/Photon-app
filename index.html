@@ -3935,21 +3935,24 @@ function getListedInventoryItems() {
 }
 
 function getListedSequenceFilterOptions(items) {
-    const seen = {};
-    const options = [];
+    if (!currentJob || !Array.isArray(currentJob.sequences)) return [];
 
+    const itemSequenceIds = {};
     items.forEach(function(entry) {
         const key = String(entry.sequenceId || "");
-        if (!key || seen[key]) return;
-
-        seen[key] = true;
-        options.push({
-            value: key,
-            label: getSequenceLabelById(key)
-        });
+        if (key) itemSequenceIds[key] = true;
     });
 
-    return options;
+    return currentJob.sequences
+        .filter(function(seq) {
+            return itemSequenceIds[String(seq.id)];
+        })
+        .map(function(seq) {
+            return {
+                value: String(seq.id),
+                label: getSequenceLabelById(seq.id)
+            };
+        });
 }
 
 function getListedDeliveryFilterOptions(items) {
