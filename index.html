@@ -4154,13 +4154,21 @@ function renderListedInventory() {
                 const isExcluded = !!entry.excluded;
 
                 return `
-                    <tr class="border-t border-slate-200 ${isExcluded ? 'bg-slate-50' : ''}">
-                        <td class="py-2 pr-2 text-[10px] font-black uppercase ${isExcluded ? 'text-slate-500 italic' : 'text-slate-900'}">${entry.itemName || "-"}${tagText}</td>
-                        <td class="py-2 pr-2 text-[10px] font-black uppercase ${isExcluded ? 'text-slate-400 italic' : 'text-blue-600'}">${entry.qty || 0}</td>
-                        <td class="py-2 pr-2 text-[10px] font-black uppercase ${isExcluded ? 'text-slate-300 italic' : 'text-slate-700'}">${isExcluded ? '' : (entry.unitVolume || 0)}</td>
-                        <td class="py-2 text-[10px] font-black uppercase ${isExcluded ? 'text-slate-300 italic' : 'text-slate-900'}">${isExcluded ? '' : (entry.totalVolume || 0)}</td>
-                    </tr>
-                `;
+    <tr class="border-t border-slate-200 ${isExcluded ? 'bg-slate-50' : ''}">
+        <td class="py-2 pr-2 text-[10px] font-black uppercase align-top break-words ${isExcluded ? 'text-slate-500 italic' : 'text-slate-900'}">
+            ${entry.itemName || "-"}${tagText}
+        </td>
+        <td class="py-2 px-1 text-[10px] font-black uppercase text-center align-top ${isExcluded ? 'text-slate-400 italic' : 'text-blue-600'}">
+            ${entry.qty || 0}
+        </td>
+        <td class="py-2 px-1 text-[10px] font-black uppercase text-center align-top ${isExcluded ? 'text-slate-300 italic' : 'text-slate-700'}">
+            ${isExcluded ? '' : (entry.unitVolume || 0)}
+        </td>
+        <td class="py-2 pl-1 text-[10px] font-black uppercase text-center align-top ${isExcluded ? 'text-slate-300 italic' : 'text-slate-900'}">
+            ${isExcluded ? '' : (entry.totalVolume || 0)}
+        </td>
+    </tr>
+`;
             }).join("");
 
             return `
@@ -4174,15 +4182,15 @@ function renderListedInventory() {
                     </div>
 
                     <div class="p-4">
-                        <table class="w-full">
-                            <thead>
-                                <tr class="border-b border-slate-300">
-                                    <th class="text-left py-2 pr-2 text-[9px] font-black text-slate-400 uppercase">Item</th>
-                                    <th class="text-left py-2 pr-2 text-[9px] font-black text-slate-400 uppercase">Qty</th>
-                                    <th class="text-left py-2 pr-2 text-[9px] font-black text-slate-400 uppercase">Unit Vol</th>
-                                    <th class="text-left py-2 text-[9px] font-black text-slate-400 uppercase">Total Vol</th>
-                                </tr>
-                            </thead>
+    <table class="w-full table-fixed">
+        <thead>
+            <tr class="border-b border-slate-300">
+                <th class="w-[52%] text-left py-2 pr-2 text-[9px] font-black text-slate-400 uppercase">Item</th>
+                <th class="w-[12%] text-center py-2 px-1 text-[9px] font-black text-slate-400 uppercase">Qty</th>
+                <th class="w-[16%] text-center py-2 px-1 text-[9px] font-black text-slate-400 uppercase">Unit Vol</th>
+                <th class="w-[20%] text-center py-2 pl-1 text-[9px] font-black text-slate-400 uppercase">Total Vol</th>
+            </tr>
+        </thead>
                             <tbody>
                                 ${rows}
                             </tbody>
