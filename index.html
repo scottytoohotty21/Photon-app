@@ -1152,7 +1152,7 @@ Enter as: Surname, First Name
         </div>
     </div>
 
-    <div id="listed-summary-bar" class="grid grid-cols-3 gap-3 mb-4"></div>
+    <div id="listed-summary-bar" class="grid grid-cols-1 gap-3 mb-4"></div>
 
     <div id="listed-inventory-output" class="space-y-4">
         <div class="p-12 text-center text-slate-400 font-bold italic uppercase">No inventory saved</div>
@@ -4008,16 +4008,6 @@ function renderListedSummary(summary) {
             <div class="listed-stat-label">Included Volume</div>
             <div class="listed-stat-value">${summary.includedVolume}</div>
             <div class="listed-stat-sub">Cuft counted</div>
-        </div>
-        <div class="listed-stat-card">
-            <div class="listed-stat-label">Saved Lines</div>
-            <div class="listed-stat-value">${summary.lineCount}</div>
-            <div class="listed-stat-sub">Raw records shown</div>
-        </div>
-        <div class="listed-stat-card">
-            <div class="listed-stat-label">Excluded Lines</div>
-            <div class="listed-stat-value">${summary.excludedCount}</div>
-            <div class="listed-stat-sub">Not in total volume</div>
         </div>
     `;
 }
