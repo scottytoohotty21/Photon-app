@@ -1605,8 +1605,17 @@ document.getElementById('hdr-ref').innerText =
     activePropId = currentJob.properties[0].id;
 
 if (!currentJob.sequences || currentJob.sequences.length === 0) {
-    addSequence();
-    return;
+    const id = Date.now();
+    currentJob.sequences.push({
+        id: id,
+        moveType: "",
+        packOption: "",
+        vol: 0,
+        isSaved: false,
+        collections: [currentJob.properties[0].id],
+        deliveries: [currentJob.properties[1] ? currentJob.properties[1].id : currentJob.properties[0].id]
+    });
+    activeSeqId = id;
 } else {
     activeSeqId = getDefaultSequenceId();
 }
@@ -2624,13 +2633,7 @@ if (t === 'listed') {
     const defaultSeqId = getDefaultSequenceId();
     listedSequenceFilter = defaultSeqId ? String(defaultSeqId) : "__all__";
 
-    listedDeliveryFilter =
-        currentJob &&
-        currentJob.inventory &&
-        currentJob.inventory.activeDeliveryId
-            ? String(currentJob.inventory.activeDeliveryId)
-            : "__all__";
-
+    listedDeliveryFilter = "__all__";
     listedTextFilter = "";
 
     renderListedInventory();
