@@ -4022,6 +4022,50 @@ function renderListedSummary(summary) {
     `;
 }
 
+function getListedBoxOrder(itemName) {
+    const name = String(itemName || "").toUpperCase().trim();
+
+    if (name === "AP BOX") return 1;
+    if (name === "CG BOX") return 2;
+    if (name === "BOOK BOX") return 3;
+    if (name === "LINEN BOX") return 4;
+    if (name === "WR BOX") return 5;
+
+    return 999;
+}
+
+function isListedBoxItem(itemName) {
+    return getListedBoxOrder(itemName) !== 999;
+}
+
+function sortListedRoomEntries(entries) {
+    return entries.slice().sort(function(a, b) {
+        const aExcluded = !!a.excluded;
+        const bExcluded = !!b.excluded;
+
+        // excluded always last
+        if (aExcluded !== bExcluded) {
+            return aExcluded ? 1 : -1;
+        }
+
+        const aIsBox = isListedBoxItem(a.itemName);
+        const bIsBox = isListedBoxItem(b.itemName);
+
+        // normal items before boxes
+        if (aIsBox !== bIsBox) {
+            return aIsBox ? 1 : -1;
+        }
+
+        // box order: AP / CG / BOOK / LINEN / WR
+        if (aIsBox && bIsBox) {
+            const boxDiff = getListedBoxOrder(a.itemName) - getListedBoxOrder(b.itemName);
+            if (boxDiff !== 0) return boxDiff;
+        }
+
+        // fallback alphabetical
+        return String(a.itemName || "").localeCompare(String(b.itemName || ""));
+    });
+}
 function groupInventoryItemsForListedView(items) {
     const grouped = {};
 
@@ -4067,7 +4111,7 @@ function groupInventoryItemsForListedView(items) {
                     roomName: room.roomName,
                     floorName: room.floorName,
                     totalVolume: room.totalVolume,
-                    entries: mergeListedInventoryEntries(room.entries)
+                    entries: sortListedRoomEntries(mergeListedInventoryEntries(room.entries))
                 };
             })
         };
