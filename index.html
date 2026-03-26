@@ -1626,6 +1626,8 @@ if (!currentJob.sequences || currentJob.sequences.length === 0) {
 } else {
     setActiveSequenceToDefault();
 }
+if (!currentJob.inventory) currentJob.inventory = {};
+currentJob.inventory.activeDeliveryId = null;
 
   if (!currentJob.inventory) currentJob.inventory = {};
 if (!Array.isArray(currentJob.inventory.items)) currentJob.inventory.items = [];
@@ -2594,6 +2596,9 @@ function updatePropData(f, v) {
      function loadSequence(id) {
     activeSeqId = id;
 
+    if (!currentJob.inventory) currentJob.inventory = {};
+    currentJob.inventory.activeDeliveryId = null;
+
     const qtyInput = document.getElementById("inv-qty");
     if (qtyInput) qtyInput.value = 1;
 
@@ -2602,6 +2607,7 @@ function updatePropData(f, v) {
     renderInventoryDeliveryDropdown();
 
     rebuildLiveInventoryFromSequence(activeSeqId);
+    saveToDevice();
 }
         function triggerPulse(id) { const el = document.getElementById(id); if(el) { el.classList.remove('pulse-new'); void el.offsetWidth; el.classList.add('pulse-new'); } }
         
@@ -2619,6 +2625,9 @@ function updatePropData(f, v) {
 
   if (t === 'inventory') {
     setActiveSequenceToDefault();
+
+    if (!currentJob.inventory) currentJob.inventory = {};
+    currentJob.inventory.activeDeliveryId = null;
 
     renderInventorySequenceDropdown();
     renderInventoryDeliveryDropdown();
