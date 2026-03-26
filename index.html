@@ -4172,6 +4172,8 @@ function getListedEntryMergeKey(entry) {
         : "";
 
     return [
+        entry.sequenceId || "",
+        entry.deliveryId || "",
         entry.roomName || "",
         entry.floorName || "",
         entry.itemName || "",
