@@ -1529,6 +1529,13 @@ function getDefaultSequenceId() {
 
     return currentJob.sequences[0].id;
 }
+function setActiveSequenceToDefault() {
+    const defaultSeqId = getDefaultSequenceId();
+    if (!defaultSeqId) return null;
+
+    activeSeqId = defaultSeqId;
+    return activeSeqId;
+}
 
         function saveToDevice() {
             localStorage.setItem('photon_jobs', JSON.stringify(jobs));
@@ -1617,7 +1624,7 @@ if (!currentJob.sequences || currentJob.sequences.length === 0) {
     });
     activeSeqId = id;
 } else {
-    activeSeqId = getDefaultSequenceId();
+    setActiveSequenceToDefault();
 }
 
   if (!currentJob.inventory) currentJob.inventory = {};
@@ -1725,13 +1732,13 @@ function renderInventorySequenceDropdown() {
     const dropdown = document.getElementById('inv-seq-select');
     if (!dropdown || !currentJob) return;
 
-  const defaultSeqId = activeSeqId || getDefaultSequenceId();
+  const selectedSeqId = activeSeqId || getDefaultSequenceId();
 
 dropdown.innerHTML = currentJob.sequences.map((s, idx) => {
     const moveLabel = s.moveType || 'New Sequence';
     const packLabel = s.packOption || 'No Packing Set';
     const label = `Seq #${idx + 1}: ${moveLabel} / ${packLabel}`;
-    return `<option value="${s.id}" ${s.id == defaultSeqId ? 'selected' : ''}>${label}</option>`;
+    return `<option value="${s.id}" ${s.id == selectedSeqId ? 'selected' : ''}>${label}</option>`;
 }).join('');
 
 }
@@ -2604,20 +2611,14 @@ function updatePropData(f, v) {
     document.getElementById('content-' + t).classList.remove('hidden');
     document.getElementById('nav-' + t).classList.add('active');
 
-    if (t === 'sequence') {
-    const defaultSeqId = getDefaultSequenceId();
-    if (defaultSeqId) {
-        activeSeqId = defaultSeqId;
-    }
+ if (t === 'sequence') {
+    setActiveSequenceToDefault();
     renderSequenceUI();
 }
     if (t === 'address') renderAddressUI();
 
-   if (t === 'inventory') {
-    const defaultSeqId = getDefaultSequenceId();
-    if (defaultSeqId) {
-        activeSeqId = defaultSeqId;
-    }
+  if (t === 'inventory') {
+    setActiveSequenceToDefault();
 
     renderInventorySequenceDropdown();
     renderInventoryDeliveryDropdown();
@@ -2630,7 +2631,7 @@ function updatePropData(f, v) {
 }
 
 if (t === 'listed') {
-    const defaultSeqId = getDefaultSequenceId();
+    const defaultSeqId = setActiveSequenceToDefault();
     listedSequenceFilter = defaultSeqId ? String(defaultSeqId) : "__all__";
 
     listedDeliveryFilter = "__all__";
