@@ -3833,7 +3833,12 @@ function getListedDeliveryFilterOptions(items) {
     const seen = {};
     const options = [];
 
-    items.forEach(function(entry) {
+    const sequenceScopedItems = items.filter(function(entry) {
+        if (listedSequenceFilter === "__all__") return true;
+        return String(entry.sequenceId || "") === String(listedSequenceFilter);
+    });
+
+    sequenceScopedItems.forEach(function(entry) {
         const key = String(entry.deliveryId || "");
         if (!key || seen[key]) return;
 
@@ -3893,6 +3898,7 @@ function renderListedInventoryFilters(items) {
 
 function handleListedSequenceFilterChange(value) {
     listedSequenceFilter = value || "__all__";
+    listedDeliveryFilter = "__all__";
     renderListedInventory();
 }
 
