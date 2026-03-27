@@ -4364,29 +4364,37 @@ function renderListedSummary(summary, materials) {
                 <div class="listed-stat-sub">Cuft counted</div>
             </div>
 
-            <div class="listed-stat-card">
-                <div class="listed-stat-label">Materials Summary</div>
-                <div class="text-[10px] font-black text-slate-900 uppercase leading-5 space-y-1">
-                    <div>AP Boxes: ${materials.apBoxes}</div>
-                    <div>CG Boxes: ${materials.cgBoxes}</div>
-                    <div>Book Boxes: ${materials.bookBoxes}</div>
-                    <div>Linen Boxes: ${materials.linenBoxes}</div>
-                    <div>WR Boxes: ${materials.wrBoxes}</div>
+           <div class="listed-stat-card">
+    <div class="listed-stat-label">Materials Summary</div>
 
-                    <div class="pt-2 text-slate-400">Protective</div>
-                    <div>Single Mattress Bags: ${materials.singleMattressBags}</div>
-                    <div>Double Mattress Bags: ${materials.doubleMattressBags}</div>
-                    <div>King Mattress Bags: ${materials.kingMattressBags}</div>
-                    <div>Armchair Covers: ${materials.armchairCovers}</div>
-                    <div>2-Seater Covers: ${materials.sofa2Covers}</div>
-                    <div>3-Seater Covers: ${materials.sofa3Covers}</div>
-                    <div>4-Seater Covers: ${materials.sofa4Covers}</div>
+    <div class="grid grid-cols-2 gap-4 text-[10px] font-black text-slate-900 uppercase leading-5">
+        <div class="space-y-1">
+            <div class="text-slate-400 pb-1">Cartons</div>
+            <div>AP Boxes: ${materials.apBoxes}</div>
+            <div>CG Boxes: ${materials.cgBoxes}</div>
+            <div>Book Boxes: ${materials.bookBoxes}</div>
+            <div>Linen Boxes: ${materials.linenBoxes}</div>
+            <div>WR Boxes: ${materials.wrBoxes}</div>
 
-                    <div class="pt-2 text-slate-400">Special Packs</div>
-                    <div>Mirror / Picture Packs: ${materials.mirrorPicturePacks}</div>
-                    <div>Wine Dividers: ${materials.wineDividers}</div>
-                </div>
-            </div>
+            <div class="pt-2 text-slate-400">Mattress Bags</div>
+            <div>Single: ${materials.singleMattressBags}</div>
+            <div>Double: ${materials.doubleMattressBags}</div>
+            <div>King: ${materials.kingMattressBags}</div>
+        </div>
+
+        <div class="space-y-1">
+            <div class="text-slate-400 pb-1">Sofa Covers</div>
+            <div>Armchair: ${materials.armchairCovers}</div>
+            <div>2-Seater: ${materials.sofa2Covers}</div>
+            <div>3-Seater: ${materials.sofa3Covers}</div>
+            <div>4-Seater: ${materials.sofa4Covers}</div>
+
+            <div class="pt-2 text-slate-400">Special Packs</div>
+            <div>Mirror / Picture: ${materials.mirrorPicturePacks}</div>
+            <div>Wine Dividers: ${materials.wineDividers}</div>
+        </div>
+    </div>
+</div>
         </div>
     `;
 }
