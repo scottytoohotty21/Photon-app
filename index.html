@@ -1029,49 +1029,7 @@
     text-transform: uppercase;
     color: #64748b;
 }
-.listed-signature-card {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 14px;
-    padding: 14px;
-    min-height: 100%;
-}
 
-.listed-signature-label {
-    font-size: 9px;
-    font-weight: 900;
-    text-transform: uppercase;
-    color: #94a3b8;
-    margin-bottom: 8px;
-}
-
-.listed-signature-box {
-    height: 120px;
-    border: 2px dashed #cbd5e1;
-    border-radius: 12px;
-    background: white;
-    display: flex;
-    align-items: end;
-    justify-content: center;
-    padding: 10px;
-}
-
-.listed-signature-line {
-    width: 100%;
-    border-top: 1.5px solid #cbd5e1;
-    text-align: center;
-    padding-top: 6px;
-    font-size: 9px;
-    font-weight: 900;
-    text-transform: uppercase;
-    color: #64748b;
-}
-
-.listed-footer-stack {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
     </style>
 </head>
 <body class="p-4 pb-12">
@@ -1282,11 +1240,18 @@ Enter as: Surname, First Name
 
 <section id="content-listed" class="tab-content hidden bg-white p-5 rounded-2xl shadow-inner">
     <div class="flex items-center justify-between mb-4">
-        <div>
-            <div class="text-sm font-black text-slate-900 uppercase">Listed Inventory</div>
-            <div class="text-[10px] font-bold text-slate-400 uppercase">Saved inventory records grouped for quick review</div>
-        </div>
+    <div>
+        <div class="text-sm font-black text-slate-900 uppercase">Listed Inventory</div>
+        <div class="text-[10px] font-bold text-slate-400 uppercase">Saved inventory records grouped for quick review</div>
     </div>
+
+    <button
+        onclick="printListedInventoryPdf()"
+        class="bg-blue-600 text-white px-4 py-3 rounded-xl font-black text-[10px] uppercase"
+    >
+        Export PDF
+    </button>
+</div>
 
     <div class="grid grid-cols-12 gap-3 mb-4">
         <div class="col-span-4">
@@ -1308,8 +1273,6 @@ Enter as: Surname, First Name
             >
         </div>
     </div>
-
-    <div id="listed-summary-bar" class="hidden"></div>
 
     <div id="listed-inventory-output" class="space-y-4">
     <div class="p-12 text-center text-slate-400 font-bold italic uppercase">No inventory saved</div>
@@ -4919,6 +4882,469 @@ function loadSignatureImageToCanvas(imageData) {
         signaturePadCtx.drawImage(img, 0, 0, signaturePad.width, signaturePad.height);
     };
     img.src = imageData;
+}
+function getPrintableListedSections(items) {
+    const groupedSections = groupInventoryItemsForListedView(items);
+
+    return groupedSections.map(function(section) {
+        const roomBlocks = section.rooms.map(function(room) {
+            const rows = room.entries.map(function(entry) {
+                const tags = [];
+
+                if (entry.dismantle) tags.push("DISMANTLE");
+                if (entry.expWrap) tags.push("EXP WRAP");
+                if (entry.crated && entry.crateDims) {
+                    tags.push(
+                        "CRATE: " +
+                        entry.crateDims.l + " x " +
+                        entry.crateDims.w + " x " +
+                        entry.crateDims.h + " " +
+                        entry.crateDims.unit
+                    );
+                }
+                if (entry.damage) tags.push("DAMAGE: " + entry.damage.toUpperCase());
+                if (entry.excluded) tags.push("EXCLUDED");
+                if (entry.note) tags.push("NOTE: " + entry.note.toUpperCase());
+
+                const tagText = tags.length ? " [" + tags.join("] [") + "]" : "";
+                const isExcluded = !!entry.excluded;
+
+                return `
+                    <tr>
+                        <td class="item-cell ${isExcluded ? 'excluded' : ''}">
+                            ${escapeHtml(entry.itemName || "-")}${escapeHtml(tagText)}
+                        </td>
+                        <td class="num-cell ${isExcluded ? 'excluded' : ''}">${entry.qty || 0}</td>
+                        <td class="num-cell ${isExcluded ? 'excluded' : ''}">${isExcluded ? "" : (entry.unitVolume || 0)}</td>
+                        <td class="num-cell ${isExcluded ? 'excluded' : ''}">${isExcluded ? "" : (entry.totalVolume || 0)}</td>
+                    </tr>
+                `;
+            }).join("");
+
+            return `
+                <div class="pdf-room-block">
+                    <div class="pdf-room-head">
+                        <div>
+                            <div class="pdf-room-title">${escapeHtml(room.roomName)}</div>
+                            <div class="pdf-room-floor">Floor: ${escapeHtml(room.floorName)}</div>
+                        </div>
+                        <div class="pdf-room-total">${room.totalVolume} CUFT</div>
+                    </div>
+
+                    <table class="pdf-table">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Qty</th>
+                                <th>Unit Vol</th>
+                                <th>Total Vol</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rows}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }).join("");
+
+        return `
+            <div class="pdf-section">
+                <div class="pdf-section-head">
+                    <div class="pdf-section-title">${escapeHtml(section.sequenceLabel)}</div>
+                    <div class="pdf-section-subtitle">Delivery To: ${escapeHtml(section.deliveryLabel)}</div>
+                </div>
+
+                <div class="pdf-section-body">
+                    ${roomBlocks}
+                    <div class="pdf-section-total">
+                        <span>Section Total</span>
+                        <strong>${section.totalVolume} CUFT</strong>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join("");
+}
+
+function getPrintableMaterialsHtml(materials) {
+    return `
+        <div class="pdf-materials-grid">
+            <div>
+                <div class="pdf-mini-head">Cartons</div>
+                <div>AP Boxes: ${materials.apBoxes}</div>
+                <div>CG Boxes: ${materials.cgBoxes}</div>
+                <div>Book Boxes: ${materials.bookBoxes}</div>
+                <div>Linen Boxes: ${materials.linenBoxes}</div>
+                <div>WR Boxes: ${materials.wrBoxes}</div>
+
+                <div class="pdf-mini-head space-top">Mattress Bags</div>
+                <div>Single: ${materials.singleMattressBags}</div>
+                <div>Double: ${materials.doubleMattressBags}</div>
+                <div>King: ${materials.kingMattressBags}</div>
+            </div>
+
+            <div>
+                <div class="pdf-mini-head">Sofa Covers</div>
+                <div>Armchair: ${materials.armchairCovers}</div>
+                <div>2-Seater: ${materials.sofa2Covers}</div>
+                <div>3-Seater: ${materials.sofa3Covers}</div>
+                <div>4-Seater: ${materials.sofa4Covers}</div>
+
+                <div class="pdf-mini-head space-top">Special Packs</div>
+                <div>Mirror / Picture: ${materials.mirrorPicturePacks}</div>
+                <div>Wine Dividers: ${materials.wineDividers}</div>
+            </div>
+        </div>
+    `;
+}
+
+function printListedInventoryPdf() {
+    if (!currentJob) return;
+
+    const allItems = getListedInventoryItems();
+    const filteredItems = filterListedInventoryItems(allItems);
+
+    if (!filteredItems.length) {
+        alert("No listed inventory to export.");
+        return;
+    }
+
+    const listedSummary = buildListedSummary(filteredItems);
+    const materialsSummary = buildMaterialsSummary(filteredItems);
+    const sectionsHtml = getPrintableListedSections(filteredItems);
+
+    const customerName =
+        (currentJob.customer && currentJob.customer.displayName) ||
+        currentJob.name ||
+        "---";
+
+    const reference = currentJob.ref || "---";
+
+    const seqLabel =
+        listedSequenceFilter === "__all__"
+            ? "All Sequences"
+            : getSequenceLabelById(listedSequenceFilter);
+
+    const deliveryLabel =
+        listedDeliveryFilter === "__all__"
+            ? "All Deliveries"
+            : getPropertyLabelById(listedDeliveryFilter);
+
+    const signedAt =
+        currentJob.signature && currentJob.signature.signedAt
+            ? new Date(currentJob.signature.signedAt).toLocaleString("en-GB")
+            : "Not signed";
+
+    const signatureHtml =
+        currentJob.signature && currentJob.signature.image
+            ? `<img src="${currentJob.signature.image}" class="pdf-signature-image" alt="Signature">`
+            : `<div class="pdf-signature-empty">No signature saved</div>`;
+
+    const printWindow = window.open("", "_blank");
+
+    if (!printWindow) {
+        alert("Popup blocked. Please allow popups and try again.");
+        return;
+    }
+
+    printWindow.document.write(`
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <title>Photon Listed Inventory PDF</title>
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    color: #0f172a;
+                    margin: 24px;
+                    font-size: 12px;
+                    line-height: 1.4;
+                }
+
+                .pdf-topbar {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: flex-start;
+                    gap: 20px;
+                    margin-bottom: 20px;
+                    border-bottom: 2px solid #cbd5e1;
+                    padding-bottom: 12px;
+                }
+
+                .pdf-title {
+                    font-size: 22px;
+                    font-weight: 800;
+                    text-transform: uppercase;
+                    margin-bottom: 4px;
+                }
+
+                .pdf-sub {
+                    font-size: 11px;
+                    color: #475569;
+                    text-transform: uppercase;
+                    margin-top: 2px;
+                }
+
+                .pdf-filter-bar {
+                    margin-bottom: 20px;
+                    padding: 12px;
+                    background: #f8fafc;
+                    border: 1px solid #e2e8f0;
+                }
+
+                .pdf-filter-line {
+                    margin-bottom: 4px;
+                    font-size: 11px;
+                    text-transform: uppercase;
+                }
+
+                .pdf-section {
+                    border: 1px solid #cbd5e1;
+                    margin-bottom: 18px;
+                    page-break-inside: avoid;
+                }
+
+                .pdf-section-head {
+                    background: #0f172a;
+                    color: white;
+                    padding: 10px 12px;
+                }
+
+                .pdf-section-title {
+                    font-size: 13px;
+                    font-weight: 800;
+                    text-transform: uppercase;
+                }
+
+                .pdf-section-subtitle {
+                    font-size: 10px;
+                    margin-top: 4px;
+                    text-transform: uppercase;
+                    color: #cbd5e1;
+                }
+
+                .pdf-section-body {
+                    padding: 12px;
+                }
+
+                .pdf-room-block {
+                    margin-bottom: 14px;
+                    border: 1px solid #e2e8f0;
+                }
+
+                .pdf-room-head {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    gap: 12px;
+                    background: #f8fafc;
+                    padding: 8px 10px;
+                    border-bottom: 1px solid #e2e8f0;
+                }
+
+                .pdf-room-title {
+                    font-size: 11px;
+                    font-weight: 800;
+                    text-transform: uppercase;
+                }
+
+                .pdf-room-floor {
+                    font-size: 10px;
+                    color: #64748b;
+                    text-transform: uppercase;
+                    margin-top: 2px;
+                }
+
+                .pdf-room-total {
+                    font-size: 11px;
+                    font-weight: 800;
+                    text-transform: uppercase;
+                }
+
+                .pdf-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                }
+
+                .pdf-table th,
+                .pdf-table td {
+                    border-bottom: 1px solid #e2e8f0;
+                    padding: 8px;
+                    vertical-align: top;
+                }
+
+                .pdf-table th {
+                    text-align: left;
+                    font-size: 10px;
+                    text-transform: uppercase;
+                    color: #64748b;
+                }
+
+                .item-cell {
+                    width: 55%;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                }
+
+                .num-cell {
+                    width: 15%;
+                    text-align: center;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                }
+
+                .excluded {
+                    color: #94a3b8;
+                    font-style: italic;
+                }
+
+                .pdf-section-total {
+                    display: flex;
+                    justify-content: flex-end;
+                    gap: 10px;
+                    padding-top: 10px;
+                    margin-top: 10px;
+                    border-top: 1px solid #cbd5e1;
+                    text-transform: uppercase;
+                    font-size: 11px;
+                }
+
+                .pdf-footer-grid {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 16px;
+                    margin-top: 24px;
+                    page-break-inside: avoid;
+                }
+
+                .pdf-card {
+                    border: 1px solid #cbd5e1;
+                    padding: 14px;
+                    background: #f8fafc;
+                }
+
+                .pdf-card-title {
+                    font-size: 11px;
+                    font-weight: 800;
+                    text-transform: uppercase;
+                    margin-bottom: 10px;
+                    color: #475569;
+                }
+
+                .pdf-big-stat {
+                    font-size: 28px;
+                    font-weight: 800;
+                    line-height: 1;
+                    margin-bottom: 6px;
+                }
+
+                .pdf-small-note {
+                    font-size: 10px;
+                    color: #64748b;
+                    text-transform: uppercase;
+                }
+
+                .pdf-materials-grid {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 16px;
+                    font-size: 11px;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    line-height: 1.6;
+                }
+
+                .pdf-mini-head {
+                    color: #64748b;
+                    font-size: 10px;
+                    margin-bottom: 4px;
+                }
+
+                .space-top {
+                    margin-top: 12px;
+                }
+
+                .pdf-signature-image {
+                    width: 100%;
+                    max-height: 140px;
+                    object-fit: contain;
+                    display: block;
+                    background: white;
+                    border: 1px solid #cbd5e1;
+                }
+
+                .pdf-signature-empty {
+                    height: 140px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    background: white;
+                    border: 1px dashed #cbd5e1;
+                    color: #94a3b8;
+                    text-transform: uppercase;
+                    font-size: 11px;
+                }
+
+                @media print {
+                    body {
+                        margin: 12mm;
+                    }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="pdf-topbar">
+                <div>
+                    <div class="pdf-title">Photon Listed Inventory</div>
+                    <div class="pdf-sub">Customer: ${escapeHtml(customerName)}</div>
+                    <div class="pdf-sub">Ref: ${escapeHtml(reference)}</div>
+                </div>
+
+                <div>
+                    <div class="pdf-sub">Exported: ${new Date().toLocaleString("en-GB")}</div>
+                </div>
+            </div>
+
+            <div class="pdf-filter-bar">
+                <div class="pdf-filter-line"><strong>Sequence View:</strong> ${escapeHtml(seqLabel)}</div>
+                <div class="pdf-filter-line"><strong>Delivery View:</strong> ${escapeHtml(deliveryLabel)}</div>
+                <div class="pdf-filter-line"><strong>Search Filter:</strong> ${escapeHtml(listedTextFilter || "None")}</div>
+            </div>
+
+            ${sectionsHtml}
+
+            <div class="pdf-footer-grid">
+                <div class="pdf-card">
+                    <div class="pdf-card-title">Customer Signature</div>
+                    ${signatureHtml}
+                    <div class="pdf-small-note" style="margin-top: 8px;">Signed: ${escapeHtml(signedAt)}</div>
+                </div>
+
+                <div>
+                    <div class="pdf-card" style="margin-bottom: 16px;">
+                        <div class="pdf-card-title">Included Volume</div>
+                        <div class="pdf-big-stat">${listedSummary.includedVolume}</div>
+                        <div class="pdf-small-note">Cuft counted</div>
+                    </div>
+
+                    <div class="pdf-card">
+                        <div class="pdf-card-title">Materials Summary</div>
+                        ${getPrintableMaterialsHtml(materialsSummary)}
+                    </div>
+                </div>
+            </div>
+        </body>
+        </html>
+    `);
+
+    printWindow.document.close();
+
+    setTimeout(function() {
+        printWindow.focus();
+        printWindow.print();
+    }, 400);
 }
 window.onload = function () {
     renderDashboard();
