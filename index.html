@@ -333,6 +333,10 @@ button {
     background: #fff;
     line-height: 1.4;
 }
+.property-label-input {
+    font-size: 14px;
+    line-height: 1.4;
+}
         
         #manual-entry-area { display: none; background: white; border: 3px solid #3b82f6; border-radius: 20px; padding: 20px; margin-bottom: 24px; }
         .add-stop-btn { font-size: 9px; font-weight: 900; color: #3b82f6; text-transform: uppercase; padding: 4px 8px; border: 1px dashed #3b82f6; border-radius: 6px; margin-top: 5px; display: inline-block; }
@@ -2065,7 +2069,7 @@ const isCollectionAddress = prop.id === currentJob.properties[0].id;
             
            document.getElementById('address-editor-ui').innerHTML = `
     <div class="bg-slate-50 p-4 rounded-xl border border-blue-100 flex justify-between items-center">
-        <div class="flex-grow"><label class="mini-label text-blue-600">Property Label</label><input type="text" ${status} oninput="updatePropLabel(this.value)" class="w-full bg-transparent text-lg font-bold outline-none text-blue-900" value="${toTitleCase(prop.label)}"></div>
+        <div class="flex-grow"><label class="mini-label text-blue-600">Property Label</label><input type="text" ${status} oninput="updatePropLabel(this.value)" class="w-full bg-transparent font-bold outline-none text-blue-900 property-label-input" value="${toTitleCase(prop.label)}"></div>
         ${(!prop.isCore && !isSaved) ? `<button onclick="deleteProperty(${prop.id})" class="text-red-600 text-[9px] font-black uppercase">Delete Address</button>` : ''}
     </div>
 
