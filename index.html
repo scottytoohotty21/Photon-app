@@ -1184,7 +1184,7 @@ Enter as: Surname, First Name
         </div>
     </div>
 
-    <div id="listed-summary-bar" class="grid grid-cols-1 gap-3 mb-4"></div>
+    <div id="listed-summary-bar" class="grid grid-cols-2 gap-3 mb-4"></div>
 
     <div id="listed-inventory-output" class="space-y-4">
         <div class="p-12 text-center text-slate-400 font-bold italic uppercase">No inventory saved</div>
@@ -4239,8 +4239,62 @@ function buildListedSummary(items) {
         lineCount: lineCount
     };
 }
+function buildMaterialsSummary(items) {
+    const summary = {
+        apBoxes: 0,
+        cgBoxes: 0,
+        bookBoxes: 0,
+        linenBoxes: 0,
+        wrBoxes: 0,
 
-function renderListedSummary(summary) {
+        singleMattressBags: 0,
+        doubleMattressBags: 0,
+        kingMattressBags: 0,
+
+        armchairCovers: 0,
+        sofa2Covers: 0,
+        sofa3Covers: 0,
+        sofa4Covers: 0,
+
+        mirrorPicturePacks: 0,
+        wineDividers: 0
+    };
+
+    items.forEach(function(entry) {
+        if (entry.excluded) return;
+
+        const itemName = String(entry.itemName || "").toUpperCase().trim();
+        const qty = Number(entry.qty || 0);
+
+        // entered box totals
+        if (itemName === "AP BOX") summary.apBoxes += qty;
+        if (itemName === "CG BOX") summary.cgBoxes += qty;
+        if (itemName === "BOOK BOX") summary.bookBoxes += qty;
+        if (itemName === "LINEN BOX") summary.linenBoxes += qty;
+        if (itemName === "WR BOX") summary.wrBoxes += qty;
+
+        // auto materials from furniture
+        if (itemName === "BED (SINGLE)") summary.singleMattressBags += qty;
+        if (itemName === "BED (DOUBLE)") summary.doubleMattressBags += qty;
+        if (itemName === "BED (KING)") summary.kingMattressBags += qty;
+
+        if (itemName === "ARMCHAIR") summary.armchairCovers += qty;
+        if (itemName === "SOFA 2 SEAT") summary.sofa2Covers += qty;
+        if (itemName === "SOFA 3 SEAT") summary.sofa3Covers += qty;
+        if (itemName === "SOFA 4 SEAT") summary.sofa4Covers += qty;
+
+        // optional specials if these items exist in inventory later
+        if (itemName === "MIRROR / PICTURE PACK") summary.mirrorPicturePacks += qty;
+        if (itemName === "WINE DIVIDER") summary.wineDividers += qty;
+
+        // extra mattress rules
+        if (itemName === "BUNK BED") summary.singleMattressBags += (qty * 2);
+        if (itemName === "TRUNDLE BED") summary.singleMattressBags += (qty * 2);
+    });
+
+    return summary;
+}
+function renderListedSummary(summary, materials) {
     const bar = document.getElementById("listed-summary-bar");
     if (!bar) return;
 
@@ -4249,6 +4303,30 @@ function renderListedSummary(summary) {
             <div class="listed-stat-label">Included Volume</div>
             <div class="listed-stat-value">${summary.includedVolume}</div>
             <div class="listed-stat-sub">Cuft counted</div>
+        </div>
+
+        <div class="listed-stat-card">
+            <div class="listed-stat-label">Materials Summary</div>
+            <div class="text-[10px] font-black text-slate-900 uppercase leading-5 space-y-1">
+                <div>AP Boxes: ${materials.apBoxes}</div>
+                <div>CG Boxes: ${materials.cgBoxes}</div>
+                <div>Book Boxes: ${materials.bookBoxes}</div>
+                <div>Linen Boxes: ${materials.linenBoxes}</div>
+                <div>WR Boxes: ${materials.wrBoxes}</div>
+
+                <div class="pt-2 text-slate-400">Protective</div>
+                <div>Single Mattress Bags: ${materials.singleMattressBags}</div>
+                <div>Double Mattress Bags: ${materials.doubleMattressBags}</div>
+                <div>King Mattress Bags: ${materials.kingMattressBags}</div>
+                <div>Armchair Covers: ${materials.armchairCovers}</div>
+                <div>2-Seater Covers: ${materials.sofa2Covers}</div>
+                <div>3-Seater Covers: ${materials.sofa3Covers}</div>
+                <div>4-Seater Covers: ${materials.sofa4Covers}</div>
+
+                <div class="pt-2 text-slate-400">Special Packs</div>
+                <div>Mirror / Picture Packs: ${materials.mirrorPicturePacks}</div>
+                <div>Wine Dividers: ${materials.wineDividers}</div>
+            </div>
         </div>
     `;
 }
@@ -4357,7 +4435,9 @@ function renderListedInventory() {
     renderListedInventoryFilters(allItems);
 
     const filteredItems = filterListedInventoryItems(allItems);
-    renderListedSummary(buildListedSummary(filteredItems));
+    const listedSummary = buildListedSummary(filteredItems);
+const materialsSummary = buildMaterialsSummary(filteredItems);
+renderListedSummary(listedSummary, materialsSummary);
 
     if (filteredItems.length === 0) {
         container.innerHTML = `<div class="p-12 text-center text-slate-400 font-bold italic uppercase">No inventory matches current view</div>`;
