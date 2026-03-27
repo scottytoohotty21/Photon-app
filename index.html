@@ -178,6 +178,7 @@ button {
 .text-slate-400{color:#94a3b8;}
 .text-slate-800{color:#1e293b;}
 .text-slate-900{color:#0f172a;}
+.text-slate-500{color:#64748b;}
 
 .border-blue-100{border-color:#dbeafe;}
 .border-blue-500{border-color:#3b82f6;}
@@ -321,7 +322,17 @@ button {
         .col-5 { grid-column: span 5; }
         .col-3 { grid-column: span 3; }
         
-        .input-field { width: 100%; border: 1.5px solid #cbd5e1; border-radius: 8px; padding: 10px; font-size: 14px; font-weight: 700; outline: none; background: #fff; }
+        .input-field {
+    width: 100%;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 14px;
+    font-weight: 600;
+    outline: none;
+    background: #fff;
+    line-height: 1.4;
+}
         
         #manual-entry-area { display: none; background: white; border: 3px solid #3b82f6; border-radius: 20px; padding: 20px; margin-bottom: 24px; }
         .add-stop-btn { font-size: 9px; font-weight: 900; color: #3b82f6; text-transform: uppercase; padding: 4px 8px; border: 1px dashed #3b82f6; border-radius: 6px; margin-top: 5px; display: inline-block; }
@@ -603,8 +614,7 @@ button {
     padding: 24px;
     box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
         }
-
-        .misc-title {
+        .damage-title {
     font-size: 16px;
     font-weight: 900;
     text-transform: uppercase;
@@ -613,7 +623,7 @@ button {
     letter-spacing: 0.02em;
 }
 
-.misc-subtitle {
+.damage-subtitle {
     font-size: 12px;
     font-weight: 700;
     color: #64748b;
@@ -624,28 +634,21 @@ button {
     text-transform: none;
 }
 
-.misc-label {
-    display: block;
-    font-size: 11px;
-    font-weight: 800;
-    text-transform: uppercase;
-    color: #64748b;
-    margin-bottom: 8px;
-}
-
-.misc-input {
+.damage-note-input {
     width: 100%;
     border: 2px solid #e2e8f0;
     border-radius: 12px;
     padding: 14px;
     font-size: 15px;
-    font-weight: 600;
+    font-weight: 500;
+    line-height: 1.5;
     outline: none;
     background: #fff;
-    line-height: 1.4;
+    min-height: 96px;
+    resize: none;
 }
 
-        .damage-grid {
+               .damage-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 8px;
@@ -813,7 +816,7 @@ button {
     padding: 24px;
     box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
 }
-
+ 
 .misc-title {
     font-size: 16px;
     font-weight: 900;
@@ -2062,7 +2065,7 @@ const isCollectionAddress = prop.id === currentJob.properties[0].id;
             
            document.getElementById('address-editor-ui').innerHTML = `
     <div class="bg-slate-50 p-4 rounded-xl border border-blue-100 flex justify-between items-center">
-        <div class="flex-grow"><label class="mini-label text-blue-600">Property Label</label><input type="text" ${status} oninput="updatePropLabel(this.value)" class="w-full bg-transparent text-xl font-black outline-none text-blue-900" value="${toTitleCase(prop.label)}"></div>
+        <div class="flex-grow"><label class="mini-label text-blue-600">Property Label</label><input type="text" ${status} oninput="updatePropLabel(this.value)" class="w-full bg-transparent text-lg font-bold outline-none text-blue-900" value="${toTitleCase(prop.label)}"></div>
         ${(!prop.isCore && !isSaved) ? `<button onclick="deleteProperty(${prop.id})" class="text-red-600 text-[9px] font-black uppercase">Delete Address</button>` : ''}
     </div>
 
@@ -4893,7 +4896,7 @@ window.__listedEntryMap[entryKey] = entry;
 
                 return `
     <tr class="border-t border-slate-200 ${isExcluded ? 'bg-slate-50' : ''}">
-        <td class="py-2 pr-2 text-[10px] font-black uppercase align-top break-words ${isExcluded ? 'text-slate-500 italic' : 'text-slate-900'}">
+        <td class="py-2 pr-2 text-[10px] font-bold uppercase align-top break-words ${isExcluded ? 'text-slate-500 italic opacity-70' : 'text-slate-900'}">
             ${entry.itemName || "-"}${tagText}
         </td>
         <td class="py-2 px-1 text-[10px] font-black uppercase text-center align-top ${isExcluded ? 'text-slate-400 italic' : 'text-blue-600'}">
