@@ -33,6 +33,24 @@ body {
     font-family: 'Inter', sans-serif;
     background-color: #f1f5f9;
 }
+html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+input,
+select,
+textarea,
+button {
+    font: inherit;
+    font-family: 'Inter', sans-serif;
+}
 /* Tailwind-style utility classes used by Photon */
 
 .hidden{display:none;}
@@ -363,16 +381,18 @@ body {
         .inv-top-field { height: 64px !important; }
 
         .inv-tool-btn {
-            background: #f1f5f9;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            color: #64748b;
-            font-size: 9px;
-            font-weight: 900;
-            text-transform: uppercase;
-            padding: 8px 4px;
-            text-align: center;
-        }
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    color: #64748b;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    padding: 10px 6px;
+    text-align: center;
+    min-height: 40px;
+    line-height: 1.2;
+}
         .inv-tool-btn.active {
             background: #3b82f6;
             color: white;
@@ -384,26 +404,49 @@ body {
             border-color: #0f172a;
         }
 
-        .inv-room-btn { background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 6px; color: #64748b; font-size: 8px; font-weight: 900; text-transform: uppercase; padding: 12px 2px; text-align: center; flex: 1; }
+        .inv-room-btn {
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    color: #64748b;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    padding: 12px 6px;
+    text-align: center;
+    flex: 1;
+    line-height: 1.2;
+}
         .inv-room-btn.active { background: #3b82f6; color: white; border-color: #2563eb; }
 
         .item-btn {
-            background: #fff;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            font-size: 9px;
-            font-weight: 900;
-            text-transform: uppercase;
-            color: #0f172a;
-            padding: 5px;
-        }
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    height: 74px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #0f172a;
+    padding: 8px;
+    line-height: 1.25;
+}
         .item-btn-blue { background: #f0f9ff; color: #0f172a; border: 1px solid #e0f2fe; }
-        .log-bar { background: #e2e8f0; border: 1.5px solid #94a3b8; border-radius: 6px; padding: 8px 12px; font-size: 11px; font-weight: 900; font-style: italic; color: #1e293b; }
+        .log-bar {
+    background: #e2e8f0;
+    border: 1.5px solid #94a3b8;
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 14px;
+    font-weight: 700;
+    font-style: italic;
+    color: #1e293b;
+    line-height: 1.35;
+}
         .vol-box { border: 2.5px solid #fca5a5; border-radius: 8px; height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .total-vol-box { background: #3b82f6; color: white; border-radius: 8px; height: 50px; display: flex; align-items: center; justify-content: center; }
 
@@ -427,30 +470,53 @@ body {
 
 .crate-panel {
     width: 92%;
-    max-width: 360px;
+    max-width: 420px;
     background: white;
     border-radius: 20px;
-    padding: 20px;
+    padding: 24px;
     box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
 }
 
 .crate-title {
-    font-size: 12px;
+    font-size: 16px;
     font-weight: 900;
     text-transform: uppercase;
     color: #0f172a;
     text-align: center;
+    letter-spacing: 0.02em;
 }
 
 .crate-subtitle {
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 700;
-    text-transform: uppercase;
     color: #64748b;
     text-align: center;
-    margin-top: 4px;
-    margin-bottom: 16px;
-    line-height: 1.4;
+    margin-top: 6px;
+    margin-bottom: 18px;
+    line-height: 1.45;
+    text-transform: none;
+}
+
+.crate-field-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #64748b;
+    margin-bottom: 8px;
+}
+
+.crate-field-input {
+    width: 100%;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 14px 10px;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 700;
+    outline: none;
+    background: #f8fafc;
+    line-height: 1.2;
 }
 
 .crate-unit-toggle {
@@ -482,27 +548,6 @@ body {
     grid-template-columns: repeat(3, 1fr);
     gap: 10px;
     margin-bottom: 16px;
-}
-
-.crate-field-label {
-    display: block;
-    font-size: 9px;
-    font-weight: 900;
-    text-transform: uppercase;
-    color: #94a3b8;
-    margin-bottom: 6px;
-}
-
-.crate-field-input {
-    width: 100%;
-    border: 2px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 12px 8px;
-    text-align: center;
-    font-size: 16px;
-    font-weight: 900;
-    outline: none;
-    background: #f8fafc;
 }
 
 .crate-field-input:focus {
@@ -551,31 +596,54 @@ body {
         }
 
         .damage-panel {
-            width: 92%;
-            max-width: 360px;
-            background: white;
-            border-radius: 20px;
-            padding: 20px;
-            box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
+           width: 92%;
+    max-width: 420px;
+    background: white;
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
         }
 
-        .damage-title {
-            font-size: 12px;
-            font-weight: 900;
-            text-transform: uppercase;
-            color: #0f172a;
-            text-align: center;
-        }
+        .misc-title {
+    font-size: 16px;
+    font-weight: 900;
+    text-transform: uppercase;
+    color: #0f172a;
+    text-align: center;
+    letter-spacing: 0.02em;
+}
 
-        .damage-subtitle {
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-            color: #64748b;
-            text-align: center;
-            margin-top: 4px;
-            margin-bottom: 16px;
-        }
+.misc-subtitle {
+    font-size: 12px;
+    font-weight: 700;
+    color: #64748b;
+    text-align: center;
+    margin-top: 6px;
+    margin-bottom: 18px;
+    line-height: 1.45;
+    text-transform: none;
+}
+
+.misc-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #64748b;
+    margin-bottom: 8px;
+}
+
+.misc-input {
+    width: 100%;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 14px;
+    font-size: 15px;
+    font-weight: 600;
+    outline: none;
+    background: #fff;
+    line-height: 1.4;
+}
 
         .damage-grid {
             display: grid;
@@ -603,19 +671,7 @@ body {
             border-color: #2563eb;
         }
 
-        .damage-note-input {
-            width: 100%;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 12px;
-            font-size: 12px;
-            font-weight: 700;
-            outline: none;
-            background: #fff;
-            min-height: 88px;
-            resize: none;
-        }
-
+        
         .damage-note-input:focus {
             border-color: #3b82f6;
         }
@@ -663,41 +719,44 @@ body {
 
 .note-panel {
     width: 92%;
-    max-width: 360px;
+    max-width: 420px;
     background: white;
     border-radius: 20px;
-    padding: 20px;
+    padding: 24px;
     box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
 }
 
 .note-title {
-    font-size: 12px;
+    font-size: 16px;
     font-weight: 900;
     text-transform: uppercase;
     color: #0f172a;
     text-align: center;
+    letter-spacing: 0.02em;
 }
 
 .note-subtitle {
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 700;
-    text-transform: uppercase;
     color: #64748b;
     text-align: center;
-    margin-top: 4px;
-    margin-bottom: 16px;
+    margin-top: 6px;
+    margin-bottom: 18px;
+    line-height: 1.45;
+    text-transform: none;
 }
 
 .note-input {
     width: 100%;
     border: 2px solid #e2e8f0;
     border-radius: 12px;
-    padding: 12px;
-    font-size: 12px;
-    font-weight: 700;
+    padding: 14px;
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.5;
     outline: none;
     background: #fff;
-    min-height: 110px;
+    min-height: 120px;
     resize: none;
 }
 
@@ -748,53 +807,56 @@ body {
 
 .misc-panel {
     width: 92%;
-    max-width: 360px;
+    max-width: 420px;
     background: white;
     border-radius: 20px;
-    padding: 20px;
+    padding: 24px;
     box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
 }
 
 .misc-title {
-    font-size: 12px;
+    font-size: 16px;
     font-weight: 900;
     text-transform: uppercase;
     color: #0f172a;
     text-align: center;
+    letter-spacing: 0.02em;
 }
 
 .misc-subtitle {
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 700;
-    text-transform: uppercase;
     color: #64748b;
     text-align: center;
-    margin-top: 4px;
-    margin-bottom: 16px;
-}
-
-.misc-field-wrap {
-    margin-bottom: 12px;
+    margin-top: 6px;
+    margin-bottom: 18px;
+    line-height: 1.45;
+    text-transform: none;
 }
 
 .misc-label {
     display: block;
-    font-size: 10px;
-    font-weight: 900;
+    font-size: 11px;
+    font-weight: 800;
     text-transform: uppercase;
     color: #64748b;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
 }
 
 .misc-input {
     width: 100%;
     border: 2px solid #e2e8f0;
     border-radius: 12px;
-    padding: 12px;
-    font-size: 12px;
-    font-weight: 700;
+    padding: 14px;
+    font-size: 15px;
+    font-weight: 600;
     outline: none;
     background: #fff;
+    line-height: 1.4;
+}
+
+.misc-field-wrap {
+    margin-bottom: 12px;
 }
 
 .misc-input:focus {
@@ -1023,51 +1085,53 @@ body {
 
         .simple-input-panel {
             width: 92%;
-            max-width: 360px;
-            background: white;
-            border-radius: 20px;
-            padding: 20px;
-            box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
+    max-width: 420px;
+    background: white;
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
         }
 
         .simple-input-title {
-            font-size: 12px;
-            font-weight: 900;
-            text-transform: uppercase;
-            color: #0f172a;
-            text-align: center;
-        }
+    font-size: 16px;
+    font-weight: 900;
+    text-transform: uppercase;
+    color: #0f172a;
+    text-align: center;
+    letter-spacing: 0.02em;
+}
 
-        .simple-input-subtitle {
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-            color: #64748b;
-            text-align: center;
-            margin-top: 4px;
-            margin-bottom: 16px;
-            line-height: 1.4;
-        }
+.simple-input-subtitle {
+    font-size: 12px;
+    font-weight: 700;
+    color: #64748b;
+    text-align: center;
+    margin-top: 6px;
+    margin-bottom: 18px;
+    line-height: 1.45;
+    text-transform: none;
+}
 
-        .simple-input-label {
-            display: block;
-            font-size: 10px;
-            font-weight: 900;
-            text-transform: uppercase;
-            color: #64748b;
-            margin-bottom: 6px;
-        }
+.simple-input-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #64748b;
+    margin-bottom: 8px;
+}
 
-        .simple-input-field {
-            width: 100%;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 12px;
-            font-size: 14px;
-            font-weight: 700;
-            outline: none;
-            background: #fff;
-        }
+.simple-input-field {
+    width: 100%;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 14px;
+    font-size: 15px;
+    font-weight: 600;
+    outline: none;
+    background: #fff;
+    line-height: 1.4;
+}
 
         .simple-input-field:focus {
             border-color: #3b82f6;
