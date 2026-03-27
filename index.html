@@ -947,6 +947,49 @@
     font-size: 14px;
     font-weight: 900;
 }
+.listed-signature-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 14px;
+    min-height: 100%;
+}
+
+.listed-signature-label {
+    font-size: 9px;
+    font-weight: 900;
+    text-transform: uppercase;
+    color: #94a3b8;
+    margin-bottom: 8px;
+}
+
+.listed-signature-box {
+    height: 120px;
+    border: 2px dashed #cbd5e1;
+    border-radius: 12px;
+    background: white;
+    display: flex;
+    align-items: end;
+    justify-content: center;
+    padding: 10px;
+}
+
+.listed-signature-line {
+    width: 100%;
+    border-top: 1.5px solid #cbd5e1;
+    text-align: center;
+    padding-top: 6px;
+    font-size: 9px;
+    font-weight: 900;
+    text-transform: uppercase;
+    color: #64748b;
+}
+
+.listed-footer-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
     </style>
 </head>
 <body class="p-4 pb-12">
@@ -1184,11 +1227,13 @@ Enter as: Surname, First Name
         </div>
     </div>
 
-    <div id="listed-summary-bar" class="grid grid-cols-2 gap-3 mb-4"></div>
+    <div id="listed-summary-bar" class="hidden"></div>
 
     <div id="listed-inventory-output" class="space-y-4">
-        <div class="p-12 text-center text-slate-400 font-bold italic uppercase">No inventory saved</div>
-    </div>
+    <div class="p-12 text-center text-slate-400 font-bold italic uppercase">No inventory saved</div>
+</div>
+
+<div id="listed-footer-summary" class="grid grid-cols-2 gap-3 mt-4"></div>
 </section>
    <section id="content-schedule" class="tab-content hidden bg-white p-6 rounded-2xl shadow-inner">
 
@@ -4295,37 +4340,52 @@ function buildMaterialsSummary(items) {
     return summary;
 }
 function renderListedSummary(summary, materials) {
-    const bar = document.getElementById("listed-summary-bar");
-    if (!bar) return;
+    const topBar = document.getElementById("listed-summary-bar");
+    const footerBar = document.getElementById("listed-footer-summary");
 
-    bar.innerHTML = `
-        <div class="listed-stat-card">
-            <div class="listed-stat-label">Included Volume</div>
-            <div class="listed-stat-value">${summary.includedVolume}</div>
-            <div class="listed-stat-sub">Cuft counted</div>
+    if (topBar) {
+        topBar.innerHTML = "";
+    }
+
+    if (!footerBar) return;
+
+    footerBar.innerHTML = `
+        <div class="listed-signature-card">
+            <div class="listed-signature-label">Customer Signature</div>
+            <div class="listed-signature-box">
+                <div class="listed-signature-line">Sign Here</div>
+            </div>
         </div>
 
-        <div class="listed-stat-card">
-            <div class="listed-stat-label">Materials Summary</div>
-            <div class="text-[10px] font-black text-slate-900 uppercase leading-5 space-y-1">
-                <div>AP Boxes: ${materials.apBoxes}</div>
-                <div>CG Boxes: ${materials.cgBoxes}</div>
-                <div>Book Boxes: ${materials.bookBoxes}</div>
-                <div>Linen Boxes: ${materials.linenBoxes}</div>
-                <div>WR Boxes: ${materials.wrBoxes}</div>
+        <div class="listed-footer-stack">
+            <div class="listed-stat-card">
+                <div class="listed-stat-label">Included Volume</div>
+                <div class="listed-stat-value">${summary.includedVolume}</div>
+                <div class="listed-stat-sub">Cuft counted</div>
+            </div>
 
-                <div class="pt-2 text-slate-400">Protective</div>
-                <div>Single Mattress Bags: ${materials.singleMattressBags}</div>
-                <div>Double Mattress Bags: ${materials.doubleMattressBags}</div>
-                <div>King Mattress Bags: ${materials.kingMattressBags}</div>
-                <div>Armchair Covers: ${materials.armchairCovers}</div>
-                <div>2-Seater Covers: ${materials.sofa2Covers}</div>
-                <div>3-Seater Covers: ${materials.sofa3Covers}</div>
-                <div>4-Seater Covers: ${materials.sofa4Covers}</div>
+            <div class="listed-stat-card">
+                <div class="listed-stat-label">Materials Summary</div>
+                <div class="text-[10px] font-black text-slate-900 uppercase leading-5 space-y-1">
+                    <div>AP Boxes: ${materials.apBoxes}</div>
+                    <div>CG Boxes: ${materials.cgBoxes}</div>
+                    <div>Book Boxes: ${materials.bookBoxes}</div>
+                    <div>Linen Boxes: ${materials.linenBoxes}</div>
+                    <div>WR Boxes: ${materials.wrBoxes}</div>
 
-                <div class="pt-2 text-slate-400">Special Packs</div>
-                <div>Mirror / Picture Packs: ${materials.mirrorPicturePacks}</div>
-                <div>Wine Dividers: ${materials.wineDividers}</div>
+                    <div class="pt-2 text-slate-400">Protective</div>
+                    <div>Single Mattress Bags: ${materials.singleMattressBags}</div>
+                    <div>Double Mattress Bags: ${materials.doubleMattressBags}</div>
+                    <div>King Mattress Bags: ${materials.kingMattressBags}</div>
+                    <div>Armchair Covers: ${materials.armchairCovers}</div>
+                    <div>2-Seater Covers: ${materials.sofa2Covers}</div>
+                    <div>3-Seater Covers: ${materials.sofa3Covers}</div>
+                    <div>4-Seater Covers: ${materials.sofa4Covers}</div>
+
+                    <div class="pt-2 text-slate-400">Special Packs</div>
+                    <div>Mirror / Picture Packs: ${materials.mirrorPicturePacks}</div>
+                    <div>Wine Dividers: ${materials.wineDividers}</div>
+                </div>
             </div>
         </div>
     `;
