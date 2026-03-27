@@ -947,6 +947,88 @@
     font-size: 14px;
     font-weight: 900;
 }
+.signature-wrap {
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    background: #fff;
+    padding: 12px;
+}
+
+.signature-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.signature-title {
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+    color: #0f172a;
+}
+
+.signature-subtitle {
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #64748b;
+    margin-top: 2px;
+}
+
+.signature-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.signature-btn {
+    min-width: 60px;
+    height: 30px;
+    padding: 0 10px;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    background: #f8fafc;
+    color: #334155;
+    font-size: 9px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.signature-btn.save {
+    background: #dbeafe;
+    border-color: #93c5fd;
+    color: #1d4ed8;
+}
+
+.signature-btn.clear {
+    background: #fef2f2;
+    border-color: #fecaca;
+    color: #dc2626;
+}
+
+.signature-pad-shell {
+    border: 2px dashed #cbd5e1;
+    border-radius: 12px;
+    background: #fff;
+    overflow: hidden;
+}
+
+.signature-pad {
+    display: block;
+    width: 100%;
+    height: 140px;
+    touch-action: none;
+    background: #ffffff;
+}
+
+.signature-meta {
+    margin-top: 8px;
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #64748b;
+}
 .listed-signature-card {
     background: #f8fafc;
     border: 1px solid #e2e8f0;
@@ -1526,19 +1608,24 @@ const inventoryCategories = {
             estimatedHours: 0
         },
 
-        costing: {
-            crewCost: 0,
-            vehicleCost: 0,
-            otherCosts: 0,
-            totalCost: 0
-        },
+       costing: {
+    crewCost: 0,
+    vehicleCost: 0,
+    otherCosts: 0,
+    totalCost: 0
+},
 
-        sync: {
-            uploaded: false,
-            lastUploadedAt: "",
-            cloudId: "",
-            crmId: ""
-        },
+signature: {
+    image: "",
+    signedAt: ""
+},
+
+sync: {
+    uploaded: false,
+    lastUploadedAt: "",
+    cloudId: "",
+    crmId: ""
+},
 
         // current app compatibility
         name: "",
@@ -1599,6 +1686,11 @@ let listedDeliveryFilter = "__all__";
 let listedTextFilter = "";
 let simpleInputMode = "";
 let simpleInputMeta = null;
+let signaturePad = null;
+let signaturePadCtx = null;
+let signatureDrawing = false;
+let signatureLastX = 0;
+let signatureLastY = 0;
 function getDefaultSequenceId() {
     if (!currentJob || !Array.isArray(currentJob.sequences) || currentJob.sequences.length === 0) {
         return null;
@@ -4350,12 +4442,34 @@ function renderListedSummary(summary, materials) {
     if (!footerBar) return;
 
     footerBar.innerHTML = `
-        <div class="listed-signature-card">
-            <div class="listed-signature-label">Customer Signature</div>
-            <div class="listed-signature-box">
-                <div class="listed-signature-line">Sign Here</div>
-            </div>
+        <div class="signature-wrap">
+    <div class="signature-head">
+        <div>
+            <div class="signature-title">Customer Signature</div>
+            <div class="signature-subtitle">Sign with finger or stylus</div>
         </div>
+
+        <div class="signature-actions">
+            <button class="signature-btn clear" onclick="clearSignaturePad()">Clear</button>
+            <button class="signature-btn save" onclick="saveSignaturePad()">Save</button>
+        </div>
+    </div>
+
+    <div class="signature-pad-shell">
+        <canvas id="signature-pad" class="signature-pad"></canvas>
+    </div>
+
+    <div class="signature-meta">
+        Signed:
+        <span id="signature-signed-at">
+            ${
+                currentJob && currentJob.signature && currentJob.signature.signedAt
+                    ? new Date(currentJob.signature.signedAt).toLocaleString("en-GB")
+                    : "Not signed"
+            }
+        </span>
+    </div>
+</div>
 
         <div class="listed-footer-stack">
             <div class="listed-stat-card">
@@ -4397,6 +4511,10 @@ function renderListedSummary(summary, materials) {
 </div>
         </div>
     `;
+
+    setTimeout(function() {
+        initSignaturePad();
+    }, 0);
 }
 
 function getListedBoxOrder(itemName) {
@@ -4670,6 +4788,138 @@ function syncLiveInventoryFromRawForActiveSequence() {
     recalculateTotalVolume();
 }
 
+function initSignaturePad() {
+    const canvas = document.getElementById("signature-pad");
+    if (!canvas) return;
+
+    signaturePad = canvas;
+    signaturePadCtx = canvas.getContext("2d");
+
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width;
+    canvas.height = 140;
+
+    signaturePadCtx.lineCap = "round";
+    signaturePadCtx.lineJoin = "round";
+    signaturePadCtx.lineWidth = 2.5;
+    signaturePadCtx.strokeStyle = "#0f172a";
+
+    signaturePadCtx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (currentJob && currentJob.signature && currentJob.signature.image) {
+        loadSignatureImageToCanvas(currentJob.signature.image);
+    }
+
+    canvas.onmousedown = startSignatureDraw;
+    canvas.onmousemove = moveSignatureDraw;
+    canvas.onmouseup = endSignatureDraw;
+    canvas.onmouseleave = endSignatureDraw;
+
+    canvas.ontouchstart = startSignatureDraw;
+    canvas.ontouchmove = moveSignatureDraw;
+    canvas.ontouchend = endSignatureDraw;
+}
+
+function getSignaturePoint(e) {
+    if (!signaturePad) return { x: 0, y: 0 };
+
+    const rect = signaturePad.getBoundingClientRect();
+
+    if (e.touches && e.touches.length > 0) {
+        return {
+            x: e.touches[0].clientX - rect.left,
+            y: e.touches[0].clientY - rect.top
+        };
+    }
+
+    return {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+    };
+}
+
+function startSignatureDraw(e) {
+    if (!signaturePadCtx) return;
+
+    e.preventDefault();
+
+    const point = getSignaturePoint(e);
+    signatureDrawing = true;
+    signatureLastX = point.x;
+    signatureLastY = point.y;
+}
+
+function moveSignatureDraw(e) {
+    if (!signatureDrawing || !signaturePadCtx) return;
+
+    e.preventDefault();
+
+    const point = getSignaturePoint(e);
+
+    signaturePadCtx.beginPath();
+    signaturePadCtx.moveTo(signatureLastX, signatureLastY);
+    signaturePadCtx.lineTo(point.x, point.y);
+    signaturePadCtx.stroke();
+
+    signatureLastX = point.x;
+    signatureLastY = point.y;
+}
+
+function endSignatureDraw(e) {
+    if (!signatureDrawing) return;
+    if (e) e.preventDefault();
+
+    signatureDrawing = false;
+}
+
+function clearSignaturePad() {
+    if (!signaturePad || !signaturePadCtx || !currentJob) return;
+
+    signaturePadCtx.clearRect(0, 0, signaturePad.width, signaturePad.height);
+
+    if (!currentJob.signature) {
+        currentJob.signature = { image: "", signedAt: "" };
+    }
+
+    currentJob.signature.image = "";
+    currentJob.signature.signedAt = "";
+
+    const signedAtEl = document.getElementById("signature-signed-at");
+    if (signedAtEl) signedAtEl.innerText = "Not signed";
+
+    saveToDevice();
+}
+
+function saveSignaturePad() {
+    if (!signaturePad || !currentJob) return;
+
+    if (!currentJob.signature) {
+        currentJob.signature = { image: "", signedAt: "" };
+    }
+
+    currentJob.signature.image = signaturePad.toDataURL("image/png");
+    currentJob.signature.signedAt = new Date().toISOString();
+
+    const signedAtEl = document.getElementById("signature-signed-at");
+    if (signedAtEl) {
+        signedAtEl.innerText = new Date(currentJob.signature.signedAt).toLocaleString("en-GB");
+    }
+
+    saveToDevice();
+    updateInventoryDisplay("SIGNATURE SAVED");
+}
+
+function loadSignatureImageToCanvas(imageData) {
+    if (!signaturePadCtx || !signaturePad) return;
+    if (!imageData) return;
+
+    const img = new Image();
+    img.onload = function() {
+        signaturePadCtx.clearRect(0, 0, signaturePad.width, signaturePad.height);
+        signaturePadCtx.drawImage(img, 0, 0, signaturePad.width, signaturePad.height);
+    };
+    img.src = imageData;
+}
 window.onload = function () {
     renderDashboard();
 };    </script>
