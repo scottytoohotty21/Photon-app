@@ -492,7 +492,8 @@ button {
     line-height: 1.35;
 }
         .vol-box {
-    border: 2.5px solid #fca5a5;
+    background: #ffffff;
+    border: 2.5px solid #dc2626;
     border-radius: 8px;
     height: 50px;
     display: flex;
@@ -594,12 +595,23 @@ button {
     -moz-appearance: textfield;
 }
 
-        /* Keep undo light red even though it also has total-vol-box */
-        #undo-btn {
-            background: #fee2e2 !important;
-            color: #dc2626 !important;
-            border: 1px solid #fca5a5 !important;
-        }
+        .undo-btn-style {
+    height: 50px;
+    border-radius: 8px;
+    border: 2.5px solid #dc2626;
+    background: #dc2626;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+#undo-btn {
+    background: #dc2626 !important;
+    color: #ffffff !important;
+    border: 2.5px solid #dc2626 !important;
+}
 /* --- CRATE MODAL --- */
 .crate-overlay {
     display: none;
@@ -1605,7 +1617,7 @@ Enter as: Surname, First Name
     class="w-20 vol-box"
     onclick="openVolumeOverride()"
 >
-    <span class="mini-label !mb-0 text-red-400">Vol</span>
+    <span class="mini-label !mb-0 text-red-600">Vol</span>
     <span class="text-sm font-black">50</span>
 </div>
                <button
