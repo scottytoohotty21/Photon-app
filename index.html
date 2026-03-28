@@ -513,6 +513,9 @@ button {
     justify-content: center;
     padding: 6px 6px 4px;
 }
+.inventory-stat-col {
+    margin-top: 14px;
+}
 
 .inventory-stat-mini {
     font-size: 10px;
@@ -1552,7 +1555,7 @@ Enter as: Surname, First Name
         <label class="mini-label">Room</label>
         <select id="inv-room-select" onchange="handleRoomChange(this.value)" class="inv-header-select inv-top-field"></select>
     </div>
-<div class="col-span-1">
+<div class="col-span-1 inventory-stat-col">
     <div class="inventory-stat-box">
         <div class="inventory-stat-mini">Item Qty</div>
         <input
@@ -1568,7 +1571,7 @@ Enter as: Surname, First Name
         >
     </div>
 </div>
-    <div class="col-span-1">
+<div class="col-span-1 inventory-stat-col">
     <div class="inventory-stat-box">
         <div class="inventory-stat-mini">Total Vol</div>
         <div id="inv-total-volume" class="inventory-stat-value">0</div>
