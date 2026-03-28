@@ -491,8 +491,45 @@ button {
     color: #1e293b;
     line-height: 1.35;
 }
-        .vol-box { border: 2.5px solid #fca5a5; border-radius: 8px; height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .total-vol-box { background: #3b82f6; color: white; border-radius: 8px; height: 50px; display: flex; align-items: center; justify-content: center; }
+        .vol-box {
+    border: 2.5px solid #fca5a5;
+    border-radius: 8px;
+    height: 50px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.qty-header-box {
+    width: 100%;
+    height: 64px !important;
+    border: 2.5px solid #93c5fd;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #2563eb;
+    text-align: center;
+    font-size: 1.125rem;
+    font-weight: 900;
+    padding: 0 6px;
+    outline: none;
+}
+
+.qty-header-box:focus {
+    border-color: #3b82f6;
+    background: #ffffff;
+}
+
+.total-vol-box {
+    background: #ffffff;
+    color: #2563eb;
+    border: 2.5px solid #93c5fd;
+    border-radius: 8px;
+    height: 64px !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 .qty-box-input {
     width: 100%;
     height: 50px;
@@ -1485,12 +1522,12 @@ Enter as: Surname, First Name
         <label class="mini-label">Room</label>
         <select id="inv-room-select" onchange="handleRoomChange(this.value)" class="inv-header-select inv-top-field"></select>
     </div>
-    <div class="col-span-1">
+<div class="col-span-1">
     <label class="mini-label">Item Qty</label>
     <input
         type="text"
         id="inv-qty"
-        class="qty-box-input inv-top-field"
+        class="qty-header-box"
         value="1"
         inputmode="numeric"
         pattern="[0-9]*"
