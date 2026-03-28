@@ -278,44 +278,61 @@ button {
         .notes-preview { font-size: 10px; color: #64748b; font-style: italic; margin-top: 8px; padding-left: 8px; border-left: 2px solid #cbd5e1; line-height: 1.2; }
 
         /* --- TOP BUTTONS --- */
-.btn-crm-upload,
-.btn-add-file {
+.dashboard-action-btn {
+    width: 138px;
+    min-height: 52px;
     border-radius: 12px;
-    padding: 10px 12px;
-    transition: all 0.18s ease;
+    border: 1px solid #e2e8f0;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    border: 1px solid transparent;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+    gap: 8px;
+    padding: 10px 12px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+}
+
+.dashboard-action-btn svg {
+    flex-shrink: 0;
+}
+
+.dashboard-action-btn-label {
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+    line-height: 1.1;
+    white-space: nowrap;
 }
 
 .btn-crm-upload {
     background: #10b981;
     color: white;
-    flex-direction: column;
-    gap: 2px;
-    border-color: #34d399;
+    border-color: #059669;
 }
 
 .btn-add-file {
     background: #3b82f6;
     color: white;
-    border-color: #60a5fa;
+    border-color: #2563eb;
 }
 
-.btn-crm-upload:active,
-.btn-add-file:active {
-    transform: scale(0.98);
+.btn-upload-flat {
+    background: #3b82f6;
+    color: white;
+    border: 1px solid #2563eb;
+    border-radius: 12px;
+    min-width: 100px;
+    height: 44px;
+    padding: 0 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
 }
-
-        .btn-upload-glow {
-            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-            color: white; font-weight: 900; text-transform: uppercase;
-            box-shadow: 0 4px 14px 0 rgba(37, 99, 235, 0.4); border: none;
-            width: 100px; height: 44px; display: flex; align-items: center; justify-content: center;
-        }
 
         .seq-row {
             display: flex; justify-content: space-between; align-items: center;
@@ -1327,18 +1344,20 @@ button {
                 </div>
             </div>
             <div class="flex gap-2">
-                <button onclick="handleDashboardImportClick(event)" class="btn-crm-upload">
-    <span class="text-[7px] font-black uppercase opacity-70">Import</span>
-    <span class="text-[9px] font-black uppercase whitespace-nowrap">Import from CRM</span>
-</button>
+    <button onclick="handleDashboardImportClick(event)" class="dashboard-action-btn btn-crm-upload">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" />
+        </svg>
+        <span class="dashboard-action-btn-label">Import from CRM</span>
+    </button>
 
-<button onclick="handleDashboardManualClick(event)" class="btn-add-file">
-<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-<path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M12 4v16m8-8H4" />
-</svg>
-<span class="text-[9px] font-black uppercase whitespace-nowrap">Add Blank File</span>
-</button>
-            </div>
+    <button onclick="handleDashboardManualClick(event)" class="dashboard-action-btn btn-add-file">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" />
+        </svg>
+        <span class="dashboard-action-btn-label">Add Blank File</span>
+    </button>
+</div>
         </div>
 
         <section id="manual-entry-area" class="shadow-xl">
@@ -2978,8 +2997,8 @@ function renderDashboard() {
                             <div class="mt-4 border-t pt-2">${seqBreakdown}</div>
                         </div>
                         <div class="flex flex-col gap-2 items-end">
-                            <button onclick="event.stopPropagation(); uploadToCloud(${j.id})" class="btn-upload-glow rounded-xl text-[10px]">Upload ↑</button>
-                        </div>
+                            <button onclick="handleUploadClick(event, ${j.id})" class="btn-upload-flat">Upload ↑</button>
+                            </div>
                     </div>
                 </div>`;
             }).join('');
@@ -4086,6 +4105,17 @@ function handleDashboardManualClick(event) {
     pulseDashboardButton(btn);
     triggerHaptic("light");
     toggleManualArea();
+}
+function handleUploadClick(event, jobId) {
+    if (event) event.stopPropagation();
+
+    const btn = event && event.currentTarget ? event.currentTarget : null;
+    pulseDashboardButton(btn);
+    triggerHaptic("light");
+
+    if (typeof uploadToCloud === "function") {
+        uploadToCloud(jobId);
+    }
 }
 function updateUndoButtonState() {
     const undoBtn = document.getElementById("undo-btn");
