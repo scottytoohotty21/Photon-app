@@ -493,6 +493,36 @@ button {
 }
         .vol-box { border: 2.5px solid #fca5a5; border-radius: 8px; height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .total-vol-box { background: #3b82f6; color: white; border-radius: 8px; height: 50px; display: flex; align-items: center; justify-content: center; }
+.qty-box-input {
+    width: 100%;
+    height: 50px;
+    background: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 1.125rem;
+    font-weight: 900;
+    padding: 0 6px;
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.qty-box-input::selection {
+    background: rgba(255,255,255,0.25);
+    color: white;
+}
+
+.qty-box-input::-webkit-outer-spin-button,
+.qty-box-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.qty-box-input[type="number"] {
+    -moz-appearance: textfield;
+}
 
         /* Keep undo light red even though it also has total-vol-box */
         #undo-btn {
@@ -1456,19 +1486,19 @@ Enter as: Surname, First Name
         <select id="inv-room-select" onchange="handleRoomChange(this.value)" class="inv-header-select inv-top-field"></select>
     </div>
     <div class="col-span-1">
-        <label class="mini-label">Qty</label>
-       <input
-    type="text"
-    id="inv-qty"
-    class="inv-header-select inv-top-field text-center"
-    value="1"
-    inputmode="numeric"
-    pattern="[0-9]*"
-    onclick="this.select()"
-    onfocus="this.select()"
-    oninput="updateLastItemQty(this.value)"
->
-    </div>
+    <label class="mini-label">Item Qty</label>
+    <input
+        type="text"
+        id="inv-qty"
+        class="qty-box-input inv-top-field"
+        value="1"
+        inputmode="numeric"
+        pattern="[0-9]*"
+        onclick="this.select()"
+        onfocus="this.select()"
+        oninput="updateLastItemQty(this.value)"
+    >
+</div>
     <div class="col-span-1">
         <label class="mini-label">Total Vol</label>
         <div id="inv-total-volume" class="total-vol-box inv-top-field text-lg font-black">0</div>
@@ -2970,8 +3000,17 @@ document.getElementById('seq-switcher').innerHTML = currentJob.sequences.map((s,
         }
 
         function filterFiles() {
-    // safe fallback so dashboard search never breaks
-    return;
+    const input = document.getElementById('fileSearch');
+    const query = input ? input.value.trim().toLowerCase() : '';
+
+    const cards = document.querySelectorAll('#job-list .job-card');
+
+    cards.forEach(function(card) {
+        const text = (card.innerText || card.textContent || '').toLowerCase();
+        const isMatch = !query || text.includes(query);
+
+        card.style.display = isMatch ? '' : 'none';
+    });
 }
 
 function renderDashboard() {
@@ -3003,6 +3042,7 @@ function renderDashboard() {
                     </div>
                 </div>`;
             }).join('');
+            filterFiles();
         }
 
         function addSequence() {
