@@ -358,10 +358,37 @@ button {
     outline: none;
     background: #fff;
     line-height: 1.4;
-}
 .property-label-input {
     font-size: 14px;
     line-height: 1.4;
+    font-weight: 600;
+}
+
+.address-top-selector {
+    font-weight: 600;
+}
+
+.address-property-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.address-property-caption {
+    color: #94a3b8;
+}
+
+.address-property-delete {
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #ef4444;
+    white-space: nowrap;
 }
         
         #manual-entry-area { display: none; background: white; border: 3px solid #3b82f6; border-radius: 20px; padding: 20px; margin-bottom: 24px; }
@@ -1524,7 +1551,7 @@ Enter as: Surname, First Name
 
         <section id="content-address" class="tab-content tab-content-wrapper bg-white p-5 rounded-2xl shadow-inner">
             <div class="flex gap-2 mb-6 items-center justify-between">
-                <select id="prop-selector" onchange="loadProperty(this.value)" class="input-field border-2 border-blue-500 bg-blue-50 flex-grow h-14 text-blue-900 font-bold transition-all"></select>
+                <select id="prop-selector" onchange="loadProperty(this.value)" class="input-field address-top-selector border-2 border-blue-500 bg-blue-50 flex-grow h-14 text-blue-900 transition-all"></select>
                 <button id="btn-save-address" onclick="toggleSaveState('address')" class="action-btn btn-save">Save</button>
                 <button onclick="addProperty()" class="add-property-btn shadow-md">
                     <span class="btn-plus-icon">+</span>
@@ -2217,10 +2244,13 @@ const isCollectionAddress = prop.id === currentJob.properties[0].id;
             document.getElementById('prop-selector').innerHTML = currentJob.properties.map(p => `<option value="${p.id}" ${p.id === activePropId ? 'selected' : ''}>${toTitleCase(p.label)}</option>`).join('');
             
            document.getElementById('address-editor-ui').innerHTML = `
-    <div class="bg-slate-50 p-4 rounded-xl border border-blue-100 flex justify-between items-center">
-        <div class="flex-grow"><label class="mini-label text-blue-600">Property Label</label><input type="text" ${status} oninput="updatePropLabel(this.value)" class="w-full bg-transparent font-bold outline-none text-blue-900 property-label-input" value="${toTitleCase(prop.label)}"></div>
-        ${(!prop.isCore && !isSaved) ? `<button onclick="deleteProperty(${prop.id})" class="text-red-600 text-[9px] font-black uppercase">Delete Address</button>` : ''}
+    <div class="address-property-card">
+    <div class="flex-grow">
+        <label class="mini-label address-property-caption">Property Label</label>
+        <input type="text" ${status} oninput="updatePropLabel(this.value)" class="w-full bg-transparent outline-none text-slate-900 property-label-input" value="${toTitleCase(prop.label)}">
     </div>
+    ${(!prop.isCore && !isSaved) ? `<button onclick="deleteProperty(${prop.id})" class="address-property-delete">Delete Address</button>` : ''}
+</div>
 
     ${isCollectionAddress ? `
     <div class="bg-white border border-slate-200 rounded-xl p-4">
