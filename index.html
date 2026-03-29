@@ -368,29 +368,34 @@ button {
 
 .address-top-selector {
     font-weight: 600;
+    background: #eff6ff;
 }
 
-.address-property-card {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 14px 16px;
+.address-property-row {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
+    gap: 10px;
+    align-items: flex-end;
 }
 
-.address-property-caption {
-    color: #94a3b8;
+.address-property-field {
+    flex: 1;
 }
 
 .address-property-delete {
-    font-size: 9px;
-    font-weight: 700;
+    background: #dc2626;
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 20px;
+    font-size: 11px;
+    font-weight: 900;
     text-transform: uppercase;
-    color: #ef4444;
     white-space: nowrap;
+    font-family: 'Inter', sans-serif;
 }
         
         #manual-entry-area { display: none; background: white; border: 3px solid #3b82f6; border-radius: 20px; padding: 20px; margin-bottom: 24px; }
@@ -2246,10 +2251,16 @@ const isCollectionAddress = prop.id === currentJob.properties[0].id;
             document.getElementById('prop-selector').innerHTML = currentJob.properties.map(p => `<option value="${p.id}" ${p.id === activePropId ? 'selected' : ''}>${toTitleCase(p.label)}</option>`).join('');
             
            document.getElementById('address-editor-ui').innerHTML = `
-    <div class="address-property-card">
-    <div class="flex-grow">
-        <label class="mini-label address-property-caption">Property Label</label>
-        <input type="text" ${status} oninput="updatePropLabel(this.value)" class="w-full bg-transparent outline-none text-slate-900 property-label-input" value="${toTitleCase(prop.label)}">
+    <div class="address-property-row">
+    <div class="address-property-field">
+        <label class="mini-label">Property Label</label>
+        <input
+            type="text"
+            ${status}
+            oninput="updatePropLabel(this.value)"
+            class="input-field property-label-input"
+            value="${toTitleCase(prop.label)}"
+        >
     </div>
     ${(!prop.isCore && !isSaved) ? `<button onclick="deleteProperty(${prop.id})" class="address-property-delete">Delete Address</button>` : ''}
 </div>
