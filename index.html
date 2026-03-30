@@ -1512,7 +1512,36 @@ button {
     text-transform: uppercase;
     color: #64748b;
 }
+.signature-status-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+}
 
+.signature-lock-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    color: #475569;
+    font-size: 9px;
+    font-weight: 900;
+    text-transform: uppercase;
+    line-height: 1;
+}
+
+.signature-lock-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: #16a34a;
+    display: inline-block;
+}
     </style>
 </head>
 <body class="p-4 pb-12">
@@ -4964,15 +4993,28 @@ function renderListedSummary(summary, materials) {
         <canvas id="signature-pad" class="signature-pad"></canvas>
     </div>
 
-    <div class="signature-meta">
-        Signed:
-        <span id="signature-signed-at">
-            ${
-                currentJob && currentJob.signature && currentJob.signature.signedAt
-                    ? new Date(currentJob.signature.signedAt).toLocaleString("en-GB")
-                    : "Not signed"
-            }
-        </span>
+        <div class="signature-status-row">
+        <div class="signature-meta">
+            Signed:
+            <span id="signature-signed-at">
+                ${
+                    currentJob && currentJob.signature && currentJob.signature.signedAt
+                        ? new Date(currentJob.signature.signedAt).toLocaleString("en-GB")
+                        : "Not signed"
+                }
+            </span>
+        </div>
+
+        ${
+            currentJob && currentJob.signature && currentJob.signature.signedAt
+                ? `
+                    <div class="signature-lock-badge">
+                        <span class="signature-lock-dot"></span>
+                        Locked
+                    </div>
+                `
+                : ``
+        }
     </div>
 </div>
 
