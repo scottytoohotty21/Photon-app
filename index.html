@@ -266,6 +266,25 @@ button {
         .action-btn { font-size: 11px; font-weight: 900; text-transform: uppercase; padding: 0 15px; border-radius: 10px; transition: 0.2s; height: 56px; white-space: nowrap; }
         .btn-save { background: #22c55e; color: white; }
         .btn-change { background: white; color: #22c55e; border: 2px solid #22c55e; }
+        .action-btn.lock-btn {
+    min-width: 118px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.lock-btn-icon {
+    width: 16px;
+    height: 16px;
+    display: block;
+    flex-shrink: 0;
+}
+
+.lock-btn-text {
+    display: inline-block;
+    line-height: 1;
+}
 
         /* --- DASHBOARD --- */
         .job-card { background: white; border-radius: 16px; padding: 20px; border-left: 8px solid #cbd5e1; cursor: pointer; transition: transform 0.1s; position: relative; }
@@ -1559,7 +1578,7 @@ Enter as: Surname, First Name
         <section id="content-address" class="tab-content tab-content-wrapper bg-white p-5 rounded-2xl shadow-inner">
             <div class="flex gap-2 mb-6 items-center justify-between">
                 <select id="prop-selector" onchange="loadProperty(this.value)" class="input-field address-top-selector border-2 border-blue-500 bg-blue-50 flex-grow h-14 text-blue-900 transition-all"></select>
-                <button id="btn-save-address" onclick="toggleSaveState('address')" class="action-btn btn-save">Save</button>
+                <button id="btn-save-address" onclick="toggleSaveState('address')" class="action-btn lock-btn btn-save">Lock</button>
                 <button onclick="addProperty()" class="add-property-btn shadow-md">
                     <span class="btn-plus-icon">+</span>
                     <span class="btn-text-block">
@@ -1576,7 +1595,7 @@ Enter as: Surname, First Name
                 <div class="flex-grow min-w-[150px]">
                     <select id="seq-switcher" onchange="loadSequence(this.value)" class="w-full bg-slate-800 text-white border-none rounded-lg h-12 px-3 font-black text-xs outline-none"></select>
                 </div>
-                <button id="btn-save-sequence" onclick="toggleSaveState('sequence')" class="action-btn !h-12 !px-6 btn-save">Save</button>
+                <button id="btn-save-sequence" onclick="toggleSaveState('sequence')" class="action-btn lock-btn btn-save">Lock</button>
                 <button onclick="addSequence()" class="action-btn !h-12 !px-6 bg-blue-600 text-white">New Sequence</button>
                 <button id="btn-copy-seq" onclick="copySequence()" class="action-btn !h-12 !px-6 bg-slate-700 text-white">Copy Current</button>
                 <button id="btn-del-seq" onclick="deleteSequence()" class="action-btn !h-12 !px-6 bg-red-900 text-red-200">Delete</button>
@@ -2128,6 +2147,25 @@ function setActiveSequenceToDefault() {
             localStorage.setItem('photon_jobs', JSON.stringify(jobs));
         }
 
+function getLockButtonContent(isLocked) {
+    const iconColor = isLocked ? "#dc2626" : "#22c55e";
+    const label = isLocked ? "Unlock" : "Lock";
+
+    const shacklePath = isLocked
+        ? `<path d="M8.5 11V8.8a3.5 3.5 0 0 1 6 0" fill="none" stroke="${iconColor}" stroke-width="1.8" stroke-linecap="round"/>`
+        : `<path d="M8.5 11V8.8a3.5 3.5 0 1 1 7 0V11" fill="none" stroke="${iconColor}" stroke-width="1.8" stroke-linecap="round"/>`;
+
+    return `
+        <svg viewBox="0 0 24 24" class="lock-btn-icon" aria-hidden="true">
+            <circle cx="12" cy="12" r="10" fill="none" stroke="${iconColor}" stroke-width="1.8"/>
+            ${shacklePath}
+            <rect x="7" y="10.5" width="10" height="8" rx="2" fill="${iconColor}"/>
+            <circle cx="12" cy="14" r="1.1" fill="#ffffff"/>
+            <path d="M12 15.2v1.4" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+        <span class="lock-btn-text">${label}</span>
+    `;
+}
         function toTitleCase(str) { return str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()); }
         function createDefaultProperties() {
             const now = Date.now();
@@ -2245,9 +2283,9 @@ const isCollectionAddress = prop.id === currentJob.properties[0].id;
             isSaved ? wrapper.classList.add('is-saved') : wrapper.classList.remove('is-saved');
 
             const saveBtn = document.getElementById('btn-save-address');
-            saveBtn.innerText = isSaved ? 'Change' : 'Save';
-            saveBtn.className = `action-btn ${isSaved ? 'btn-change' : 'btn-save'}`;
-
+saveBtn.innerHTML = getLockButtonContent(isSaved);
+saveBtn.className = `action-btn lock-btn ${isSaved ? 'btn-change' : 'btn-save'}`;
+saveBtn.setAttribute('aria-label', isSaved ? 'Unlock address' : 'Lock address');
             document.getElementById('prop-selector').innerHTML = currentJob.properties.map(p => `<option value="${p.id}" ${p.id === activePropId ? 'selected' : ''}>${toTitleCase(p.label)}</option>`).join('');
             
            document.getElementById('address-editor-ui').innerHTML = `
@@ -3089,8 +3127,9 @@ function saveSimpleInputModal() {
             isSaved ? wrapper.classList.add('is-saved') : wrapper.classList.remove('is-saved');
 
             const saveBtn = document.getElementById('btn-save-sequence');
-            saveBtn.innerText = isSaved ? 'Change' : 'Save';
-            saveBtn.className = `action-btn !h-12 !px-6 ${isSaved ? 'btn-change' : 'btn-save'}`;
+saveBtn.innerHTML = getLockButtonContent(isSaved);
+saveBtn.className = `action-btn lock-btn ${isSaved ? 'btn-change' : 'btn-save'}`;
+saveBtn.setAttribute('aria-label', isSaved ? 'Unlock sequence' : 'Lock sequence');
 
             const selectedSeqId = activeSeqId || getDefaultSequenceId();
 
