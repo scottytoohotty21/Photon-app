@@ -1535,12 +1535,11 @@ button {
     line-height: 1;
 }
 
-.signature-lock-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 999px;
-    background: #16a34a;
-    display: inline-block;
+.signature-lock-icon {
+    width: 10px;
+    height: 10px;
+    display: block;
+    flex-shrink: 0;
 }
     </style>
 </head>
@@ -5005,16 +5004,36 @@ function renderListedSummary(summary, materials) {
             </span>
         </div>
 
-        ${
-            currentJob && currentJob.signature && currentJob.signature.signedAt
-                ? `
-                    <div class="signature-lock-badge">
-                        <span class="signature-lock-dot"></span>
-                        Locked
-                    </div>
-                `
-                : ``
-        }
+                <div
+            id="signature-lock-badge"
+            class="signature-lock-badge"
+            style="${
+                currentJob && currentJob.signature && currentJob.signature.signedAt
+                    ? ""
+                    : "display:none;"
+            }"
+        >
+            <svg viewBox="0 0 24 24" class="signature-lock-icon" aria-hidden="true">
+                <path
+                    d="M8 10V7.8a4 4 0 1 1 8 0V10"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                />
+                <rect
+                    x="6"
+                    y="10"
+                    width="12"
+                    height="10"
+                    rx="2"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                />
+            </svg>
+            Locked
+        </div>
     </div>
 </div>
 
@@ -5447,8 +5466,13 @@ function clearSignaturePad() {
     signatureLocked = false;
     signaturePad.classList.remove("locked");
 
-    const signedAtEl = document.getElementById("signature-signed-at");
+        const signedAtEl = document.getElementById("signature-signed-at");
     if (signedAtEl) signedAtEl.innerText = "Not signed";
+
+    const lockBadge = document.getElementById("signature-lock-badge");
+    if (lockBadge) {
+        lockBadge.style.display = "none";
+    }
 
     saveToDevice();
 }
@@ -5466,9 +5490,14 @@ function saveSignaturePad() {
     signatureLocked = true;
     signaturePad.classList.add("locked");
 
-    const signedAtEl = document.getElementById("signature-signed-at");
+        const signedAtEl = document.getElementById("signature-signed-at");
     if (signedAtEl) {
         signedAtEl.innerText = new Date(currentJob.signature.signedAt).toLocaleString("en-GB");
+    }
+
+    const lockBadge = document.getElementById("signature-lock-badge");
+    if (lockBadge) {
+        lockBadge.style.display = "inline-flex";
     }
 
     saveToDevice();
