@@ -4131,15 +4131,23 @@ function saveDamageModal() {
 
     setModalErrorText("damage-error-text", "");
 
-    const previousDamage = rawEntry.damage || "";
+        const previousDamage = rawEntry.damage || "";
     rawEntry.damage = finalDamage;
 
-    inventoryHistory.push({
-        type: "damage-edit",
-        rawEntryId: rawEntry.id,
-        previousDamage: previousDamage,
-        newDamage: finalDamage
-    });
+    const lastHistoryAction = inventoryHistory[inventoryHistory.length - 1];
+    const shouldMergeIntoItemUndo =
+        lastHistoryAction &&
+        lastHistoryAction.rawEntryId === rawEntry.id &&
+        (lastHistoryAction.type === "item" || lastHistoryAction.type === "volume");
+
+    if (!shouldMergeIntoItemUndo) {
+        inventoryHistory.push({
+            type: "damage-edit",
+            rawEntryId: rawEntry.id,
+            previousDamage: previousDamage,
+            newDamage: finalDamage
+        });
+    }
 
     saveToDevice();
     renderActionButtonStates();
