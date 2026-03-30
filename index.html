@@ -3984,15 +3984,23 @@ function saveNoteModal() {
 
     setModalErrorText("note-error-text", "");
 
-    const previousNote = rawEntry.note || "";
+        const previousNote = rawEntry.note || "";
     rawEntry.note = cleanNote;
 
-    inventoryHistory.push({
-        type: "note-edit",
-        rawEntryId: rawEntry.id,
-        previousNote: previousNote,
-        newNote: cleanNote
-    });
+    const lastHistoryAction = inventoryHistory[inventoryHistory.length - 1];
+    const shouldMergeIntoItemUndo =
+        lastHistoryAction &&
+        lastHistoryAction.rawEntryId === rawEntry.id &&
+        (lastHistoryAction.type === "item" || lastHistoryAction.type === "volume");
+
+    if (!shouldMergeIntoItemUndo) {
+        inventoryHistory.push({
+            type: "note-edit",
+            rawEntryId: rawEntry.id,
+            previousNote: previousNote,
+            newNote: cleanNote
+        });
+    }
 
     saveToDevice();
     renderActionButtonStates();
@@ -5063,32 +5071,36 @@ function isListedBoxItem(itemName) {
 }
 
 function sortListedRoomEntries(entries) {
-    return entries.slice().sort(function(a, b) {
-        const aExcluded = !!a.excluded;
-        const bExcluded = !!b.excluded;
+    return entries
+        .map(function(entry, index) {
+            return {
+                entry: entry,
+                index: index
+            };
+        })
+        .sort(function(a, b) {
+            const aExcluded = !!a.entry.excluded;
+            const bExcluded = !!b.entry.excluded;
 
-        // excluded always last
-        if (aExcluded !== bExcluded) {
-            return aExcluded ? 1 : -1;
-        }
+            // exclusions always last
+            if (aExcluded !== bExcluded) {
+                return aExcluded ? 1 : -1;
+            }
 
-        const aIsBox = isListedBoxItem(a.itemName);
-        const bIsBox = isListedBoxItem(b.itemName);
+            const aIsBox = isListedBoxItem(a.entry.itemName);
+            const bIsBox = isListedBoxItem(b.entry.itemName);
 
-        // normal items before boxes
-        if (aIsBox !== bIsBox) {
-            return aIsBox ? 1 : -1;
-        }
+            // boxes go below normal items
+            if (aIsBox !== bIsBox) {
+                return aIsBox ? 1 : -1;
+            }
 
-        // box order: AP / CG / BOOK / LINEN / WR
-        if (aIsBox && bIsBox) {
-            const boxDiff = getListedBoxOrder(a.itemName) - getListedBoxOrder(b.itemName);
-            if (boxDiff !== 0) return boxDiff;
-        }
-
-        // fallback alphabetical
-        return String(a.itemName || "").localeCompare(String(b.itemName || ""));
-    });
+            // within the same group, keep original add order
+            return a.index - b.index;
+        })
+        .map(function(item) {
+            return item.entry;
+        });
 }
 function groupInventoryItemsForListedView(items) {
     const grouped = {};
