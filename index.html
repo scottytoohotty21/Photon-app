@@ -275,7 +275,7 @@ button {
     color: #dc2626;
     border: 2px solid #dc2626;
 }
-        .action-btn.lock-btn {
+       .action-btn.lock-btn {
     min-width: 118px;
     height: 56px;
     display: inline-flex;
@@ -284,9 +284,9 @@ button {
     gap: 8px;
     padding: 0 16px;
     border-radius: 10px;
-    border: 2px solid transparent;
     background: #ffffff;
     white-space: nowrap;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
 }
 
 .lock-btn-icon {
@@ -405,7 +405,6 @@ button {
 
 .address-top-selector {
     font-weight: 600;
-    background: #eff6ff;
 }
 
 .address-property-row {
@@ -678,12 +677,6 @@ button {
     text-align: center;
 }
 
-#undo-btn {
-    background: #dc2626 !important;
-    color: #ffffff !important;
-    border: 2.5px solid #dc2626 !important;
-    border-radius: 8px !important;
-}
 /* --- CRATE MODAL --- */
 .crate-overlay {
     display: none;
@@ -6032,7 +6025,7 @@ window.onload = function () {
     </div>
 </div>
 
-<!-- SIMPLE INPUT MODAL --><!-- SIMPLE INPUT MODAL -->
+<!-- SIMPLE INPUT MODAL -->
 <div id="simple-input-overlay" class="simple-input-overlay" onclick="closeSimpleInputModal()">
     <div class="simple-input-panel" onclick="event.stopPropagation()">
         <div id="simple-input-title" class="simple-input-title">Enter Value</div>
