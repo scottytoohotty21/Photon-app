@@ -1500,6 +1500,11 @@ button {
     background: #ffffff;
 }
 
+.signature-pad.locked {
+    pointer-events: none;
+    background: #f8fafc;
+    cursor: default;
+}
 .signature-meta {
     margin-top: 8px;
     font-size: 9px;
@@ -2139,6 +2144,7 @@ let signaturePadCtx = null;
 let signatureDrawing = false;
 let signatureLastX = 0;
 let signatureLastY = 0;
+let signatureLocked = false;
 function getDefaultSequenceId() {
     if (!currentJob || !Array.isArray(currentJob.sequences) || currentJob.sequences.length === 0) {
         return null;
@@ -3920,20 +3926,7 @@ function saveCrateModal() {
         unit: selectedCrateUnit
     };
 
-    inventoryHistory.push({
-        type: "crate-edit",
-        rawEntryId: rawEntry.id,
-        previousCrated: previousCrated,
-        previousDims: previousDims,
-        newDims: {
-            l: l,
-            w: w,
-            h: h,
-            unit: selectedCrateUnit
-        }
-    });
-
-    saveToDevice();
+        saveToDevice();
     renderActionButtonStates();
 
     const tags = [];
@@ -4487,32 +4480,7 @@ recalculateTotalVolume();
         updateInventoryDisplay(tags.length ? (label + " " + tags.join(" ")) : label);
     }
 }
-else if (action.type === "crate-edit") {
-    const rawEntry = findRawInventoryEntry(action.rawEntryId);
-    if (rawEntry) {
-        rawEntry.crated = !!action.previousCrated;
-        rawEntry.crateDims = action.previousDims ? {
-            l: action.previousDims.l,
-            w: action.previousDims.w,
-            h: action.previousDims.h,
-            unit: action.previousDims.unit
-        } : null;
 
-        saveToDevice();
-
-        const tags = [];
-        if (rawEntry.dismantle) tags.push("[DISMANTLE]");
-        if (rawEntry.expWrap) tags.push("[EXP WRAP]");
-        if (rawEntry.excluded) tags.push("[EXCLUDED]");
-        if (rawEntry.crated && rawEntry.crateDims) {
-            tags.push("[CRATE: " + rawEntry.crateDims.l + " x " + rawEntry.crateDims.w + " x " + rawEntry.crateDims.h + " " + rawEntry.crateDims.unit + "]");
-        }
-        if (rawEntry.note) tags.push("[NOTE: " + rawEntry.note.toUpperCase() + "]");
-
-        const label = (rawEntry.itemName || "ITEM").toUpperCase();
-        updateInventoryDisplay(tags.length ? (label + " " + tags.join(" ")) : label);
-    }
-}
 else if (action.type === "damage-edit") {
     const rawEntry = findRawInventoryEntry(action.rawEntryId);
     if (rawEntry) {
@@ -5344,10 +5312,18 @@ function initSignaturePad() {
     signaturePadCtx.lineJoin = "round";
     signaturePadCtx.lineWidth = 2.5;
     signaturePadCtx.strokeStyle = "#0f172a";
-
     signaturePadCtx.clearRect(0, 0, canvas.width, canvas.height);
 
-    if (currentJob && currentJob.signature && currentJob.signature.image) {
+    const hasSavedSignature = !!(
+        currentJob &&
+        currentJob.signature &&
+        currentJob.signature.image
+    );
+
+    signatureLocked = hasSavedSignature;
+    canvas.classList.toggle("locked", signatureLocked);
+
+    if (hasSavedSignature) {
         loadSignatureImageToCanvas(currentJob.signature.image);
     }
 
@@ -5381,6 +5357,7 @@ function getSignaturePoint(e) {
 
 function startSignatureDraw(e) {
     if (!signaturePadCtx) return;
+    if (signatureLocked) return;
 
     e.preventDefault();
 
@@ -5425,6 +5402,9 @@ function clearSignaturePad() {
     currentJob.signature.image = "";
     currentJob.signature.signedAt = "";
 
+    signatureLocked = false;
+    signaturePad.classList.remove("locked");
+
     const signedAtEl = document.getElementById("signature-signed-at");
     if (signedAtEl) signedAtEl.innerText = "Not signed";
 
@@ -5440,6 +5420,9 @@ function saveSignaturePad() {
 
     currentJob.signature.image = signaturePad.toDataURL("image/png");
     currentJob.signature.signedAt = new Date().toISOString();
+
+    signatureLocked = true;
+    signaturePad.classList.add("locked");
 
     const signedAtEl = document.getElementById("signature-signed-at");
     if (signedAtEl) {
