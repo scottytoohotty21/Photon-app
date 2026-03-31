@@ -1831,27 +1831,25 @@ Enter as: Surname, First Name
         </div>
     </div>
 
-  <div class="col-span-1 grid grid-cols-1 gap-1 inventory-side-column">
+    <div class="col-span-1 grid grid-cols-1 gap-1 inventory-side-column">
+        <button class="item-btn bg-red-50 text-red-500 border-red-100 flex-col">
+            VOICE
+            <span class="text-[7px] opacity-60">0 CLIPS</span>
+        </button>
 
-  <div class="col-span-1 grid grid-cols-1 gap-1">
-    <button class="item-btn bg-red-50 text-red-500 border-red-100 flex-col">
-        VOICE
-        <span class="text-[7px] opacity-60">0 CLIPS</span>
-    </button>
+        <button class="item-btn item-btn-blue" onclick="addBox('AP')">AP</button>
+        <button class="item-btn item-btn-blue" onclick="addBox('CG')">CG</button>
+        <button class="item-btn item-btn-blue" onclick="addBox('BOOK')">BOOK</button>
+        <button class="item-btn item-btn-blue" onclick="addBox('LINEN')">LINEN</button>
+        <button class="item-btn item-btn-blue" onclick="addBox('WR')">WR</button>
 
-    <button class="item-btn item-btn-blue" onclick="addBox('AP')">AP</button>
-    <button class="item-btn item-btn-blue" onclick="addBox('CG')">CG</button>
-    <button class="item-btn item-btn-blue" onclick="addBox('BOOK')">BOOK</button>
-    <button class="item-btn item-btn-blue" onclick="addBox('LINEN')">LINEN</button>
-    <button class="item-btn item-btn-blue" onclick="addBox('WR')">WR</button>
-
-    <button class="item-btn item-btn-blue" onclick="addVolume(1)">1 CUFT</button>
-    <button class="item-btn item-btn-blue" onclick="addVolume(5)">5 CUFT</button>
-    <button class="item-btn item-btn-blue" onclick="addVolume(10)">10 CUFT</button>
-    <button class="item-btn item-btn-blue" onclick="addVolume(20)">20 CUFT</button>
-    <button class="item-btn item-btn-blue" onclick="addVolume(50)">50 CUFT</button>
-    <button class="item-btn item-btn-blue" onclick="addVolume(100)">100 CUFT</button>
-</div>
+        <button class="item-btn item-btn-blue" onclick="addVolume(1)">1 CUFT</button>
+        <button class="item-btn item-btn-blue" onclick="addVolume(5)">5 CUFT</button>
+        <button class="item-btn item-btn-blue" onclick="addVolume(10)">10 CUFT</button>
+        <button class="item-btn item-btn-blue" onclick="addVolume(20)">20 CUFT</button>
+        <button class="item-btn item-btn-blue" onclick="addVolume(50)">50 CUFT</button>
+        <button class="item-btn item-btn-blue" onclick="addVolume(100)">100 CUFT</button>
+    </div>
 </div>
         </section>
         
@@ -2410,6 +2408,8 @@ if (!Array.isArray(currentJob.inventory.items)) currentJob.inventory.items = [];
 currentItemVolume = 0;
 totalVolume = 0;
 currentInventoryCategory = "Full List";
+inventorySearchText = "";
+inventoryReturnContext = null;
 lastAddedItemName = null;
 lastAddedRawEntryId = null;
 inventoryItems = [];
@@ -3543,10 +3543,16 @@ if (t === 'inventory') {
         currentJob.inventory.activeDeliveryId = null;
     }
 
+    inventorySearchText = "";
+
     renderInventorySequenceDropdown();
     renderInventoryDeliveryDropdown();
     renderInventoryRoomDropdown();
     renderInventoryFloorDropdown();
+
+    const searchInput = document.getElementById("inventory-search-input");
+    if (searchInput) searchInput.value = "";
+
     renderInventoryButtons();
     rebuildLiveInventoryFromSequence(activeSeqId);
     renderActionButtonStates();
