@@ -2290,7 +2290,19 @@ function setActiveSequenceToDefault() {
     activeSeqId = defaultSeqId;
     return activeSeqId;
 }
+function saveInventoryContext() {
+    if (!currentJob) return;
+    if (!currentJob.inventory) currentJob.inventory = {};
 
+    currentJob.inventory.activeSequenceId = activeSeqId || null;
+
+    inventoryReturnContext = {
+        sequenceId: currentJob.inventory.activeSequenceId || null,
+        deliveryId: currentJob.inventory.activeDeliveryId || null,
+        floorName: currentJob.inventory.activeFloor || "Ground",
+        roomName: currentJob.inventory.activeRoomName || "Hallway"
+    };
+}
         function saveToDevice() {
             localStorage.setItem('photon_jobs', JSON.stringify(jobs));
         }
@@ -2588,7 +2600,10 @@ function handleInventoryDeliveryChange(value) {
     if (!currentJob) return;
     if (!currentJob.inventory) currentJob.inventory = {};
 
+    currentJob.inventory.activeSequenceId = activeSeqId || null;
     currentJob.inventory.activeDeliveryId = value;
+
+    saveInventoryContext();
     saveToDevice();
 }
        function ensureInventoryStore() {
@@ -2872,10 +2887,13 @@ function handleRoomChange(value) {
         return;
     }
 
+        currentJob.inventory.activeSequenceId = activeSeqId || null;
     currentJob.inventory.activeRoomName = value;
     resetInventoryQtyInput();
     lastAddedItemName = null;
     lastAddedRawEntryId = null;
+
+    saveInventoryContext();
     saveToDevice();
 }
         function getFloorOptions() {
@@ -2972,7 +2990,10 @@ function handleFloorChange(value) {
         return;
     }
 
+       currentJob.inventory.activeSequenceId = activeSeqId || null;
     currentJob.inventory.activeFloor = value;
+
+    saveInventoryContext();
     saveToDevice();
 }
     function renderInventoryButtons() {
@@ -3498,6 +3519,7 @@ function updatePropData(f, v) {
     activeSeqId = id;
 
     if (!currentJob.inventory) currentJob.inventory = {};
+    currentJob.inventory.activeSequenceId = id;
     currentJob.inventory.activeDeliveryId = null;
 
     const qtyInput = document.getElementById("inv-qty");
@@ -3507,6 +3529,7 @@ function updatePropData(f, v) {
     renderInventorySequenceDropdown();
     renderInventoryDeliveryDropdown();
 
+    saveInventoryContext();
     rebuildLiveInventoryFromSequence(activeSeqId);
     saveToDevice();
 }
@@ -3530,20 +3553,30 @@ function updatePropData(f, v) {
     if (t === 'inventory') {
         if (!currentJob.inventory) currentJob.inventory = {};
 
-        if (
+        const savedSequenceId = currentJob.inventory.activeSequenceId;
+        const savedSequenceExists = savedSequenceId && currentJob.sequences.some(function(seq) {
+            return String(seq.id) === String(savedSequenceId);
+        });
+
+        const hasReturnContext = (
             inventoryReturnContext &&
             inventoryReturnContext.sequenceId &&
             currentJob.sequences.some(function(seq) {
                 return String(seq.id) === String(inventoryReturnContext.sequenceId);
             })
-        ) {
+        );
+
+        if (hasReturnContext) {
             activeSeqId = inventoryReturnContext.sequenceId;
+            currentJob.inventory.activeSequenceId = inventoryReturnContext.sequenceId;
             currentJob.inventory.activeDeliveryId = inventoryReturnContext.deliveryId || null;
             currentJob.inventory.activeFloor = inventoryReturnContext.floorName || "Ground";
             currentJob.inventory.activeRoomName = inventoryReturnContext.roomName || "Hallway";
+        } else if (savedSequenceExists) {
+            activeSeqId = savedSequenceId;
         } else {
             setActiveSequenceToDefault();
-            currentJob.inventory.activeDeliveryId = null;
+            currentJob.inventory.activeSequenceId = activeSeqId;
         }
 
         renderInventorySequenceDropdown();
@@ -3557,6 +3590,8 @@ function updatePropData(f, v) {
     }
 
     if (t === 'listed') {
+        saveInventoryContext();
+
         const defaultSeqId = setActiveSequenceToDefault();
         listedSequenceFilter = defaultSeqId ? String(defaultSeqId) : "__all__";
         listedDeliveryFilter = "__all__";
