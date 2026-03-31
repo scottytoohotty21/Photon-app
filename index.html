@@ -2173,6 +2173,7 @@ let signatureDrawing = false;
 let signatureLastX = 0;
 let signatureLastY = 0;
 let signatureLocked = false;
+let inventoryReturnContext = null;
 function getDefaultSequenceId() {
     if (!currentJob || !Array.isArray(currentJob.sequences) || currentJob.sequences.length === 0) {
         return null;
@@ -3381,11 +3382,24 @@ function updatePropData(f, v) {
 }
     if (t === 'address') renderAddressUI();
 
-  if (t === 'inventory') {
-    setActiveSequenceToDefault();
-
+if (t === 'inventory') {
     if (!currentJob.inventory) currentJob.inventory = {};
-    currentJob.inventory.activeDeliveryId = null;
+
+    if (
+        inventoryReturnContext &&
+        inventoryReturnContext.sequenceId &&
+        currentJob.sequences.some(function(seq) {
+            return String(seq.id) === String(inventoryReturnContext.sequenceId);
+        })
+    ) {
+        activeSeqId = inventoryReturnContext.sequenceId;
+        currentJob.inventory.activeDeliveryId = inventoryReturnContext.deliveryId || null;
+        currentJob.inventory.activeFloor = inventoryReturnContext.floorName || "Ground";
+        currentJob.inventory.activeRoomName = inventoryReturnContext.roomName || "Hallway";
+    } else {
+        setActiveSequenceToDefault();
+        currentJob.inventory.activeDeliveryId = null;
+    }
 
     renderInventorySequenceDropdown();
     renderInventoryDeliveryDropdown();
@@ -4736,6 +4750,16 @@ function escapeHtml(value) {
         .replace(/'/g, "&#39;");
 }
 
+function setInventoryReturnContextFromEntry(entry) {
+    if (!entry) return;
+
+    inventoryReturnContext = {
+        sequenceId: entry.sequenceId || null,
+        deliveryId: entry.deliveryId || null,
+        floorName: entry.floorName || "Ground",
+        roomName: entry.roomName || "Hallway"
+    };
+}
 function getRawEntriesForListedEntry(entry) {
     if (!currentJob || !currentJob.inventory || !Array.isArray(currentJob.inventory.items)) {
         return [];
@@ -4784,6 +4808,8 @@ function deleteListedEntry(entryKey) {
     const mergedEntry = window.__listedEntryMap && window.__listedEntryMap[entryKey];
     if (!mergedEntry) return;
 
+    setInventoryReturnContextFromEntry(mergedEntry);
+
     const rawMatches = getRawEntriesForListedEntry(mergedEntry);
     if (!rawMatches.length) return;
 
@@ -4811,6 +4837,8 @@ function editListedEntryQty(entryKey) {
     const mergedEntry = window.__listedEntryMap && window.__listedEntryMap[entryKey];
     if (!mergedEntry) return;
 
+    setInventoryReturnContextFromEntry(mergedEntry);
+
     openSimpleInputModal({
         mode: "listed-edit-qty",
         title: "Edit Quantity",
@@ -4827,6 +4855,8 @@ function editListedEntryQty(entryKey) {
 function editListedEntryNote(entryKey) {
     const mergedEntry = window.__listedEntryMap && window.__listedEntryMap[entryKey];
     if (!mergedEntry) return;
+
+    setInventoryReturnContextFromEntry(mergedEntry);
 
     openSimpleInputModal({
         mode: "listed-edit-note",
