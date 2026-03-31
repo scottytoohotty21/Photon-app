@@ -3542,9 +3542,14 @@ function updatePropData(f, v) {
     document.getElementById('nav-' + t).classList.add('active');
 
     if (t === 'sequence') {
-        setActiveSequenceToDefault();
-        renderSequenceUI();
+    if (!activeSeqId && currentJob && currentJob.inventory && currentJob.inventory.activeSequenceId) {
+        activeSeqId = currentJob.inventory.activeSequenceId;
     }
+    if (!activeSeqId) {
+        setActiveSequenceToDefault();
+    }
+    renderSequenceUI();
+}
 
     if (t === 'address') {
         renderAddressUI();
