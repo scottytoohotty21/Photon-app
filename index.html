@@ -1541,6 +1541,84 @@ button {
     display: block;
     flex-shrink: 0;
 }
+/* --- INVENTORY SEARCH + SCROLL --- */
+.inventory-search-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.inventory-search-input {
+    flex: 1;
+    height: 44px;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 10px;
+    padding: 0 14px;
+    font-size: 13px;
+    font-weight: 700;
+    outline: none;
+    background: #ffffff;
+    color: #0f172a;
+    font-family: 'Inter', sans-serif;
+}
+
+.inventory-search-input:focus {
+    border-color: #3b82f6;
+}
+
+.inventory-search-clear {
+    min-width: 76px;
+    height: 44px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background: #f8fafc;
+    color: #475569;
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+    font-family: 'Inter', sans-serif;
+}
+
+.inventory-search-count {
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #64748b;
+    margin-bottom: 10px;
+    padding-left: 2px;
+}
+
+.inventory-picker-shell {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 8px;
+}
+
+.inventory-picker-scroll {
+    max-height: 52vh;
+    min-height: 260px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 4px;
+}
+
+.inventory-picker-scroll::-webkit-scrollbar {
+    width: 10px;
+}
+
+.inventory-picker-scroll::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 999px;
+}
+
+.inventory-side-column {
+    position: sticky;
+    top: 0;
+    align-self: start;
+    background: #ffffff;
+}
+</style>
     </style>
 </head>
 <body class="p-4 pb-12">
@@ -1727,8 +1805,33 @@ Enter as: Surname, First Name
 </button>
             </div>
 
+                       <div class="inventory-search-row mb-3">
+                <input
+                    type="text"
+                    id="inventory-search-input"
+                    class="inventory-search-input"
+                    placeholder="Search inventory items..."
+                    oninput="handleInventorySearch(this.value)"
+                >
+                <button
+                    type="button"
+                    class="inventory-search-clear"
+                    onclick="clearInventorySearch()"
+                >
+                    Clear
+                </button>
+            </div>
+
+            <div id="inventory-search-count" class="inventory-search-count">Showing all items</div>
+
             <div class="grid grid-cols-5 gap-1">
-    <div id="inventory-button-grid" class="col-span-4 grid grid-cols-4 gap-1"></div>
+    <div class="col-span-4 inventory-picker-shell">
+        <div id="inventory-picker-scroll" class="inventory-picker-scroll">
+            <div id="inventory-button-grid" class="grid grid-cols-4 gap-1"></div>
+        </div>
+    </div>
+
+  <div class="col-span-1 grid grid-cols-1 gap-1 inventory-side-column">
 
   <div class="col-span-1 grid grid-cols-1 gap-1">
     <button class="item-btn bg-red-50 text-red-500 border-red-100 flex-col">
@@ -2156,6 +2259,7 @@ let inventoryItems = [];
 let currentItemVolume = 0;
 let totalVolume = 0;
 let currentInventoryCategory = "Full List";
+let inventorySearchText = "";
 let lastAddedItemName = null;
 let lastAddedRawEntryId = null;
 let inventoryHistory = [];
@@ -2873,11 +2977,36 @@ function handleFloorChange(value) {
 }
     function renderInventoryButtons() {
     const grid = document.getElementById('inventory-button-grid');
+    const countEl = document.getElementById('inventory-search-count');
     if (!grid) return;
 
     const itemsToShow = inventoryCategories[currentInventoryCategory] || [];
+    const search = (inventorySearchText || "").trim().toLowerCase();
 
-    grid.innerHTML = itemsToShow.map(itemName => {
+    const filteredItems = !search
+        ? itemsToShow
+        : itemsToShow.filter(function(itemName) {
+            return itemName.toLowerCase().includes(search);
+        });
+
+    if (countEl) {
+        if (!search) {
+            countEl.innerText = `Showing all items (${itemsToShow.length})`;
+        } else {
+            countEl.innerText = `Showing ${filteredItems.length} of ${itemsToShow.length} items`;
+        }
+    }
+
+    if (!filteredItems.length) {
+        grid.innerHTML = `
+            <div class="col-span-4 bg-slate-50 border border-slate-200 rounded-xl p-4 text-center text-[10px] font-black uppercase text-slate-400">
+                No matching items
+            </div>
+        `;
+        return;
+    }
+
+    grid.innerHTML = filteredItems.map(function(itemName) {
         return `<button class="item-btn" onclick="addInventoryItem('${itemName.replace(/'/g, "\\'")}')">${itemName}</button>`;
     }).join('');
 }
@@ -2891,6 +3020,19 @@ function setInventoryCategory(category, btn) {
     renderInventoryButtons();
 }
 
+function handleInventorySearch(value) {
+    inventorySearchText = value || "";
+    renderInventoryButtons();
+}
+
+function clearInventorySearch() {
+    inventorySearchText = "";
+
+    const input = document.getElementById("inventory-search-input");
+    if (input) input.value = "";
+
+    renderInventoryButtons();
+}
 function openSimpleInputModal(config) {
     const overlay = document.getElementById("simple-input-overlay");
     const title = document.getElementById("simple-input-title");
