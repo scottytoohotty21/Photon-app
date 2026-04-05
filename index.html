@@ -2135,6 +2135,27 @@ const inventoryCategories = {
         "Dustbin"
     ]
 };
+function createEmptySequenceSchedule() {
+    return {
+        moveDate: "",
+        transitHours: 0,
+        transitMinutes: 30,
+        loadRate: 125,
+        unloadRate: 132,
+        manualDays: [],
+        special: {
+            frameBeds: 0,
+            bunkBeds: 0,
+            uprightPianos: 0,
+            grandPianos: 0,
+            grandfatherClocks: 0,
+            appliances: 0,
+            cratingItems: 0,
+            customItemMinutes: 0,
+            customItemNote: ""
+        }
+    };
+}
         function createEmptyJob(overrides = {}) {
     const now = new Date().toISOString();
     const defaultProperties = createDefaultProperties();
@@ -2306,6 +2327,25 @@ function saveInventoryContext() {
         function saveToDevice() {
             localStorage.setItem('photon_jobs', JSON.stringify(jobs));
         }
+        function ensureScheduleDataShape() {
+    jobs.forEach(function(job) {
+        if (!Array.isArray(job.sequences)) return;
+
+        job.sequences.forEach(function(seq) {
+            if (!seq.schedule) {
+                seq.schedule = createEmptySequenceSchedule();
+            }
+
+            if (!Array.isArray(seq.schedule.manualDays)) {
+                seq.schedule.manualDays = [];
+            }
+
+            if (!seq.schedule.special) {
+                seq.schedule.special = createEmptySequenceSchedule().special;
+            }
+        });
+    });
+}
 
 function getLockButtonContent(isLocked) {
     const iconColor = isLocked ? "#dc2626" : "#22c55e";
@@ -2399,14 +2439,15 @@ document.getElementById('hdr-ref').innerText =
 if (!currentJob.sequences || currentJob.sequences.length === 0) {
     const id = Date.now();
     currentJob.sequences.push({
-        id: id,
-        moveType: "",
-        packOption: "",
-        vol: 0,
-        isSaved: false,
-        collections: [currentJob.properties[0].id],
-        deliveries: [currentJob.properties[1] ? currentJob.properties[1].id : currentJob.properties[0].id]
-    });
+    id: id,
+    moveType: "",
+    packOption: "",
+    vol: 0,
+    isSaved: false,
+    collections: [currentJob.properties[0].id],
+    deliveries: [currentJob.properties[1] ? currentJob.properties[1].id : currentJob.properties[0].id],
+    schedule: createEmptySequenceSchedule()
+});
     activeSeqId = id;
 } else {
     setActiveSequenceToDefault();
@@ -3425,7 +3466,16 @@ function renderDashboard() {
 
         function addSequence() {
             const id = Date.now();
-            currentJob.sequences.push({ id: id, moveType: "", packOption: "", vol: 0, isSaved: false, collections: [currentJob.properties[0].id], deliveries: [currentJob.properties[1] ? currentJob.properties[1].id : currentJob.properties[0].id] });
+            currentJob.sequences.push({
+    id: id,
+    moveType: "",
+    packOption: "",
+    vol: 0,
+    isSaved: false,
+    collections: [currentJob.properties[0].id],
+    deliveries: [currentJob.properties[1] ? currentJob.properties[1].id : currentJob.properties[0].id],
+    schedule: createEmptySequenceSchedule()
+});
             activeSeqId = id;
 renderSequenceUI();
 renderInventorySequenceDropdown();
@@ -3435,7 +3485,15 @@ saveToDevice();
         function copySequence() {
             const original = currentJob.sequences.find(s => s.id == activeSeqId);
             const copy = JSON.parse(JSON.stringify(original));
+            copy.schedule = copy.schedule || createEmptySequenceSchedule();
             copy.id = Date.now(); copy.isSaved = false;
+            copy.schedule.manualDays = Array.isArray(copy.schedule.manualDays)
+    ? copy.schedule.manualDays.map(day => ({
+        ...day,
+        id: "day_" + Date.now() + "_" + Math.random().toString(36).slice(2,7),
+        groupId: day.groupId || ("grp_" + Date.now() + "_" + Math.random().toString(36).slice(2,7))
+    }))
+    : [];
             currentJob.sequences.push(copy);
 activeSeqId = copy.id;
 renderSequenceUI();
@@ -6192,8 +6250,11 @@ function printListedInventoryPdf() {
     }, 400);
 }
 window.onload = function () {
+    ensureScheduleDataShape();
+    saveToDevice();
     renderDashboard();
-};    </script>
+};  
+</script>
 <!-- DAMAGE MODAL -->
 <div id="damage-overlay" class="damage-overlay" onclick="closeDamageModal()">
     <div class="damage-panel" onclick="event.stopPropagation()">
