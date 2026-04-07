@@ -536,6 +536,12 @@ button {
 #tool-disconnect,
 #tool-handyman {
     min-width: 88px;
+    height: 44px;
+}
+
+#tool-disconnect,
+#tool-handyman {
+    min-width: 88px;
     height: 50px;
 }
         .inv-tool-btn.active {
@@ -1879,7 +1885,6 @@ Enter as: Surname, First Name
 
             <div class="flex gap-2 mb-4">
     <div class="flex-grow log-bar">2 X SOFA 3 SEAT [EXC]</div>
-
     <div
         id="inv-current-volume"
         class="w-20 vol-box"
@@ -1888,7 +1893,6 @@ Enter as: Surname, First Name
         <span class="mini-label !mb-0 text-red-600">Vol</span>
         <span class="text-sm font-black">50</span>
     </div>
-
     <button
         id="undo-btn"
         onclick="undoLastInventoryAction()"
@@ -1896,7 +1900,9 @@ Enter as: Surname, First Name
     >
         Undo
     </button>
+</div>
 
+                       <div class="inventory-search-row mb-3">
     <button
         id="tool-disconnect"
         class="inv-tool-btn"
@@ -1912,9 +1918,7 @@ Enter as: Surname, First Name
     >
         Handyman
     </button>
-</div>
 
-                       <div class="inventory-search-row mb-3">
     <input
         type="text"
         id="inventory-search-input"
