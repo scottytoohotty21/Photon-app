@@ -3237,8 +3237,6 @@ let signatureLastX = 0;
 let signatureLastY = 0;
 let signatureLocked = false;
 let inventoryReturnContext = null;
-ensureScheduleDataShape();
-saveToDevice();
 
 function getDefaultSequenceId() {
     if (!currentJob || !Array.isArray(currentJob.sequences) || currentJob.sequences.length === 0) {
@@ -10682,6 +10680,11 @@ function renderScheduleCalculator(){
     renderSchedulePlanner();
     renderValidation(packing, loading, unloading, special, state);
 }
+document.addEventListener('DOMContentLoaded', function () {
+    ensureScheduleDataShape();
+    saveToDevice();
+    renderDashboard();
+});
 </script>
 <!-- BED MODAL -->
 <div id="bed-overlay" class="bed-overlay" onclick="closeBedModal()">
