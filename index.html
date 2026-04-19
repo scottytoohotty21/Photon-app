@@ -2521,6 +2521,16 @@ Enter as: Surname, First Name
                 </div>
 
                 <div class="section-block">
+    <div class="section-title">Loading Variant</div>
+    <div>
+        <label class="mini-label">Loading Variant</label>
+        <select id="loadingVariant" class="field" onchange="handleScheduleInputChange()">
+            <option value="Standard">Standard</option>
+            <option value="Slow">Slow</option>
+        </select>
+    </div>
+</div>
+                <div class="section-block">
                     <div class="section-title">Transit Time</div>
                     <div class="grid-2">
                         <div>
@@ -3044,6 +3054,7 @@ function createEmptySequenceSchedule() {
         loftVol: 0,
         loadRate: 125,
         unloadRate: 132,
+        loadingVariant: "Standard",
         exportWrapVol: 0,
         manualDays: [],
         special: {
@@ -3272,6 +3283,7 @@ function saveInventoryContext() {
             if (seq.schedule.loftVol === undefined) seq.schedule.loftVol = defaults.loftVol;
             if (seq.schedule.loadRate === undefined) seq.schedule.loadRate = defaults.loadRate;
             if (seq.schedule.unloadRate === undefined) seq.schedule.unloadRate = defaults.unloadRate;
+            if (seq.schedule.loadingVariant === undefined) seq.schedule.loadingVariant = defaults.loadingVariant;
             if (seq.schedule.exportWrapVol === undefined) seq.schedule.exportWrapVol = defaults.exportWrapVol;
 
             if (!Array.isArray(seq.schedule.manualDays)) {
@@ -9259,8 +9271,6 @@ const SPECIAL_MINUTES = {
     crate: 30
 };
 
-const MORNING_LOAD_RATE = 125;
-const AFTERNOON_LOAD_RATE_AFTER_AM = 55;
 
 const DAY_PARTS = ["Full Day", "AM", "PM"];
 const TASK_OPTIONS = [
@@ -9600,6 +9610,7 @@ function ensureSequenceScheduleShape(seq) {
     if (seq.schedule.loftVol === undefined) seq.schedule.loftVol = defaults.loftVol;
     if (seq.schedule.loadRate === undefined) seq.schedule.loadRate = defaults.loadRate;
     if (seq.schedule.unloadRate === undefined) seq.schedule.unloadRate = defaults.unloadRate;
+    if (seq.schedule.loadingVariant === undefined) seq.schedule.loadingVariant = defaults.loadingVariant;
     if (seq.schedule.exportWrapVol === undefined) seq.schedule.exportWrapVol = defaults.exportWrapVol;
 
     if (!Array.isArray(seq.schedule.manualDays)) {
@@ -9722,6 +9733,7 @@ function loadScheduleInputsFromActiveSequence() {
     const loftVolEl = document.getElementById("loftVol");
     const loadRateEl = document.getElementById("loadRate");
     const unloadRateEl = document.getElementById("unloadRate");
+    const loadingVariantEl = document.getElementById("loadingVariant");
 
     const svcFrameEl = document.getElementById("svc_frame");
     const svcOttomanEl = document.getElementById("svc_ottoman");
@@ -9745,6 +9757,7 @@ function loadScheduleInputsFromActiveSequence() {
     if (loftVolEl) loftVolEl.value = schedule.loftVol;
     if (loadRateEl) loadRateEl.value = schedule.loadRate;
     if (unloadRateEl) unloadRateEl.value = schedule.unloadRate;
+    if (loadingVariantEl) loadingVariantEl.value = schedule.loadingVariant || "Standard";
 
     if (svcFrameEl) svcFrameEl.value = photonFeed.special?.frameBeds || 0;
     if (svcOttomanEl) svcOttomanEl.value = photonFeed.special?.ottomanBeds || 0;
@@ -9788,6 +9801,7 @@ function saveScheduleInputsToActiveSequence() {
     schedule.loftVol = getNum("loftVol", 0);
     schedule.loadRate = getNum("loadRate", 125);
     schedule.unloadRate = getNum("unloadRate", 132);
+    schedule.loadingVariant = getText("loadingVariant", "Standard");
 
     schedule.special.customItemMinutes = getNum("svc_custom_minutes", 0);
     schedule.special.customItemNote = getText("svc_custom_note", "");
@@ -9805,6 +9819,62 @@ function handleScheduleInputChange() {
     if (!document.getElementById('content-quote').classList.contains('hidden')) {
         renderQuoteTab();
     }
+}
+function getLoadingScenarioFromMoveType(moveType) {
+    const raw = String(moveType || "").toLowerCase();
+
+    if (raw.includes("to store")) return "intoStore";
+    if (raw.includes("ex store")) return "exStore";
+
+    return "direct";
+}
+
+function getLoadingProfile(loadingVariant, loadingScenario) {
+    const variant = String(loadingVariant || "Standard");
+    const scenario = String(loadingScenario || "direct");
+
+    if (scenario === "exStore") {
+        return {
+            label: "Ex Store",
+            loadingApplies: false,
+            morningEquivalentRate: 0,
+            pmAfterAmEquivalentRate: 0
+        };
+    }
+
+    if (scenario === "intoStore") {
+        if (variant === "Slow") {
+            return {
+                label: "Slow / Into Store",
+                loadingApplies: true,
+                morningEquivalentRate: 85,
+                pmAfterAmEquivalentRate: 35
+            };
+        }
+
+        return {
+            label: "Standard / Into Store",
+            loadingApplies: true,
+            morningEquivalentRate: 100,
+            pmAfterAmEquivalentRate: 45
+        };
+    }
+
+    if (variant === "Slow") {
+        return {
+            label: "Slow / Direct",
+            loadingApplies: true,
+            morningEquivalentRate: 100,
+            pmAfterAmEquivalentRate: 45
+        };
+    }
+
+    return {
+        label: "Standard / Direct",
+        loadingApplies: true,
+        morningEquivalentRate: 125,
+        pmAfterAmEquivalentRate: 55
+    };
 }
 function getPhotonFeed() {
     if (currentJob && activeSeqId) {
@@ -9958,18 +10028,24 @@ function getIncludedKeys(packOption){
 
 function getState() {
     const photonFeed = getPhotonFeed();
+    const seq = getActiveSequenceRecord();
+const loadingScenario = getLoadingScenarioFromMoveType(seq ? seq.moveType : "");
 
     const disconnectApplianceCount = Number(photonFeed.disconnectApplianceCount || 0);
     const totalApplianceCount = disconnectApplianceCount;
 
     return {
-        packOption: photonFeed.packOption || "none",
-        furnitureVol: photonFeed.furnitureVol || 0,
-        loftVol: num("loftVol"),
-        loadRate: num("loadRate") || 125,
-        unloadRate: num("unloadRate") || 132,
-        transitHours: num("transitHours"),
-        transitMinutes: num("transitMinutes"),
+    packOption: photonFeed.packOption || "none",
+    furnitureVol: photonFeed.furnitureVol || 0,
+    loftVol: num("loftVol"),
+    loadRate: num("loadRate") || 125,
+    unloadRate: num("unloadRate") || 132,
+    loadingVariant: document.getElementById("loadingVariant")
+        ? document.getElementById("loadingVariant").value
+        : "Standard",
+    loadingScenario: loadingScenario,
+    transitHours: num("transitHours"),
+    transitMinutes: num("transitMinutes"),
 
         qty: {
             ap: photonFeed.qty.ap || 0,
@@ -10088,9 +10164,19 @@ function calcSpecialLabour(state) {
         }
     };
 }
-function calcLoading(totalVolume, loadRate, loadSideSpecialHours){
+function calcLoading(totalVolume, loadRate, loadSideSpecialHours, loadingScenario){
+    if (loadingScenario === "exStore") {
+        return {
+            hours: 0,
+            days: 0,
+            completionCrew: 0,
+            volumeHours: 0
+        };
+    }
+
     const volumeHours = totalVolume / loadRate;
     const totalHours = volumeHours + loadSideSpecialHours;
+
     return {
         hours: round2(totalHours),
         days: round1(totalHours / 8),
@@ -10312,7 +10398,9 @@ function renderSchedulePlanner(){
 }
 
 function calcScheduleValidation(packing, loading, unloading, special, state){
-    const effectiveLoadHours = round2(loading.hours);
+    const loadingProfile = getLoadingProfile(state.loadingVariant, state.loadingScenario);
+    const effectiveLoadHours = state.loadingScenario === "exStore" ? 0 : round2(loading.hours);
+
     const required = {
         Pack: packing.packHours,
         Load: effectiveLoadHours,
@@ -10335,7 +10423,10 @@ function calcScheduleValidation(packing, loading, unloading, special, state){
     });
 
     Object.values(groups).forEach(rows => {
-        const hasAmLoadish = rows.some(day => day.dayPart === "AM" && ["Load", "Pack and Load", "Load and Deliver", "Load and Travel"].includes(day.task));
+        const hasAmLoadish = rows.some(day =>
+            day.dayPart === "AM" &&
+            ["Load", "Pack and Load", "Load and Deliver", "Load and Travel"].includes(day.task)
+        );
 
         rows.forEach(day => {
             const men = Number(day.men) || 0;
@@ -10346,40 +10437,55 @@ function calcScheduleValidation(packing, loading, unloading, special, state){
                 case "Pack":
                     allocated.Pack += capacity;
                     break;
+
                 case "Unload":
                 case "Deliver and Crew Return":
                     allocated.Unload += capacity;
                     break;
+
                 case "Pack and Load":
                     if (day.dayPart === "AM") {
                         sharedPackLoadPool += capacity;
                     } else if (day.dayPart === "PM" && hasAmLoadish) {
-                        const pmLoadHours = round2((men * hours * AFTERNOON_LOAD_RATE_AFTER_AM) / state.loadRate);
+                        const pmLoadHours = loadingProfile.loadingApplies
+                            ? round2((men * hours * loadingProfile.pmAfterAmEquivalentRate) / state.loadRate)
+                            : 0;
                         sharedPackLoadPool += pmLoadHours;
                     } else {
                         sharedPackLoadPool += capacity;
                     }
                     break;
+
                 case "Load and Deliver":
                     if (day.dayPart === "AM") {
                         sharedLoadUnloadPool += capacity;
                     } else if (day.dayPart === "PM" && hasAmLoadish) {
-                        const pmLoadHours = round2((men * hours * AFTERNOON_LOAD_RATE_AFTER_AM) / state.loadRate);
+                        const pmLoadHours = loadingProfile.loadingApplies
+                            ? round2((men * hours * loadingProfile.pmAfterAmEquivalentRate) / state.loadRate)
+                            : 0;
                         sharedLoadUnloadPool += pmLoadHours + Math.max(0, capacity - pmLoadHours);
                     } else {
                         sharedLoadUnloadPool += capacity;
                     }
                     break;
+
                 case "Load":
                 case "Load and Travel": {
                     let loadHoursEquivalent = capacity;
-                    if (day.dayPart === "PM" && hasAmLoadish) {
-                        const pmVolume = men * hours * AFTERNOON_LOAD_RATE_AFTER_AM;
+
+                    if (state.loadingScenario === "exStore") {
+                        loadHoursEquivalent = 0;
+                    } else if (day.dayPart === "PM" && hasAmLoadish) {
+                        const pmVolume = loadingProfile.loadingApplies
+                            ? men * hours * loadingProfile.pmAfterAmEquivalentRate
+                            : 0;
                         loadHoursEquivalent = round2(pmVolume / state.loadRate);
                     }
+
                     allocated.Load += loadHoursEquivalent;
                     break;
                 }
+
                 default:
                     break;
             }
@@ -10418,21 +10524,33 @@ function calcScheduleValidation(packing, loading, unloading, special, state){
     });
 
     if (sharedPackLoadPool > 0){
-        results.push({ type: "ok", text: `${passIcon} Pack and Load rows use a shared labour pool, so spare pack capacity can offset load demand.` });
+        results.push({
+            type: "ok",
+            text: `${passIcon} Pack and Load rows use a shared labour pool, so spare pack capacity can offset load demand.`
+        });
     }
+
     if (sharedLoadUnloadPool > 0){
-        results.push({ type: "ok", text: `${passIcon} Load and Deliver rows use a shared labour pool, so spare load capacity can offset unload demand.` });
+        results.push({
+            type: "ok",
+            text: `${passIcon} Load and Deliver rows use a shared labour pool, so spare load capacity can offset unload demand.`
+        });
     }
+
     results.push({
         type: special.extraTransitHours > 0 ? "warn" : "ok",
         text: special.extraTransitHours > 0
             ? `${warnIcon} Transit beyond the first 30 minutes adds ${special.extraTransitHours.toFixed(2)} hours to the unload side and may reduce delivery-side feasibility.`
             : `${passIcon} Transit is within the first 30 minutes included allowance.`
     });
+
     results.push({
         type: "ok",
-        text: `${passIcon} Planner load validation uses ${MORNING_LOAD_RATE} cuft per man-hour in the morning and ${AFTERNOON_LOAD_RATE_AFTER_AM} cuft per man-hour for PM loading when it follows AM loading on the same day.`
+        text: state.loadingScenario === "exStore"
+            ? `${passIcon} Ex store move type is treated as delivery only, so no loading capacity is required.`
+            : `${passIcon} Planner load validation uses ${loadingProfile.morningEquivalentRate} cuft per man-hour in the morning and ${loadingProfile.pmAfterAmEquivalentRate} cuft per man-hour for PM loading when it follows AM loading on the same day.`
     });
+
     results.push({
         type: "ok",
         text: `${passIcon} Load-side specials are included in loading, and unload-side specials are included in unloading for schedule checking.`
@@ -10451,52 +10569,53 @@ function renderValidation(packing, loading, unloading, special, state){
 function renderScheduleCalculator(){
     const state = getState();
 
-        renderScheduleSequenceDropdown();
+    renderScheduleSequenceDropdown();
 
     const packing = calcPacking(state);
-const boxVolume = round2(calcBoxVolume(state));
-const totalVolume = round2(state.furnitureVol + boxVolume);
+    const loadingProfile = getLoadingProfile(state.loadingVariant, state.loadingScenario);
+    const boxVolume = round2(calcBoxVolume(state));
+    const totalVolume = round2(state.furnitureVol + boxVolume);
 
-const furnitureDisplay = document.getElementById("furnitureVolDisplay");
-if (furnitureDisplay) furnitureDisplay.textContent = state.furnitureVol;
+    const furnitureDisplay = document.getElementById("furnitureVolDisplay");
+    if (furnitureDisplay) furnitureDisplay.textContent = state.furnitureVol;
 
-const apDisplay = document.getElementById("qty_ap_display");
-if (apDisplay) apDisplay.textContent = state.qty.ap;
+    const apDisplay = document.getElementById("qty_ap_display");
+    if (apDisplay) apDisplay.textContent = state.qty.ap;
 
-const cgDisplay = document.getElementById("qty_cg_display");
-if (cgDisplay) cgDisplay.textContent = state.qty.cg;
+    const cgDisplay = document.getElementById("qty_cg_display");
+    if (cgDisplay) cgDisplay.textContent = state.qty.cg;
 
-const booksDisplay = document.getElementById("qty_books_display");
-if (booksDisplay) booksDisplay.textContent = state.qty.books;
+    const booksDisplay = document.getElementById("qty_books_display");
+    if (booksDisplay) booksDisplay.textContent = state.qty.books;
 
-const linenDisplay = document.getElementById("qty_linen_display");
-if (linenDisplay) linenDisplay.textContent = state.qty.linen;
+    const linenDisplay = document.getElementById("qty_linen_display");
+    if (linenDisplay) linenDisplay.textContent = state.qty.linen;
 
-const wrDisplay = document.getElementById("qty_wr_display");
-if (wrDisplay) wrDisplay.textContent = state.qty.wr;
+    const wrDisplay = document.getElementById("qty_wr_display");
+    if (wrDisplay) wrDisplay.textContent = state.qty.wr;
 
-const svcFrameEl = document.getElementById("svc_frame");
-const svcOttomanEl = document.getElementById("svc_ottoman");
-const svcDivanEl = document.getElementById("svc_divan");
-const svcElectricEl = document.getElementById("svc_electric");
-const svcBunkEl = document.getElementById("svc_bunk");
-const svcCotEl = document.getElementById("svc_cot");
-const svcDiningTableEl = document.getElementById("svc_dining_table");
-const svcCrateEl = document.getElementById("svc_crate");
-const exportWrapVolEl = document.getElementById("exportWrapVol");
+    const svcFrameEl = document.getElementById("svc_frame");
+    const svcOttomanEl = document.getElementById("svc_ottoman");
+    const svcDivanEl = document.getElementById("svc_divan");
+    const svcElectricEl = document.getElementById("svc_electric");
+    const svcBunkEl = document.getElementById("svc_bunk");
+    const svcCotEl = document.getElementById("svc_cot");
+    const svcDiningTableEl = document.getElementById("svc_dining_table");
+    const svcCrateEl = document.getElementById("svc_crate");
+    const exportWrapVolEl = document.getElementById("exportWrapVol");
 
-if (svcFrameEl) svcFrameEl.value = state.special.frameBeds;
-if (svcOttomanEl) svcOttomanEl.value = state.special.ottomanBeds;
-if (svcDivanEl) svcDivanEl.value = state.special.divanBeds;
-if (svcElectricEl) svcElectricEl.value = state.special.electricBeds;
-if (svcBunkEl) svcBunkEl.value = state.special.bunkBeds;
-if (svcCotEl) svcCotEl.value = state.special.cots;
-if (svcDiningTableEl) svcDiningTableEl.value = state.special.diningTables;
-if (svcCrateEl) svcCrateEl.value = state.special.crate;
-if (exportWrapVolEl) exportWrapVolEl.value = state.exportWrapVol;
+    if (svcFrameEl) svcFrameEl.value = state.special.frameBeds;
+    if (svcOttomanEl) svcOttomanEl.value = state.special.ottomanBeds;
+    if (svcDivanEl) svcDivanEl.value = state.special.divanBeds;
+    if (svcElectricEl) svcElectricEl.value = state.special.electricBeds;
+    if (svcBunkEl) svcBunkEl.value = state.special.bunkBeds;
+    if (svcCotEl) svcCotEl.value = state.special.cots;
+    if (svcDiningTableEl) svcDiningTableEl.value = state.special.diningTables;
+    if (svcCrateEl) svcCrateEl.value = state.special.crate;
+    if (exportWrapVolEl) exportWrapVolEl.value = state.exportWrapVol;
 
-const special = calcSpecialLabour(state);
-    const loading = calcLoading(totalVolume, state.loadRate, special.loadSideHours);
+    const special = calcSpecialLabour(state);
+    const loading = calcLoading(totalVolume, state.loadRate, special.loadSideHours, state.loadingScenario);
     const unloading = calcUnloading(totalVolume, state.unloadRate, special.unloadSideHours);
 
     document.getElementById("summaryMode").textContent = getPackModeLabel(state.packOption);
@@ -10521,42 +10640,40 @@ const special = calcSpecialLabour(state);
             : "Full packing selected, so all carton types contribute to packing labour.";
 
     document.getElementById("logicText").textContent =
-        `${packingRule} Total volume is furniture volume plus calculated box volume. ` +
+        `${packingRule} Loading profile is ${loadingProfile.label}. ` +
+        `Total volume is furniture volume plus calculated box volume. ` +
         `Loft effects volume is used for extra loft labour only and does not change total move volume. ` +
-        `Loading uses total volume ÷ ${state.loadRate} cuft per man-hour, then adds load-side specials. ` +
+        `${state.loadingScenario === "exStore"
+            ? "This move type is treated as delivery only, so loading hours are not applied. "
+            : "Loading uses total volume ÷ " + state.loadRate + " cuft per man-hour, then adds load-side specials. "}` +
+        `${state.loadingScenario === "intoStore"
+            ? "This move type is treated as loading only into store, so delivery-side logic should be interpreted separately. "
+            : ""}` +
         `Unloading uses total volume ÷ ${state.unloadRate} cuft per man-hour, then adds unload-side specials. ` +
-       `Two standard beds and 50 cuft of export wrap are treated as already included before extra special time is added.`;
+        `Two standard beds and 50 cuft of export wrap are treated as already included before extra special time is added.`;
 
     document.getElementById("specialText").textContent =
-    `Frame beds: ${special.breakdown.frameBeds.toFixed(2)} hrs · ` +
-    `Ottoman beds: ${special.breakdown.ottomanBeds.toFixed(2)} hrs · ` +
-    `Divan beds: ${special.breakdown.divanBeds.toFixed(2)} hrs · ` +
-    `Electric / TV beds: ${special.breakdown.electricBeds.toFixed(2)} hrs (handyman only) · ` +
-    `Bunk beds: ${special.breakdown.bunkBeds.toFixed(2)} hrs · ` +
-    `Cots / Childs beds: ${special.breakdown.cots.toFixed(2)} hrs (tracked only for now) · ` +
-    `Dining tables: ${special.breakdown.diningTables.toFixed(2)} hrs · ` +
-    `${state.special.customNote ? state.special.customNote : "Custom item"}: ${special.breakdown.custom.toFixed(2)} hrs · ` +
-    `Upright pianos: ${special.breakdown.upright.toFixed(2)} hrs · ` +
-    `Baby / grand pianos: ${special.breakdown.grand.toFixed(2)} hrs · ` +
-    `Grandfather clocks: ${special.breakdown.clock.toFixed(2)} hrs · ` +
-    `Appliances: ${special.breakdown.appliance.toFixed(2)} hrs (${state.special.manualApplianceCount} manual + ${state.special.disconnectApplianceCount} from Disconnect) · ` +
-    `Crating: ${special.breakdown.crate.toFixed(2)} hrs · ` +
-    `Loft effects: ${special.breakdown.loft.toFixed(2)} hrs · ` +
-    `Export wrapping: ${special.breakdown.exportWrap.toFixed(2)} hrs extra after first ${special.breakdown.includedExportWrapVol} cuft included · ` +
-    `Transit impact: ${special.breakdown.transit.toFixed(2)} hrs after first 30 mins included. ` +
-    `Load side specials: ${special.loadSideHours.toFixed(2)} hrs · Unload side specials: ${special.unloadSideHours.toFixed(2)} hrs.`;
+        `Frame beds: ${special.breakdown.frameBeds.toFixed(2)} hrs · ` +
+        `Ottoman beds: ${special.breakdown.ottomanBeds.toFixed(2)} hrs · ` +
+        `Divan beds: ${special.breakdown.divanBeds.toFixed(2)} hrs · ` +
+        `Electric / TV beds: ${special.breakdown.electricBeds.toFixed(2)} hrs (handyman only) · ` +
+        `Bunk beds: ${special.breakdown.bunkBeds.toFixed(2)} hrs · ` +
+        `Cots / Childs beds: ${special.breakdown.cots.toFixed(2)} hrs (tracked only for now) · ` +
+        `Dining tables: ${special.breakdown.diningTables.toFixed(2)} hrs · ` +
+        `${state.special.customNote ? state.special.customNote : "Custom item"}: ${special.breakdown.custom.toFixed(2)} hrs · ` +
+        `Upright pianos: ${special.breakdown.upright.toFixed(2)} hrs · ` +
+        `Baby / grand pianos: ${special.breakdown.grand.toFixed(2)} hrs · ` +
+        `Grandfather clocks: ${special.breakdown.clock.toFixed(2)} hrs · ` +
+        `Appliances: ${special.breakdown.appliance.toFixed(2)} hrs (${state.special.manualApplianceCount} manual + ${state.special.disconnectApplianceCount} from Disconnect) · ` +
+        `Crating: ${special.breakdown.crate.toFixed(2)} hrs · ` +
+        `Loft effects: ${special.breakdown.loft.toFixed(2)} hrs · ` +
+        `Export wrapping: ${special.breakdown.exportWrap.toFixed(2)} hrs extra after first ${special.breakdown.includedExportWrapVol} cuft included · ` +
+        `Transit impact: ${special.breakdown.transit.toFixed(2)} hrs after first 30 mins included. ` +
+        `Load side specials: ${special.loadSideHours.toFixed(2)} hrs · Unload side specials: ${special.unloadSideHours.toFixed(2)} hrs.`;
 
     renderSchedulePlanner();
     renderValidation(packing, loading, unloading, special, state);
 }
-renderScheduleCalculator();
-
-window.onload = function () {
-    ensureScheduleDataShape();
-    saveToDevice();
-    renderDashboard();
-    renderScheduleCalculator();
-};
 </script>
 <!-- BED MODAL -->
 <div id="bed-overlay" class="bed-overlay" onclick="closeBedModal()">
