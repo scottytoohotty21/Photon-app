@@ -3237,6 +3237,9 @@ let signatureLastX = 0;
 let signatureLastY = 0;
 let signatureLocked = false;
 let inventoryReturnContext = null;
+ensureScheduleDataShape();
+saveToDevice();
+
 function getDefaultSequenceId() {
     if (!currentJob || !Array.isArray(currentJob.sequences) || currentJob.sequences.length === 0) {
         return null;
@@ -9617,12 +9620,17 @@ function ensureSequenceScheduleShape(seq) {
         seq.schedule.manualDays = [];
     }
 
-    if (!seq.schedule.special) {
+    if (!seq.schedule.special || typeof seq.schedule.special !== "object") {
         seq.schedule.special = createEmptySequenceSchedule().special;
     }
 
-    if (seq.schedule.special.beds === undefined) seq.schedule.special.beds = defaults.special.beds;
+    if (seq.schedule.special.frameBeds === undefined) seq.schedule.special.frameBeds = defaults.special.frameBeds;
+    if (seq.schedule.special.ottomanBeds === undefined) seq.schedule.special.ottomanBeds = defaults.special.ottomanBeds;
+    if (seq.schedule.special.divanBeds === undefined) seq.schedule.special.divanBeds = defaults.special.divanBeds;
+    if (seq.schedule.special.electricBeds === undefined) seq.schedule.special.electricBeds = defaults.special.electricBeds;
     if (seq.schedule.special.bunkBeds === undefined) seq.schedule.special.bunkBeds = defaults.special.bunkBeds;
+    if (seq.schedule.special.cots === undefined) seq.schedule.special.cots = defaults.special.cots;
+    if (seq.schedule.special.diningTables === undefined) seq.schedule.special.diningTables = defaults.special.diningTables;
     if (seq.schedule.special.uprightPianos === undefined) seq.schedule.special.uprightPianos = defaults.special.uprightPianos;
     if (seq.schedule.special.grandPianos === undefined) seq.schedule.special.grandPianos = defaults.special.grandPianos;
     if (seq.schedule.special.grandfatherClocks === undefined) seq.schedule.special.grandfatherClocks = defaults.special.grandfatherClocks;
