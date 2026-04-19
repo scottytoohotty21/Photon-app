@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -955,6 +955,104 @@ button {
             font-weight: 900;
             text-transform: uppercase;
         }
+
+                /* --- BED MODAL --- */
+        .bed-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(2px);
+            align-items: center;
+            justify-content: center;
+            z-index: 2150;
+        }
+
+        .bed-panel {
+            width: 92%;
+            max-width: 420px;
+            background: white;
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
+        }
+
+        .bed-title {
+            font-size: 16px;
+            font-weight: 900;
+            text-transform: uppercase;
+            color: #0f172a;
+            text-align: center;
+            letter-spacing: 0.02em;
+        }
+
+        .bed-subtitle {
+            font-size: 12px;
+            font-weight: 700;
+            color: #64748b;
+            text-align: center;
+            margin-top: 6px;
+            margin-bottom: 18px;
+            line-height: 1.45;
+            text-transform: none;
+        }
+
+        .bed-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        .bed-option-btn {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            min-height: 52px;
+            padding: 10px 8px;
+            font-size: 10px;
+            font-weight: 900;
+            text-transform: uppercase;
+            color: #475569;
+            text-align: center;
+        }
+
+        .bed-option-btn.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #2563eb;
+        }
+
+        .bed-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .bed-cancel-btn {
+            flex: 1;
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 12px;
+            font-size: 10px;
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+
+        .bed-save-btn {
+            flex: 1;
+            background: #3b82f6;
+            color: white;
+            border: 1px solid #2563eb;
+            border-radius: 12px;
+            padding: 12px;
+            font-size: 10px;
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+
         /* --- NOTE MODAL --- */
 .note-overlay {
     display: none;
@@ -1416,6 +1514,101 @@ button {
             font-weight: 900;
             text-transform: uppercase;
         }
+        /* --- LISTED FLAGS MODAL --- */
+.listed-flags-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(2px);
+    align-items: center;
+    justify-content: center;
+    z-index: 2400;
+}
+
+.listed-flags-panel {
+    width: 92%;
+    max-width: 420px;
+    background: white;
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
+}
+
+.listed-flags-title {
+    font-size: 16px;
+    font-weight: 900;
+    text-transform: uppercase;
+    color: #0f172a;
+    text-align: center;
+    letter-spacing: 0.02em;
+}
+
+.listed-flags-subtitle {
+    font-size: 12px;
+    font-weight: 700;
+    color: #64748b;
+    text-align: center;
+    margin-top: 6px;
+    margin-bottom: 18px;
+    line-height: 1.45;
+    text-transform: none;
+}
+
+.listed-flags-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+}
+
+.listed-flag-btn {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    min-height: 52px;
+    padding: 10px 8px;
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+    color: #475569;
+    text-align: center;
+}
+
+.listed-flag-btn.active {
+    background: #3b82f6;
+    color: white;
+    border-color: #2563eb;
+}
+
+.listed-flags-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.listed-flags-cancel-btn {
+    flex: 1;
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 12px;
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.listed-flags-save-btn {
+    flex: 1;
+    background: #3b82f6;
+    color: white;
+    border: 1px solid #2563eb;
+    border-radius: 12px;
+    padding: 12px;
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
 
         .modal-error-text {
             display: none;
@@ -1578,6 +1771,11 @@ button {
     display: block;
     flex-shrink: 0;
 }
+.listed-footer-stack {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
 /* --- INVENTORY SEARCH + SCROLL --- */
 .inventory-search-row {
     display: flex;
@@ -1699,84 +1897,191 @@ button {
 .schedule-row-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px;}
 .schedule-row-title{font-size:11px;font-weight:900;text-transform:uppercase;color:var(--navy);}
 .schedule-remove{height:32px;border-radius:8px;border:1px solid var(--red-200);background:var(--red-50);color:var(--red-800);padding:0 10px;font-size:10px;font-weight:900;text-transform:uppercase;cursor:pointer;}
-.schedule-grid{display:grid;grid-template-columns:1.2fr 1.2fr .8fr .8fr;gap:10px;}
+.schedule-value-btn{
+    width:100%;
+    height:44px;
+    border-radius:10px;
+    border:1.5px solid var(--slate-300);
+    background:#fff;
+    color:var(--navy);
+    padding:0 12px;
+    font-size:14px;
+    font-weight:700;
+    text-align:center;
+    cursor:pointer;
+}
+
+.schedule-value-btn:active{
+    transform:scale(0.99);
+}
+
+.schedule-debug-line{
+    margin-top:10px;
+    padding-top:10px;
+    border-top:1px solid var(--slate-200);
+    font-size:10px;
+    font-weight:800;
+    text-transform:uppercase;
+    color:var(--slate-400);
+    line-height:1.45;
+}
+.schedule-toggle-wrap{
+    display:flex;
+    align-items:center;
+    height:44px;
+}
+
+.schedule-toggle-switch{
+    position:relative;
+    display:inline-block;
+    width:54px;
+    height:30px;
+}
+
+.schedule-toggle-switch input{
+    opacity:0;
+    width:0;
+    height:0;
+}
+
+.schedule-toggle-slider{
+    position:absolute;
+    inset:0;
+    cursor:pointer;
+    background:#e2e8f0;
+    border:2px solid #cbd5e1;
+    border-radius:999px;
+    transition:.2s ease;
+}
+
+.schedule-toggle-slider:before{
+    content:"";
+    position:absolute;
+    width:22px;
+    height:22px;
+    left:2px;
+    top:2px;
+    background:#ffffff;
+    border-radius:50%;
+    box-shadow:0 2px 6px rgba(15,23,42,0.18);
+    transition:.2s ease;
+}
+
+.schedule-toggle-switch input:checked + .schedule-toggle-slider{
+    background:#eff6ff;
+    border-color:#3b82f6;
+}
+
+.schedule-toggle-switch input:checked + .schedule-toggle-slider:before{
+    transform:translateX(24px);
+    background:#3b82f6;
+}
+
+.schedule-toggle-switch input:focus + .schedule-toggle-slider{
+    box-shadow:0 0 0 3px rgba(59,130,246,0.12);
+}
+.schedule-grid{
+    display:grid;
+    grid-template-columns:1.2fr 1.1fr .75fr .75fr .75fr;
+    gap:10px;
+}
 .validation-list{display:grid;gap:8px;margin-top:12px;}
 .validation-item{border-radius:12px;padding:10px 12px;font-size:11px;font-weight:800;text-transform:uppercase;line-height:1.4;}
 .validation-ok{background:var(--green-50);border:1px solid var(--green-200);color:var(--green-800);}
 .validation-warn{background:var(--amber-50);border:1px solid var(--amber-200);color:var(--amber-800);}
 .validation-error{background:var(--red-50);border:1px solid var(--red-200);color:var(--red-800);}
 /* COSTING & QUOTING */
-.quote-shell{display:grid;gap:16px;align-items:start;}
-.quote-topbar{display:flex;justify-content:space-between;align-items:center;gap:16px;}
-.quote-page-title{font-size:18px;font-weight:900;text-transform:uppercase;color:#0f172a;line-height:1;}
-.quote-page-subtitle{font-size:10px;font-weight:800;text-transform:uppercase;color:#64748b;margin-top:4px;}
+.quote-shell{display:block;}
+.quote-topbar{display:none;}
+
+.quote-bottom-layout{
+    display:grid;
+    grid-template-columns:360px minmax(0,1fr);
+    gap:16px;
+    align-items:start;
+}
+
+.quote-stack{display:grid;gap:16px;}
 
 .quote-summary-strip{
     position:sticky;
     top:12px;
-    z-index:30;
+    align-self:start;
+    z-index:20;
 }
-.quote-summary-strip .panel-body{padding:10px 14px;}
+
+.quote-summary-strip .panel-body{padding:10px 12px;}
 
 .quote-summary-bar-grid{
     display:grid;
-    grid-template-columns:1fr 1fr 1fr 1fr;
-    grid-template-areas:
-        "costs margin additional customer"
-        "sequence sequence save customer"
-        "sequence sequence create customer";
+    grid-template-columns:1fr;
     gap:8px;
-    align-items:start;
+}
+
+.quote-summary-strip .summary-card{
+    min-width:0;
+    overflow:hidden;
 }
 
 .summary-card-compact{
     min-height:auto;
-    padding:8px 12px;
+    padding:8px 10px;
 }
+
 .summary-card-compact .summary-value{
-    font-size:24px;
+    font-size:20px;
+    line-height:1;
 }
 
-.quote-summary-card-tall{grid-area:customer;}
-.quote-sequence-card{grid-area:sequence;}
-.quote-save-card{grid-area:save;display:flex;align-items:center;justify-content:center;}
-.quote-create-card{grid-area:create;display:flex;align-items:center;justify-content:center;}
-
-.quote-bottom-layout{
-    display:grid;
-    grid-template-columns:minmax(0,.48fr) minmax(0,.52fr);
-    gap:16px;
-    align-items:start;
+.quote-summary-strip .summary-label{
+    font-size:9px;
+    margin-bottom:6px;
 }
-.quote-stack{display:grid;gap:16px;}
 
-@media (max-width:980px){
-    .quote-summary-bar-grid{
-        grid-template-columns:1fr 1fr;
-        grid-template-areas:
-            "costs margin"
-            "additional customer"
-            "sequence sequence"
-            "save save"
-            "create create";
+.quote-summary-strip .summary-sub{
+    font-size:9px;
+    margin-top:6px;
+    line-height:1.25;
+}
+
+.quote-summary-card-tall{
+    grid-area:auto;
+}
+
+.quote-summary-card-tall .field{
+    min-width:0;
+}
+
+.quote-save-card{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.quote-save-card .action-btn{
+    width:100%;
+    height:38px;
+    font-size:10px;
+    padding:0 10px;
+}
+
+.quote-create-card{
+    display:none;
+}
+
+@media (max-width:1100px){
+    .quote-bottom-layout{
+        grid-template-columns:320px minmax(0,1fr);
+    }
+
+    .summary-card-compact .summary-value{
+        font-size:18px;
     }
 }
 
 @media (max-width:900px){
-    .quote-bottom-layout{grid-template-columns:1fr;}
-}
-
-@media (max-width:760px){
-    .quote-summary-bar-grid{
+    .quote-bottom-layout{
         grid-template-columns:1fr;
-        grid-template-areas:
-            "costs"
-            "margin"
-            "additional"
-            "customer"
-            "sequence"
-            "save"
-            "create";
     }
 
     .quote-summary-strip{
@@ -1793,6 +2098,120 @@ button {
 }
 @media (max-width: 680px){
     .summary-grid,.grid-2,.schedule-grid{grid-template-columns:1fr;}
+
+}
+
+.pricing-row {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 12px;
+    background: #ffffff;
+}
+
+.pricing-row.pricing-row-custom {
+    background: #eff6ff;
+    border-color: #93c5fd;
+}
+
+.pricing-row .field {
+    min-width: 0;
+}
+
+.quote-line-total {
+    background: #f8fafc;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.quote-line-grid{
+    display:grid;
+    grid-template-columns:minmax(0,1.5fr) minmax(0,1.5fr) minmax(88px,.7fr) minmax(110px,.9fr) minmax(140px,1fr) 72px;
+    gap:10px;
+    align-items:end;
+}
+
+.quote-type-wrap,
+.quote-custom-label-wrap,
+.quote-qty-wrap,
+.quote-unit-wrap,
+.quote-total-wrap,
+.quote-del-wrap{
+    min-width:0;
+}
+
+.quote-line-total {
+    background: #f8fafc;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: right;
+    font-weight: 900;
+}
+
+.quote-del-wrap .action-btn{
+    width:100%;
+    height:44px;
+    min-width:0;
+    padding:0 8px;
+}
+
+@media (max-width:1180px){
+    .quote-line-grid{
+        grid-template-columns:minmax(0,1.3fr) minmax(0,1.2fr) minmax(82px,.7fr) minmax(100px,.9fr) minmax(125px,1fr) 64px;
+    }
+}
+
+@media (max-width:900px){
+    .quote-line-grid{
+        grid-template-columns:1fr 1fr;
+    }
+}
+.toolbar{
+    margin-top:12px;
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+}
+
+.document-block{
+    background:#f8fafc;
+    border:1px solid #e2e8f0;
+    border-radius:14px;
+    padding:14px;
+}
+
+.document-heading{
+    font-size:10px;
+    font-weight:900;
+    text-transform:uppercase;
+    color:#94a3b8;
+    margin-bottom:8px;
+}
+
+.document-lines{
+    display:grid;
+    gap:6px;
+}
+
+.document-line{
+    font-size:11px;
+    font-weight:800;
+    color:#334155;
+    line-height:1.45;
+}
+
+.document-empty{
+    font-size:11px;
+    font-weight:800;
+    color:#94a3b8;
+    text-transform:uppercase;
+}
+
+.action-btn.white{
+    background:#ffffff;
+    color:#334155;
+    border:1.5px solid #cbd5e1;
 }
     </style>
 </head>
@@ -1904,7 +2323,7 @@ Enter as: Surname, First Name
           <div class="grid grid-cols-12 gap-2 mb-3">
     <div class="col-span-3">
         <label class="mini-label">Seq</label>
-       <select id="inv-seq-select" onchange="loadSequence(this.value)" class="inv-header-select inv-top-field"></select>
+       <select id="inv-seq-select" onchange="handleInventorySequenceChange(this.value)" class="inv-header-select inv-top-field"></select>
     </div>
     <div class="col-span-3">
         <label class="mini-label">Delivery To</label>
@@ -1921,17 +2340,14 @@ Enter as: Surname, First Name
 <div class="col-span-1 inventory-stat-col">
     <div class="inventory-stat-box">
         <div class="inventory-stat-mini">Item Qty</div>
-        <input
-            type="text"
-            id="inv-qty"
-            class="inventory-stat-input"
-            value="1"
-            inputmode="numeric"
-            pattern="[0-9]*"
-            onclick="this.select()"
-            onfocus="this.select()"
-            oninput="updateLastItemQty(this.value)"
-        >
+      <input
+    type="text"
+    id="inv-qty"
+    class="inventory-stat-input"
+    value="1"
+    readonly
+    onclick="openQtyOverride()"
+>
     </div>
 </div>
 <div class="col-span-1 inventory-stat-col">
@@ -2170,13 +2586,33 @@ Enter as: Surname, First Name
                     <div class="section-title">Special Labour Inputs</div>
                     <div class="grid-2">
                         <div>
-                            <label class="mini-label">Frame Beds</label>
-                            <input id="svc_frame" type="number" min="0" class="field" value="0" readonly />
-                        </div>
-                        <div>
-                            <label class="mini-label">Bunk Beds</label>
-                           <input id="svc_bunk" type="number" min="0" class="field" value="0" readonly />
-                        </div>
+    <label class="mini-label">Frame Beds</label>
+    <input id="svc_frame" type="number" min="0" class="field" value="0" readonly />
+</div>
+<div>
+    <label class="mini-label">Ottoman Beds</label>
+    <input id="svc_ottoman" type="number" min="0" class="field" value="0" readonly />
+</div>
+<div>
+    <label class="mini-label">Divan Beds</label>
+    <input id="svc_divan" type="number" min="0" class="field" value="0" readonly />
+</div>
+<div>
+    <label class="mini-label">Electric / TV Beds</label>
+    <input id="svc_electric" type="number" min="0" class="field" value="0" readonly />
+</div>
+<div>
+    <label class="mini-label">Bunk Beds</label>
+    <input id="svc_bunk" type="number" min="0" class="field" value="0" readonly />
+</div>
+<div>
+    <label class="mini-label">Cots / Childs Beds</label>
+    <input id="svc_cot" type="number" min="0" class="field" value="0" readonly />
+</div>
+<div>
+    <label class="mini-label">Dining Tables</label>
+    <input id="svc_dining_table" type="number" min="0" class="field" value="0" readonly />
+</div>
                         <div>
                             <label class="mini-label">Custom Item Minutes (each side)</label>
                             <input id="svc_custom_minutes" type="number" min="0" class="field" value="0" oninput="handleScheduleInputChange()" />
@@ -2199,7 +2635,7 @@ Enter as: Surname, First Name
                         </div>
                         <div>
                             <label class="mini-label">Washing Machines / Dishwashers</label>
-                            <input id="svc_appliance" type="number" min="0" class="field" value="0" oninput="handleScheduleInputChange()" />
+                            <input id="svc_appliance" type="number" min="0" class="field" value="0" readonly />
                         </div>
                         <div>
                             <label class="mini-label">Crating</label>
@@ -2326,78 +2762,8 @@ Enter as: Surname, First Name
 </section>
 <section id="content-quote" class="tab-content hidden bg-white p-5 rounded-2xl shadow-inner">
     <div class="quote-shell">
-        <div class="quote-topbar">
-            <div>
-                <div class="quote-page-title">Costing & Quoting</div>
-                <div class="quote-page-subtitle">Commercial costing, quote price, and optional service lines</div>
-            </div>
-        </div>
-
-        <div class="quote-summary-strip panel">
-            <div class="panel-body">
-                <div class="quote-summary-bar-grid">
-                    <div class="summary-card summary-card-compact" style="grid-area:costs;">
-                        <div class="summary-label">Total Costs</div>
-                        <div class="summary-value" id="quote-totalCosts">0.00</div>
-                    </div>
-
-                    <div class="summary-card summary-card-compact" style="grid-area:margin;">
-                        <div class="summary-label">Gross Margin</div>
-                        <div class="summary-value" id="quote-grossMarginDisplay">0.00</div>
-                        <div class="summary-sub" id="quote-grossMarginSub">Customer price minus total costs</div>
-                    </div>
-
-                    <div class="summary-card summary-card-compact" style="grid-area:additional;">
-                        <div class="summary-label">Additional Costs Total</div>
-                        <div class="summary-value" id="quote-additionalCostsTotalDisplay">0.00</div>
-                    </div>
-
-                    <div class="summary-card summary-card-compact quote-summary-card-tall">
-                        <label class="mini-label">Enter Quote Price</label>
-                        <input id="quote-customerPriceInput" type="number" min="0" step="0.01" class="field" value="0" />
-                        <div style="height:4px"></div>
-                        <div class="summary-value" id="quote-customerPriceDisplay">0.00</div>
-                    </div>
-
-                    <div class="summary-card summary-card-compact quote-sequence-card">
-                        <label class="mini-label">Selected Sequence</label>
-                        <select id="quote-sequenceSelect" class="field"></select>
-                    </div>
-
-                    <div class="summary-card summary-card-compact quote-save-card">
-                        <button type="button" class="action-btn blue" id="quote-savePricingBtn" style="width:100%;">Save Pricing</button>
-                    </div>
-
-                    <div class="summary-card summary-card-compact quote-create-card">
-                        <button type="button" class="action-btn blue" id="quote-createQuoteBtn" style="width:100%;">Create Quote</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <div class="quote-bottom-layout">
-            <div class="quote-stack">
-                <div class="panel">
-                    <div class="panel-head">
-                        <div class="panel-title">Scope Snapshot</div>
-                        <div class="panel-subtitle">Compact commercial view only</div>
-                    </div>
-                    <div class="panel-body">
-                        <div id="quote-scopeSnapshotCard"></div>
-                    </div>
-                </div>
-
-                <div class="panel">
-                    <div class="panel-head">
-                        <div class="panel-title">Quotation Notes / Assumptions</div>
-                        <div class="panel-subtitle">Customer-facing wording and exclusions</div>
-                    </div>
-                    <div class="panel-body">
-                        <label class="mini-label">Quote Notes</label>
-                        <textarea id="quote-quoteNotesInput" class="field" placeholder="Example: Price assumes clear access, standard carry distances, and excludes specialist trades unless listed below."></textarea>
-                    </div>
-                </div>
-
+            <div class="quote-stack quote-left-rail quote-summary-strip">
                 <div class="panel">
                     <div class="panel-head">
                         <div class="panel-title">Commercial Summary</div>
@@ -2405,8 +2771,45 @@ Enter as: Surname, First Name
                     </div>
                     <div class="panel-body">
                         <div id="quote-commercialSummaryCard"></div>
-                        <div style="height:16px"></div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-head">
+                        <div class="panel-title">Additional Costs Breakdown</div>
+                        <div class="panel-subtitle">Optional services added</div>
+                    </div>
+                    <div class="panel-body">
                         <div id="quote-additionalCostsBreakdownCard"></div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-head">
+                        <div class="panel-title">Controls</div>
+                        <div class="panel-subtitle">Sequence and pricing save</div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="space-y-3">
+                            <div>
+                                <label class="mini-label">Selected Sequence</label>
+                                <select id="quote-sequenceSelect" class="field"></select>
+                            </div>
+
+                            <div>
+                                <label class="mini-label">Enter Quote Price</label>
+                                <input id="quote-customerPriceInput" type="number" min="0" step="0.01" class="field" value="0" />
+                                <div style="height:6px"></div>
+                                <div class="listed-stat-card">
+                                    <div class="listed-stat-label">Quote Price</div>
+                                    <div class="listed-stat-value" id="quote-customerPriceDisplay">0.00</div>
+                                </div>
+                            </div>
+
+                            <button type="button" class="action-btn quote-save-compact btn-save" id="quote-savePricingBtn">
+                                Save Pricing
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -2420,7 +2823,7 @@ Enter as: Surname, First Name
                     <div class="panel-body">
                         <div class="pricing-grid" id="quote-pricingGrid"></div>
                         <div class="toolbar">
-                            <button type="button" class="action-btn white" id="quote-addPricingLineBtn">Add Core Cost Row</button>
+                            <button type="button" class="action-btn" id="quote-addPricingLineBtn">Add Core Cost Row</button>
                         </div>
                         <div class="footer-note">Core costing should stay focused on move cost base.</div>
                     </div>
@@ -2434,7 +2837,7 @@ Enter as: Surname, First Name
                     <div class="panel-body">
                         <div class="pricing-grid" id="quote-additionalCostsGrid"></div>
                         <div class="toolbar">
-                            <button type="button" class="action-btn white" id="quote-addAdditionalCostLineBtn">Add Optional Service</button>
+                            <button type="button" class="action-btn" id="quote-addAdditionalCostLineBtn">Add Optional Service</button>
                         </div>
                     </div>
                 </div>
@@ -2491,8 +2894,14 @@ const furnitureDB = [
     {item:"Armchair", volume:20},
     {item:"Sofa 2 Seat", volume:35},
     {item:"Sofa 3 Seat", volume:50},
+        {item:"Sofa 4 Seat", volume:70},
     {item:"Bed (Single)", volume:40},
     {item:"Bed (Double)", volume:60},
+    {item:"Bed (Queensize)", volume:65},
+    {item:"Bed (Kingsize)", volume:70},
+    {item:"Bed (SuperKing)", volume:90},
+    {item:"Bunk Bed", volume:60},
+    {item:"Cot / Childs Bed", volume:20},
     {item:"Fridge", volume:25},
     {item:"Garden Bench", volume:15},
     {item:"Chest Drawers", volume:45},
@@ -2526,13 +2935,19 @@ const furnitureDB = [
 ];
 
 const inventoryCategories = {
-    "Full List": [
+        "Full List": [
         "AC Unit",
         "Armchair",
         "Sofa 2 Seat",
         "Sofa 3 Seat",
-        "Bed (Single)",
+        "Sofa 4 Seat",
+               "Bed (Single)",
         "Bed (Double)",
+        "Bed (Queensize)",
+        "Bed (Kingsize)",
+        "Bed (SuperKing)",
+        "Bunk Bed",
+        "Cot / Childs Bed",
         "Fridge",
         "Garden Bench",
         "Chest Drawers",
@@ -2564,9 +2979,14 @@ const inventoryCategories = {
         "Welsh Dresser"
     ],
 
-    "Upstairs": [
-        "Bed (Single)",
+        "Upstairs": [
+                "Bed (Single)",
         "Bed (Double)",
+        "Bed (Queensize)",
+        "Bed (Kingsize)",
+        "Bed (SuperKing)",
+        "Bunk Bed",
+        "Cot / Childs Bed",
         "Chest Drawers",
         "Desk",
         "Bookcase",
@@ -2577,10 +2997,11 @@ const inventoryCategories = {
         "Dresser"
     ],
 
-    "Downstairs": [
+        "Downstairs": [
         "Armchair",
         "Sofa 2 Seat",
         "Sofa 3 Seat",
+        "Sofa 4 Seat",
         "Dining Table",
         "Dining Chair",
         "Desk",
@@ -2627,7 +3048,12 @@ function createEmptySequenceSchedule() {
         manualDays: [],
         special: {
             frameBeds: 0,
+            ottomanBeds: 0,
+            divanBeds: 0,
+            electricBeds: 0,
             bunkBeds: 0,
+            cots: 0,
+            diningTables: 0,
             uprightPianos: 0,
             grandPianos: 0,
             grandfatherClocks: 0,
@@ -2776,12 +3202,24 @@ let inventoryHistory = [];
 let qtyResetTimer = null;
 let selectedCrateUnit = "IN";
 let selectedDamageOption = "";
+let selectedBedOption = "";
+let listedCrateEditEntryKey = "";
 let listedSequenceFilter = "__all__";
 let listedDeliveryFilter = "__all__";
 let listedTextFilter = "";
 let simpleInputMode = "";
 let simpleInputMeta = null;
+let listedFlagsEntryKey = "";
+let listedFlagsState = {
+    dismantle: false,
+    expWrap: false,
+    crated: false,
+    disconnect: false,
+    handyman: false,
+    excluded: false
+};
 let signaturePad = null;
+let scheduleNumberEditMeta = null;
 let signaturePadCtx = null;
 let signatureDrawing = false;
 let signatureLastX = 0;
@@ -2844,15 +3282,20 @@ function saveInventoryContext() {
                 seq.schedule.special = createEmptySequenceSchedule().special;
             }
 
-            if (seq.schedule.special.frameBeds === undefined) seq.schedule.special.frameBeds = defaults.special.frameBeds;
-            if (seq.schedule.special.bunkBeds === undefined) seq.schedule.special.bunkBeds = defaults.special.bunkBeds;
-            if (seq.schedule.special.uprightPianos === undefined) seq.schedule.special.uprightPianos = defaults.special.uprightPianos;
-            if (seq.schedule.special.grandPianos === undefined) seq.schedule.special.grandPianos = defaults.special.grandPianos;
-            if (seq.schedule.special.grandfatherClocks === undefined) seq.schedule.special.grandfatherClocks = defaults.special.grandfatherClocks;
-            if (seq.schedule.special.appliances === undefined) seq.schedule.special.appliances = defaults.special.appliances;
-            if (seq.schedule.special.cratingItems === undefined) seq.schedule.special.cratingItems = defaults.special.cratingItems;
-            if (seq.schedule.special.customItemMinutes === undefined) seq.schedule.special.customItemMinutes = defaults.special.customItemMinutes;
-            if (seq.schedule.special.customItemNote === undefined) seq.schedule.special.customItemNote = defaults.special.customItemNote;
+          if (seq.schedule.special.frameBeds === undefined) seq.schedule.special.frameBeds = defaults.special.frameBeds;
+if (seq.schedule.special.ottomanBeds === undefined) seq.schedule.special.ottomanBeds = defaults.special.ottomanBeds;
+if (seq.schedule.special.divanBeds === undefined) seq.schedule.special.divanBeds = defaults.special.divanBeds;
+if (seq.schedule.special.electricBeds === undefined) seq.schedule.special.electricBeds = defaults.special.electricBeds;
+if (seq.schedule.special.bunkBeds === undefined) seq.schedule.special.bunkBeds = defaults.special.bunkBeds;
+if (seq.schedule.special.cots === undefined) seq.schedule.special.cots = defaults.special.cots;
+if (seq.schedule.special.diningTables === undefined) seq.schedule.special.diningTables = defaults.special.diningTables;
+if (seq.schedule.special.uprightPianos === undefined) seq.schedule.special.uprightPianos = defaults.special.uprightPianos;
+if (seq.schedule.special.grandPianos === undefined) seq.schedule.special.grandPianos = defaults.special.grandPianos;
+if (seq.schedule.special.grandfatherClocks === undefined) seq.schedule.special.grandfatherClocks = defaults.special.grandfatherClocks;
+if (seq.schedule.special.appliances === undefined) seq.schedule.special.appliances = defaults.special.appliances;
+if (seq.schedule.special.cratingItems === undefined) seq.schedule.special.cratingItems = defaults.special.cratingItems;
+if (seq.schedule.special.customItemMinutes === undefined) seq.schedule.special.customItemMinutes = defaults.special.customItemMinutes;
+if (seq.schedule.special.customItemNote === undefined) seq.schedule.special.customItemNote = defaults.special.customItemNote;
         });
     });
 }
@@ -3174,26 +3617,27 @@ function handleInventoryDeliveryChange(value) {
 
 function buildRawInventoryEntry(entryData) {
     return {
-        id: "raw_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7),
-        sequenceId: entryData.sequenceId || "",
-        deliveryId: entryData.deliveryId || "",
-        roomName: entryData.roomName || "",
-        floorName: entryData.floorName || "",
-        itemName: entryData.itemName || "",
-        qty: entryData.qty || 1,
-        unitVolume: entryData.unitVolume || 0,
-        totalVolume: entryData.totalVolume || 0,
-        kind: entryData.kind || "item",
-        dismantle: !!entryData.dismantle,
-        expWrap: !!entryData.expWrap,
-        disconnect: !!entryData.disconnect,
-        handyman: !!entryData.handyman,
-        excluded: !!entryData.excluded,
-        note: entryData.note || "",
-        crated: !!entryData.crated,
-        crateDims: entryData.crateDims || null,
-        damage: entryData.damage || ""
-    };
+    id: "raw_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7),
+    sequenceId: entryData.sequenceId || "",
+    deliveryId: entryData.deliveryId || "",
+    roomName: entryData.roomName || "",
+    floorName: entryData.floorName || "",
+    itemName: entryData.itemName || "",
+    qty: entryData.qty || 1,
+    unitVolume: entryData.unitVolume || 0,
+    totalVolume: entryData.totalVolume || 0,
+    kind: entryData.kind || "item",
+    dismantle: !!entryData.dismantle,
+    expWrap: !!entryData.expWrap,
+    disconnect: !!entryData.disconnect,
+    handyman: !!entryData.handyman,
+    excluded: !!entryData.excluded,
+    note: entryData.note || "",
+    crated: !!entryData.crated,
+    crateDims: entryData.crateDims || null,
+    damage: entryData.damage || "",
+    bedType: entryData.bedType || ""
+};
 }
 
 
@@ -3222,20 +3666,33 @@ function getLastRawInventoryEntry() {
     if (!lastAddedRawEntryId) return null;
     return findRawInventoryEntry(lastAddedRawEntryId);
 }
+function getLiveInventoryEntryForRaw(rawEntryId) {
+    const rawEntry = findRawInventoryEntry(rawEntryId);
+    if (!rawEntry) return null;
+
+    const liveKey = getLiveInventoryGroupKey(rawEntry);
+
+    return inventoryItems.find(function(i) {
+        return i.liveKey === liveKey;
+    }) || null;
+}
 
 function syncLiveItemFlagsFromRaw() {
     const rawEntry = getLastRawInventoryEntry();
-    if (!rawEntry || !lastAddedItemName) return;
+    if (!rawEntry) return;
 
-    const liveItem = inventoryItems.find(function(i) {
-        return i.item === lastAddedItemName;
-    });
-
+    const liveItem = getLiveInventoryEntryForRaw(rawEntry.id);
     if (!liveItem) return;
 
     liveItem.dismantle = !!rawEntry.dismantle;
     liveItem.expWrap = !!rawEntry.expWrap;
+    liveItem.disconnect = !!rawEntry.disconnect;
+    liveItem.handyman = !!rawEntry.handyman;
     liveItem.excluded = !!rawEntry.excluded;
+    liveItem.note = rawEntry.note || "";
+    liveItem.damage = rawEntry.damage || "";
+    liveItem.crated = !!rawEntry.crated;
+    liveItem.crateDims = rawEntry.crateDims || null;
 }
 
 function recalculateTotalVolume() {
@@ -3288,57 +3745,69 @@ function toggleItemAction(actionName) {
     const rawEntry = getLastRawInventoryEntry();
     if (!rawEntry) return;
 
-    const liveItem = inventoryItems.find(function(i) {
-        return i.item === lastAddedItemName;
-    });
+    const isElectricBed = isBedRawEntry(rawEntry) && isElectricBedType(rawEntry.bedType);
 
-    if (!liveItem) return;
+    if (isElectricBed && actionName === "dismantle") {
+        rawEntry.dismantle = false;
+        rawEntry.handyman = true;
+
+        saveToDevice();
+        syncLiveInventoryFromRawForActiveSequence();
+        recalculateTotalVolume();
+        refreshCurrentInventorySelectionDisplay();
+        renderActionButtonStates();
+
+        updateInventoryDisplay("ELECTRIC MOTOR / TV BED [HANDYMAN REQUIRED]");
+        triggerInventoryPulse("current", "blue");
+        triggerInventoryPulse("total", "blue");
+        triggerHaptic("light");
+        updateUndoButtonState();
+        saveCalculatorFeedForActiveSequence();
+        return;
+    }
+
+    if (isElectricBed && actionName === "handyman") {
+        rawEntry.handyman = true;
+
+        saveToDevice();
+        syncLiveInventoryFromRawForActiveSequence();
+        recalculateTotalVolume();
+        refreshCurrentInventorySelectionDisplay();
+        renderActionButtonStates();
+
+        updateInventoryDisplay("ELECTRIC MOTOR / TV BED [HANDYMAN REQUIRED]");
+        triggerInventoryPulse("current", "blue");
+        triggerInventoryPulse("total", "blue");
+        triggerHaptic("light");
+        updateUndoButtonState();
+        saveCalculatorFeedForActiveSequence();
+        return;
+    }
 
     if (actionName === "dismantle") {
         rawEntry.dismantle = !rawEntry.dismantle;
-        liveItem.dismantle = !!rawEntry.dismantle;
-    }
-
-    if (actionName === "expWrap") {
+    } else if (actionName === "expWrap") {
         rawEntry.expWrap = !rawEntry.expWrap;
-        liveItem.expWrap = !!rawEntry.expWrap;
-    }
-
-    if (actionName === "disconnect") {
+    } else if (actionName === "disconnect") {
         rawEntry.disconnect = !rawEntry.disconnect;
-        liveItem.disconnect = !!rawEntry.disconnect;
-    }
-
-    if (actionName === "handyman") {
+    } else if (actionName === "handyman") {
         rawEntry.handyman = !rawEntry.handyman;
-        liveItem.handyman = !!rawEntry.handyman;
-    }
-
-    if (actionName === "excluded") {
+    } else if (actionName === "excluded") {
         rawEntry.excluded = !rawEntry.excluded;
-        liveItem.excluded = !!rawEntry.excluded;
+    } else {
+        return;
     }
 
     saveToDevice();
+    syncLiveInventoryFromRawForActiveSequence();
     recalculateTotalVolume();
+    refreshCurrentInventorySelectionDisplay();
     renderActionButtonStates();
 
-    const tags = [];
-    if (rawEntry.dismantle) tags.push("[DISMANTLE]");
-    if (rawEntry.expWrap) tags.push("[EXP WRAP]");
-    if (rawEntry.disconnect) tags.push("[DISCONNECT]");
-    if (rawEntry.handyman) tags.push("[HANDYMAN]");
-    if (rawEntry.excluded) tags.push("[EXCLUDED]");
-
-    const label = (rawEntry.itemName || "ITEM").toUpperCase();
-    const logText = tags.length ? (label + " " + tags.join(" ")) : (label + " ACTION CLEARED");
-
-    currentItemVolume = rawEntry.excluded ? 0 : (rawEntry.unitVolume * rawEntry.qty);
-
-    updateInventoryDisplay(logText);
     triggerInventoryPulse("current", "blue");
     triggerInventoryPulse("total", "blue");
     triggerHaptic("light");
+    updateUndoButtonState();
     saveCalculatorFeedForActiveSequence();
 }
 
@@ -3359,6 +3828,103 @@ function removeRawInventoryEntry(rawEntryId) {
     return currentJob.inventory.items.filter(function(entry) {
         return String(entry.sequenceId) === String(sequenceId);
     });
+}
+function getSequenceInventoryTotal(sequenceId) {
+    const rawItems = getRawInventoryItemsForSequence(sequenceId);
+
+    return rawItems.reduce(function(sum, entry) {
+        if (entry.excluded) return sum;
+        return sum + Number(entry.totalVolume || 0);
+    }, 0);
+}
+
+function refreshInventoryVolumeDisplayForSequence(sequenceId) {
+    const total = getSequenceInventoryTotal(sequenceId);
+    totalVolume = total;
+
+    const totalVolBox = document.getElementById("inv-total-volume");
+    if (totalVolBox) {
+        totalVolBox.innerText = total;
+    }
+}
+function syncInventoryDisplayFromSequence(sequenceId) {
+    const rawItems = getRawInventoryItemsForSequence(sequenceId);
+
+    if (!rawItems.length) {
+        lastAddedItemName = null;
+        lastAddedRawEntryId = null;
+        currentItemVolume = 0;
+        totalVolume = 0;
+        updateInventoryDisplay("No items added");
+        return;
+    }
+
+    const lastRaw = rawItems[rawItems.length - 1];
+
+    lastAddedRawEntryId = lastRaw.id;
+    lastAddedItemName = lastRaw.itemName || null;
+    currentItemVolume = lastRaw.excluded ? 0 : Number(lastRaw.totalVolume || 0);
+
+    totalVolume = rawItems.reduce(function(sum, entry) {
+        if (entry.excluded) return sum;
+        return sum + Number(entry.totalVolume || 0);
+    }, 0);
+
+    const tags = [];
+if (lastRaw.bedType) tags.push("[BED: " + String(lastRaw.bedType).toUpperCase() + "]");
+if (lastRaw.dismantle) tags.push("[DISMANTLE]");
+if (lastRaw.expWrap) tags.push("[EXP WRAP]");
+if (lastRaw.disconnect) tags.push("[DISCONNECT]");
+if (lastRaw.handyman) tags.push("[HANDYMAN]");
+    if (lastRaw.crated && lastRaw.crateDims) {
+        tags.push(
+            "[CRATE: " +
+            lastRaw.crateDims.l + " x " +
+            lastRaw.crateDims.w + " x " +
+            lastRaw.crateDims.h + " " +
+            lastRaw.crateDims.unit + "]"
+        );
+    }
+    if (lastRaw.damage) tags.push("[DAMAGE: " + String(lastRaw.damage).toUpperCase() + "]");
+    if (lastRaw.excluded) tags.push("[EXCLUDED]");
+    if (lastRaw.note) tags.push("[NOTE: " + String(lastRaw.note).toUpperCase() + "]");
+
+    const label = (lastRaw.itemName || "ITEM").toUpperCase();
+    const qty = Number(lastRaw.qty || 0);
+
+    updateInventoryDisplay(
+        qty + " X " + label + (tags.length ? " " + tags.join(" ") : "")
+    );
+}
+
+function handleInventorySequenceChange(sequenceId) {
+    if (!currentJob) return;
+
+    activeSeqId = String(sequenceId);
+
+    if (!currentJob.inventory) currentJob.inventory = {};
+    currentJob.inventory.activeSequenceId = activeSeqId;
+    currentJob.inventory.activeDeliveryId = null;
+
+    inventoryReturnContext = {
+        sequenceId: activeSeqId,
+        deliveryId: null,
+        floorName: currentJob.inventory.activeFloor || "Ground",
+        roomName: currentJob.inventory.activeRoomName || "Hallway"
+    };
+
+    renderInventorySequenceDropdown();
+    renderInventoryDeliveryDropdown();
+    renderInventoryRoomDropdown();
+    renderInventoryFloorDropdown();
+
+    rebuildLiveInventoryFromSequence(activeSeqId);
+    syncInventoryDisplayFromSequence(activeSeqId);
+
+    renderActionButtonStates();
+    updateUndoButtonState();
+    saveCalculatorFeedForActiveSequence();
+    saveToDevice();
 }
 function getSequencePackOptionForCalculator(sequence) {
     const raw = String(sequence && sequence.packOption ? sequence.packOption : "").toLowerCase();
@@ -3394,6 +3960,16 @@ function buildCalculatorFeedForSequence(sequenceId) {
 
     let furnitureVol = 0;
     let disconnectApplianceCount = 0;
+    let cratingItems = 0;
+    let exportWrapVol = 0;
+
+    let frameBedCount = 0;
+    let ottomanBedCount = 0;
+    let divanBedCount = 0;
+    let electricBedCount = 0;
+    let bunkBedCount = 0;
+    let cotCount = 0;
+    let diningTableCount = 0;
 
     const qty = {
         ap: 0,
@@ -3407,6 +3983,7 @@ function buildCalculatorFeedForSequence(sequenceId) {
         if (entry.excluded) return;
 
         const itemName = String(entry.itemName || "").toUpperCase().trim();
+        const bedType = String(entry.bedType || "").trim();
         const entryQty = Number(entry.qty || 0);
         const unitVolume = Number(entry.unitVolume || 0);
         const totalVolume = Number(entry.totalVolume || 0);
@@ -3446,6 +4023,45 @@ function buildCalculatorFeedForSequence(sequenceId) {
             disconnectApplianceCount += entryQty;
         }
 
+        if (entry.crated) {
+            cratingItems += entryQty;
+        }
+
+        if (entry.expWrap) {
+            exportWrapVol += totalVolume || (unitVolume * entryQty);
+        }
+
+        if (entry.dismantle) {
+            if (
+                itemName === "BED (SINGLE)" ||
+                itemName === "BED (DOUBLE)" ||
+                itemName === "BED (QUEENSIZE)" ||
+                itemName === "BED (KINGSIZE)" ||
+                itemName === "BED (SUPERKING)"
+            ) {
+                if (bedType === "Frame") frameBedCount += entryQty;
+                else if (bedType === "Ottoman") ottomanBedCount += entryQty;
+                else if (bedType === "Divan") divanBedCount += entryQty;
+                else if (bedType === "Electric Motor / TV") electricBedCount += entryQty;
+            }
+
+            if (itemName === "BUNK BED") {
+                bunkBedCount += entryQty;
+            }
+
+           if (
+    itemName === "COT / CHILDS BED" ||
+    itemName === "COT / CHILD'S BED" ||
+    itemName === "COT"
+) {
+    cotCount += entryQty;
+}
+
+            if (itemName === "DINING TABLE") {
+                diningTableCount += entryQty;
+            }
+        }
+
         furnitureVol += totalVolume || (unitVolume * entryQty);
     });
 
@@ -3461,6 +4077,19 @@ function buildCalculatorFeedForSequence(sequenceId) {
         furnitureVol: Math.round(furnitureVol * 100) / 100,
         qty: qty,
         disconnectApplianceCount: disconnectApplianceCount,
+        cratingItems: cratingItems,
+        exportWrapVol: Math.round(exportWrapVol * 100) / 100,
+        special: {
+            frameBeds: frameBedCount,
+            ottomanBeds: ottomanBedCount,
+            divanBeds: divanBedCount,
+            electricBeds: electricBedCount,
+            bunkBeds: bunkBedCount,
+            cots: cotCount,
+            diningTables: diningTableCount,
+            cratingItems: cratingItems,
+            exportWrapVol: Math.round(exportWrapVol * 100) / 100
+        },
         createdAt: new Date().toISOString()
     };
 }
@@ -3494,9 +4123,12 @@ function buildLiveInventoryKeyFromValues(data) {
         !!data.excluded,
         !!data.dismantle,
         !!data.expWrap,
+        !!data.disconnect,
+!!data.handyman,
         String(data.note || ""),
-        String(data.damage || ""),
-        !!data.crated,
+String(data.damage || ""),
+String(data.bedType || ""),
+!!data.crated,
         data.crateDims
             ? [
                 data.crateDims.l || "",
@@ -3520,8 +4152,9 @@ function getLiveInventoryGroupKey(entry) {
         !!entry.disconnect,
         !!entry.handyman,
         String(entry.note || ""),
-        String(entry.damage || ""),
-        !!entry.crated,
+String(entry.damage || ""),
+String(entry.bedType || ""),
+!!entry.crated,
         entry.crateDims
             ? [
                 entry.crateDims.l || "",
@@ -3578,20 +4211,26 @@ function rebuildLiveInventoryFromSequence(sequenceId) {
     deliveryId: entry.deliveryId || "",
     note: entry.note || "",
     damage: entry.damage || "",
+    bedType: entry.bedType || "",
     crated: !!entry.crated,
     crateDims: entry.crateDims || null
 });
         }
     });
 
-    const lastRaw = rawItems[rawItems.length - 1];
-    if (lastRaw) {
-        lastAddedRawEntryId = lastRaw.id;
-        lastAddedItemName = lastRaw.itemName;
-        currentItemVolume = lastRaw.excluded ? 0 : Number(lastRaw.totalVolume || 0);
-    }
+    const rawSequenceTotal = rawItems.reduce(function(sum, entry) {
+        if (entry.excluded) return sum;
+        return sum + Number(entry.totalVolume || 0);
+    }, 0);
 
-    recalculateTotalVolume();
+    const lastRaw = rawItems[rawItems.length - 1] || null;
+
+    lastAddedRawEntryId = lastRaw ? lastRaw.id : null;
+    lastAddedItemName = lastRaw ? lastRaw.itemName : null;
+
+    currentItemVolume = 0;
+    totalVolume = rawSequenceTotal;
+
     updateInventoryDisplay("Sequence restored");
     updateUndoButtonState();
     renderActionButtonStates();
@@ -3821,6 +4460,25 @@ function clearInventorySearch() {
 
     renderInventoryButtons();
 }
+function openScheduleNumberModal(rowId, fieldName, currentValue) {
+    scheduleNumberEditMeta = {
+        rowId: rowId,
+        fieldName: fieldName
+    };
+
+    openSimpleInputModal({
+        mode: "schedule-number",
+        title: fieldName === "men" ? "Edit Crew" : "Edit Vans",
+        subtitle: fieldName === "men"
+            ? "Enter the crew required for this planner row"
+            : "Enter the vans required for this planner row",
+        label: fieldName === "men" ? "Crew" : "Vans",
+        placeholder: fieldName === "men" ? "e.g. 5" : "e.g. 2",
+        value: String(currentValue || 0),
+        inputType: "number",
+        inputMode: "numeric"
+    });
+}
 function openSimpleInputModal(config) {
     const overlay = document.getElementById("simple-input-overlay");
     const title = document.getElementById("simple-input-title");
@@ -3869,6 +4527,7 @@ function closeSimpleInputModal() {
     setModalErrorText("simple-input-error-text", "");
     simpleInputMode = "";
     simpleInputMeta = null;
+    scheduleNumberEditMeta = null;
 }
 
 function saveSimpleInputModal() {
@@ -3970,12 +4629,13 @@ function saveSimpleInputModal() {
         return;
     }
 
-        if (simpleInputMode === "volume-override") {
-        if (!lastAddedItemName) return;
+           if (simpleInputMode === "volume-override") {
+        if (!lastAddedRawEntryId) return;
 
-        let item = inventoryItems.find(function(i) {
-            return i.item === lastAddedItemName;
-        });
+        const rawEntry = findRawInventoryEntry(lastAddedRawEntryId);
+        if (!rawEntry) return;
+
+        const item = getLiveInventoryEntryForRaw(lastAddedRawEntryId);
         if (!item) return;
 
         if (!rawValue) {
@@ -3992,37 +4652,40 @@ function saveSimpleInputModal() {
         setModalErrorText("simple-input-error-text", "");
 
         const previousVolume = item.volume;
-        item.volume = newVolume;
+        const previousRawVolume = rawEntry.unitVolume;
 
-        const rawEntry = findRawInventoryEntry(lastAddedRawEntryId);
-        let previousRawVolume = null;
+        rawEntry.unitVolume = newVolume;
+        rawEntry.totalVolume = newVolume * rawEntry.qty;
+        saveToDevice();
 
-        if (rawEntry) {
-            previousRawVolume = rawEntry.unitVolume;
-            rawEntry.unitVolume = newVolume;
-            rawEntry.totalVolume = newVolume * rawEntry.qty;
-            saveToDevice();
+        syncLiveInventoryFromRawForActiveSequence();
+
+        const refreshedRawEntry = findRawInventoryEntry(lastAddedRawEntryId);
+        const refreshedItem = getLiveInventoryEntryForRaw(lastAddedRawEntryId);
+
+        if (refreshedRawEntry && refreshedItem) {
+            currentItemVolume = refreshedRawEntry.excluded ? 0 : Number(refreshedRawEntry.totalVolume || 0);
+
+            inventoryHistory.push({
+                type: "volume-edit",
+                itemName: refreshedItem.item,
+                previousVolume: previousVolume,
+                newVolume: newVolume,
+                rawEntryId: lastAddedRawEntryId,
+                previousRawVolume: previousRawVolume
+            });
+
+            const labelText = refreshedItem.displayName || refreshedItem.item;
+            updateInventoryDisplay(
+                refreshedRawEntry.qty + " X " + String(labelText).toUpperCase() + " @ " + newVolume + " CUFT"
+            );
         }
-
-        currentItemVolume = item.excluded ? 0 : (item.volume * item.qty);
-        recalculateTotalVolume();
-
-        inventoryHistory.push({
-            type: "volume-edit",
-            itemName: item.item,
-            previousVolume: previousVolume,
-            newVolume: newVolume,
-            rawEntryId: lastAddedRawEntryId,
-            previousRawVolume: previousRawVolume
-        });
-
-        const labelText = item.displayName || item.item;
-        updateInventoryDisplay(item.qty + " X " + String(labelText).toUpperCase() + " @ " + newVolume + " CUFT");
 
         triggerInventoryPulse("current", "blue");
         triggerInventoryPulse("total", "blue");
         triggerHaptic("medium");
         updateUndoButtonState();
+        renderActionButtonStates();
         saveCalculatorFeedForActiveSequence();
 
         closeSimpleInputModal();
@@ -4049,30 +4712,139 @@ function saveSimpleInputModal() {
 
     if (currentTotalQty < 1) return;
 
-    const qtyDifference = newQty - currentTotalQty;
-    const lastRaw = rawMatches[rawMatches.length - 1];
-    const lastRawCurrentQty = Number(lastRaw.qty || 0);
-    const newLastRawQty = lastRawCurrentQty + qtyDifference;
-
-    if (newLastRawQty < 1) {
-        setModalErrorText("simple-input-error-text", "Quantity is too low for this merged line");
-        return;
-    }
-
-    lastRaw.qty = newLastRawQty;
-    lastRaw.totalVolume = Number(lastRaw.unitVolume || 0) * newLastRawQty;
-
-    saveToDevice();
-
-    if (String(activeSeqId || "") === String(mergedEntry.sequenceId || "")) {
-        rebuildLiveInventoryFromSequence(activeSeqId);
-    }
-
-    renderListedInventory();
+    if (newQty === currentTotalQty) {
     closeSimpleInputModal();
     return;
 }
 
+if (newQty > currentTotalQty) {
+    const lastRaw = rawMatches[rawMatches.length - 1];
+    const extraQty = newQty - currentTotalQty;
+    lastRaw.qty = Number(lastRaw.qty || 0) + extraQty;
+    lastRaw.totalVolume = Number(lastRaw.unitVolume || 0) * Number(lastRaw.qty || 0);
+} else {
+    let qtyToRemove = currentTotalQty - newQty;
+
+    for (let i = rawMatches.length - 1; i >= 0; i--) {
+        const raw = rawMatches[i];
+        const rawQty = Number(raw.qty || 0);
+
+        if (qtyToRemove <= 0) break;
+
+        if (rawQty <= qtyToRemove) {
+            qtyToRemove -= rawQty;
+            currentJob.inventory.items = currentJob.inventory.items.filter(function(item) {
+                return item.id !== raw.id;
+            });
+        } else {
+            raw.qty = rawQty - qtyToRemove;
+            raw.totalVolume = Number(raw.unitVolume || 0) * raw.qty;
+            qtyToRemove = 0;
+        }
+    }
+}
+
+   saveToDevice();
+
+if (String(activeSeqId || "") === String(mergedEntry.sequenceId || "")) {
+    rebuildLiveInventoryFromSequence(activeSeqId);
+}
+
+renderListedInventory();
+renderActionButtonStates();
+updateUndoButtonState();
+saveCalculatorFeedForActiveSequence();
+closeSimpleInputModal();
+return;
+}
+
+if (simpleInputMode === "qty-override") {
+    if (!lastAddedRawEntryId) return;
+
+    const rawEntry = findRawInventoryEntry(lastAddedRawEntryId);
+    if (!rawEntry) return;
+
+    if (!rawValue) {
+        setModalErrorText("simple-input-error-text", "Enter a valid quantity");
+        return;
+    }
+
+    const newQty = parseInt(rawValue, 10);
+    if (isNaN(newQty) || newQty < 1) {
+        setModalErrorText("simple-input-error-text", "Enter a valid quantity");
+        return;
+    }
+
+    setModalErrorText("simple-input-error-text", "");
+
+    const previousRawQty = Number(rawEntry.qty || 1);
+    if (previousRawQty === newQty) {
+        closeSimpleInputModal();
+        resetInventoryQtyInput();
+        return;
+    }
+
+    rawEntry.qty = newQty;
+    rawEntry.totalVolume = Number(rawEntry.unitVolume || 0) * newQty;
+
+    inventoryHistory.push({
+        type: "qty-edit",
+        itemName: rawEntry.itemName,
+        previousQty: previousRawQty,
+        newQty: newQty,
+        rawEntryId: rawEntry.id,
+        previousRawQty: previousRawQty
+    });
+
+    saveToDevice();
+    syncLiveInventoryFromRawForActiveSequence();
+    recalculateTotalVolume();
+    refreshCurrentInventorySelectionDisplay();
+
+    triggerInventoryPulse("current", "blue");
+    triggerInventoryPulse("total", "blue");
+    triggerHaptic("medium");
+    updateUndoButtonState();
+    saveCalculatorFeedForActiveSequence();
+
+    closeSimpleInputModal();
+    resetInventoryQtyInput();
+    return;
+}
+if (simpleInputMode === "schedule-number") {
+    if (!scheduleNumberEditMeta || !scheduleNumberEditMeta.rowId || !scheduleNumberEditMeta.fieldName) {
+        closeSimpleInputModal();
+        return;
+    }
+
+    if (!rawValue) {
+        setModalErrorText("simple-input-error-text", "Enter a valid number");
+        return;
+    }
+
+    const newValue = parseInt(rawValue, 10);
+
+    if (isNaN(newValue) || newValue < 0) {
+        setModalErrorText("simple-input-error-text", "Enter a valid number");
+        return;
+    }
+
+    if (scheduleNumberEditMeta.fieldName === "men" && newValue < 1) {
+        setModalErrorText("simple-input-error-text", "Crew must be at least 1");
+        return;
+    }
+
+    setModalErrorText("simple-input-error-text", "");
+
+    updateScheduleDay(
+        scheduleNumberEditMeta.rowId,
+        scheduleNumberEditMeta.fieldName,
+        newValue
+    );
+
+    closeSimpleInputModal();
+    return;
+}
     if (simpleInputMode === "listed-edit-note") {
         const entryKey = simpleInputMeta && simpleInputMeta.entryKey;
         const mergedEntry = window.__listedEntryMap && window.__listedEntryMap[entryKey];
@@ -4087,13 +4859,16 @@ function saveSimpleInputModal() {
 
         saveToDevice();
 
-        if (String(activeSeqId || "") === String(mergedEntry.sequenceId || "")) {
-            rebuildLiveInventoryFromSequence(activeSeqId);
-        }
+if (String(activeSeqId || "") === String(mergedEntry.sequenceId || "")) {
+    rebuildLiveInventoryFromSequence(activeSeqId);
+}
 
-        renderListedInventory();
-        closeSimpleInputModal();
-        return;
+renderListedInventory();
+renderActionButtonStates();
+updateUndoButtonState();
+saveCalculatorFeedForActiveSequence();
+closeSimpleInputModal();
+return;
     }
 }
         function renderSequenceUI() {
@@ -4328,8 +5103,9 @@ function updatePropData(f, v) {
 
     saveInventoryContext();
     rebuildLiveInventoryFromSequence(activeSeqId);
-    saveCalculatorFeedForActiveSequence();
-    saveToDevice();
+
+saveCalculatorFeedForActiveSequence();
+saveToDevice();
 }
         function triggerPulse(id) { const el = document.getElementById(id); if(el) { el.classList.remove('pulse-new'); void el.offsetWidth; el.classList.add('pulse-new'); } }
         
@@ -4387,10 +5163,11 @@ function updatePropData(f, v) {
         renderInventoryRoomDropdown();
         renderInventoryFloorDropdown();
         renderInventoryButtons();
-        rebuildLiveInventoryFromSequence(activeSeqId);
-        renderActionButtonStates();
-        updateUndoButtonState();
-        saveCalculatorFeedForActiveSequence();
+      rebuildLiveInventoryFromSequence(activeSeqId);
+syncInventoryDisplayFromSequence(activeSeqId);
+renderActionButtonStates();
+updateUndoButtonState();
+saveCalculatorFeedForActiveSequence();
     }
     if (t === 'schedule') {
         if (!activeSeqId && currentJob && currentJob.inventory && currentJob.inventory.activeSequenceId) {
@@ -4673,6 +5450,25 @@ function addVolume(amount) {
     if (qtyInput) qtyInput.value = 1;
     renderActionButtonStates();
     updateUndoButtonState();
+    saveCalculatorFeedForActiveSequence();
+}
+function isBedInventoryItem(itemName) {
+    const name = String(itemName || "").trim();
+    return [
+        "Bed (Single)",
+        "Bed (Double)",
+        "Bed (Queensize)",
+        "Bed (Kingsize)",
+        "Bed (SuperKing)"
+    ].includes(name);
+}
+
+function isBedRawEntry(rawEntry) {
+    if (!rawEntry) return false;
+    return isBedInventoryItem(rawEntry.itemName);
+}
+function isElectricBedType(bedType) {
+    return String(bedType || "").trim() === "Electric Motor / TV";
 }
 function addInventoryItem(itemName) {
     let item = furnitureDB.find(function(i) {
@@ -4762,9 +5558,13 @@ function addInventoryItem(itemName) {
     pulseInventoryButton(clickedBtn);
 
     if (qtyInput) qtyInput.value = 1;
-    renderActionButtonStates();
-    updateUndoButtonState();
-    saveCalculatorFeedForActiveSequence();
+renderActionButtonStates();
+updateUndoButtonState();
+saveCalculatorFeedForActiveSequence();
+
+if (isBedInventoryItem(item.item)) {
+    addOrEditBedType();
+}
 }
 function addMiscItem() {
     const overlay = document.getElementById("misc-overlay");
@@ -4853,19 +5653,21 @@ function saveMiscModal() {
     const floorName = currentJob && currentJob.inventory ? currentJob.inventory.activeFloor : "";
 
     const liveKey = getLiveInventoryGroupKey({
-        itemName: cleanName,
-        deliveryId: deliveryId,
-        roomName: roomName,
-        floorName: floorName,
-        unitVolume: unitVolume,
-        excluded: false,
-        dismantle: false,
-        expWrap: false,
-        note: "",
-        damage: "",
-        crated: false,
-        crateDims: null
-    });
+    itemName: cleanName,
+    deliveryId: deliveryId,
+    roomName: roomName,
+    floorName: floorName,
+    unitVolume: unitVolume,
+    excluded: false,
+    dismantle: false,
+    expWrap: false,
+    disconnect: false,
+    handyman: false,
+    note: "",
+    damage: "",
+    crated: false,
+    crateDims: null
+});
 
     lastAddedItemName = miscKey;
 
@@ -4921,19 +5723,20 @@ function saveMiscModal() {
     });
 
     lastAddedRawEntryId = rawEntryId;
-    currentItemVolume = unitVolume * qty;
-    recalculateTotalVolume();
 
-    updateInventoryDisplay(qty + " X " + cleanName.toUpperCase());
-    triggerInventoryPulse("current", "blue");
-    triggerInventoryPulse("total", "blue");
-    updateUndoButtonState();
-    renderActionButtonStates();
-    saveCalculatorFeedForActiveSequence();
+syncLiveInventoryFromRawForActiveSequence();
+recalculateTotalVolume();
+refreshCurrentInventorySelectionDisplay();
 
-    if (qtyInput) qtyInput.value = 1;
+triggerInventoryPulse("current", "blue");
+triggerInventoryPulse("total", "blue");
+updateUndoButtonState();
+renderActionButtonStates();
+saveCalculatorFeedForActiveSequence();
 
-    closeMiscModal();
+if (qtyInput) qtyInput.value = 1;
+
+closeMiscModal();
 }
 function addInventoryNote() {
     const rawEntry = getLastRawInventoryEntry();
@@ -5009,6 +5812,7 @@ function closeCrateModal() {
     setModalErrorText("crate-error-text", "");
 
     selectedCrateUnit = "IN";
+    listedCrateEditEntryKey = "";
     setCrateUnit("IN");
 }
 
@@ -5023,6 +5827,11 @@ function setCrateUnit(unit) {
 }
 
 function saveCrateModal() {
+    if (listedCrateEditEntryKey) {
+        saveListedCrateModal();
+        return;
+    }
+
     const rawEntry = getLastRawInventoryEntry();
     if (!rawEntry) return;
     if (rawEntry.kind === "note") return;
@@ -5058,16 +5867,6 @@ function saveCrateModal() {
 
     setModalErrorText("crate-error-text", "");
 
-    const previousCrated = !!rawEntry.crated;
-    const previousDims = rawEntry.crateDims
-        ? {
-            l: rawEntry.crateDims.l,
-            w: rawEntry.crateDims.w,
-            h: rawEntry.crateDims.h,
-            unit: rawEntry.crateDims.unit
-        }
-        : null;
-
     rawEntry.crated = true;
     rawEntry.crateDims = {
         l: l,
@@ -5076,32 +5875,114 @@ function saveCrateModal() {
         unit: selectedCrateUnit
     };
 
-        saveToDevice();
+    saveToDevice();
+    syncLiveInventoryFromRawForActiveSequence();
+    recalculateTotalVolume();
+    refreshCurrentInventorySelectionDisplay();
     renderActionButtonStates();
 
-    const tags = [];
-    if (rawEntry.dismantle) tags.push("[DISMANTLE]");
-    if (rawEntry.expWrap) tags.push("[EXP WRAP]");
-    if (rawEntry.disconnect) tags.push("[DISCONNECT]");
-if (rawEntry.handyman) tags.push("[HANDYMAN]");
-    if (rawEntry.excluded) tags.push("[EXCLUDED]");
-    if (rawEntry.crated && rawEntry.crateDims) {
-        tags.push(
-            "[CRATE: " +
-            rawEntry.crateDims.l + " x " +
-            rawEntry.crateDims.w + " x " +
-            rawEntry.crateDims.h + " " +
-            rawEntry.crateDims.unit + "]"
-        );
-    }
-    if (rawEntry.damage) tags.push("[DAMAGE: " + rawEntry.damage.toUpperCase() + "]");
-    if (rawEntry.note) tags.push("[NOTE: " + rawEntry.note.toUpperCase() + "]");
-
-    const label = (rawEntry.itemName || "ITEM").toUpperCase();
-    updateInventoryDisplay(label + " " + tags.join(" "));
     triggerInventoryPulse("current", "blue");
+    triggerInventoryPulse("total", "blue");
     updateUndoButtonState();
+    saveCalculatorFeedForActiveSequence();
 
+    closeCrateModal();
+}
+function openListedCrateModal(entryKey) {
+    const mergedEntry = window.__listedEntryMap && window.__listedEntryMap[entryKey];
+    if (!mergedEntry) return;
+
+    setInventoryReturnContextFromEntry(mergedEntry);
+
+    const overlay = document.getElementById("crate-overlay");
+    const lengthInput = document.getElementById("crate-length");
+    const widthInput = document.getElementById("crate-width");
+    const heightInput = document.getElementById("crate-height");
+
+    if (!overlay || !lengthInput || !widthInput || !heightInput) return;
+
+    const existing = mergedEntry.crateDims || {};
+
+    listedCrateEditEntryKey = entryKey;
+    selectedCrateUnit = existing.unit || "IN";
+    setCrateUnit(selectedCrateUnit);
+
+    lengthInput.value = existing.l || "";
+    widthInput.value = existing.w || "";
+    heightInput.value = existing.h || "";
+
+    lengthInput.oninput = function () {
+        setModalErrorText("crate-error-text", "");
+    };
+    widthInput.oninput = function () {
+        setModalErrorText("crate-error-text", "");
+    };
+    heightInput.oninput = function () {
+        setModalErrorText("crate-error-text", "");
+    };
+
+    setModalErrorText("crate-error-text", "");
+    overlay.style.display = "flex";
+}
+
+function saveListedCrateModal() {
+    const mergedEntry = window.__listedEntryMap && window.__listedEntryMap[listedCrateEditEntryKey];
+    if (!mergedEntry) return;
+
+    const lengthInput = document.getElementById("crate-length");
+    const widthInput = document.getElementById("crate-width");
+    const heightInput = document.getElementById("crate-height");
+
+    if (!lengthInput || !widthInput || !heightInput) return;
+
+    const l = parseFloat(lengthInput.value);
+    const w = parseFloat(widthInput.value);
+    const h = parseFloat(heightInput.value);
+
+    if (
+        (!lengthInput.value || String(lengthInput.value).trim() === "") &&
+        (!widthInput.value || String(widthInput.value).trim() === "") &&
+        (!heightInput.value || String(heightInput.value).trim() === "")
+    ) {
+        setModalErrorText("crate-error-text", "Enter length, width and height");
+        return;
+    }
+
+    if (isNaN(l) || isNaN(w) || isNaN(h)) {
+        setModalErrorText("crate-error-text", "Enter valid crate dimensions");
+        return;
+    }
+
+    if (l <= 0 || w <= 0 || h <= 0) {
+        setModalErrorText("crate-error-text", "All dimensions must be greater than 0");
+        return;
+    }
+
+    setModalErrorText("crate-error-text", "");
+
+    const rawMatches = getRawEntriesForListedEntry(mergedEntry);
+    if (!rawMatches.length) return;
+
+    rawMatches.forEach(function(raw) {
+        raw.crated = true;
+        raw.crateDims = {
+            l: l,
+            w: w,
+            h: h,
+            unit: selectedCrateUnit
+        };
+    });
+
+    saveToDevice();
+
+    if (String(activeSeqId || "") === String(mergedEntry.sequenceId || "")) {
+        rebuildLiveInventoryFromSequence(activeSeqId);
+    }
+
+    renderListedInventory();
+    renderActionButtonStates();
+    updateUndoButtonState();
+    saveCalculatorFeedForActiveSequence();
     closeCrateModal();
 }
 function closeNoteModal() {
@@ -5129,7 +6010,7 @@ function saveNoteModal() {
 
     setModalErrorText("note-error-text", "");
 
-        const previousNote = rawEntry.note || "";
+    const previousNote = rawEntry.note || "";
     rawEntry.note = cleanNote;
 
     const lastHistoryAction = inventoryHistory[inventoryHistory.length - 1];
@@ -5148,30 +6029,15 @@ function saveNoteModal() {
     }
 
     saveToDevice();
+    syncLiveInventoryFromRawForActiveSequence();
+    recalculateTotalVolume();
+    refreshCurrentInventorySelectionDisplay();
     renderActionButtonStates();
 
-    const tags = [];
-    if (rawEntry.dismantle) tags.push("[DISMANTLE]");
-    if (rawEntry.expWrap) tags.push("[EXP WRAP]");
-    if (rawEntry.disconnect) tags.push("[DISCONNECT]");
-if (rawEntry.handyman) tags.push("[HANDYMAN]");
-    if (rawEntry.crated && rawEntry.crateDims) {
-        tags.push(
-            "[CRATE: " +
-            rawEntry.crateDims.l + " x " +
-            rawEntry.crateDims.w + " x " +
-            rawEntry.crateDims.h + " " +
-            rawEntry.crateDims.unit + "]"
-        );
-    }
-    if (rawEntry.damage) tags.push("[DAMAGE: " + rawEntry.damage.toUpperCase() + "]");
-    if (rawEntry.excluded) tags.push("[EXCLUDED]");
-    if (rawEntry.note) tags.push("[NOTE: " + rawEntry.note.toUpperCase() + "]");
-
-    const label = (rawEntry.itemName || "ITEM").toUpperCase();
-    updateInventoryDisplay(label + " " + tags.join(" "));
     triggerInventoryPulse("current", "blue");
+    triggerInventoryPulse("total", "blue");
     updateUndoButtonState();
+    saveCalculatorFeedForActiveSequence();
 
     closeNoteModal();
 }
@@ -5286,7 +6152,7 @@ function saveDamageModal() {
 
     setModalErrorText("damage-error-text", "");
 
-        const previousDamage = rawEntry.damage || "";
+    const previousDamage = rawEntry.damage || "";
     rawEntry.damage = finalDamage;
 
     const lastHistoryAction = inventoryHistory[inventoryHistory.length - 1];
@@ -5305,123 +6171,126 @@ function saveDamageModal() {
     }
 
     saveToDevice();
+    syncLiveInventoryFromRawForActiveSequence();
+    recalculateTotalVolume();
+    refreshCurrentInventorySelectionDisplay();
     renderActionButtonStates();
 
-    const tags = [];
-    if (rawEntry.dismantle) tags.push("[DISMANTLE]");
-    if (rawEntry.expWrap) tags.push("[EXP WRAP]");
-    if (rawEntry.disconnect) tags.push("[DISCONNECT]");
-if (rawEntry.handyman) tags.push("[HANDYMAN]");
-    if (rawEntry.crated && rawEntry.crateDims) {
-        tags.push(
-            "[CRATE: " +
-            rawEntry.crateDims.l + " x " +
-            rawEntry.crateDims.w + " x " +
-            rawEntry.crateDims.h + " " +
-            rawEntry.crateDims.unit + "]"
-        );
-    }
-    if (rawEntry.damage) tags.push("[DAMAGE: " + rawEntry.damage.toUpperCase() + "]");
-    if (rawEntry.excluded) tags.push("[EXCLUDED]");
-    if (rawEntry.note) tags.push("[NOTE: " + rawEntry.note.toUpperCase() + "]");
-
-    const label = (rawEntry.itemName || "ITEM").toUpperCase();
-    updateInventoryDisplay(label + " " + tags.join(" "));
     triggerInventoryPulse("current", "blue");
+    triggerInventoryPulse("total", "blue");
     updateUndoButtonState();
+    saveCalculatorFeedForActiveSequence();
 
     closeDamageModal();
 }
-function updateLastItemQty(newQty) {
-    const qtyInput = document.getElementById("inv-qty");
-    if (!qtyInput) return;
+function addOrEditBedType() {
+    const rawEntry = getLastRawInventoryEntry();
+    if (!rawEntry) return;
+    if (!isBedRawEntry(rawEntry)) return;
 
-    if (!lastAddedRawEntryId) {
-        qtyInput.value = "";
+    selectedBedOption = "";
+
+    const overlay = document.getElementById("bed-overlay");
+    if (!overlay) return;
+
+    clearBedOptionButtons();
+
+    const currentBedType = String(rawEntry.bedType || "").trim();
+    if (currentBedType) {
+        selectedBedOption = currentBedType;
+        highlightBedOption(currentBedType);
+    }
+
+    setModalErrorText("bed-error-text", "");
+    overlay.style.display = "flex";
+}
+
+function closeBedModal() {
+    const overlay = document.getElementById("bed-overlay");
+    if (overlay) overlay.style.display = "none";
+
+    selectedBedOption = "";
+    clearBedOptionButtons();
+    setModalErrorText("bed-error-text", "");
+}
+
+function selectBedOption(option) {
+    if (selectedBedOption === option) {
+        selectedBedOption = "";
+        clearBedOptionButtons();
         return;
     }
 
-    const rawEntry = findRawInventoryEntry(lastAddedRawEntryId);
-    if (!rawEntry) {
-        qtyInput.value = "";
-        return;
-    }
+    selectedBedOption = option;
+    highlightBedOption(option);
+    setModalErrorText("bed-error-text", "");
+}
 
-    const qty = getCleanInventoryQtyValue(newQty);
-    qtyInput.value = qty;
-
-    const previousRawQty = Number(rawEntry.qty || 1);
-    if (previousRawQty === qty) {
-        if (qtyResetTimer) clearTimeout(qtyResetTimer);
-        qtyResetTimer = setTimeout(function() {
-            resetInventoryQtyInput();
-        }, 550);
-        return;
-    }
-
-    rawEntry.qty = qty;
-    rawEntry.totalVolume = Number(rawEntry.unitVolume || 0) * qty;
-
-    inventoryHistory.push({
-        type: "qty-edit",
-        itemName: rawEntry.itemName,
-        previousQty: previousRawQty,
-        newQty: qty,
-        rawEntryId: rawEntry.id,
-        previousRawQty: previousRawQty
+function clearBedOptionButtons() {
+    [
+        "bed-option-frame",
+        "bed-option-ottoman",
+        "bed-option-divan",
+        "bed-option-electric"
+    ].forEach(function(id) {
+        const btn = document.getElementById(id);
+        if (btn) btn.classList.remove("active");
     });
+}
+
+function highlightBedOption(option) {
+    clearBedOptionButtons();
+
+    const map = {
+        "Frame": "bed-option-frame",
+        "Ottoman": "bed-option-ottoman",
+        "Divan": "bed-option-divan",
+        "Electric Motor / TV": "bed-option-electric"
+    };
+
+    const btnId = map[option];
+    if (!btnId) return;
+
+    const btn = document.getElementById(btnId);
+    if (btn) btn.classList.add("active");
+}
+
+function saveBedModal() {
+    const rawEntry = getLastRawInventoryEntry();
+    if (!rawEntry) return;
+    if (!isBedRawEntry(rawEntry)) return;
+
+    if (!selectedBedOption) {
+        setModalErrorText("bed-error-text", "Select a bed type");
+        return;
+    }
+
+    rawEntry.bedType = selectedBedOption;
+
+    if (isElectricBedType(selectedBedOption)) {
+        rawEntry.handyman = true;
+        rawEntry.dismantle = false;
+    }
 
     saveToDevice();
-
     syncLiveInventoryFromRawForActiveSequence();
-
-    currentItemVolume = rawEntry.excluded ? 0 : Number(rawEntry.totalVolume || 0);
-
-    const tags = [];
-    if (rawEntry.dismantle) tags.push("[DISMANTLE]");
-    if (rawEntry.expWrap) tags.push("[EXP WRAP]");
-    if (rawEntry.disconnect) tags.push("[DISCONNECT]");
-if (rawEntry.handyman) tags.push("[HANDYMAN]");
-    if (rawEntry.crated && rawEntry.crateDims) {
-        tags.push(
-            "[CRATE: " +
-            rawEntry.crateDims.l + " x " +
-            rawEntry.crateDims.w + " x " +
-            rawEntry.crateDims.h + " " +
-            rawEntry.crateDims.unit + "]"
-        );
-    }
-    if (rawEntry.damage) tags.push("[DAMAGE: " + rawEntry.damage.toUpperCase() + "]");
-    if (rawEntry.excluded) tags.push("[EXCLUDED]");
-    if (rawEntry.note) tags.push("[NOTE: " + rawEntry.note.toUpperCase() + "]");
-
-    const label = (rawEntry.itemName || "ITEM").toUpperCase();
-    updateInventoryDisplay(qty + " X " + label + (tags.length ? " " + tags.join(" ") : ""));
-
-    triggerInventoryPulse("qty", "blue");
-    triggerInventoryPulse("total", "blue");
-
-    if (qtyResetTimer) {
-        clearTimeout(qtyResetTimer);
-    }
-
-    qtyResetTimer = setTimeout(function() {
-        resetInventoryQtyInput();
-    }, 550);
-
+    recalculateTotalVolume();
+    refreshCurrentInventorySelectionDisplay();
     renderActionButtonStates();
-    updateUndoButtonState();
     saveCalculatorFeedForActiveSequence();
+
+    closeBedModal();
+}
+function updateLastItemQty(newQty) {
+    // Inline qty editing no longer used.
 }
 function openVolumeOverride() {
-    if (!lastAddedItemName) return;
+    if (!lastAddedRawEntryId) return;
 
-    let item = inventoryItems.find(function(i) {
-        return i.item === lastAddedItemName;
-    });
-    if (!item) return;
+    const rawEntry = findRawInventoryEntry(lastAddedRawEntryId);
+    if (!rawEntry) return;
 
-    const currentVolume = parseFloat(item.volume) || 0;
+    const currentVolume = parseFloat(rawEntry.unitVolume) || 0;
 
     openSimpleInputModal({
         mode: "volume-override",
@@ -5908,8 +6777,9 @@ function getRawEntriesForListedEntry(entry) {
 !!raw.disconnect === !!entry.disconnect &&
 !!raw.handyman === !!entry.handyman &&
 String(raw.note || "") === String(entry.note || "") &&
-            String(raw.damage || "") === String(entry.damage || "") &&
-            !!raw.crated === !!entry.crated &&
+String(raw.damage || "") === String(entry.damage || "") &&
+String(raw.bedType || "") === String(entry.bedType || "") &&
+!!raw.crated === !!entry.crated &&
             rawCrateText === crateText
         );
     });
@@ -5934,16 +6804,17 @@ function deleteListedEntry(entryKey) {
         return !rawIdsToDelete.includes(raw.id);
     });
 
-    saveToDevice();
+   saveToDevice();
 
-    if (String(activeSeqId || "") === String(mergedEntry.sequenceId || "")) {
-        rebuildLiveInventoryFromSequence(activeSeqId);
-    }
+if (String(activeSeqId || "") === String(mergedEntry.sequenceId || "")) {
+    rebuildLiveInventoryFromSequence(activeSeqId);
+}
 
-    renderListedInventory();
-    renderActionButtonStates();
-    updateUndoButtonState();
-    updateInventoryDisplay("LISTED LINE DELETED");
+renderListedInventory();
+renderActionButtonStates();
+updateUndoButtonState();
+saveCalculatorFeedForActiveSequence();
+updateInventoryDisplay("LISTED LINE DELETED");
 }
 
 function editListedEntryQty(entryKey) {
@@ -5983,6 +6854,122 @@ function editListedEntryNote(entryKey) {
         meta: { entryKey: entryKey }
     });
 }
+
+function openListedFlagsModal(entry) {
+    const overlay = document.getElementById("listed-flags-overlay");
+    if (!overlay || !entry) return;
+
+    listedFlagsState = {
+        dismantle: !!entry.dismantle,
+        expWrap: !!entry.expWrap,
+        crated: !!entry.crated,
+        disconnect: !!entry.disconnect,
+        handyman: !!entry.handyman,
+        excluded: !!entry.excluded
+    };
+
+    updateListedFlagsModalButtons();
+    overlay.style.display = "flex";
+}
+
+function closeListedFlagsModal() {
+    const overlay = document.getElementById("listed-flags-overlay");
+    if (overlay) overlay.style.display = "none";
+
+    listedFlagsEntryKey = "";
+    listedFlagsState = {
+        dismantle: false,
+        expWrap: false,
+        crated: false,
+        disconnect: false,
+        handyman: false,
+        excluded: false
+    };
+}
+
+function updateListedFlagsModalButtons() {
+    const map = {
+        dismantle: "listed-flag-dismantle",
+        expWrap: "listed-flag-expwrap",
+        crated: "listed-flag-crate",
+        disconnect: "listed-flag-disconnect",
+        handyman: "listed-flag-handyman",
+        excluded: "listed-flag-exclude"
+    };
+
+    Object.keys(map).forEach(function(key) {
+        const btn = document.getElementById(map[key]);
+        if (!btn) return;
+        btn.classList.toggle("active", !!listedFlagsState[key]);
+    });
+}
+
+function toggleListedFlag(flagName) {
+    if (!listedFlagsState.hasOwnProperty(flagName)) return;
+    listedFlagsState[flagName] = !listedFlagsState[flagName];
+    updateListedFlagsModalButtons();
+}
+
+function editListedEntryFlags(entryKey) {
+    const mergedEntry = window.__listedEntryMap && window.__listedEntryMap[entryKey];
+    if (!mergedEntry) return;
+
+    listedFlagsEntryKey = entryKey;
+    setInventoryReturnContextFromEntry(mergedEntry);
+    openListedFlagsModal(mergedEntry);
+}
+
+function saveListedFlagsModal() {
+    if (!listedFlagsEntryKey) return;
+
+    const mergedEntry = window.__listedEntryMap && window.__listedEntryMap[listedFlagsEntryKey];
+    if (!mergedEntry) {
+        closeListedFlagsModal();
+        return;
+    }
+
+    const rawMatches = getRawEntriesForListedEntry(mergedEntry);
+    if (!rawMatches.length) {
+        closeListedFlagsModal();
+        return;
+    }
+
+    const wantsCrate = !!listedFlagsState.crated;
+const hadCrateBefore = !!mergedEntry.crated;
+
+rawMatches.forEach(function(raw) {
+    raw.dismantle = !!listedFlagsState.dismantle;
+    raw.expWrap = !!listedFlagsState.expWrap;
+    raw.disconnect = !!listedFlagsState.disconnect;
+    raw.handyman = !!listedFlagsState.handyman;
+    raw.excluded = !!listedFlagsState.excluded;
+
+    if (!wantsCrate) {
+        raw.crated = false;
+        raw.crateDims = null;
+    }
+});
+
+    saveToDevice();
+
+if (wantsCrate && !hadCrateBefore) {
+    const entryKey = listedFlagsEntryKey;
+    closeListedFlagsModal();
+    openListedCrateModal(entryKey);
+    return;
+}
+
+if (String(activeSeqId || "") === String(mergedEntry.sequenceId || "")) {
+    rebuildLiveInventoryFromSequence(activeSeqId);
+}
+
+renderListedInventory();
+renderActionButtonStates();
+updateUndoButtonState();
+saveCalculatorFeedForActiveSequence();
+updateInventoryDisplay("LISTED FLAGS UPDATED");
+closeListedFlagsModal();;
+}
 function getListedEntryMergeKey(entry) {
     const crateText = entry.crated && entry.crateDims
         ? [
@@ -6005,9 +6992,10 @@ function getListedEntryMergeKey(entry) {
         !!entry.expWrap,
         !!entry.disconnect,
         !!entry.handyman,
-        entry.note || "",
-        entry.damage || "",
-        !!entry.crated,
+       entry.note || "",
+entry.damage || "",
+entry.bedType || "",
+!!entry.crated,
         crateText
     ].join("||");
 }
@@ -6035,25 +7023,6 @@ function mergeListedInventoryEntries(items) {
 
     return Object.values(mergedMap);
 }
-function buildListedSummary(items) {
-    let includedVolume = 0;
-    let excludedCount = 0;
-    let lineCount = items.length;
-
-    items.forEach(function(entry) {
-        if (entry.excluded) {
-            excludedCount += 1;
-        } else {
-            includedVolume += Number(entry.totalVolume || 0);
-        }
-    });
-
-    return {
-        includedVolume: includedVolume,
-        excludedCount: excludedCount,
-        lineCount: lineCount
-    };
-}
 function buildMaterialsSummary(items) {
     const summary = {
         apBoxes: 0,
@@ -6075,151 +7044,382 @@ function buildMaterialsSummary(items) {
         wineDividers: 0
     };
 
-    items.forEach(function(entry) {
-        if (entry.excluded) return;
+    if (!Array.isArray(items)) return summary;
 
-        const itemName = String(entry.itemName || "").toUpperCase().trim();
+    items.forEach(function(entry) {
+        if (!entry || entry.excluded) return;
+
+        const itemName = String(entry.itemName || "").trim().toUpperCase();
         const qty = Number(entry.qty || 0);
 
-        // entered box totals
+        // carton items
         if (itemName === "AP BOX") summary.apBoxes += qty;
-        if (itemName === "CG BOX") summary.cgBoxes += qty;
-        if (itemName === "BOOK BOX") summary.bookBoxes += qty;
-        if (itemName === "LINEN BOX") summary.linenBoxes += qty;
-        if (itemName === "WR BOX") summary.wrBoxes += qty;
+        else if (itemName === "CG BOX") summary.cgBoxes += qty;
+        else if (itemName === "BOOK BOX") summary.bookBoxes += qty;
+        else if (itemName === "LINEN BOX") summary.linenBoxes += qty;
+        else if (itemName === "WR BOX") summary.wrBoxes += qty;
 
-        // auto materials from furniture
-        if (itemName === "BED (SINGLE)") summary.singleMattressBags += qty;
-        if (itemName === "BED (DOUBLE)") summary.doubleMattressBags += qty;
-        if (itemName === "BED (KING)") summary.kingMattressBags += qty;
+        // derived mattress bag requirements from beds
+        else if (itemName === "BED (SINGLE)") summary.singleMattressBags += qty;
+else if (itemName === "BED (DOUBLE)") summary.doubleMattressBags += qty;
+else if (itemName === "BED (QUEENSIZE)") summary.doubleMattressBags += qty;
+else if (itemName === "BED (KINGSIZE)") summary.kingMattressBags += qty;
+else if (itemName === "BED (SUPERKING)") summary.kingMattressBags += qty;
 
-        if (itemName === "ARMCHAIR") summary.armchairCovers += qty;
-        if (itemName === "SOFA 2 SEAT") summary.sofa2Covers += qty;
-        if (itemName === "SOFA 3 SEAT") summary.sofa3Covers += qty;
-        if (itemName === "SOFA 4 SEAT") summary.sofa4Covers += qty;
+        // derived sofa cover requirements from seating
+        else if (itemName === "ARMCHAIR") summary.armchairCovers += qty;
+        else if (itemName === "SOFA 2 SEAT") summary.sofa2Covers += qty;
+        else if (itemName === "SOFA 3 SEAT") summary.sofa3Covers += qty;
+        else if (itemName === "SOFA 4 SEAT") summary.sofa4Covers += qty;
 
-        // optional specials if these items exist in inventory later
-        if (itemName === "MIRROR / PICTURE PACK") summary.mirrorPicturePacks += qty;
-        if (itemName === "WINE DIVIDER") summary.wineDividers += qty;
-
-        // extra mattress rules
-        if (itemName === "BUNK BED") summary.singleMattressBags += (qty * 2);
-        if (itemName === "TRUNDLE BED") summary.singleMattressBags += (qty * 2);
+        // optional future direct material items
+        else if (itemName === "MIRROR / PICTURE PACK") summary.mirrorPicturePacks += qty;
+        else if (itemName === "WINE DIVIDERS") summary.wineDividers += qty;
     });
 
     return summary;
 }
-function renderListedSummary(summary, materials) {
-    const topBar = document.getElementById("listed-summary-bar");
+function buildListedSummary(items) {
+    let includedVolume = 0;
+    let excludedCount = 0;
+    let lineCount = items.length;
+
+    const excludedItems = [];
+    const exclusionNotes = [];
+
+    items.forEach(function(entry) {
+        if (entry.excluded) {
+            excludedCount += Number(entry.qty || 0);
+
+            const itemLabel = `${Number(entry.qty || 0)} x ${String(entry.itemName || "-").toUpperCase()}`;
+            excludedItems.push(itemLabel);
+
+            if (entry.note && String(entry.note).trim()) {
+                exclusionNotes.push(
+                    `${String(entry.itemName || "-").toUpperCase()}: ${String(entry.note).trim()}`
+                );
+            }
+        } else {
+            includedVolume += Number(entry.totalVolume || 0);
+        }
+    });
+
+    return {
+        includedVolume: includedVolume,
+        excludedCount: excludedCount,
+        lineCount: lineCount,
+        excludedItems: excludedItems,
+        exclusionNotes: exclusionNotes
+    };
+}
+function buildResponsibilitiesSummary(summary) {
+    const excludedItems = Array.isArray(summary.excludedItems) ? summary.excludedItems : [];
+    const exclusionNotes = Array.isArray(summary.exclusionNotes) ? summary.exclusionNotes : [];
+
+    return {
+        hasContent: excludedItems.length > 0 || exclusionNotes.length > 0,
+        excludedItems: excludedItems,
+        exclusionNotes: exclusionNotes
+    };
+}
+function buildCrewInstructionsSummary(items) {
+    const summary = {
+    dismantle: [],
+    exportWrap: [],
+    crate: [],
+    disconnect: [],
+    handyman: [],
+    damage: [],
+    notes: [],
+    beds: []
+};
+
+    if (!Array.isArray(items)) return summary;
+
+    items.forEach(function(entry) {
+        if (!entry || entry.excluded) return;
+
+        const qty = Number(entry.qty || 0);
+        const itemName = String(entry.itemName || "-").toUpperCase();
+
+        const bedSuffix = entry.bedType ? ` — ${String(entry.bedType).toUpperCase()}` : "";
+const baseLine = `${qty} x ${itemName}${bedSuffix}`;
+
+if (entry.bedType) {
+    summary.beds.push(baseLine);
+}
+
+
+        if (entry.dismantle) {
+            summary.dismantle.push(baseLine);
+        }
+
+        if (entry.expWrap) {
+            summary.exportWrap.push(baseLine);
+        }
+
+        if (entry.crated) {
+            if (entry.crateDims) {
+                summary.crate.push(
+                    `${baseLine} — ${entry.crateDims.l} x ${entry.crateDims.w} x ${entry.crateDims.h} ${entry.crateDims.unit}`
+                );
+            } else {
+                summary.crate.push(baseLine);
+            }
+        }
+
+        if (entry.disconnect) {
+            summary.disconnect.push(baseLine);
+        }
+
+        if (entry.handyman) {
+            summary.handyman.push(baseLine);
+        }
+
+        if (entry.damage) {
+            summary.damage.push(`${baseLine} — ${String(entry.damage).trim()}`);
+        }
+
+        if (entry.note && String(entry.note).trim()) {
+            summary.notes.push(`${baseLine} — ${String(entry.note).trim()}`);
+        }
+    });
+
+    return summary;
+}
+
+function renderListedSummary(summary, materials, crewInstructions) {
     const footerBar = document.getElementById("listed-footer-summary");
-
-    if (topBar) {
-        topBar.innerHTML = "";
-    }
-
     if (!footerBar) return;
+
+    const responsibilities = buildResponsibilitiesSummary(summary);
+    const crew = buildCrewInstructionsSummary(crewInstructions);
 
     footerBar.innerHTML = `
         <div class="signature-wrap">
-    <div class="signature-head">
-        <div>
-            <div class="signature-title">Customer Signature</div>
-            <div class="signature-subtitle">Sign with finger or stylus</div>
-        </div>
+            <div class="signature-head">
+                <div>
+                    <div class="signature-title">Customer Signature</div>
+                    <div class="signature-subtitle">Sign with finger or stylus</div>
+                </div>
 
-        <div class="signature-actions">
-            <button class="signature-btn clear" onclick="clearSignaturePad()">Clear</button>
-            <button class="signature-btn save" onclick="saveSignaturePad()">Save</button>
-        </div>
-    </div>
-
-    <div class="signature-pad-shell">
-        <canvas id="signature-pad" class="signature-pad"></canvas>
-    </div>
-
-        <div class="signature-status-row">
-        <div class="signature-meta">
-            Signed:
-            <span id="signature-signed-at">
-                ${
-                    currentJob && currentJob.signature && currentJob.signature.signedAt
-                        ? new Date(currentJob.signature.signedAt).toLocaleString("en-GB")
-                        : "Not signed"
-                }
-            </span>
-        </div>
-
-                <div
-            id="signature-lock-badge"
-            class="signature-lock-badge"
-            style="${
-                currentJob && currentJob.signature && currentJob.signature.signedAt
-                    ? ""
-                    : "display:none;"
-            }"
-        >
-            <svg viewBox="0 0 24 24" class="signature-lock-icon" aria-hidden="true">
-                <path
-                    d="M8 10V7.8a4 4 0 1 1 8 0V10"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                />
-                <rect
-                    x="6"
-                    y="10"
-                    width="12"
-                    height="10"
-                    rx="2"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                />
-            </svg>
-            Locked
-        </div>
-    </div>
-</div>
-
-        <div class="listed-footer-stack">
-            <div class="listed-stat-card">
-                <div class="listed-stat-label">Included Volume</div>
-                <div class="listed-stat-value">${summary.includedVolume}</div>
-                <div class="listed-stat-sub">Cuft counted</div>
+                <div class="signature-actions">
+                    <button class="signature-btn clear" onclick="clearSignaturePad()">Clear</button>
+                    <button class="signature-btn save" onclick="saveSignaturePad()">Save</button>
+                </div>
             </div>
 
-           <div class="listed-stat-card">
-    <div class="listed-stat-label">Materials Summary</div>
+            <div class="signature-pad-shell">
+                <canvas id="signature-pad" class="signature-pad"></canvas>
+            </div>
 
-    <div class="grid grid-cols-2 gap-4 text-[10px] font-black text-slate-900 uppercase leading-5">
-        <div class="space-y-1">
-            <div class="text-slate-400 pb-1">Cartons</div>
-            <div>AP Boxes: ${materials.apBoxes}</div>
-            <div>CG Boxes: ${materials.cgBoxes}</div>
-            <div>Book Boxes: ${materials.bookBoxes}</div>
-            <div>Linen Boxes: ${materials.linenBoxes}</div>
-            <div>WR Boxes: ${materials.wrBoxes}</div>
+            <div class="signature-status-row">
+                <div class="signature-meta">
+                    Signed:
+                    <span id="signature-signed-at">
+                        ${
+                            currentJob && currentJob.signature && currentJob.signature.signedAt
+                                ? new Date(currentJob.signature.signedAt).toLocaleString("en-GB")
+                                : "Not signed"
+                        }
+                    </span>
+                </div>
 
-            <div class="pt-2 text-slate-400">Mattress Bags</div>
-            <div>Single: ${materials.singleMattressBags}</div>
-            <div>Double: ${materials.doubleMattressBags}</div>
-            <div>King: ${materials.kingMattressBags}</div>
+                <div
+                    id="signature-lock-badge"
+                    class="signature-lock-badge"
+                    style="${
+                        currentJob && currentJob.signature && currentJob.signature.signedAt
+                            ? ""
+                            : "display:none;"
+                    }"
+                >
+                    <svg viewBox="0 0 24 24" class="signature-lock-icon" aria-hidden="true">
+                        <path
+                            d="M8 10V7.8a4 4 0 1 1 8 0V10"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                        />
+                        <rect
+                            x="6"
+                            y="10"
+                            width="12"
+                            height="10"
+                            rx="2"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        />
+                    </svg>
+                    Locked
+                </div>
+            </div>
         </div>
 
-        <div class="space-y-1">
-            <div class="text-slate-400 pb-1">Sofa Covers</div>
-            <div>Armchair: ${materials.armchairCovers}</div>
-            <div>2-Seater: ${materials.sofa2Covers}</div>
-            <div>3-Seater: ${materials.sofa3Covers}</div>
-            <div>4-Seater: ${materials.sofa4Covers}</div>
+        <div class="listed-stat-card">
+            <div class="listed-stat-label">Included Volume & Materials Summary</div>
+            <div class="listed-stat-value">${summary.includedVolume}</div>
+            <div class="listed-stat-sub">Cuft counted</div>
 
-            <div class="pt-2 text-slate-400">Special Packs</div>
-            <div>Mirror / Picture: ${materials.mirrorPicturePacks}</div>
-            <div>Wine Dividers: ${materials.wineDividers}</div>
+            <div class="grid grid-cols-2 gap-4 text-[10px] font-black text-slate-900 uppercase leading-5 mt-4">
+                <div class="space-y-1">
+                    <div class="text-slate-400 pb-1">Cartons</div>
+                    <div>AP Boxes: ${materials.apBoxes}</div>
+                    <div>CG Boxes: ${materials.cgBoxes}</div>
+                    <div>Book Boxes: ${materials.bookBoxes}</div>
+                    <div>Linen Boxes: ${materials.linenBoxes}</div>
+                    <div>WR Boxes: ${materials.wrBoxes}</div>
+
+                    <div class="pt-2 text-slate-400">Mattress Bags</div>
+                    <div>Single: ${materials.singleMattressBags}</div>
+                    <div>Double: ${materials.doubleMattressBags}</div>
+                    <div>King: ${materials.kingMattressBags}</div>
+                </div>
+
+                <div class="space-y-1">
+                    <div class="text-slate-400 pb-1">Sofa Covers</div>
+                    <div>Armchair: ${materials.armchairCovers}</div>
+                    <div>2-Seater: ${materials.sofa2Covers}</div>
+                    <div>3-Seater: ${materials.sofa3Covers}</div>
+                    <div>4-Seater: ${materials.sofa4Covers}</div>
+
+                    <div class="pt-2 text-slate-400">Special Packs</div>
+                    <div>Mirror / Picture: ${materials.mirrorPicturePacks}</div>
+                    <div>Wine Dividers: ${materials.wineDividers}</div>
+                </div>
+            </div>
         </div>
-    </div>
+
+        <div class="listed-stat-card">
+            <div class="listed-stat-label">Customer Responsibilities</div>
+            ${
+                responsibilities.hasContent
+                    ? `
+                    <div class="space-y-3 text-[10px] font-black text-slate-900 uppercase leading-5">
+                        <div>
+                            <div class="text-slate-400 pb-1">Excluded Items (${summary.excludedCount})</div>
+                            ${
+                                responsibilities.excludedItems.length
+                                    ? responsibilities.excludedItems.map(function(item) {
+                                        return `<div>${escapeHtml(item)}</div>`;
+                                    }).join("")
+                                    : `<div class="text-slate-400 italic">None</div>`
+                            }
+                        </div>
+
+                        <div>
+                            <div class="text-slate-400 pb-1">Notes / Responsibilities</div>
+                            ${
+                                responsibilities.exclusionNotes.length
+                                    ? responsibilities.exclusionNotes.map(function(note) {
+                                        return `<div>${escapeHtml(note)}</div>`;
+                                    }).join("")
+                                    : `<div class="text-slate-400 italic">None recorded</div>`
+                            }
+                        </div>
+                    </div>
+                    `
+                    : `
+                    <div class="text-[10px] font-black text-slate-400 uppercase italic">
+                        No exclusions or customer responsibility notes recorded
+                    </div>
+                    `
+            }
+        </div>
+
+        <div class="listed-stat-card">
+            <div class="listed-stat-label">Crew Instructions / Responsibilities</div>
+
+            <div class="space-y-3 text-[10px] font-black text-slate-900 uppercase leading-5">
+                <div>
+    <div class="text-slate-400 pb-1">Beds</div>
+    ${
+        crew.beds.length
+            ? crew.beds.map(function(item) {
+                return `<div>${escapeHtml(item)}</div>`;
+            }).join("")
+            : `<div class="text-slate-400 italic">None</div>`
+    }
 </div>
+                <div>
+                    <div class="text-slate-400 pb-1">Dismantle</div>
+                    ${
+                        crew.dismantle.length
+                            ? crew.dismantle.map(function(item) {
+                                return `<div>${escapeHtml(item)}</div>`;
+                            }).join("")
+                            : `<div class="text-slate-400 italic">None</div>`
+                    }
+                </div>
+
+                <div>
+                    <div class="text-slate-400 pb-1">Export Wrap</div>
+                    ${
+                        crew.exportWrap.length
+                            ? crew.exportWrap.map(function(item) {
+                                return `<div>${escapeHtml(item)}</div>`;
+                            }).join("")
+                            : `<div class="text-slate-400 italic">None</div>`
+                    }
+                </div>
+
+                <div>
+                    <div class="text-slate-400 pb-1">Crate</div>
+                    ${
+                        crew.crate.length
+                            ? crew.crate.map(function(item) {
+                                return `<div>${escapeHtml(item)}</div>`;
+                            }).join("")
+                            : `<div class="text-slate-400 italic">None</div>`
+                    }
+                </div>
+
+                <div>
+                    <div class="text-slate-400 pb-1">Disconnect</div>
+                    ${
+                        crew.disconnect.length
+                            ? crew.disconnect.map(function(item) {
+                                return `<div>${escapeHtml(item)}</div>`;
+                            }).join("")
+                            : `<div class="text-slate-400 italic">None</div>`
+                    }
+                </div>
+
+                <div>
+                    <div class="text-slate-400 pb-1">Handyman</div>
+                    ${
+                        crew.handyman.length
+                            ? crew.handyman.map(function(item) {
+                                return `<div>${escapeHtml(item)}</div>`;
+                            }).join("")
+                            : `<div class="text-slate-400 italic">None</div>`
+                    }
+                </div>
+
+                <div>
+                    <div class="text-slate-400 pb-1">Damage</div>
+                    ${
+                        crew.damage.length
+                            ? crew.damage.map(function(item) {
+                                return `<div>${escapeHtml(item)}</div>`;
+                            }).join("")
+                            : `<div class="text-slate-400 italic">None</div>`
+                    }
+                </div>
+
+                <div>
+                    <div class="text-slate-400 pb-1">Notes</div>
+                    ${
+                        crew.notes.length
+                            ? crew.notes.map(function(item) {
+                                return `<div>${escapeHtml(item)}</div>`;
+                            }).join("")
+                            : `<div class="text-slate-400 italic">None</div>`
+                    }
+                </div>
+            </div>
         </div>
     `;
 
@@ -6336,15 +7536,22 @@ function renderListedInventory() {
     renderListedInventoryFilters(allItems);
 
     const filteredItems = filterListedInventoryItems(allItems);
-    const listedSummary = buildListedSummary(filteredItems);
-const materialsSummary = buildMaterialsSummary(filteredItems);
-renderListedSummary(listedSummary, materialsSummary);
 
     if (filteredItems.length === 0) {
         container.innerHTML = `<div class="p-12 text-center text-slate-400 font-bold italic uppercase">No inventory matches current view</div>`;
+        renderListedSummary(
+            buildListedSummary([]),
+            buildMaterialsSummary([])
+        );
         return;
     }
-window.__listedEntryMap = {};
+
+    const listedSummary = buildListedSummary(filteredItems);
+const materialsSummary = buildMaterialsSummary(filteredItems);
+
+renderListedSummary(listedSummary, materialsSummary, filteredItems);
+
+    window.__listedEntryMap = {};
     const groupedSections = groupInventoryItemsForListedView(filteredItems);
 
     if (groupedSections.length === 0) {
@@ -6355,54 +7562,61 @@ window.__listedEntryMap = {};
     container.innerHTML = groupedSections.map(function(section) {
         const roomBlocks = section.rooms.map(function(room) {
             const rows = room.entries.map(function(entry) {
-            const entryKey = getListedEntryMergeKey(entry);
-window.__listedEntryMap = window.__listedEntryMap || {};
-window.__listedEntryMap[entryKey] = entry;
+                const entryKey = getListedEntryMergeKey(entry);
+                window.__listedEntryMap = window.__listedEntryMap || {};
+                window.__listedEntryMap[entryKey] = entry;
+
                 const tags = [];
 
+if (entry.bedType) tags.push("BED: " + String(entry.bedType).toUpperCase());
 if (entry.dismantle) tags.push("DISMANTLE");
 if (entry.expWrap) tags.push("EXP WRAP");
 if (entry.disconnect) tags.push("DISCONNECT");
 if (entry.handyman) tags.push("HANDYMAN");
-if (entry.crated && entry.crateDims) {
-    tags.push(
-        "CRATE: " +
-        entry.crateDims.l + " x " +
-        entry.crateDims.w + " x " +
-        entry.crateDims.h + " " +
-        entry.crateDims.unit
-    );
-}
-if (entry.damage) tags.push("DAMAGE: " + entry.damage.toUpperCase());
-if (entry.excluded) tags.push("EXCLUDED");
-if (entry.note) tags.push("NOTE: " + entry.note.toUpperCase());
+                if (entry.crated) {
+                    if (entry.crateDims) {
+                        tags.push(
+                            "CRATE: " +
+                            entry.crateDims.l + " x " +
+                            entry.crateDims.w + " x " +
+                            entry.crateDims.h + " " +
+                            entry.crateDims.unit
+                        );
+                    } else {
+                        tags.push("CRATE");
+                    }
+                }
+                if (entry.damage) tags.push("DAMAGE: " + entry.damage.toUpperCase());
+                if (entry.excluded) tags.push("EXCLUDED");
+                if (entry.note) tags.push("NOTE: " + entry.note.toUpperCase());
 
                 const tagText = tags.length ? ` [${tags.join("] [")}]` : "";
                 const isExcluded = !!entry.excluded;
 
                 return `
-    <tr class="border-t border-slate-200 ${isExcluded ? 'bg-slate-50' : ''}">
-        <td class="py-2 pr-2 text-[10px] font-bold uppercase align-top break-words ${isExcluded ? 'text-slate-500 italic opacity-70' : 'text-slate-900'}">
-            ${entry.itemName || "-"}${tagText}
-        </td>
-        <td class="py-2 px-1 text-[10px] font-black uppercase text-center align-top ${isExcluded ? 'text-slate-400 italic' : 'text-blue-600'}">
-            ${entry.qty || 0}
-        </td>
-        <td class="py-2 px-1 text-[10px] font-black uppercase text-center align-top ${isExcluded ? 'text-slate-300 italic' : 'text-slate-700'}">
-            ${isExcluded ? '' : (entry.unitVolume || 0)}
-        </td>
-        <td class="py-2 px-1 text-[10px] font-black uppercase text-center align-top ${isExcluded ? 'text-slate-300 italic' : 'text-slate-900'}">
-            ${isExcluded ? '' : (entry.totalVolume || 0)}
-        </td>
-        <td class="py-2 pl-1 align-top">
-            <div class="listed-row-actions">
-                <button class="listed-action-btn" onclick="editListedEntryQty('${escapeHtml(entryKey)}')">Qty</button>
-                <button class="listed-action-btn" onclick="editListedEntryNote('${escapeHtml(entryKey)}')">Note</button>
-                <button class="listed-action-btn delete" onclick="deleteListedEntry('${escapeHtml(entryKey)}')">×</button>
-            </div>
-        </td>
-    </tr>
-`;
+                    <tr class="border-t border-slate-200 ${isExcluded ? 'bg-slate-50' : ''}">
+                        <td class="py-2 pr-2 text-[10px] font-bold uppercase align-top break-words ${isExcluded ? 'text-slate-500 italic opacity-70' : 'text-slate-900'}">
+                            ${entry.itemName || "-"}${tagText}
+                        </td>
+                        <td class="py-2 px-1 text-[10px] font-black uppercase text-center align-top ${isExcluded ? 'text-slate-400 italic' : 'text-blue-600'}">
+                            ${entry.qty || 0}
+                        </td>
+                        <td class="py-2 px-1 text-[10px] font-black uppercase text-center align-top ${isExcluded ? 'text-slate-300 italic' : 'text-slate-700'}">
+                            ${isExcluded ? '' : (entry.unitVolume || 0)}
+                        </td>
+                        <td class="py-2 px-1 text-[10px] font-black uppercase text-center align-top ${isExcluded ? 'text-slate-300 italic' : 'text-slate-900'}">
+                            ${isExcluded ? '' : (entry.totalVolume || 0)}
+                        </td>
+                        <td class="py-2 pl-1 align-top">
+                            <div class="listed-row-actions">
+                                <button class="listed-action-btn" onclick="editListedEntryQty('${escapeHtml(entryKey)}')">Qty</button>
+                                <button class="listed-action-btn" onclick="editListedEntryFlags('${escapeHtml(entryKey)}')">Flags</button>
+                                <button class="listed-action-btn" onclick="editListedEntryNote('${escapeHtml(entryKey)}')">Note</button>
+                                <button class="listed-action-btn delete" onclick="deleteListedEntry('${escapeHtml(entryKey)}')">×</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
             }).join("");
 
             return `
@@ -6415,22 +7629,22 @@ if (entry.note) tags.push("NOTE: " + entry.note.toUpperCase());
                         <div class="listed-room-total">${room.totalVolume} CUFT</div>
                     </div>
 
-                                        <div class="p-4">
-    <table class="w-full table-fixed">
-        <thead>
-            <tr class="border-b border-slate-300">
-                <th class="w-[44%] text-left py-2 pr-2 text-[9px] font-black text-slate-400 uppercase">Item</th>
-                <th class="w-[10%] text-center py-2 px-1 text-[9px] font-black text-slate-400 uppercase">Qty</th>
-                <th class="w-[14%] text-center py-2 px-1 text-[9px] font-black text-slate-400 uppercase">Unit Vol</th>
-                <th class="w-[16%] text-center py-2 px-1 text-[9px] font-black text-slate-400 uppercase">Total Vol</th>
-                <th class="w-[16%] text-center py-2 pl-1 text-[9px] font-black text-slate-400 uppercase">Edit</th>
-            </tr>
-        </thead>
-        <tbody>
-            ${rows}
-        </tbody>
-    </table>
-</div>
+                    <div class="p-4">
+                        <table class="w-full table-fixed">
+                            <thead>
+                                <tr class="border-b border-slate-300">
+                                    <th class="w-[44%] text-left py-2 pr-2 text-[9px] font-black text-slate-400 uppercase">Item</th>
+                                    <th class="w-[10%] text-center py-2 px-1 text-[9px] font-black text-slate-400 uppercase">Qty</th>
+                                    <th class="w-[14%] text-center py-2 px-1 text-[9px] font-black text-slate-400 uppercase">Unit Vol</th>
+                                    <th class="w-[16%] text-center py-2 px-1 text-[9px] font-black text-slate-400 uppercase">Total Vol</th>
+                                    <th class="w-[16%] text-center py-2 pl-1 text-[9px] font-black text-slate-400 uppercase">Edit</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${rows}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             `;
         }).join("");
@@ -6457,6 +7671,70 @@ if (entry.note) tags.push("NOTE: " + entry.note.toUpperCase());
 function resetInventoryQtyInput() {
     const qtyInput = document.getElementById("inv-qty");
     if (qtyInput) qtyInput.value = 1;
+}
+function openQtyOverride() {
+    if (!lastAddedRawEntryId) return;
+
+    const rawEntry = findRawInventoryEntry(lastAddedRawEntryId);
+    if (!rawEntry) return;
+
+    openSimpleInputModal({
+        mode: "qty-override",
+        title: "Override Quantity",
+        subtitle: "Set a new quantity for the selected item",
+        label: "Quantity",
+        placeholder: "e.g. 2",
+        value: String(rawEntry.qty || 1),
+        inputType: "number",
+        inputMode: "numeric"
+    });
+}
+
+function refreshCurrentInventorySelectionDisplay() {
+    if (!lastAddedRawEntryId) {
+        currentItemVolume = 0;
+        updateInventoryDisplay("No items added");
+        renderActionButtonStates();
+        return;
+    }
+
+    const rawEntry = findRawInventoryEntry(lastAddedRawEntryId);
+    if (!rawEntry) {
+        currentItemVolume = 0;
+        updateInventoryDisplay("No items added");
+        renderActionButtonStates();
+        return;
+    }
+
+    currentItemVolume = rawEntry.excluded ? 0 : Number(rawEntry.totalVolume || 0);
+
+    const tags = [];
+if (rawEntry.bedType) tags.push("[BED: " + String(rawEntry.bedType).toUpperCase() + "]");
+if (rawEntry.dismantle) tags.push("[DISMANTLE]");
+if (rawEntry.expWrap) tags.push("[EXP WRAP]");
+if (rawEntry.disconnect) tags.push("[DISCONNECT]");
+if (rawEntry.handyman) tags.push("[HANDYMAN]");
+    if (rawEntry.crated && rawEntry.crateDims) {
+        tags.push(
+            "[CRATE: " +
+            rawEntry.crateDims.l + " x " +
+            rawEntry.crateDims.w + " x " +
+            rawEntry.crateDims.h + " " +
+            rawEntry.crateDims.unit + "]"
+        );
+    }
+    if (rawEntry.damage) tags.push("[DAMAGE: " + String(rawEntry.damage).toUpperCase() + "]");
+    if (rawEntry.excluded) tags.push("[EXCLUDED]");
+    if (rawEntry.note) tags.push("[NOTE: " + String(rawEntry.note).toUpperCase() + "]");
+
+    const label = (rawEntry.itemName || "ITEM").toUpperCase();
+    const qty = Number(rawEntry.qty || 0);
+
+    updateInventoryDisplay(
+        qty + " X " + label + (tags.length ? " " + tags.join(" ") : "")
+    );
+
+    renderActionButtonStates();
 }
 
 function getCleanInventoryQtyValue(rawValue) {
@@ -6637,15 +7915,19 @@ function getPrintableListedSections(items) {
 
                 if (entry.dismantle) tags.push("DISMANTLE");
                 if (entry.expWrap) tags.push("EXP WRAP");
-                if (entry.crated && entry.crateDims) {
-                    tags.push(
-                        "CRATE: " +
-                        entry.crateDims.l + " x " +
-                        entry.crateDims.w + " x " +
-                        entry.crateDims.h + " " +
-                        entry.crateDims.unit
-                    );
-                }
+                if (entry.crated) {
+    if (entry.crateDims) {
+        tags.push(
+            "CRATE: " +
+            entry.crateDims.l + " x " +
+            entry.crateDims.w + " x " +
+            entry.crateDims.h + " " +
+            entry.crateDims.unit
+        );
+    } else {
+        tags.push("CRATE");
+    }
+}
                 if (entry.damage) tags.push("DAMAGE: " + entry.damage.toUpperCase());
                 if (entry.excluded) tags.push("EXCLUDED");
                 if (entry.note) tags.push("NOTE: " + entry.note.toUpperCase());
@@ -6742,7 +8024,135 @@ function getPrintableMaterialsHtml(materials) {
         </div>
     `;
 }
+function getPrintableResponsibilitiesHtml(summary) {
+    const responsibilities = buildResponsibilitiesSummary(summary);
 
+    if (!responsibilities.hasContent) {
+        return `<div class="pdf-small-note">No exclusions or customer responsibility notes recorded</div>`;
+    }
+
+    return `
+        <div class="pdf-materials-grid">
+            <div>
+                <div class="pdf-mini-head">Excluded Items (${summary.excludedCount})</div>
+                ${
+                    responsibilities.excludedItems.length
+                        ? responsibilities.excludedItems.map(function(item) {
+                            return `<div>${escapeHtml(item)}</div>`;
+                        }).join("")
+                        : `<div>None</div>`
+                }
+            </div>
+
+            <div>
+                <div class="pdf-mini-head">Notes / Responsibilities</div>
+                ${
+                    responsibilities.exclusionNotes.length
+                        ? responsibilities.exclusionNotes.map(function(note) {
+                            return `<div>${escapeHtml(note)}</div>`;
+                        }).join("")
+                        : `<div>None recorded</div>`
+                }
+            </div>
+        </div>
+    `;
+}
+
+function getPrintableCrewInstructionsHtml(items) {
+    const crew = buildCrewInstructionsSummary(items);
+
+    const hasContent =
+        crew.dismantle.length ||
+        crew.exportWrap.length ||
+        crew.crate.length ||
+        crew.disconnect.length ||
+        crew.handyman.length ||
+        crew.damage.length ||
+        crew.notes.length;
+
+    if (!hasContent) {
+        return `<div class="pdf-small-note">No crew instructions or responsibilities recorded</div>`;
+    }
+
+    return `
+        <div class="pdf-materials-grid">
+            <div>
+               <div class="pdf-mini-head">Beds</div>
+${
+    crew.beds.length
+        ? crew.beds.map(function(item) {
+            return `<div>${escapeHtml(item)}</div>`;
+        }).join("")
+        : `<div>None</div>`
+}
+                <div class="pdf-mini-head">Dismantle</div>
+                ${
+                    crew.dismantle.length
+                        ? crew.dismantle.map(function(item) {
+                            return `<div>${escapeHtml(item)}</div>`;
+                        }).join("")
+                        : `<div>None</div>`
+                }
+
+                <div class="pdf-mini-head space-top">Export Wrap</div>
+                ${
+                    crew.exportWrap.length
+                        ? crew.exportWrap.map(function(item) {
+                            return `<div>${escapeHtml(item)}</div>`;
+                        }).join("")
+                        : `<div>None</div>`
+                }
+
+                <div class="pdf-mini-head space-top">Crate</div>
+                ${
+                    crew.crate.length
+                        ? crew.crate.map(function(item) {
+                            return `<div>${escapeHtml(item)}</div>`;
+                        }).join("")
+                        : `<div>None</div>`
+                }
+
+                <div class="pdf-mini-head space-top">Disconnect</div>
+                ${
+                    crew.disconnect.length
+                        ? crew.disconnect.map(function(item) {
+                            return `<div>${escapeHtml(item)}</div>`;
+                        }).join("")
+                        : `<div>None</div>`
+                }
+            </div>
+
+            <div>
+                <div class="pdf-mini-head">Handyman</div>
+                ${
+                    crew.handyman.length
+                        ? crew.handyman.map(function(item) {
+                            return `<div>${escapeHtml(item)}</div>`;
+                        }).join("")
+                        : `<div>None</div>`
+                }
+
+                <div class="pdf-mini-head space-top">Damage</div>
+                ${
+                    crew.damage.length
+                        ? crew.damage.map(function(item) {
+                            return `<div>${escapeHtml(item)}</div>`;
+                        }).join("")
+                        : `<div>None</div>`
+                }
+
+                <div class="pdf-mini-head space-top">Notes</div>
+                ${
+                    crew.notes.length
+                        ? crew.notes.map(function(item) {
+                            return `<div>${escapeHtml(item)}</div>`;
+                        }).join("")
+                        : `<div>None</div>`
+                }
+            </div>
+        </div>
+    `;
+}
 function printListedInventoryPdf() {
     if (!currentJob) return;
 
@@ -6756,6 +8166,7 @@ function printListedInventoryPdf() {
 
     const listedSummary = buildListedSummary(filteredItems);
     const materialsSummary = buildMaterialsSummary(filteredItems);
+    const crewSummaryHtml = getPrintableCrewInstructionsHtml(filteredItems);
     const sectionsHtml = getPrintableListedSections(filteredItems);
 
     const customerName =
@@ -6956,12 +8367,17 @@ function printListedInventoryPdf() {
                 }
 
                 .pdf-footer-grid {
-                    display: grid;
-                    grid-template-columns: 1fr 1fr;
-                    gap: 16px;
-                    margin-top: 24px;
-                    page-break-inside: avoid;
-                }
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 24px;
+    page-break-inside: avoid;
+    align-items: start;
+}
+
+.pdf-card-full {
+    grid-column: span 2;
+}
 
                 .pdf-card {
                     border: 1px solid #cbd5e1;
@@ -7060,25 +8476,31 @@ function printListedInventoryPdf() {
             ${sectionsHtml}
 
             <div class="pdf-footer-grid">
-                <div class="pdf-card">
-                    <div class="pdf-card-title">Customer Signature</div>
-                    ${signatureHtml}
-                    <div class="pdf-small-note" style="margin-top: 8px;">Signed: ${escapeHtml(signedAt)}</div>
-                </div>
+    <div class="pdf-card">
+        <div class="pdf-card-title">Customer Signature</div>
+        ${signatureHtml}
+        <div class="pdf-small-note" style="margin-top: 8px;">Signed: ${escapeHtml(signedAt)}</div>
+    </div>
 
-                <div>
-                    <div class="pdf-card" style="margin-bottom: 16px;">
-                        <div class="pdf-card-title">Included Volume</div>
-                        <div class="pdf-big-stat">${listedSummary.includedVolume}</div>
-                        <div class="pdf-small-note">Cuft counted</div>
-                    </div>
+    <div class="pdf-card">
+        <div class="pdf-card-title">Included Volume & Materials Summary</div>
+        <div class="pdf-big-stat">${listedSummary.includedVolume}</div>
+        <div class="pdf-small-note">Cuft counted</div>
+        <div style="margin-top:12px;">
+            ${getPrintableMaterialsHtml(materialsSummary)}
+        </div>
+    </div>
 
-                    <div class="pdf-card">
-                        <div class="pdf-card-title">Materials Summary</div>
-                        ${getPrintableMaterialsHtml(materialsSummary)}
-                    </div>
-                </div>
-            </div>
+    <div class="pdf-card">
+        <div class="pdf-card-title">Customer Responsibilities</div>
+        ${getPrintableResponsibilitiesHtml(listedSummary)}
+    </div>
+
+    <div class="pdf-card">
+        <div class="pdf-card-title">Crew Instructions / Responsibilities</div>
+        ${crewSummaryHtml}
+    </div>
+</div>
         </body>
         </html>
     `);
@@ -7113,6 +8535,16 @@ const QUOTE_OPTIONAL_COST_CHOICES = [
     "Ferry",
     "Crating",
     "Shuttle Surcharge"
+];
+const QUOTE_CORE_COST_CHOICES = [
+    "Vans",
+    "Crew",
+    "Mileage",
+    "Consumables",
+    "Cartons",
+    "Export Wrap",
+    "Nights Out",
+    "Custom"
 ];
 
 const QUOTE_ADDITIONAL_SERVICE_CHOICES = [
@@ -7230,7 +8662,13 @@ function getQuoteScheduleRows(sequenceId) {
         : null;
 
     if (!seq || !seq.schedule || !Array.isArray(seq.schedule.manualDays)) return [];
-    return seq.schedule.manualDays;
+
+    return seq.schedule.manualDays.map(function(day) {
+        return {
+            ...day,
+            vans: Math.max(0, Number(day.vans) || 1)
+        };
+    });
 }
 
 function calcQuoteScheduleTotals(sequenceId) {
@@ -7239,32 +8677,41 @@ function calcQuoteScheduleTotals(sequenceId) {
 
     rows.forEach(function(row) {
         const groupKey = String(row.groupId || row.id || "");
+
         if (!grouped[groupKey]) {
             grouped[groupKey] = {
                 vans: 0,
                 crew: 0,
-                nightsOut: 0
+                nightsOut: 0,
+                hasNightOut: false
             };
         }
 
         const men = Number(row.men || 0);
+        const vans = Number(row.vans || 0);
 
-        grouped[groupKey].vans = Math.max(grouped[groupKey].vans, men > 0 ? 1 : 0);
+        grouped[groupKey].vans = Math.max(grouped[groupKey].vans, vans);
         grouped[groupKey].crew = Math.max(grouped[groupKey].crew, men);
 
         const isNightOutTask =
             String(row.task || "") === "Load and Travel" ||
             String(row.task || "") === "Deliver and Crew Return";
 
-        if (isNightOutTask) {
-            grouped[groupKey].nightsOut = Math.max(grouped[groupKey].nightsOut, men);
+        const isNightOutSelected = !!row.nightsOut;
+
+        if (isNightOutTask || isNightOutSelected) {
+            grouped[groupKey].hasNightOut = true;
         }
     });
 
     return Object.values(grouped).reduce(function(acc, day) {
         acc.vans += Number(day.vans || 0);
         acc.crew += Number(day.crew || 0);
-        acc.nightsOut += Number(day.nightsOut || 0);
+
+        if (day.hasNightOut) {
+            acc.nightsOut += Number(day.crew || 0);
+        }
+
         return acc;
     }, { vans: 0, crew: 0, nightsOut: 0 });
 }
@@ -7274,15 +8721,20 @@ function buildDefaultQuotePricingLines(sequenceId) {
     const scheduleTotals = calcQuoteScheduleTotals(sequenceId);
 
     const cartonQty = feed
-        ? Number(feed.qty.ap || 0) + Number(feed.qty.cg || 0) + Number(feed.qty.books || 0) + Number(feed.qty.linen || 0) + Number(feed.qty.wr || 0)
+        ? Number(feed.qty.ap || 0) +
+          Number(feed.qty.cg || 0) +
+          Number(feed.qty.books || 0) +
+          Number(feed.qty.linen || 0) +
+          Number(feed.qty.wr || 0)
         : 0;
 
-    const exportWrapQty = getActiveSequenceRecord() && String(getActiveSequenceRecord().id) === String(sequenceId)
-        ? Number(document.getElementById("exportWrapVol") ? document.getElementById("exportWrapVol").value : 0)
-        : (() => {
-            const seq = currentJob.sequences.find(function(s) { return String(s.id) === String(sequenceId); });
-            return Number(seq && seq.schedule ? seq.schedule.exportWrapVol || 0 : 0);
-        })();
+    const exportWrapQty = feed
+        ? Number(
+            (feed.special && feed.special.exportWrapVol) ||
+            feed.exportWrapVol ||
+            0
+          )
+        : 0;
 
     return QUOTE_PRICING_DEFAULTS.map(function(item) {
         let qty = Number(item.qty || 0);
@@ -7334,11 +8786,20 @@ function syncQuotePricingFromSchedule(sequenceId) {
     const feed = getQuoteSequenceFeed(sequenceId);
 
     const cartonQty = feed
-        ? Number(feed.qty.ap || 0) + Number(feed.qty.cg || 0) + Number(feed.qty.books || 0) + Number(feed.qty.linen || 0) + Number(feed.qty.wr || 0)
+        ? Number(feed.qty.ap || 0) +
+          Number(feed.qty.cg || 0) +
+          Number(feed.qty.books || 0) +
+          Number(feed.qty.linen || 0) +
+          Number(feed.qty.wr || 0)
         : 0;
 
-    const seq = currentJob.sequences.find(function(s) { return String(s.id) === String(sequenceId); });
-    const exportWrapQty = Number(seq && seq.schedule ? seq.schedule.exportWrapVol || 0 : 0);
+    const exportWrapQty = feed
+        ? Number(
+            (feed.special && feed.special.exportWrapVol) ||
+            feed.exportWrapVol ||
+            0
+          )
+        : 0;
 
     state.pricingLines = state.pricingLines.map(function(line) {
         if (line.label === "Vans") return { ...line, qty: scheduleTotals.vans };
@@ -7466,8 +8927,8 @@ function renderQuoteSequenceSelect() {
     }).join("");
 }
 
-function renderQuoteScopeSnapshot(sequenceId) {
-    const target = document.getElementById("quote-scopeSnapshotCard");
+function renderQuotePricingContext(sequenceId) {
+    const target = document.getElementById("quote-pricingContextCard");
     if (!target) return;
 
     const snap = buildQuoteScopeSnapshot(sequenceId);
@@ -7478,39 +8939,222 @@ function renderQuoteScopeSnapshot(sequenceId) {
                 <div class="listed-stat-label">Move Type</div>
                 <div class="listed-stat-value" style="font-size:14px;">${escapeHtml(snap.moveType)}</div>
             </div>
+
             <div class="listed-stat-card">
                 <div class="listed-stat-label">Packing Type</div>
                 <div class="listed-stat-value" style="font-size:14px;">${escapeHtml(snap.packingType)}</div>
             </div>
+
             <div class="listed-stat-card">
                 <div class="listed-stat-label">Included Volume</div>
                 <div class="listed-stat-value">${snap.includedVolume}</div>
                 <div class="listed-stat-sub">Furniture cuft</div>
             </div>
+
             <div class="listed-stat-card">
                 <div class="listed-stat-label">Cartons Total</div>
                 <div class="listed-stat-value">${snap.cartonsTotal}</div>
                 <div class="listed-stat-sub">All carton types</div>
             </div>
-            <div class="listed-stat-card">
+
+            <div class="listed-stat-card col-span-2">
                 <div class="listed-stat-label">Export Wrap</div>
                 <div class="listed-stat-value">${snap.exportWrapQty}</div>
                 <div class="listed-stat-sub">Current schedule value</div>
-            </div>
-            <div class="listed-stat-card">
-                <div class="listed-stat-label">Flagged Specials</div>
-                <div class="listed-stat-value">${snap.specialCount}</div>
-                <div class="listed-stat-sub">Inventory flags / notes</div>
-            </div>
-            <div class="listed-stat-card col-span-2">
-                <div class="listed-stat-label">Excluded Items</div>
-                <div class="listed-stat-value">${snap.excludedCount}</div>
-                <div class="listed-stat-sub">Excluded from included move scope</div>
             </div>
         </div>
     `;
 }
 
+
+
+
+
+function updateQuoteCommercialDisplays(sequenceId) {
+    const totals = getQuoteCommercialTotals(sequenceId);
+
+    const totalCostsEl = document.getElementById("quote-totalCosts");
+    const additionalEl = document.getElementById("quote-additionalCostsTotalDisplay");
+    const customerEl = document.getElementById("quote-customerPriceDisplay");
+    const marginEl = document.getElementById("quote-grossMarginDisplay");
+    const marginSubEl = document.getElementById("quote-grossMarginSub");
+
+    if (totalCostsEl) totalCostsEl.textContent = quoteMoney(totals.totalCostBase);
+    if (additionalEl) additionalEl.textContent = quoteMoney(totals.additionalCosts);
+    if (customerEl) customerEl.textContent = quoteMoney(totals.customerPrice);
+    if (marginEl) marginEl.textContent = quoteMoney(totals.grossMargin);
+
+    if (marginSubEl) {
+        marginSubEl.textContent = totals.customerPrice > 0
+            ? `${quoteMoney(totals.grossMarginPct)}% margin on sell price${quotePricingSaved ? " · saved" : " · unsaved changes"}`
+            : `Customer price minus total costs${quotePricingSaved ? " · saved" : " · unsaved changes"}`;
+    }
+
+    renderQuoteCommercialSummary(sequenceId);
+    renderQuoteAdditionalBreakdown(sequenceId);
+}
+
+function renderQuoteTabShellOnly() {
+    const seq = getQuoteSelectedSequence();
+    if (!seq) return;
+
+    const sequenceId = String(seq.id);
+    const state = ensureQuoteSequenceState(sequenceId);
+
+    renderQuoteSequenceSelect();
+
+    const customerInput = document.getElementById("quote-customerPriceInput");
+    const notesInput = document.getElementById("quote-quoteNotesInput");
+
+    if (customerInput) customerInput.value = Number(state.customerPrice || 0);
+    if (notesInput) notesInput.value = state.quoteNotes || "";
+
+    updateQuoteCommercialDisplays(sequenceId);
+}
+
+function handleQuoteSequenceChange(value) {
+    if (!value) return;
+    setQuoteSelectedSequenceId(value);
+    renderQuoteTab();
+}
+
+function handleQuoteCustomerPriceChange(value) {
+    const seq = getQuoteSelectedSequence();
+    if (!seq) return;
+
+    const state = ensureQuoteSequenceState(seq.id);
+    state.customerPrice = Number(value || 0);
+    quotePricingSaved = false;
+    saveToDevice();
+    updateQuoteCommercialDisplays(String(seq.id));
+}
+
+function handleQuoteNotesChange(value) {
+    const seq = getQuoteSelectedSequence();
+    if (!seq) return;
+
+    const state = ensureQuoteSequenceState(seq.id);
+    state.quoteNotes = String(value || "");
+    quotePricingSaved = false;
+    saveToDevice();
+}
+
+function handleQuoteCreateQuote() {
+    const seq = getQuoteSelectedSequence();
+    if (!seq) return;
+
+    const sequenceId = String(seq.id);
+    const state = ensureQuoteSequenceState(sequenceId);
+    const totals = getQuoteCommercialTotals(sequenceId);
+    const scope = buildQuoteScopeSnapshot(sequenceId);
+    const QUOTE_CORE_COST_CHOICES = [
+    "Vans",
+    "Crew",
+    "Mileage",
+    "Consumables",
+    "Cartons",
+    "Export Wrap",
+    "Nights Out",
+    "Custom"
+];
+
+    const coreLines = getQuotePricingLines(sequenceId)
+        .map(function(line) {
+            const label = getQuoteLineLabel(line) || line.label || "Line";
+            return label + ": £" + quoteMoney(calcQuoteLineTotal(line));
+        })
+        .join("\n");
+
+    const additionalLines = getQuoteAdditionalCostLines(sequenceId)
+        .filter(function(line) { return !!line.label; })
+        .map(function(line) {
+            const label = getQuoteLineLabel(line) || line.label || "Line";
+            return label + ": £" + quoteMoney(calcQuoteLineTotal(line));
+        })
+        .join("\n");
+
+    const quoteText =
+`QUOTE SUMMARY
+
+Sequence:
+${getSequenceLabelById(sequenceId)}
+
+Move Type:
+${scope.moveType}
+
+Packing Type:
+${scope.packingType}
+
+Included Volume:
+${scope.includedVolume} cuft
+
+Cartons:
+${scope.cartonsTotal}
+
+CORE COSTS
+${coreLines || "None"}
+
+OPTIONAL ADDITIONAL SERVICES
+${additionalLines || "None"}
+
+TOTAL COST BASE
+£${quoteMoney(totals.totalCostBase)}
+
+CUSTOMER PRICE
+£${quoteMoney(totals.customerPrice)}
+
+GROSS MARGIN
+£${quoteMoney(totals.grossMargin)} (${quoteMoney(totals.grossMarginPct)}%)
+
+QUOTE NOTES
+${state.quoteNotes || "None"}
+`;
+
+    alert(quoteText);
+}
+
+function handleQuoteSavePricing() {
+    const seq = getQuoteSelectedSequence();
+    if (!seq) return;
+
+    const sequenceId = String(seq.id);
+    ensureQuoteSequenceState(sequenceId);
+
+    quotePricingSaved = true;
+    saveToDevice();
+    updateQuoteCommercialDisplays(sequenceId);
+
+    alert("Pricing saved.");
+}
+
+function bindQuoteShellEvents() {
+    const sequenceSelect = document.getElementById("quote-sequenceSelect");
+    const customerInput = document.getElementById("quote-customerPriceInput");
+    const notesInput = document.getElementById("quote-quoteNotesInput");
+    const saveBtn = document.getElementById("quote-savePricingBtn");
+
+    if (sequenceSelect) {
+        sequenceSelect.onchange = function() {
+            handleQuoteSequenceChange(this.value);
+        };
+    }
+
+    if (customerInput) {
+        customerInput.oninput = function() {
+            handleQuoteCustomerPriceChange(this.value);
+        };
+    }
+
+    if (notesInput) {
+        notesInput.oninput = function() {
+            handleQuoteNotesChange(this.value);
+        };
+    }
+
+    if (saveBtn) {
+        saveBtn.onclick = handleQuoteSavePricing;
+    }
+}
 function renderQuoteCommercialSummary(sequenceId) {
     const target = document.getElementById("quote-commercialSummaryCard");
     if (!target) return;
@@ -7570,125 +9214,32 @@ function renderQuoteAdditionalBreakdown(sequenceId) {
     `;
 }
 
-function updateQuoteCommercialDisplays(sequenceId) {
-    const totals = getQuoteCommercialTotals(sequenceId);
+function renderQuoteTab() {
+    renderQuoteTabShellOnly();
+    bindQuoteShellEvents();
 
-    const totalCostsEl = document.getElementById("quote-totalCosts");
-    const additionalEl = document.getElementById("quote-additionalCostsTotalDisplay");
-    const customerEl = document.getElementById("quote-customerPriceDisplay");
-    const marginEl = document.getElementById("quote-grossMarginDisplay");
-    const marginSubEl = document.getElementById("quote-grossMarginSub");
-
-    if (totalCostsEl) totalCostsEl.textContent = quoteMoney(totals.totalCostBase);
-    if (additionalEl) additionalEl.textContent = quoteMoney(totals.additionalCosts);
-    if (customerEl) customerEl.textContent = quoteMoney(totals.customerPrice);
-    if (marginEl) marginEl.textContent = quoteMoney(totals.grossMargin);
-
-    if (marginSubEl) {
-        marginSubEl.textContent = totals.customerPrice > 0
-            ? `${quoteMoney(totals.grossMarginPct)}% margin on sell price${quotePricingSaved ? " · saved" : " · unsaved changes"}`
-            : `Customer price minus total costs${quotePricingSaved ? " · saved" : " · unsaved changes"}`;
-    }
-
-    renderQuoteCommercialSummary(sequenceId);
-    renderQuoteAdditionalBreakdown(sequenceId);
-}
-
-function renderQuoteTabShellOnly() {
     const seq = getQuoteSelectedSequence();
     if (!seq) return;
 
     const sequenceId = String(seq.id);
-    const state = ensureQuoteSequenceState(sequenceId);
 
-    renderQuoteSequenceSelect();
-    renderQuoteScopeSnapshot(sequenceId);
+syncQuotePricingFromSchedule(sequenceId);
 
-    const customerInput = document.getElementById("quote-customerPriceInput");
-    const notesInput = document.getElementById("quote-quoteNotesInput");
+renderQuotePricingGrid(sequenceId);
+renderQuoteAdditionalCostsGrid(sequenceId);
 
-    if (customerInput) customerInput.value = Number(state.customerPrice || 0);
-    if (notesInput) notesInput.value = state.quoteNotes || "";
+    const addPricingBtn = document.getElementById("quote-addPricingLineBtn");
+    const addAdditionalBtn = document.getElementById("quote-addAdditionalCostLineBtn");
+
+    if (addPricingBtn) {
+        addPricingBtn.onclick = addQuotePricingLine;
+    }
+
+    if (addAdditionalBtn) {
+        addAdditionalBtn.onclick = addQuoteAdditionalCostLine;
+    }
 
     updateQuoteCommercialDisplays(sequenceId);
-}
-
-function handleQuoteSequenceChange(value) {
-    if (!value) return;
-    setQuoteSelectedSequenceId(value);
-    renderQuoteTab();
-}
-
-function handleQuoteCustomerPriceChange(value) {
-    const seq = getQuoteSelectedSequence();
-    if (!seq) return;
-
-    const state = ensureQuoteSequenceState(seq.id);
-    state.customerPrice = Number(value || 0);
-    quotePricingSaved = false;
-    saveToDevice();
-    updateQuoteCommercialDisplays(String(seq.id));
-}
-
-function handleQuoteNotesChange(value) {
-    const seq = getQuoteSelectedSequence();
-    if (!seq) return;
-
-    const state = ensureQuoteSequenceState(seq.id);
-    state.quoteNotes = String(value || "");
-    quotePricingSaved = false;
-    saveToDevice();
-}
-
-function handleQuoteSavePricing() {
-    quotePricingSaved = true;
-    const seq = getQuoteSelectedSequence();
-    if (!seq) return;
-    saveToDevice();
-    updateQuoteCommercialDisplays(String(seq.id));
-}
-
-function handleQuoteCreateQuote() {
-    alert("Create Quote is ready to be wired into the quote output.");
-}
-
-function bindQuoteShellEvents() {
-    const sequenceSelect = document.getElementById("quote-sequenceSelect");
-    const customerInput = document.getElementById("quote-customerPriceInput");
-    const notesInput = document.getElementById("quote-quoteNotesInput");
-    const saveBtn = document.getElementById("quote-savePricingBtn");
-    const createBtn = document.getElementById("quote-createQuoteBtn");
-
-    if (sequenceSelect) {
-        sequenceSelect.onchange = function() {
-            handleQuoteSequenceChange(this.value);
-        };
-    }
-
-    if (customerInput) {
-        customerInput.oninput = function() {
-            handleQuoteCustomerPriceChange(this.value);
-        };
-    }
-
-    if (notesInput) {
-        notesInput.oninput = function() {
-            handleQuoteNotesChange(this.value);
-        };
-    }
-
-    if (saveBtn) {
-        saveBtn.onclick = handleQuoteSavePricing;
-    }
-
-    if (createBtn) {
-        createBtn.onclick = handleQuoteCreateQuote;
-    }
-}
-
-function renderQuoteTab() {
-    renderQuoteTabShellOnly();
-    bindQuoteShellEvents();
 }
 const BOX_RATES = {
     ap: 10,
@@ -7721,6 +9272,308 @@ const TASK_OPTIONS = [
     "Load and Travel",
     "Deliver and Crew Return"
 ];
+function getQuoteLineLabel(line) {
+    if (!line) return "";
+    if (line.label === "Custom") {
+        return line.customLabel || "";
+    }
+    return line.label || "";
+}
+function getQuoteLineById(sequenceId, lineId, lineType) {
+    const state = ensureQuoteSequenceState(sequenceId);
+    if (!state) return null;
+
+    const targetLines = lineType === "additional"
+        ? state.additionalCostLines
+        : state.pricingLines;
+
+    return targetLines.find(function(item) {
+        return item.id === lineId;
+    }) || null;
+}
+
+function refreshQuoteLineTotal(sequenceId, lineId, lineType) {
+    const line = getQuoteLineById(sequenceId, lineId, lineType);
+    const totalEl = document.getElementById(`quote-line-total-${lineType}-${lineId}`);
+    if (!line || !totalEl) return;
+
+    totalEl.textContent = quoteMoney(calcQuoteLineTotal(line));
+}
+
+function updateQuoteLine(sequenceId, lineId, field, value, lineType, shouldRerender = false) {
+    const state = ensureQuoteSequenceState(sequenceId);
+    if (!state) return;
+
+    const targetLines = lineType === "additional"
+        ? state.additionalCostLines
+        : state.pricingLines;
+
+    const line = targetLines.find(function(item) {
+        return item.id === lineId;
+    });
+
+    if (!line) return;
+
+    if (field === "label") {
+        line.label = value;
+        if (value !== "Custom") {
+            line.customLabel = "";
+        }
+    } else if (field === "customLabel") {
+        line.customLabel = value;
+    } else if (field === "qty") {
+        line.qty = Number(value || 0);
+    } else if (field === "unitCost") {
+        line.unitCost = Number(value || 0);
+    }
+
+    quotePricingSaved = false;
+    saveToDevice();
+
+    if (shouldRerender) {
+        renderQuoteTab();
+        return;
+    }
+
+    refreshQuoteLineTotal(sequenceId, lineId, lineType);
+    updateQuoteCommercialDisplays(String(sequenceId));
+}
+
+function addQuotePricingLine() {
+    const seq = getQuoteSelectedSequence();
+    if (!seq) return;
+
+    const state = ensureQuoteSequenceState(seq.id);
+    state.pricingLines.push({
+        id: createQuoteLineId(),
+        label: "Custom",
+        customLabel: "",
+        qty: 0,
+        unitCost: 0
+    });
+
+    quotePricingSaved = false;
+    saveToDevice();
+    renderQuoteTab();
+}
+
+function addQuoteAdditionalCostLine() {
+    const seq = getQuoteSelectedSequence();
+    if (!seq) return;
+
+    const state = ensureQuoteSequenceState(seq.id);
+    state.additionalCostLines.push({
+        id: createQuoteLineId(),
+        label: "Custom",
+        customLabel: "",
+        qty: 0,
+        unitCost: 0
+    });
+
+    quotePricingSaved = false;
+    saveToDevice();
+    renderQuoteTab();
+}
+
+function deleteQuoteLine(sequenceId, lineId, lineType) {
+    const state = ensureQuoteSequenceState(sequenceId);
+    if (!state) return;
+
+    if (lineType === "additional") {
+        state.additionalCostLines = state.additionalCostLines.filter(function(line) {
+            return line.id !== lineId;
+        });
+    } else {
+        state.pricingLines = state.pricingLines.filter(function(line) {
+            return line.id !== lineId;
+        });
+    }
+
+    quotePricingSaved = false;
+    saveToDevice();
+    renderQuoteTab();
+}
+
+function renderQuotePricingGrid(sequenceId) {
+    const grid = document.getElementById("quote-pricingGrid");
+    if (!grid) return;
+
+    const lines = getQuotePricingLines(sequenceId);
+
+    grid.innerHTML = `
+        <div class="space-y-3">
+            ${lines.map(function(line) {
+                const total = calcQuoteLineTotal(line);
+                const isCustom = line.label === "Custom";
+
+                return `
+                    <div class="pricing-row ${isCustom ? "pricing-row-custom" : ""}">
+                        <div class="quote-line-grid">
+                            <div class="quote-type-wrap">
+                                <label class="mini-label">Cost Type</label>
+                                <select class="field" onchange="updateQuoteLine('${sequenceId}','${line.id}','label',this.value,'core',true)">
+                                    ${QUOTE_CORE_COST_CHOICES.map(function(choice) {
+                                        return `<option value="${choice}" ${line.label === choice ? "selected" : ""}>${choice}</option>`;
+                                    }).join("")}
+                                </select>
+                            </div>
+
+                            <div class="quote-custom-label-wrap">
+                                <label class="mini-label">Custom Label</label>
+                                <input
+                                    type="text"
+                                    class="field"
+                                    value="${escapeHtml(line.customLabel || "")}"
+                                    ${isCustom ? "" : "disabled"}
+                                    oninput="updateQuoteLine('${sequenceId}','${line.id}','customLabel',this.value,'core',false)"
+                                    placeholder=""
+                                >
+                            </div>
+
+                            <div class="quote-qty-wrap">
+                                <label class="mini-label">Qty</label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    class="field"
+                                    value="${Number(line.qty || 0)}"
+                                    oninput="updateQuoteLine('${sequenceId}','${line.id}','qty',this.value,'core',false)"
+                                >
+                            </div>
+
+                            <div class="quote-unit-wrap">
+                                <label class="mini-label">Unit Cost</label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    class="field"
+                                    value="${Number(line.unitCost || 0)}"
+                                    oninput="updateQuoteLine('${sequenceId}','${line.id}','unitCost',this.value,'core',false)"
+                                >
+                            </div>
+
+                            <div class="quote-total-wrap">
+                                <label class="mini-label">Total</label>
+                                <div
+                                    id="quote-line-total-core-${line.id}"
+                                    class="field quote-line-total"
+                                >${quoteMoney(total)}</div>
+                            </div>
+
+                            <div class="quote-del-wrap">
+                                <button
+                                    type="button"
+                                    class="action-btn btn-change"
+                                    style="width:100%;height:44px;"
+                                    onclick="deleteQuoteLine('${sequenceId}','${line.id}','core')"
+                                >
+                                    Del
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join("")}
+        </div>
+    `;
+}
+
+function renderQuoteAdditionalCostsGrid(sequenceId) {
+    const grid = document.getElementById("quote-additionalCostsGrid");
+    if (!grid) return;
+
+    const lines = getQuoteAdditionalCostLines(sequenceId);
+
+    if (!lines.length) {
+        grid.innerHTML = `
+            <div class="border border-slate-200 rounded-xl p-4 text-[10px] font-bold uppercase text-slate-400">
+                No optional services added
+            </div>
+        `;
+        return;
+    }
+
+    grid.innerHTML = `
+        <div class="space-y-3">
+            ${lines.map(function(line) {
+                const total = calcQuoteLineTotal(line);
+                const isCustom = line.label === "Custom";
+
+                return `
+                    <div class="pricing-row ${isCustom ? "pricing-row-custom" : ""}">
+                        <div class="quote-line-grid">
+                            <div class="quote-type-wrap">
+                                <label class="mini-label">Service Type</label>
+                                <select class="field" onchange="updateQuoteLine('${sequenceId}','${line.id}','label',this.value,'additional',true)">
+                                    ${QUOTE_ADDITIONAL_SERVICE_CHOICES.map(function(choice) {
+                                        return `<option value="${choice}" ${line.label === choice ? "selected" : ""}>${choice}</option>`;
+                                    }).join("")}
+                                </select>
+                            </div>
+
+                            <div class="quote-custom-label-wrap">
+                                <label class="mini-label">Custom Label</label>
+                                <input
+                                    type="text"
+                                    class="field"
+                                    value="${escapeHtml(line.customLabel || "")}"
+                                    ${isCustom ? "" : "disabled"}
+                                    oninput="updateQuoteLine('${sequenceId}','${line.id}','customLabel',this.value,'additional',false)"
+                                    placeholder=""
+                                >
+                            </div>
+
+                            <div class="quote-qty-wrap">
+                                <label class="mini-label">Qty</label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    class="field"
+                                    value="${Number(line.qty || 0)}"
+                                    oninput="updateQuoteLine('${sequenceId}','${line.id}','qty',this.value,'additional',false)"
+                                >
+                            </div>
+
+                            <div class="quote-unit-wrap">
+                                <label class="mini-label">Unit Cost</label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    class="field"
+                                    value="${Number(line.unitCost || 0)}"
+                                    oninput="updateQuoteLine('${sequenceId}','${line.id}','unitCost',this.value,'additional',false)"
+                                >
+                            </div>
+
+                            <div class="quote-total-wrap">
+                                <label class="mini-label">Total</label>
+                                <div
+                                    id="quote-line-total-additional-${line.id}"
+                                    class="field quote-line-total"
+                                >${quoteMoney(total)}</div>
+                            </div>
+
+                            <div class="quote-del-wrap">
+                                <button
+                                    type="button"
+                                    class="action-btn btn-change"
+                                    style="width:100%;height:44px;"
+                                    onclick="deleteQuoteLine('${sequenceId}','${line.id}','additional')"
+                                >
+                                    Del
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join("")}
+        </div>
+    `;
+}
 function createId(){
     return `day_${Date.now()}_${Math.random().toString(36).slice(2,7)}`;
 }
@@ -7757,7 +9610,7 @@ function ensureSequenceScheduleShape(seq) {
         seq.schedule.special = createEmptySequenceSchedule().special;
     }
 
-    if (seq.schedule.special.frameBeds === undefined) seq.schedule.special.frameBeds = defaults.special.frameBeds;
+    if (seq.schedule.special.beds === undefined) seq.schedule.special.beds = defaults.special.beds;
     if (seq.schedule.special.bunkBeds === undefined) seq.schedule.special.bunkBeds = defaults.special.bunkBeds;
     if (seq.schedule.special.uprightPianos === undefined) seq.schedule.special.uprightPianos = defaults.special.uprightPianos;
     if (seq.schedule.special.grandPianos === undefined) seq.schedule.special.grandPianos = defaults.special.grandPianos;
@@ -7772,7 +9625,16 @@ function ensureSequenceScheduleShape(seq) {
 
 function getDefaultManualScheduleRows() {
     return [
-        { id: createId(), groupId: createId(), dayPart: "Full Day", task: "Pack", men: 2, hours: 8 }
+        {
+            id: createId(),
+            groupId: createId(),
+            dayPart: "Full Day",
+            task: "Pack",
+            men: 2,
+            vans: 1,
+            hours: 8,
+            nightsOut: false
+        }
     ];
 }
 
@@ -7789,16 +9651,20 @@ function loadManualScheduleFromActiveSequence() {
         schedule.manualDays = getDefaultManualScheduleRows();
     }
 
-    manualSchedule = schedule.manualDays.map(function(day) {
-        return {
-            id: day.id || createId(),
-            groupId: day.groupId || createId(),
-            dayPart: day.dayPart || "Full Day",
-            task: day.task || "Pack",
-            men: Math.max(0, Number(day.men) || 0),
-            hours: Math.max(0, Number(day.hours) || 0)
-        };
-    });
+manualSchedule = schedule.manualDays.map(function(day) {
+    const safeDayPart = day.dayPart || "Full Day";
+
+    return {
+        id: day.id || createId(),
+        groupId: day.groupId || createId(),
+        dayPart: safeDayPart,
+        task: day.task || "Pack",
+        men: Math.max(0, Number(day.men) || 0),
+        vans: Math.max(0, Number(day.vans) || 1),
+        hours: safeDayPart === "Full Day" ? 8 : 4,
+        nightsOut: !!day.nightsOut
+    };
+});
 }
 
 function saveManualScheduleToActiveSequence() {
@@ -7807,16 +9673,20 @@ function saveManualScheduleToActiveSequence() {
 
     const schedule = ensureSequenceScheduleShape(seq);
 
-    schedule.manualDays = manualSchedule.map(function(day) {
-        return {
-            id: day.id,
-            groupId: day.groupId,
-            dayPart: day.dayPart,
-            task: day.task,
-            men: Math.max(0, Number(day.men) || 0),
-            hours: Math.max(0, Number(day.hours) || 0)
-        };
-    });
+ schedule.manualDays = manualSchedule.map(function(day) {
+    const safeDayPart = day.dayPart || "Full Day";
+
+    return {
+        id: day.id,
+        groupId: day.groupId,
+        dayPart: safeDayPart,
+        task: day.task,
+        men: Math.max(0, Number(day.men) || 0),
+        vans: Math.max(0, Number(day.vans) || 0),
+        hours: safeDayPart === "Full Day" ? 8 : 4,
+        nightsOut: !!day.nightsOut
+    };
+});
 
     saveToDevice();
 }
@@ -7852,8 +9722,15 @@ function loadScheduleInputsFromActiveSequence() {
     const loftVolEl = document.getElementById("loftVol");
     const loadRateEl = document.getElementById("loadRate");
     const unloadRateEl = document.getElementById("unloadRate");
+
     const svcFrameEl = document.getElementById("svc_frame");
+    const svcOttomanEl = document.getElementById("svc_ottoman");
+    const svcDivanEl = document.getElementById("svc_divan");
+    const svcElectricEl = document.getElementById("svc_electric");
     const svcBunkEl = document.getElementById("svc_bunk");
+    const svcCotEl = document.getElementById("svc_cot");
+    const svcDiningTableEl = document.getElementById("svc_dining_table");
+
     const svcCustomMinutesEl = document.getElementById("svc_custom_minutes");
     const svcCustomNoteEl = document.getElementById("svc_custom_note");
     const svcUprightEl = document.getElementById("svc_upright");
@@ -7869,16 +9746,22 @@ function loadScheduleInputsFromActiveSequence() {
     if (loadRateEl) loadRateEl.value = schedule.loadRate;
     if (unloadRateEl) unloadRateEl.value = schedule.unloadRate;
 
-    if (svcFrameEl) svcFrameEl.value = photonFeed.special.frameBeds;
-    if (svcBunkEl) svcBunkEl.value = photonFeed.special.bunkBeds;
+    if (svcFrameEl) svcFrameEl.value = photonFeed.special?.frameBeds || 0;
+    if (svcOttomanEl) svcOttomanEl.value = photonFeed.special?.ottomanBeds || 0;
+    if (svcDivanEl) svcDivanEl.value = photonFeed.special?.divanBeds || 0;
+    if (svcElectricEl) svcElectricEl.value = photonFeed.special?.electricBeds || 0;
+    if (svcBunkEl) svcBunkEl.value = photonFeed.special?.bunkBeds || 0;
+    if (svcCotEl) svcCotEl.value = photonFeed.special?.cots || 0;
+    if (svcDiningTableEl) svcDiningTableEl.value = photonFeed.special?.diningTables || 0;
+
     if (svcCustomMinutesEl) svcCustomMinutesEl.value = schedule.special.customItemMinutes;
     if (svcCustomNoteEl) svcCustomNoteEl.value = schedule.special.customItemNote;
     if (svcUprightEl) svcUprightEl.value = schedule.special.uprightPianos;
     if (svcGrandEl) svcGrandEl.value = schedule.special.grandPianos;
     if (svcClockEl) svcClockEl.value = schedule.special.grandfatherClocks;
-    if (svcApplianceEl) svcApplianceEl.value = schedule.special.appliances;
-    if (svcCrateEl) svcCrateEl.value = photonFeed.special.cratingItems;
-    if (exportWrapVolEl) exportWrapVolEl.value = photonFeed.special.exportWrapVol;
+    if (svcApplianceEl) svcApplianceEl.value = photonFeed.disconnectApplianceCount || 0;
+    if (svcCrateEl) svcCrateEl.value = photonFeed.special?.cratingItems || 0;
+    if (exportWrapVolEl) exportWrapVolEl.value = photonFeed.special?.exportWrapVol || 0;
 }
 
 function saveScheduleInputsToActiveSequence() {
@@ -7911,8 +9794,7 @@ function saveScheduleInputsToActiveSequence() {
     schedule.special.uprightPianos = getNum("svc_upright", 0);
     schedule.special.grandPianos = getNum("svc_grand", 0);
     schedule.special.grandfatherClocks = getNum("svc_clock", 0);
-    schedule.special.appliances = getNum("svc_appliance", 0);
-
+  
     saveToDevice();
 }
 
@@ -7925,6 +9807,41 @@ function handleScheduleInputChange() {
     }
 }
 function getPhotonFeed() {
+    if (currentJob && activeSeqId) {
+        const directFeed = buildCalculatorFeedForSequence(activeSeqId);
+
+        if (directFeed) {
+            const seq = getActiveSequenceRecord();
+            const schedule = seq ? ensureSequenceScheduleShape(seq) : createEmptySequenceSchedule();
+
+           return {
+    sequenceLabel: directFeed.sequenceLabel || "—",
+    packOption: directFeed.packOption || "none",
+    furnitureVol: Number(directFeed.furnitureVol || 0),
+    qty: {
+        ap: Number(directFeed.qty?.ap || 0),
+        cg: Number(directFeed.qty?.cg || 0),
+        books: Number(directFeed.qty?.books || 0),
+        linen: Number(directFeed.qty?.linen || 0),
+        wr: Number(directFeed.qty?.wr || 0)
+    },
+    disconnectApplianceCount: Number(directFeed.disconnectApplianceCount || 0),
+    dismantleCount: Number(directFeed.dismantleCount || 0),
+ special: {
+    frameBeds: Number(directFeed.special?.frameBeds || 0),
+    ottomanBeds: Number(directFeed.special?.ottomanBeds || 0),
+    divanBeds: Number(directFeed.special?.divanBeds || 0),
+    electricBeds: Number(directFeed.special?.electricBeds || 0),
+    bunkBeds: Number(directFeed.special?.bunkBeds || 0),
+    cots: Number(directFeed.special?.cots || 0),
+    diningTables: Number(directFeed.special?.diningTables || 0),
+    cratingItems: Number(directFeed.special?.cratingItems || 0),
+    exportWrapVol: Number(directFeed.special?.exportWrapVol || 0)
+}
+};
+        }
+    }
+
     const raw = localStorage.getItem("photon_calculator_feed");
 
     if (!raw) {
@@ -7939,26 +9856,50 @@ function getPhotonFeed() {
                 linen: 0,
                 wr: 0
             },
-            disconnectApplianceCount: 0
+        disconnectApplianceCount: 0,
+dismantleCount: 0,
+special: {
+    frameBeds: 0,
+    ottomanBeds: 0,
+    divanBeds: 0,
+    electricBeds: 0,
+    bunkBeds: 0,
+    cots: 0,
+    diningTables: 0,
+    cratingItems: 0,
+    exportWrapVol: 0
+}
         };
     }
 
     try {
         const parsed = JSON.parse(raw);
 
-        return {
-            sequenceLabel: parsed.sequenceLabel || "—",
-            packOption: parsed.packOption || "none",
-            furnitureVol: Number(parsed.furnitureVol || 0),
-            qty: {
-                ap: Number(parsed.qty?.ap || 0),
-                cg: Number(parsed.qty?.cg || 0),
-                books: Number(parsed.qty?.books || 0),
-                linen: Number(parsed.qty?.linen || 0),
-                wr: Number(parsed.qty?.wr || 0)
-            },
-            disconnectApplianceCount: Number(parsed.disconnectApplianceCount || 0)
-        };
+       return {
+    sequenceLabel: parsed.sequenceLabel || "—",
+    packOption: parsed.packOption || "none",
+    furnitureVol: Number(parsed.furnitureVol || 0),
+    qty: {
+        ap: Number(parsed.qty?.ap || 0),
+        cg: Number(parsed.qty?.cg || 0),
+        books: Number(parsed.qty?.books || 0),
+        linen: Number(parsed.qty?.linen || 0),
+        wr: Number(parsed.qty?.wr || 0)
+    },
+    disconnectApplianceCount: Number(parsed.disconnectApplianceCount || 0),
+    dismantleCount: Number(parsed.dismantleCount || 0),
+    special: {
+    frameBeds: Number(parsed.special?.frameBeds || 0),
+    ottomanBeds: Number(parsed.special?.ottomanBeds || 0),
+    divanBeds: Number(parsed.special?.divanBeds || 0),
+    electricBeds: Number(parsed.special?.electricBeds || 0),
+    bunkBeds: Number(parsed.special?.bunkBeds || 0),
+    cots: Number(parsed.special?.cots || 0),
+    diningTables: Number(parsed.special?.diningTables || 0),
+    cratingItems: Number(parsed.special?.cratingItems || 0),
+    exportWrapVol: Number(parsed.special?.exportWrapVol || 0)
+}
+};
     } catch (err) {
         return {
             sequenceLabel: "—",
@@ -7971,7 +9912,19 @@ function getPhotonFeed() {
                 linen: 0,
                 wr: 0
             },
-            disconnectApplianceCount: 0
+            disconnectApplianceCount: 0,
+dismantleCount: 0,
+special: {
+    frameBeds: 0,
+    ottomanBeds: 0,
+    divanBeds: 0,
+    electricBeds: 0,
+    bunkBeds: 0,
+    cots: 0,
+    diningTables: 0,
+    cratingItems: 0,
+    exportWrapVol: 0
+}
         };
     }
 }
@@ -8003,12 +9956,11 @@ function getIncludedKeys(packOption){
     return ["ap", "cg", "books", "linen", "wr"];
 }
 
-function getState(){
+function getState() {
     const photonFeed = getPhotonFeed();
 
-    const manualApplianceCount = num("svc_appliance");
     const disconnectApplianceCount = Number(photonFeed.disconnectApplianceCount || 0);
-    const totalApplianceCount = manualApplianceCount + disconnectApplianceCount;
+    const totalApplianceCount = disconnectApplianceCount;
 
     return {
         packOption: photonFeed.packOption || "none",
@@ -8030,8 +9982,13 @@ function getState(){
         boxVolumes: BOX_VOLUMES,
 
         special: {
-            frame: num("svc_frame"),
-            bunk: num("svc_bunk"),
+            frameBeds: num("svc_frame"),
+            ottomanBeds: num("svc_ottoman"),
+            divanBeds: num("svc_divan"),
+            electricBeds: num("svc_electric"),
+            bunkBeds: num("svc_bunk"),
+            cots: num("svc_cot"),
+            diningTables: num("svc_dining_table"),
             customMinutes: num("svc_custom_minutes"),
             customNote: document.getElementById("svc_custom_note")
                 ? document.getElementById("svc_custom_note").value.trim()
@@ -8040,7 +9997,7 @@ function getState(){
             grand: num("svc_grand"),
             clock: num("svc_clock"),
             appliance: totalApplianceCount,
-            manualApplianceCount: manualApplianceCount,
+            manualApplianceCount: 0,
             disconnectApplianceCount: disconnectApplianceCount,
             crate: num("svc_crate")
         },
@@ -8067,18 +10024,19 @@ function calcBoxVolume(state){
     }, 0);
 }
 
-function calcSpecialLabour(state){
-    const includedFrameBeds = 2;
+function calcSpecialLabour(state) {
     const includedExportWrapVol = 50;
 
-    const extraFrameBeds = Math.max(0, state.special.frame - includedFrameBeds);
     const extraExportWrapVol = Math.max(0, state.exportWrapVol - includedExportWrapVol);
     const transitTotalMinutes = (state.transitHours * 60) + state.transitMinutes;
     const extraTransitMinutes = Math.max(0, transitTotalMinutes - 30);
 
     const loadMinutes =
-        (extraFrameBeds * 15) +
-        (state.special.bunk * 30) +
+        (state.special.frameBeds * 15) +
+        (state.special.ottomanBeds * 30) +
+        (state.special.bunkBeds * 30) +
+        (state.special.cots * 15) +
+        (state.special.diningTables * 15) +
         (state.special.customMinutes > 0 ? state.special.customMinutes : 0) +
         (state.special.upright * 25) +
         (state.special.grand * 60) +
@@ -8089,8 +10047,11 @@ function calcSpecialLabour(state){
         ((extraExportWrapVol / 100) * 25);
 
     const unloadMinutes =
-        (extraFrameBeds * 15) +
-        (state.special.bunk * 30) +
+        (state.special.frameBeds * 15) +
+        (state.special.ottomanBeds * 30) +
+        (state.special.bunkBeds * 30) +
+        (state.special.cots * 15) +
+        (state.special.diningTables * 15) +
         (state.special.customMinutes > 0 ? state.special.customMinutes : 0) +
         (state.special.upright * 25) +
         (state.special.grand * 60) +
@@ -8107,8 +10068,13 @@ function calcSpecialLabour(state){
         unloadSideHours: round2(unloadMinutes / 60),
         extraTransitHours: round2(extraTransitMinutes / 60),
         breakdown: {
-            frame: round2((extraFrameBeds * 30) / 60),
-            bunk: round2((state.special.bunk * 60) / 60),
+            frameBeds: round2((state.special.frameBeds * 30) / 60),
+            ottomanBeds: round2((state.special.ottomanBeds * 60) / 60),
+            divanBeds: 0,
+            electricBeds: 0,
+            bunkBeds: round2((state.special.bunkBeds * 60) / 60),
+            cots: round2((state.special.cots * 30) / 60),
+            diningTables: round2((state.special.diningTables * 30) / 60),
             custom: round2(((state.special.customMinutes > 0 ? state.special.customMinutes * 2 : 0)) / 60),
             upright: round2((state.special.upright * 50) / 60),
             grand: round2((state.special.grand * 120) / 60),
@@ -8118,12 +10084,10 @@ function calcSpecialLabour(state){
             loft: round2(((state.loftVol / 100) * 20) / 60),
             exportWrap: round2(((extraExportWrapVol / 100) * 25) / 60),
             transit: round2(extraTransitMinutes / 60),
-            includedFrameBeds,
             includedExportWrapVol
         }
     };
 }
-
 function calcLoading(totalVolume, loadRate, loadSideSpecialHours){
     const volumeHours = totalVolume / loadRate;
     const totalHours = volumeHours + loadSideSpecialHours;
@@ -8151,7 +10115,16 @@ function optionHtml(options, selected){
 
 function addScheduleDay(){
     const groupId = createId();
-    manualSchedule.push({ id: createId(), groupId, dayPart: "Full Day", task: "Load", men: 2, hours: 8 });
+    manualSchedule.push({
+        id: createId(),
+        groupId,
+        dayPart: "Full Day",
+        task: "Load",
+        men: 2,
+        vans: 1,
+        hours: 8,
+        nightsOut: false
+    });
     saveManualScheduleToActiveSequence();
     renderScheduleCalculator();
 }
@@ -8177,7 +10150,9 @@ function ensurePmPair(row){
             dayPart: "PM",
             task: "Unload",
             men: row.men,
-            hours: 4
+            vans: row.vans,
+            hours: 4,
+            nightsOut: false
         });
     }
 }
@@ -8201,9 +10176,20 @@ function normalizeGroup(groupId){
 function updateScheduleDay(id, field, value){
     manualSchedule = manualSchedule.map(day => {
         if (day.id !== id) return day;
-        if (field === "men" || field === "hours") {
+
+        if (field === "men" || field === "vans") {
             return { ...day, [field]: Math.max(0, Number(value) || 0) };
         }
+
+        if (field === "nightsOut") {
+            return { ...day, nightsOut: !!value };
+        }
+
+        if (field === "dayPart") {
+            const nextHours = value === "Full Day" ? 8 : 4;
+            return { ...day, dayPart: value, hours: nextHours };
+        }
+
         return { ...day, [field]: value };
     });
 
@@ -8227,13 +10213,19 @@ function updateScheduleDay(id, field, value){
                     dayPart: "AM",
                     task: "Load",
                     men: updated.men,
-                    hours: 4
+                    vans: updated.vans,
+                    hours: 4,
+                    nightsOut: false
                 });
             }
         }
         if (value === "Full Day"){
             manualSchedule = manualSchedule.filter(day => day.groupId !== row.groupId || day.id === row.id);
-            manualSchedule = manualSchedule.map(day => day.id === row.id ? { ...day, dayPart: "Full Day", hours: 8, task: day.task === "Unload" ? "Load and Deliver" : day.task } : day);
+            manualSchedule = manualSchedule.map(day =>
+                day.id === row.id
+                    ? { ...day, dayPart: "Full Day", hours: 8, task: day.task === "Unload" ? "Load and Deliver" : day.task }
+                    : day
+            );
         }
         normalizeGroup(row.groupId);
     }
@@ -8261,38 +10253,61 @@ function renderSchedulePlanner(){
             return order[a.dayPart] - order[b.dayPart];
         });
 
-        return rows.map((day, rowIndex) => `
-            <div class="schedule-row">
-                <div class="schedule-row-head">
-                    <div class="schedule-row-title">Day ${groupIndex + 1}${rows.length > 1 ? ` · ${day.dayPart}` : ""}</div>
-                    ${rowIndex === 0 && manualSchedule.length > 1 ? `<button class="schedule-remove" onclick="removeScheduleDay('${day.id}')">Delete</button>` : ""}
-                </div>
-                <div class="schedule-grid">
-                    <div>
-                        <label class="mini-label">Task</label>
-                        <select class="field" onchange="updateScheduleDay('${day.id}','task',this.value)">
-                            ${optionHtml(TASK_OPTIONS, day.task)}
-                        </select>
-                    </div>
-                    <div>
-                        <label class="mini-label">Day Part</label>
-                        <select class="field" onchange="updateScheduleDay('${day.id}','dayPart',this.value)">
-                            ${optionHtml(DAY_PARTS, day.dayPart)}
-                        </select>
-                    </div>
-                    <div>
-                        <label class="mini-label">Men</label>
-                        <select class="field" onchange="updateScheduleDay('${day.id}','men',this.value)">
-                            ${optionHtml([1,2,3,4], day.men)}
-                        </select>
-                    </div>
-                    <div>
-                        <label class="mini-label">Hours</label>
-                        <input type="number" min="0" step="0.5" class="field" value="${day.hours}" oninput="updateScheduleDay('${day.id}','hours',this.value)" />
-                    </div>
+       return rows.map((day, rowIndex) => `
+    <div class="schedule-row">
+        <div class="schedule-row-head">
+            <div class="schedule-row-title">Day ${groupIndex + 1}${rows.length > 1 ? ` · ${day.dayPart}` : ""}</div>
+            ${rowIndex === 0 && manualSchedule.length > 1 ? `<button class="schedule-remove" onclick="removeScheduleDay('${day.id}')">Delete</button>` : ""}
+        </div>
+        <div class="schedule-grid">
+            <div>
+                <label class="mini-label">Task</label>
+                <select class="field" onchange="updateScheduleDay('${day.id}','task',this.value)">
+                    ${optionHtml(TASK_OPTIONS, day.task)}
+                </select>
+            </div>
+            <div>
+                <label class="mini-label">Day Part</label>
+                <select class="field" onchange="updateScheduleDay('${day.id}','dayPart',this.value)">
+                    ${optionHtml(DAY_PARTS, day.dayPart)}
+                </select>
+            </div>
+            <div>
+                <label class="mini-label">Men</label>
+                <button
+                    type="button"
+                    class="schedule-value-btn"
+                    onclick="openScheduleNumberModal('${day.id}','men',${Number(day.men || 0)})"
+                >
+                    ${Number(day.men || 0)}
+                </button>
+            </div>
+            <div>
+                <label class="mini-label">Vans</label>
+                <button
+                    type="button"
+                    class="schedule-value-btn"
+                    onclick="openScheduleNumberModal('${day.id}','vans',${Number(day.vans || 0)})"
+                >
+                    ${Number(day.vans || 0)}
+                </button>
+            </div>
+            <div>
+                <label class="mini-label">Night Out</label>
+                <div class="schedule-toggle-wrap">
+                    <label class="schedule-toggle-switch">
+                        <input
+                            type="checkbox"
+                            ${day.nightsOut ? 'checked' : ''}
+                            onchange="updateScheduleDay('${day.id}','nightsOut', this.checked)"
+                        />
+                        <span class="schedule-toggle-slider"></span>
+                    </label>
                 </div>
             </div>
-        `).join("");
+        </div>
+    </div>
+`).join("");
     }).join("");
 }
 
@@ -8434,7 +10449,6 @@ function renderValidation(packing, loading, unloading, special, state){
 }
 
 function renderScheduleCalculator(){
-    const photonFeed = getPhotonFeed();
     const state = getState();
 
         renderScheduleSequenceDropdown();
@@ -8462,12 +10476,22 @@ const wrDisplay = document.getElementById("qty_wr_display");
 if (wrDisplay) wrDisplay.textContent = state.qty.wr;
 
 const svcFrameEl = document.getElementById("svc_frame");
+const svcOttomanEl = document.getElementById("svc_ottoman");
+const svcDivanEl = document.getElementById("svc_divan");
+const svcElectricEl = document.getElementById("svc_electric");
 const svcBunkEl = document.getElementById("svc_bunk");
+const svcCotEl = document.getElementById("svc_cot");
+const svcDiningTableEl = document.getElementById("svc_dining_table");
 const svcCrateEl = document.getElementById("svc_crate");
 const exportWrapVolEl = document.getElementById("exportWrapVol");
 
-if (svcFrameEl) svcFrameEl.value = state.special.frame;
-if (svcBunkEl) svcBunkEl.value = state.special.bunk;
+if (svcFrameEl) svcFrameEl.value = state.special.frameBeds;
+if (svcOttomanEl) svcOttomanEl.value = state.special.ottomanBeds;
+if (svcDivanEl) svcDivanEl.value = state.special.divanBeds;
+if (svcElectricEl) svcElectricEl.value = state.special.electricBeds;
+if (svcBunkEl) svcBunkEl.value = state.special.bunkBeds;
+if (svcCotEl) svcCotEl.value = state.special.cots;
+if (svcDiningTableEl) svcDiningTableEl.value = state.special.diningTables;
 if (svcCrateEl) svcCrateEl.value = state.special.crate;
 if (exportWrapVolEl) exportWrapVolEl.value = state.exportWrapVol;
 
@@ -8501,11 +10525,16 @@ const special = calcSpecialLabour(state);
         `Loft effects volume is used for extra loft labour only and does not change total move volume. ` +
         `Loading uses total volume ÷ ${state.loadRate} cuft per man-hour, then adds load-side specials. ` +
         `Unloading uses total volume ÷ ${state.unloadRate} cuft per man-hour, then adds unload-side specials. ` +
-        `Two regular frame beds and 50 cuft of export wrap are treated as already included before extra special time is added.`;
+       `Two standard beds and 50 cuft of export wrap are treated as already included before extra special time is added.`;
 
     document.getElementById("specialText").textContent =
-    `Frame beds: ${special.breakdown.frame.toFixed(2)} hrs extra after first ${special.breakdown.includedFrameBeds} included · ` +
-    `Bunk beds: ${special.breakdown.bunk.toFixed(2)} hrs · ` +
+    `Frame beds: ${special.breakdown.frameBeds.toFixed(2)} hrs · ` +
+    `Ottoman beds: ${special.breakdown.ottomanBeds.toFixed(2)} hrs · ` +
+    `Divan beds: ${special.breakdown.divanBeds.toFixed(2)} hrs · ` +
+    `Electric / TV beds: ${special.breakdown.electricBeds.toFixed(2)} hrs (handyman only) · ` +
+    `Bunk beds: ${special.breakdown.bunkBeds.toFixed(2)} hrs · ` +
+    `Cots / Childs beds: ${special.breakdown.cots.toFixed(2)} hrs (tracked only for now) · ` +
+    `Dining tables: ${special.breakdown.diningTables.toFixed(2)} hrs · ` +
     `${state.special.customNote ? state.special.customNote : "Custom item"}: ${special.breakdown.custom.toFixed(2)} hrs · ` +
     `Upright pianos: ${special.breakdown.upright.toFixed(2)} hrs · ` +
     `Baby / grand pianos: ${special.breakdown.grand.toFixed(2)} hrs · ` +
@@ -8529,6 +10558,27 @@ window.onload = function () {
     renderScheduleCalculator();
 };
 </script>
+<!-- BED MODAL -->
+<div id="bed-overlay" class="bed-overlay" onclick="closeBedModal()">
+    <div class="bed-panel" onclick="event.stopPropagation()">
+        <div class="bed-title">Bed Type</div>
+        <div class="bed-subtitle">Select the bed construction type for labour and notes</div>
+
+        <div class="bed-grid">
+            <button type="button" id="bed-option-frame" class="bed-option-btn" onclick="selectBedOption('Frame')">Frame</button>
+            <button type="button" id="bed-option-ottoman" class="bed-option-btn" onclick="selectBedOption('Ottoman')">Ottoman</button>
+            <button type="button" id="bed-option-divan" class="bed-option-btn" onclick="selectBedOption('Divan')">Divan</button>
+            <button type="button" id="bed-option-electric" class="bed-option-btn" onclick="selectBedOption('Electric Motor / TV')">Electric Motor / TV</button>
+        </div>
+
+        <div id="bed-error-text" class="modal-error-text"></div>
+
+        <div class="bed-actions">
+            <button type="button" class="bed-cancel-btn" onclick="closeBedModal()">Cancel</button>
+            <button type="button" class="bed-save-btn" onclick="saveBedModal()">Save Bed Type</button>
+        </div>
+    </div>
+</div>
 <!-- DAMAGE MODAL -->
 <div id="damage-overlay" class="damage-overlay" onclick="closeDamageModal()">
     <div class="damage-panel" onclick="event.stopPropagation()">
@@ -8674,5 +10724,27 @@ window.onload = function () {
         </div>
     </div>
 </div>
+<!-- LISTED FLAGS MODAL -->
+<div id="listed-flags-overlay" class="listed-flags-overlay" onclick="closeListedFlagsModal()">
+    <div class="listed-flags-panel" onclick="event.stopPropagation()">
+        <div class="listed-flags-title">Edit Flags</div>
+        <div class="listed-flags-subtitle">Apply proper operational flags to this listed line</div>
+
+        <div class="listed-flags-grid">
+            <button type="button" id="listed-flag-dismantle" class="listed-flag-btn" onclick="toggleListedFlag('dismantle')">Dismantle</button>
+            <button type="button" id="listed-flag-expwrap" class="listed-flag-btn" onclick="toggleListedFlag('expWrap')">Export Wrap</button>
+            <button type="button" id="listed-flag-crate" class="listed-flag-btn" onclick="toggleListedFlag('crated')">Crate</button>
+            <button type="button" id="listed-flag-disconnect" class="listed-flag-btn" onclick="toggleListedFlag('disconnect')">Disconnect</button>
+            <button type="button" id="listed-flag-handyman" class="listed-flag-btn" onclick="toggleListedFlag('handyman')">Handyman</button>
+            <button type="button" id="listed-flag-exclude" class="listed-flag-btn" onclick="toggleListedFlag('excluded')">Exclude</button>
+        </div>
+
+        <div class="listed-flags-actions">
+            <button type="button" class="listed-flags-cancel-btn" onclick="closeListedFlagsModal()">Cancel</button>
+            <button type="button" class="listed-flags-save-btn" onclick="saveListedFlagsModal()">Save Flags</button>
+        </div>
+    </div>
+</div>
 </body>
 </html>
+>
