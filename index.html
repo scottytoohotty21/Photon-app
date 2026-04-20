@@ -10271,6 +10271,39 @@ function optionHtml(options, selected){
     return options.map(opt => `<option value="${opt}" ${String(opt) === String(selected) ? "selected" : ""}>${opt}</option>`).join("");
 }
 
+function getTransitHoursForLocationMode(locationMode, state){
+    const mode = String(locationMode || "Collection Only");
+
+    if (mode === "Collection Only") {
+        return round2(
+            Number(state.depotToCollectionHours || 0) +
+            (Number(state.depotToCollectionMinutes || 0) / 60)
+        );
+    }
+
+    if (mode === "Collection to Delivery") {
+        return round2(
+            Number(state.collectionToDeliveryHours || 0) +
+            (Number(state.collectionToDeliveryMinutes || 0) / 60)
+        );
+    }
+
+    if (mode === "Delivery Only") {
+        return round2(
+            Number(state.deliveryToDepotHours || 0) +
+            (Number(state.deliveryToDepotMinutes || 0) / 60)
+        );
+    }
+
+    return 0;
+}
+
+function getNetTaskHoursForPlannerRow(day, state){
+    const rowHours = Number(day.hours || 0);
+    const transitHours = getTransitHoursForLocationMode(day.locationMode, state);
+    return Math.max(0, round2(rowHours - transitHours));
+}
+
 function addScheduleDay(){
     const groupId = createId();
     manualSchedule.push({
@@ -10475,6 +10508,12 @@ function renderSchedulePlanner(){
                     </label>
                 </div>
             </div>
+                </div>
+
+        <div class="schedule-debug-line">
+            Transit applied: ${getTransitHoursForLocationMode(day.locationMode, getState()).toFixed(2)} hrs ·
+            Net task time: ${getNetTaskHoursForPlannerRow(day, getState()).toFixed(2)} hrs ·
+            Net man-hours: ${(Number(day.men || 0) * getNetTaskHoursForPlannerRow(day, getState())).toFixed(2)}
         </div>
     </div>
 `).join("");
@@ -10514,8 +10553,10 @@ function calcScheduleValidation(packing, loading, unloading, special, state){
 
         rows.forEach(day => {
             const men = Number(day.men) || 0;
-            const hours = Number(day.hours) || 0;
-            const capacity = men * hours;
+            const grossHours = Number(day.hours) || 0;
+            const transitHours = getTransitHoursForLocationMode(day.locationMode, state);
+            const netHours = Math.max(0, grossHours - transitHours);
+            const capacity = men * netHours;
 
             switch(day.task){
                 case "Pack":
@@ -10532,7 +10573,7 @@ function calcScheduleValidation(packing, loading, unloading, special, state){
                         sharedPackLoadPool += capacity;
                     } else if (day.dayPart === "PM" && hasAmLoadish) {
                         const pmLoadHours = loadingProfile.loadingApplies
-                            ? round2((men * hours * loadingProfile.pmAfterAmEquivalentRate) / state.loadRate)
+                            ? round2((men * netHours * loadingProfile.pmAfterAmEquivalentRate) / state.loadRate)
                             : 0;
                         sharedPackLoadPool += pmLoadHours;
                     } else {
@@ -10545,7 +10586,7 @@ function calcScheduleValidation(packing, loading, unloading, special, state){
                         sharedLoadUnloadPool += capacity;
                     } else if (day.dayPart === "PM" && hasAmLoadish) {
                         const pmLoadHours = loadingProfile.loadingApplies
-                            ? round2((men * hours * loadingProfile.pmAfterAmEquivalentRate) / state.loadRate)
+                            ? round2((men * netHours * loadingProfile.pmAfterAmEquivalentRate) / state.loadRate)
                             : 0;
                         sharedLoadUnloadPool += pmLoadHours + Math.max(0, capacity - pmLoadHours);
                     } else {
@@ -10561,7 +10602,7 @@ function calcScheduleValidation(packing, loading, unloading, special, state){
                         loadHoursEquivalent = 0;
                     } else if (day.dayPart === "PM" && hasAmLoadish) {
                         const pmVolume = loadingProfile.loadingApplies
-                            ? men * hours * loadingProfile.pmAfterAmEquivalentRate
+                            ? men * netHours * loadingProfile.pmAfterAmEquivalentRate
                             : 0;
                         loadHoursEquivalent = round2(pmVolume / state.loadRate);
                     }
@@ -10622,10 +10663,13 @@ function calcScheduleValidation(packing, loading, unloading, special, state){
     }
 
     results.push({
-        type: special.extraCollectionToDeliveryHours > 0 ? "warn" : "ok",
-text: special.extraCollectionToDeliveryHours > 0
-    ? `${warnIcon} Collection to delivery transit beyond the first 30 minutes adds ${special.extraCollectionToDeliveryHours.toFixed(2)} hours to the unload side and may reduce delivery-side feasibility.`
-    : `${passIcon} Collection to delivery transit is within the first 30 minutes included allowance.`
+        type: "ok",
+        text: `${passIcon} Planner row capacity now subtracts transit time using the selected location mode before checking task labour.`
+    });
+
+    results.push({
+        type: "ok",
+        text: `Collection Only uses Depot to Collection. Collection to Delivery uses Collection to Delivery. Delivery Only uses Delivery to Depot.`
     });
 
     results.push({
