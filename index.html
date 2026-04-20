@@ -2530,19 +2530,38 @@ Enter as: Surname, First Name
         </select>
     </div>
 </div>
-                <div class="section-block">
-                    <div class="section-title">Transit Time</div>
-                    <div class="grid-2">
-                        <div>
-                            <label class="mini-label">Transit Hours</label>
-                            <input id="transitHours" type="number" min="0" class="field" value="0" oninput="handleScheduleInputChange()" />
-                        </div>
-                        <div>
-                            <label class="mini-label">Transit Minutes</label>
-                            <input id="transitMinutes" type="number" min="0" max="59" class="field" value="30" oninput="handleScheduleInputChange()" />
-                        </div>
-                    </div>
-                </div>
+               <div class="section-block">
+    <div class="section-title">Transit Times</div>
+
+    <div class="grid-2">
+        <div>
+            <label class="mini-label">Depot to Collection Hours</label>
+            <input id="depotToCollectionHours" type="number" min="0" class="field" value="0" oninput="handleScheduleInputChange()" />
+        </div>
+        <div>
+            <label class="mini-label">Depot to Collection Minutes</label>
+            <input id="depotToCollectionMinutes" type="number" min="0" max="59" class="field" value="0" oninput="handleScheduleInputChange()" />
+        </div>
+
+        <div>
+            <label class="mini-label">Collection to Delivery Hours</label>
+            <input id="collectionToDeliveryHours" type="number" min="0" class="field" value="0" oninput="handleScheduleInputChange()" />
+        </div>
+        <div>
+            <label class="mini-label">Collection to Delivery Minutes</label>
+            <input id="collectionToDeliveryMinutes" type="number" min="0" max="59" class="field" value="30" oninput="handleScheduleInputChange()" />
+        </div>
+
+        <div>
+            <label class="mini-label">Delivery to Depot Hours</label>
+            <input id="deliveryToDepotHours" type="number" min="0" class="field" value="0" oninput="handleScheduleInputChange()" />
+        </div>
+        <div>
+            <label class="mini-label">Delivery to Depot Minutes</label>
+            <input id="deliveryToDepotMinutes" type="number" min="0" max="59" class="field" value="0" oninput="handleScheduleInputChange()" />
+        </div>
+    </div>
+</div>
 
                 <div class="section-block">
                     <div class="section-title">Volume Inputs</div>
@@ -3048,12 +3067,16 @@ const inventoryCategories = {
 };
 function createEmptySequenceSchedule() {
     return {
-        moveDate: "",
-        transitHours: 0,
-        transitMinutes: 30,
-        loftVol: 0,
-        loadRate: 125,
-        unloadRate: 132,
+    moveDate: "",
+    depotToCollectionHours: 0,
+    depotToCollectionMinutes: 0,
+    collectionToDeliveryHours: 0,
+    collectionToDeliveryMinutes: 30,
+    deliveryToDepotHours: 0,
+    deliveryToDepotMinutes: 0,
+    loftVol: 0,
+    loadRate: 125,
+    unloadRate: 132,
         loadingVariant: "Standard",
         exportWrapVol: 0,
         manualDays: [],
@@ -3279,8 +3302,12 @@ function saveInventoryContext() {
 
             const defaults = createEmptySequenceSchedule();
 
-            if (seq.schedule.transitHours === undefined) seq.schedule.transitHours = defaults.transitHours;
-            if (seq.schedule.transitMinutes === undefined) seq.schedule.transitMinutes = defaults.transitMinutes;
+            if (seq.schedule.depotToCollectionHours === undefined) seq.schedule.depotToCollectionHours = defaults.depotToCollectionHours;
+if (seq.schedule.depotToCollectionMinutes === undefined) seq.schedule.depotToCollectionMinutes = defaults.depotToCollectionMinutes;
+if (seq.schedule.collectionToDeliveryHours === undefined) seq.schedule.collectionToDeliveryHours = defaults.collectionToDeliveryHours;
+if (seq.schedule.collectionToDeliveryMinutes === undefined) seq.schedule.collectionToDeliveryMinutes = defaults.collectionToDeliveryMinutes;
+if (seq.schedule.deliveryToDepotHours === undefined) seq.schedule.deliveryToDepotHours = defaults.deliveryToDepotHours;
+if (seq.schedule.deliveryToDepotMinutes === undefined) seq.schedule.deliveryToDepotMinutes = defaults.deliveryToDepotMinutes;
             if (seq.schedule.loftVol === undefined) seq.schedule.loftVol = defaults.loftVol;
             if (seq.schedule.loadRate === undefined) seq.schedule.loadRate = defaults.loadRate;
             if (seq.schedule.unloadRate === undefined) seq.schedule.unloadRate = defaults.unloadRate;
@@ -9611,8 +9638,12 @@ function ensureSequenceScheduleShape(seq) {
 
     const defaults = createEmptySequenceSchedule();
 
-    if (seq.schedule.transitHours === undefined) seq.schedule.transitHours = defaults.transitHours;
-    if (seq.schedule.transitMinutes === undefined) seq.schedule.transitMinutes = defaults.transitMinutes;
+    if (seq.schedule.depotToCollectionHours === undefined) seq.schedule.depotToCollectionHours = defaults.depotToCollectionHours;
+if (seq.schedule.depotToCollectionMinutes === undefined) seq.schedule.depotToCollectionMinutes = defaults.depotToCollectionMinutes;
+if (seq.schedule.collectionToDeliveryHours === undefined) seq.schedule.collectionToDeliveryHours = defaults.collectionToDeliveryHours;
+if (seq.schedule.collectionToDeliveryMinutes === undefined) seq.schedule.collectionToDeliveryMinutes = defaults.collectionToDeliveryMinutes;
+if (seq.schedule.deliveryToDepotHours === undefined) seq.schedule.deliveryToDepotHours = defaults.deliveryToDepotHours;
+if (seq.schedule.deliveryToDepotMinutes === undefined) seq.schedule.deliveryToDepotMinutes = defaults.deliveryToDepotMinutes;
     if (seq.schedule.loftVol === undefined) seq.schedule.loftVol = defaults.loftVol;
     if (seq.schedule.loadRate === undefined) seq.schedule.loadRate = defaults.loadRate;
     if (seq.schedule.unloadRate === undefined) seq.schedule.unloadRate = defaults.unloadRate;
@@ -9742,9 +9773,13 @@ function loadScheduleInputsFromActiveSequence() {
     const schedule = ensureSequenceScheduleShape(seq);
     const photonFeed = getPhotonFeed();
 
-    const transitHoursEl = document.getElementById("transitHours");
-    const transitMinutesEl = document.getElementById("transitMinutes");
-    const loftVolEl = document.getElementById("loftVol");
+    const depotToCollectionHoursEl = document.getElementById("depotToCollectionHours");
+const depotToCollectionMinutesEl = document.getElementById("depotToCollectionMinutes");
+const collectionToDeliveryHoursEl = document.getElementById("collectionToDeliveryHours");
+const collectionToDeliveryMinutesEl = document.getElementById("collectionToDeliveryMinutes");
+const deliveryToDepotHoursEl = document.getElementById("deliveryToDepotHours");
+const deliveryToDepotMinutesEl = document.getElementById("deliveryToDepotMinutes");
+const loftVolEl = document.getElementById("loftVol");
     const loadRateEl = document.getElementById("loadRate");
     const unloadRateEl = document.getElementById("unloadRate");
     const loadingVariantEl = document.getElementById("loadingVariant");
@@ -9766,9 +9801,13 @@ function loadScheduleInputsFromActiveSequence() {
     const svcCrateEl = document.getElementById("svc_crate");
     const exportWrapVolEl = document.getElementById("exportWrapVol");
 
-    if (transitHoursEl) transitHoursEl.value = schedule.transitHours;
-    if (transitMinutesEl) transitMinutesEl.value = schedule.transitMinutes;
-    if (loftVolEl) loftVolEl.value = schedule.loftVol;
+    if (depotToCollectionHoursEl) depotToCollectionHoursEl.value = schedule.depotToCollectionHours;
+if (depotToCollectionMinutesEl) depotToCollectionMinutesEl.value = schedule.depotToCollectionMinutes;
+if (collectionToDeliveryHoursEl) collectionToDeliveryHoursEl.value = schedule.collectionToDeliveryHours;
+if (collectionToDeliveryMinutesEl) collectionToDeliveryMinutesEl.value = schedule.collectionToDeliveryMinutes;
+if (deliveryToDepotHoursEl) deliveryToDepotHoursEl.value = schedule.deliveryToDepotHours;
+if (deliveryToDepotMinutesEl) deliveryToDepotMinutesEl.value = schedule.deliveryToDepotMinutes;
+if (loftVolEl) loftVolEl.value = schedule.loftVol;
     if (loadRateEl) loadRateEl.value = schedule.loadRate;
     if (unloadRateEl) unloadRateEl.value = schedule.unloadRate;
     if (loadingVariantEl) loadingVariantEl.value = schedule.loadingVariant || "Standard";
@@ -9810,9 +9849,13 @@ function saveScheduleInputsToActiveSequence() {
         return String(el.value || "").trim();
     };
 
-    schedule.transitHours = getNum("transitHours", 0);
-    schedule.transitMinutes = getNum("transitMinutes", 30);
-    schedule.loftVol = getNum("loftVol", 0);
+    schedule.depotToCollectionHours = getNum("depotToCollectionHours", 0);
+schedule.depotToCollectionMinutes = getNum("depotToCollectionMinutes", 0);
+schedule.collectionToDeliveryHours = getNum("collectionToDeliveryHours", 0);
+schedule.collectionToDeliveryMinutes = getNum("collectionToDeliveryMinutes", 30);
+schedule.deliveryToDepotHours = getNum("deliveryToDepotHours", 0);
+schedule.deliveryToDepotMinutes = getNum("deliveryToDepotMinutes", 0);
+schedule.loftVol = getNum("loftVol", 0);
     schedule.loadRate = getNum("loadRate", 125);
     schedule.unloadRate = getNum("unloadRate", 132);
     schedule.loadingVariant = getText("loadingVariant", "Standard");
@@ -10058,8 +10101,12 @@ const loadingScenario = getLoadingScenarioFromMoveType(seq ? seq.moveType : "");
         ? document.getElementById("loadingVariant").value
         : "Standard",
     loadingScenario: loadingScenario,
-    transitHours: num("transitHours"),
-    transitMinutes: num("transitMinutes"),
+    depotToCollectionHours: num("depotToCollectionHours"),
+depotToCollectionMinutes: num("depotToCollectionMinutes"),
+collectionToDeliveryHours: num("collectionToDeliveryHours"),
+collectionToDeliveryMinutes: num("collectionToDeliveryMinutes"),
+deliveryToDepotHours: num("deliveryToDepotHours"),
+deliveryToDepotMinutes: num("deliveryToDepotMinutes"),
 
         qty: {
             ap: photonFeed.qty.ap || 0,
@@ -10118,8 +10165,16 @@ function calcSpecialLabour(state) {
     const includedExportWrapVol = 50;
 
     const extraExportWrapVol = Math.max(0, state.exportWrapVol - includedExportWrapVol);
-    const transitTotalMinutes = (state.transitHours * 60) + state.transitMinutes;
-    const extraTransitMinutes = Math.max(0, transitTotalMinutes - 30);
+    const depotToCollectionMinutes =
+    (state.depotToCollectionHours * 60) + state.depotToCollectionMinutes;
+
+const collectionToDeliveryMinutes =
+    (state.collectionToDeliveryHours * 60) + state.collectionToDeliveryMinutes;
+
+const deliveryToDepotMinutes =
+    (state.deliveryToDepotHours * 60) + state.deliveryToDepotMinutes;
+
+const extraCollectionToDeliveryMinutes = Math.max(0, collectionToDeliveryMinutes - 30);
 
     const loadMinutes =
         (state.special.frameBeds * 15) +
@@ -10148,7 +10203,7 @@ function calcSpecialLabour(state) {
         (state.special.clock * 30) +
         (state.special.appliance * 30) +
         (state.special.crate * 15) +
-        extraTransitMinutes;
+        extraCollectionToDeliveryMinutes;
 
     const totalHours = (loadMinutes + unloadMinutes) / 60;
 
@@ -10156,7 +10211,10 @@ function calcSpecialLabour(state) {
         specialHours: round2(totalHours),
         loadSideHours: round2(loadMinutes / 60),
         unloadSideHours: round2(unloadMinutes / 60),
-        extraTransitHours: round2(extraTransitMinutes / 60),
+        depotToCollectionHours: round2(depotToCollectionMinutes / 60),
+collectionToDeliveryHours: round2(collectionToDeliveryMinutes / 60),
+deliveryToDepotHours: round2(deliveryToDepotMinutes / 60),
+extraCollectionToDeliveryHours: round2(extraCollectionToDeliveryMinutes / 60),
         breakdown: {
             frameBeds: round2((state.special.frameBeds * 30) / 60),
             ottomanBeds: round2((state.special.ottomanBeds * 60) / 60),
@@ -10173,7 +10231,7 @@ function calcSpecialLabour(state) {
             crate: round2((state.special.crate * 30) / 60),
             loft: round2(((state.loftVol / 100) * 20) / 60),
             exportWrap: round2(((extraExportWrapVol / 100) * 25) / 60),
-            transit: round2(extraTransitMinutes / 60),
+            transit: round2(extraCollectionToDeliveryMinutes / 60),
             includedExportWrapVol
         }
     };
@@ -10564,10 +10622,10 @@ function calcScheduleValidation(packing, loading, unloading, special, state){
     }
 
     results.push({
-        type: special.extraTransitHours > 0 ? "warn" : "ok",
-        text: special.extraTransitHours > 0
-            ? `${warnIcon} Transit beyond the first 30 minutes adds ${special.extraTransitHours.toFixed(2)} hours to the unload side and may reduce delivery-side feasibility.`
-            : `${passIcon} Transit is within the first 30 minutes included allowance.`
+        type: special.extraCollectionToDeliveryHours > 0 ? "warn" : "ok",
+text: special.extraCollectionToDeliveryHours > 0
+    ? `${warnIcon} Collection to delivery transit beyond the first 30 minutes adds ${special.extraCollectionToDeliveryHours.toFixed(2)} hours to the unload side and may reduce delivery-side feasibility.`
+    : `${passIcon} Collection to delivery transit is within the first 30 minutes included allowance.`
     });
 
     results.push({
@@ -10694,8 +10752,10 @@ function renderScheduleCalculator(){
         `Crating: ${special.breakdown.crate.toFixed(2)} hrs · ` +
         `Loft effects: ${special.breakdown.loft.toFixed(2)} hrs · ` +
         `Export wrapping: ${special.breakdown.exportWrap.toFixed(2)} hrs extra after first ${special.breakdown.includedExportWrapVol} cuft included · ` +
-        `Transit impact: ${special.breakdown.transit.toFixed(2)} hrs after first 30 mins included. ` +
-        `Load side specials: ${special.loadSideHours.toFixed(2)} hrs · Unload side specials: ${special.unloadSideHours.toFixed(2)} hrs.`;
+        `Depot to collection: ${special.depotToCollectionHours.toFixed(2)} hrs · ` +
+`Collection to delivery: ${special.collectionToDeliveryHours.toFixed(2)} hrs (${special.breakdown.transit.toFixed(2)} hrs chargeable after first 30 mins included) · ` +
+`Delivery to depot: ${special.deliveryToDepotHours.toFixed(2)} hrs · ` +
+`Load side specials: ${special.loadSideHours.toFixed(2)} hrs · Unload side specials: ${special.unloadSideHours.toFixed(2)} hrs.`;
 
     renderSchedulePlanner();
     renderValidation(packing, loading, unloading, special, state);
