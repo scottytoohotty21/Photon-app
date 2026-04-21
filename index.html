@@ -10283,6 +10283,34 @@ function calcUnloading(totalVolume, unloadRate, unloadSideSpecialHours){
 function optionHtml(options, selected){
     return options.map(opt => `<option value="${opt}" ${String(opt) === String(selected) ? "selected" : ""}>${opt}</option>`).join("");
 }
+function getDayPartHours(dayPart) {
+    return dayPart === "Full Day" ? 8 : 4;
+}
+
+function getCompletionAdjustedCapacity(day, mode) {
+    const men = Number(day.men) || 0;
+    const hours = getDayPartHours(day.dayPart || "Full Day");
+    const baseCapacity = men * hours;
+    const completionWindow = String(day.completionWindow || "None");
+
+    if (mode === "load") {
+        if (completionWindow === "Must Finish Loading By 1pm") {
+            if (day.dayPart === "PM") return 0;
+            return men * 4;
+        }
+        return baseCapacity;
+    }
+
+    if (mode === "unload") {
+        if (completionWindow === "Cannot Start Unloading Until 1pm") {
+            if (day.dayPart === "AM") return 0;
+            return men * 4;
+        }
+        return baseCapacity;
+    }
+
+    return baseCapacity;
+}
 
 function getTransitHoursForLocationMode(locationMode, state){
     const mode = String(locationMode || "Collection Only");
@@ -10575,67 +10603,71 @@ function calcScheduleValidation(packing, loading, unloading, special, state){
 
         rows.forEach(day => {
             const men = Number(day.men) || 0;
-            const grossHours = Number(day.hours) || 0;
-            const transitHours = getTransitHoursForLocationMode(day.locationMode, state);
-            const netHours = Math.max(0, grossHours - transitHours);
-            const capacity = men * netHours;
+const hours = getDayPartHours(day.dayPart || "Full Day");
+const loadCapacity = getCompletionAdjustedCapacity(day, "load");
+const unloadCapacity = getCompletionAdjustedCapacity(day, "unload");
+const baseCapacity = men * hours;
 
             switch(day.task){
-                case "Pack":
-                    allocated.Pack += capacity;
-                    break;
+    case "Pack":
+        allocated.Pack += baseCapacity;
+        break;
 
-                case "Unload":
-                case "Deliver and Crew Return":
-                    allocated.Unload += capacity;
-                    break;
+    case "Unload":
+    case "Deliver and Crew Return":
+        allocated.Unload += unloadCapacity;
+        break;
 
-                case "Pack and Load":
-                    if (day.dayPart === "AM") {
-                        sharedPackLoadPool += capacity;
-                    } else if (day.dayPart === "PM" && hasAmLoadish) {
-                        const pmLoadHours = loadingProfile.loadingApplies
-                            ? round2((men * netHours * loadingProfile.pmAfterAmEquivalentRate) / state.loadRate)
-                            : 0;
-                        sharedPackLoadPool += pmLoadHours;
-                    } else {
-                        sharedPackLoadPool += capacity;
-                    }
-                    break;
+    case "Pack and Load":
+        if (day.dayPart === "AM") {
+            sharedPackLoadPool += loadCapacity;
+        } else if (day.dayPart === "PM" && hasAmLoadish) {
+            const pmLoadHours = loadingProfile.loadingApplies
+                ? round2((men * 4 * loadingProfile.pmAfterAmEquivalentRate) / state.loadRate)
+                : 0;
+            sharedPackLoadPool += Math.min(loadCapacity, pmLoadHours);
+        } else {
+            sharedPackLoadPool += loadCapacity;
+        }
+        break;
 
-                case "Load and Deliver":
-                    if (day.dayPart === "AM") {
-                        sharedLoadUnloadPool += capacity;
-                    } else if (day.dayPart === "PM" && hasAmLoadish) {
-                        const pmLoadHours = loadingProfile.loadingApplies
-                            ? round2((men * netHours * loadingProfile.pmAfterAmEquivalentRate) / state.loadRate)
-                            : 0;
-                        sharedLoadUnloadPool += pmLoadHours + Math.max(0, capacity - pmLoadHours);
-                    } else {
-                        sharedLoadUnloadPool += capacity;
-                    }
-                    break;
+    case "Load and Deliver":
+        if (day.dayPart === "AM") {
+            sharedLoadUnloadPool += loadCapacity;
+        } else if (day.dayPart === "PM" && hasAmLoadish) {
+            const pmLoadHours = loadingProfile.loadingApplies
+                ? round2((men * 4 * loadingProfile.pmAfterAmEquivalentRate) / state.loadRate)
+                : 0;
+            const usableLoadHours = Math.min(loadCapacity, pmLoadHours);
+            const usableUnloadHours = unloadCapacity;
+            sharedLoadUnloadPool += usableLoadHours + usableUnloadHours;
+        } else {
+            sharedLoadUnloadPool += loadCapacity + unloadCapacity;
+        }
+        break;
 
-                case "Load":
-                case "Load and Travel": {
-                    let loadHoursEquivalent = capacity;
+    case "Load":
+    case "Load and Travel": {
+        let loadHoursEquivalent = loadCapacity;
 
-                    if (state.loadingScenario === "exStore") {
-                        loadHoursEquivalent = 0;
-                    } else if (day.dayPart === "PM" && hasAmLoadish) {
-                        const pmVolume = loadingProfile.loadingApplies
-                            ? men * netHours * loadingProfile.pmAfterAmEquivalentRate
-                            : 0;
-                        loadHoursEquivalent = round2(pmVolume / state.loadRate);
-                    }
+        if (state.loadingScenario === "exStore") {
+            loadHoursEquivalent = 0;
+        } else if (day.dayPart === "PM" && hasAmLoadish) {
+            const pmVolume = loadingProfile.loadingApplies
+                ? men * 4 * loadingProfile.pmAfterAmEquivalentRate
+                : 0;
+            loadHoursEquivalent = round2(pmVolume / state.loadRate);
+            loadHoursEquivalent = Math.min(loadHoursEquivalent, loadCapacity);
+        }
 
-                    allocated.Load += loadHoursEquivalent;
-                    break;
-                }
+        allocated.Load += loadHoursEquivalent;
+        break;
+    }
 
-                default:
-                    break;
-            }
+    default:
+        break;
+}
+
         });
     });
 
@@ -10705,6 +10737,16 @@ function calcScheduleValidation(packing, loading, unloading, special, state){
         type: "ok",
         text: `${passIcon} Load-side specials are included in loading, and unload-side specials are included in unloading for schedule checking.`
     });
+    const hasCompletionWindow = manualSchedule.some(day =>
+    String(day.completionWindow || "None") !== "None"
+);
+
+if (hasCompletionWindow) {
+    results.push({
+        type: "ok",
+        text: `${passIcon} Completion window rules are active, so loading is restricted by any 'finish by 1pm' rows and unloading is restricted by any 'start after 1pm' rows.`
+    });
+}
 
     return results;
 }
