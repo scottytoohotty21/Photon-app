@@ -9315,6 +9315,11 @@ const DAY_LOCATION_MODES = [
     "Collection to Delivery",
     "Delivery Only"
 ];
+const COMPLETION_WINDOWS = [
+    "None",
+    "Completion AM",
+    "Completion PM"
+];
 function getQuoteLineLabel(line) {
     if (!line) return "";
     if (line.label === "Custom") {
@@ -9684,6 +9689,7 @@ function getDefaultManualScheduleRows() {
             dayPart: "Full Day",
             task: "Pack",
             locationMode: "Collection Only",
+            completionWindow: "None",
             men: 2,
             vans: 1,
             hours: 8,
@@ -9714,6 +9720,7 @@ manualSchedule = schedule.manualDays.map(function(day) {
         dayPart: safeDayPart,
         task: day.task || "Pack",
         locationMode: day.locationMode || "Collection Only",
+        completionWindow: day.completionWindow || "None",
         men: Math.max(0, Number(day.men) || 0),
         vans: Math.max(0, Number(day.vans) || 1),
         hours: safeDayPart === "Full Day" ? 8 : 4,
@@ -9737,6 +9744,7 @@ function saveManualScheduleToActiveSequence() {
         dayPart: safeDayPart,
         task: day.task,
         locationMode: day.locationMode || "Collection Only",
+        completionWindow: day.completionWindow || "None",
         men: Math.max(0, Number(day.men) || 0),
         vans: Math.max(0, Number(day.vans) || 0),
         hours: safeDayPart === "Full Day" ? 8 : 4,
@@ -10312,6 +10320,7 @@ function addScheduleDay(){
         dayPart: "Full Day",
         task: "Load",
         locationMode: "Collection to Delivery",
+        completionWindow: "None",
         men: 2,
         vans: 1,
         hours: 8,
@@ -10342,6 +10351,7 @@ function ensurePmPair(row){
             dayPart: "PM",
             task: "Unload",
             locationMode: "Delivery Only",
+            completionWindow: "None",
             men: row.men,
             vans: row.vans,
             hours: 4,
@@ -10409,6 +10419,7 @@ function updateScheduleDay(id, field, value){
             dayPart: "AM",
             task: "Load",
             locationMode: "Collection Only",
+            completionWindow: "None",
             men: updated.men,
             vans: updated.vans,
             hours: 4,
