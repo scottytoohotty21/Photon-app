@@ -4975,36 +4975,42 @@ document.getElementById('seq-switcher').innerHTML = currentJob.sequences.map((s,
 }
 
 function renderDashboard() {
-            document.getElementById('job-list').innerHTML = jobs.map(j => {
-                let seqBreakdown = j.sequences.length > 0 ? j.sequences.map(s => `
-                    <div class="seq-row">
-                        <div class="flex flex-col">
-                            <span class="text-[9px] font-black uppercase italic leading-none">${s.moveType || 'New Seq'}</span>
-                            <span class="text-[8px] font-bold text-slate-400 uppercase mt-0.5">${s.packOption || 'No Packing Set'}</span>
-                        </div>
-                        <span class="text-[10px] font-black text-blue-600">${s.vol || 0} ft³</span>
-                    </div>`).join('') : `<div class="text-[8px] text-slate-300 italic mt-2 uppercase font-bold">No sequences</div>`;
-                
-                return `
-                <div class="job-card status-${j.status}" onclick="openJob(${j.id})">
-                    <div class="flex justify-between items-start">
-                        <div class="flex-grow">
-                            <span class="pill pill-${j.status}">${j.status}</span>
-                            ${j.isManual?'<span class="pill pill-manual">Manual</span>':''}
-                            ${j.isNew?'<span class="pill pill-new">New</span>':''}
-                            <h3 class="text-xl font-black text-slate-800 uppercase leading-none mt-1">${j.name}</h3>
-                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Ref: ${j.ref}</p>
-                            ${j.notes ? `<div class="notes-preview">${j.notes}</div>` : ''}
-                            <div class="mt-4 border-t pt-2">${seqBreakdown}</div>
-                        </div>
-                        <div class="flex flex-col gap-2 items-end">
-                            <button onclick="handleUploadClick(event, ${j.id})" class="btn-upload-flat">Upload ↑</button>
-                            </div>
+    document.getElementById('job-list').innerHTML = jobs.map(j => {
+        const safeSequences = Array.isArray(j.sequences) ? j.sequences : [];
+
+        let seqBreakdown = safeSequences.length > 0
+            ? safeSequences.map(s => `
+                <div class="seq-row">
+                    <div class="flex flex-col">
+                        <span class="text-[9px] font-black uppercase italic leading-none">${s.moveType || 'New Seq'}</span>
+                        <span class="text-[8px] font-bold text-slate-400 uppercase mt-0.5">${s.packOption || 'No Packing Set'}</span>
                     </div>
-                </div>`;
-            }).join('');
-            filterFiles();
-        }
+                    <span class="text-[10px] font-black text-blue-600">${s.vol || 0} ft³</span>
+                </div>`
+            ).join('')
+            : `<div class="text-[8px] text-slate-300 italic mt-2 uppercase font-bold">No sequences</div>`;
+
+        return `
+            <div class="job-card status-${j.status || 'pending'}" onclick="openJob(${j.id})">
+                <div class="flex justify-between items-start">
+                    <div class="flex-grow">
+                        <span class="pill pill-${j.status || 'pending'}">${j.status || 'pending'}</span>
+                        ${j.isManual ? '<span class="pill pill-manual">Manual</span>' : ''}
+                        ${j.isNew ? '<span class="pill pill-new">New</span>' : ''}
+                        <h3 class="text-xl font-black text-slate-800 uppercase leading-none mt-1">${j.name || 'Unnamed Job'}</h3>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Ref: ${j.ref || '---'}</p>
+                        ${j.notes ? `<div class="notes-preview">${j.notes}</div>` : ''}
+                        <div class="mt-4 border-t pt-2">${seqBreakdown}</div>
+                    </div>
+                    <div class="flex flex-col gap-2 items-end">
+                        <button onclick="handleUploadClick(event, ${j.id})" class="btn-upload-flat">Upload ↑</button>
+                    </div>
+                </div>
+            </div>`;
+    }).join('');
+
+    filterFiles();
+}
 
  function addSequence() {
     const id = Date.now();
