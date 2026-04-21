@@ -1982,7 +1982,7 @@ button {
 }
 .schedule-grid{
     display:grid;
-    grid-template-columns:1.1fr 1fr 1.2fr .75fr .75fr .75fr;
+    grid-template-columns:1.1fr 1fr 1.2fr 1fr .75fr .75fr .75fr;
     gap:10px;
 }
 .validation-list{display:grid;gap:8px;margin-top:12px;}
@@ -10487,39 +10487,45 @@ function renderSchedulePlanner(){
         </select>
     </div>
     <div>
+        <label class="mini-label">Completion Window</label>
+        <select class="field" onchange="updateScheduleDay('${day.id}','completionWindow',this.value)">
+            ${optionHtml(COMPLETION_WINDOWS, day.completionWindow || "None")}
+        </select>
+    </div>
+    <div>
         <label class="mini-label">Men</label>
-                <button
-                    type="button"
-                    class="schedule-value-btn"
-                    onclick="openScheduleNumberModal('${day.id}','men',${Number(day.men || 0)})"
-                >
-                    ${Number(day.men || 0)}
-                </button>
-            </div>
-            <div>
-                <label class="mini-label">Vans</label>
-                <button
-                    type="button"
-                    class="schedule-value-btn"
-                    onclick="openScheduleNumberModal('${day.id}','vans',${Number(day.vans || 0)})"
-                >
-                    ${Number(day.vans || 0)}
-                </button>
-            </div>
-            <div>
-                <label class="mini-label">Night Out</label>
-                <div class="schedule-toggle-wrap">
-                    <label class="schedule-toggle-switch">
-                        <input
-                            type="checkbox"
-                            ${day.nightsOut ? 'checked' : ''}
-                            onchange="updateScheduleDay('${day.id}','nightsOut', this.checked)"
-                        />
-                        <span class="schedule-toggle-slider"></span>
-                    </label>
-                </div>
-            </div>
-                </div>
+        <button
+            type="button"
+            class="schedule-value-btn"
+            onclick="openScheduleNumberModal('${day.id}','men',${Number(day.men || 0)})"
+        >
+            ${Number(day.men || 0)}
+        </button>
+    </div>
+    <div>
+        <label class="mini-label">Vans</label>
+        <button
+            type="button"
+            class="schedule-value-btn"
+            onclick="openScheduleNumberModal('${day.id}','vans',${Number(day.vans || 0)})"
+        >
+            ${Number(day.vans || 0)}
+        </button>
+    </div>
+    <div>
+        <label class="mini-label">Night Out</label>
+        <div class="schedule-toggle-wrap">
+            <label class="schedule-toggle-switch">
+                <input
+                    type="checkbox"
+                    ${day.nightsOut ? 'checked' : ''}
+                    onchange="updateScheduleDay('${day.id}','nightsOut', this.checked)"
+                />
+                <span class="schedule-toggle-slider"></span>
+            </label>
+        </div>
+    </div>
+</div>
 
         <div class="schedule-debug-line">
             Transit applied: ${getTransitHoursForLocationMode(day.locationMode, getState()).toFixed(2)} hrs ·
