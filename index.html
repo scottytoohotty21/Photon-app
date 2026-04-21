@@ -3416,6 +3416,60 @@ function getLockButtonContent(isLocked) {
 
         function openJob(id) {
     currentJob = jobs.find(j => j.id === id);
+    if (!currentJob) return;
+
+    currentJob.properties = Array.isArray(currentJob.properties)
+        ? currentJob.properties
+        : (Array.isArray(currentJob.addresses) ? currentJob.addresses : createDefaultProperties());
+
+    currentJob.addresses = currentJob.properties;
+
+    if (!currentJob.customer) {
+        currentJob.customer = {
+            displayName: currentJob.name || "",
+            firstName: "",
+            surname: "",
+            salutation: "",
+            homePhone: "",
+            mobilePhone: currentJob.tel || "",
+            email: currentJob.email || ""
+        };
+    }
+
+    if (!currentJob.survey) {
+        currentJob.survey = {
+            status: currentJob.status || "pending",
+            isNew: !!currentJob.isNew,
+            isManual: !!currentJob.isManual,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            notes: currentJob.notes || ""
+        };
+    }
+
+    if (!Array.isArray(currentJob.sequences)) {
+        currentJob.sequences = [];
+    }
+
+    if (!currentJob.inventory) {
+        currentJob.inventory = {
+            activeSequenceId: null,
+            activeDeliveryId: null,
+            activeFloor: "Ground",
+            activeRoomName: "Hallway",
+            customRooms: [],
+            customFloors: [],
+            activeCategory: "Full List",
+            items: [],
+            exclusions: [],
+            voiceNotes: [],
+            totals: {
+                currentItemVolume: 0,
+                totalVolume: 0
+            }
+        };
+    }
+
     currentJob.isNew = false;
 
     document.getElementById('hdr-name').innerText =
@@ -10870,7 +10924,68 @@ function renderScheduleCalculator(){
     renderSchedulePlanner();
     renderValidation(packing, loading, unloading, special, state);
 }
+function normalizeJobsShape() {
+    jobs = (Array.isArray(jobs) ? jobs : []).map(function(job) {
+        const safeJob = createEmptyJob(job || {});
+
+        safeJob.sequences = Array.isArray(job && job.sequences) ? job.sequences : [];
+
+        safeJob.properties = Array.isArray(job && job.properties)
+            ? job.properties
+            : (Array.isArray(job && job.addresses) ? job.addresses : createDefaultProperties());
+
+        safeJob.addresses = safeJob.properties;
+
+        safeJob.inventory = {
+            activeSequenceId: null,
+            activeDeliveryId: null,
+            activeFloor: "Ground",
+            activeRoomName: "Hallway",
+            customRooms: [],
+            customFloors: [],
+            activeCategory: "Full List",
+            items: [],
+            exclusions: [],
+            voiceNotes: [],
+            totals: {
+                currentItemVolume: 0,
+                totalVolume: 0
+            },
+            ...(job && job.inventory ? job.inventory : {})
+        };
+
+        safeJob.customer = {
+            displayName: safeJob.name || "",
+            firstName: "",
+            surname: "",
+            salutation: "",
+            homePhone: "",
+            mobilePhone: safeJob.tel || "",
+            email: safeJob.email || "",
+            ...(job && job.customer ? job.customer : {})
+        };
+
+        safeJob.survey = {
+            status: safeJob.status || "pending",
+            isNew: !!safeJob.isNew,
+            isManual: !!safeJob.isManual,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            notes: safeJob.notes || "",
+            ...(job && job.survey ? job.survey : {})
+        };
+
+        safeJob.signature = {
+            image: "",
+            signedAt: "",
+            ...(job && job.signature ? job.signature : {})
+        };
+
+        return safeJob;
+    });
+}
 document.addEventListener('DOMContentLoaded', function () {
+    normalizeJobsShape();
     ensureScheduleDataShape();
     saveToDevice();
     renderDashboard();
