@@ -9317,6 +9317,11 @@ const DAY_LOCATION_MODES = [
 ];
 const COMPLETION_WINDOWS = [
     "None",
+    "Must Finish Loading By 1pm",
+    "Cannot Start Unloading Until 1pm"
+];
+const COMPLETION_WINDOWS = [
+    "None",
     "Completion AM",
     "Completion PM"
 ];
@@ -9715,17 +9720,17 @@ manualSchedule = schedule.manualDays.map(function(day) {
     const safeDayPart = day.dayPart || "Full Day";
 
     return {
-        id: day.id || createId(),
-        groupId: day.groupId || createId(),
-        dayPart: safeDayPart,
-        task: day.task || "Pack",
-        locationMode: day.locationMode || "Collection Only",
-        completionWindow: day.completionWindow || "None",
-        men: Math.max(0, Number(day.men) || 0),
-        vans: Math.max(0, Number(day.vans) || 1),
-        hours: safeDayPart === "Full Day" ? 8 : 4,
-        nightsOut: !!day.nightsOut
-    };
+    id: day.id || createId(),
+    groupId: day.groupId || createId(),
+    dayPart: safeDayPart,
+    task: day.task || "Pack",
+    locationMode: day.locationMode || "Collection Only",
+    completionWindow: day.completionWindow || "None",
+    men: Math.max(0, Number(day.men) || 0),
+    vans: Math.max(0, Number(day.vans) || 1),
+    hours: safeDayPart === "Full Day" ? 8 : 4,
+    nightsOut: !!day.nightsOut
+};
 });
 }
 
@@ -9739,17 +9744,17 @@ function saveManualScheduleToActiveSequence() {
     const safeDayPart = day.dayPart || "Full Day";
 
     return {
-        id: day.id,
-        groupId: day.groupId,
-        dayPart: safeDayPart,
-        task: day.task,
-        locationMode: day.locationMode || "Collection Only",
-        completionWindow: day.completionWindow || "None",
-        men: Math.max(0, Number(day.men) || 0),
-        vans: Math.max(0, Number(day.vans) || 0),
-        hours: safeDayPart === "Full Day" ? 8 : 4,
-        nightsOut: !!day.nightsOut
-    };
+    id: day.id,
+    groupId: day.groupId,
+    dayPart: safeDayPart,
+    task: day.task,
+    locationMode: day.locationMode || "Collection Only",
+    completionWindow: day.completionWindow || "None",
+    men: Math.max(0, Number(day.men) || 0),
+    vans: Math.max(0, Number(day.vans) || 0),
+    hours: safeDayPart === "Full Day" ? 8 : 4,
+    nightsOut: !!day.nightsOut
+};
 });
 
     saveToDevice();
@@ -10315,17 +10320,17 @@ function getNetTaskHoursForPlannerRow(day, state){
 function addScheduleDay(){
     const groupId = createId();
     manualSchedule.push({
-        id: createId(),
-        groupId,
-        dayPart: "Full Day",
-        task: "Load",
-        locationMode: "Collection to Delivery",
-        completionWindow: "None",
-        men: 2,
-        vans: 1,
-        hours: 8,
-        nightsOut: false
-    });
+    id: createId(),
+    groupId,
+    dayPart: "Full Day",
+    task: "Load",
+    locationMode: "Collection to Delivery",
+    completionWindow: "None",
+    men: 2,
+    vans: 1,
+    hours: 8,
+    nightsOut: false
+});
     saveManualScheduleToActiveSequence();
     renderScheduleCalculator();
 }
@@ -10346,17 +10351,17 @@ function ensurePmPair(row){
     const pairExists = manualSchedule.some(day => day.groupId === row.groupId && day.dayPart === "PM");
     if (!pairExists){
         manualSchedule.push({
-            id: createId(),
-            groupId: row.groupId,
-            dayPart: "PM",
-            task: "Unload",
-            locationMode: "Delivery Only",
-            completionWindow: "None",
-            men: row.men,
-            vans: row.vans,
-            hours: 4,
-            nightsOut: false
-        });
+    id: createId(),
+    groupId: row.groupId,
+    dayPart: "PM",
+    task: "Unload",
+    locationMode: "Delivery Only",
+    completionWindow: "None",
+    men: row.men,
+    vans: row.vans,
+    hours: 4,
+    nightsOut: false
+});
     }
 }
 
@@ -10414,17 +10419,17 @@ function updateScheduleDay(id, field, value){
     const hasAm = manualSchedule.some(day => day.groupId === updated.groupId && day.dayPart === "AM");
     if (!hasAm){
         manualSchedule.push({
-            id: createId(),
-            groupId: updated.groupId,
-            dayPart: "AM",
-            task: "Load",
-            locationMode: "Collection Only",
-            completionWindow: "None",
-            men: updated.men,
-            vans: updated.vans,
-            hours: 4,
-            nightsOut: false
-        });
+    id: createId(),
+    groupId: updated.groupId,
+    dayPart: "AM",
+    task: "Load",
+    locationMode: "Collection Only",
+    completionWindow: "None",
+    men: updated.men,
+    vans: updated.vans,
+    hours: 4,
+    nightsOut: false
+});
     }
 }
         if (value === "Full Day"){
