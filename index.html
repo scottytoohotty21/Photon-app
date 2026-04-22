@@ -10461,26 +10461,60 @@ function normalizeGroup(groupId){
         manualSchedule = manualSchedule.filter(day => !(day.groupId === groupId && day.dayPart !== "Full Day"));
     }
 }
+function normalizeCompletionDayRow(day) {
+    const completionWindow = String(day.completionWindow || "None");
+    if (completionWindow !== "Completion Day") return day;
 
+    const next = { ...day };
+
+    if (next.dayPart === "AM") {
+        if (
+            next.task === "Unload" ||
+            next.task === "Deliver and Crew Return"
+        ) {
+            next.task = "Load";
+        }
+
+        if (next.locationMode === "Delivery Only") {
+            next.locationMode = "Collection Only";
+        }
+    }
+
+    if (next.dayPart === "PM") {
+        if (
+            next.task === "Load" ||
+            next.task === "Load and Travel" ||
+            next.task === "Pack and Load"
+        ) {
+            next.task = "Unload";
+        }
+
+        if (next.locationMode === "Collection Only") {
+            next.locationMode = "Delivery Only";
+        }
+    }
+
+    return next;
+}
 function updateScheduleDay(id, field, value){
     manualSchedule = manualSchedule.map(day => {
-        if (day.id !== id) return day;
+    if (day.id !== id) return day;
 
-        if (field === "men" || field === "vans") {
-            return { ...day, [field]: Math.max(0, Number(value) || 0) };
-        }
+    let updatedDay;
 
-        if (field === "nightsOut") {
-            return { ...day, nightsOut: !!value };
-        }
+    if (field === "men" || field === "vans") {
+        updatedDay = { ...day, [field]: Math.max(0, Number(value) || 0) };
+    } else if (field === "nightsOut") {
+        updatedDay = { ...day, nightsOut: !!value };
+    } else if (field === "dayPart") {
+        const nextHours = value === "Full Day" ? 8 : 4;
+        updatedDay = { ...day, dayPart: value, hours: nextHours };
+    } else {
+        updatedDay = { ...day, [field]: value };
+    }
 
-        if (field === "dayPart") {
-            const nextHours = value === "Full Day" ? 8 : 4;
-            return { ...day, dayPart: value, hours: nextHours };
-        }
-
-        return { ...day, [field]: value };
-    });
+    return normalizeCompletionDayRow(updatedDay);
+});
 
     const row = manualSchedule.find(day => day.id === id);
     if (row && field === "dayPart"){
@@ -10523,6 +10557,9 @@ function updateScheduleDay(id, field, value){
         }
         normalizeGroup(row.groupId);
     }
+    manualSchedule = manualSchedule.map(function(day) {
+    return day.groupId === row.groupId ? normalizeCompletionDayRow(day) : day;
+});
 
     saveManualScheduleToActiveSequence();
     renderScheduleCalculator();
