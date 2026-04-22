@@ -9362,18 +9362,31 @@ const SPECIAL_MINUTES = {
 
 const DAY_PARTS = ["Full Day", "AM", "PM"];
 const TASK_OPTIONS = [
-    "Pack",
-    "Load",
-    "Unload",
-    "Pack and Load",
+    "Pack & Prepare",
+    "Pack fragiles & breakables",
+    "Pack and part Load",
+    "Pack, Load & Deliver",
+    "Commence loading",
+    "Continue loading",
+    "Complete loading",
     "Load and Deliver",
-    "Load and Travel",
-    "Deliver and Crew Return"
+    "Load & Travel",
+    "Travel",
+    "Deliver",
+    "Continue Delivery",
+    "Complete delivery",
+    "Deliver and Crew Return",
+    "Unpack"
 ];
-const DAY_LOCATION_MODES = [
-    "Collection Only",
-    "Collection to Delivery",
-    "Delivery Only"
+const TRAVEL_PATTERNS = [
+    "No travel",
+    "A-B",
+    "B-C",
+    "C-A",
+    "A-B-A",
+    "A-B-C",
+    "B-C-A",
+    "A-B-C-A"
 ];
 const COMPLETION_WINDOWS = [
     "None",
@@ -9747,8 +9760,8 @@ function getDefaultManualScheduleRows() {
             id: createId(),
             groupId: createId(),
             dayPart: "Full Day",
-            task: "Pack",
-            locationMode: "Collection Only",
+            task: "Commence loading",
+            travelPattern: "A-B",
             completionWindow: "None",
             men: 2,
             vans: 1,
@@ -9774,18 +9787,26 @@ function loadManualScheduleFromActiveSequence() {
 manualSchedule = schedule.manualDays.map(function(day) {
     const safeDayPart = day.dayPart || "Full Day";
 
+    let safeTravelPattern = day.travelPattern || "No travel";
+
+    if (!day.travelPattern && day.locationMode) {
+        if (day.locationMode === "Collection Only") safeTravelPattern = "A-B";
+        else if (day.locationMode === "Collection to Delivery") safeTravelPattern = "B-C";
+        else if (day.locationMode === "Delivery Only") safeTravelPattern = "C-A";
+    }
+
     return {
-    id: day.id || createId(),
-    groupId: day.groupId || createId(),
-    dayPart: safeDayPart,
-    task: day.task || "Pack",
-    locationMode: day.locationMode || "Collection Only",
-    completionWindow: day.completionWindow || "None",
-    men: Math.max(0, Number(day.men) || 0),
-    vans: Math.max(0, Number(day.vans) || 1),
-    hours: safeDayPart === "Full Day" ? 8 : 4,
-    nightsOut: !!day.nightsOut
-};
+        id: day.id || createId(),
+        groupId: day.groupId || createId(),
+        dayPart: safeDayPart,
+        task: day.task || "Commence loading",
+        travelPattern: safeTravelPattern,
+        completionWindow: day.completionWindow || "None",
+        men: Math.max(0, Number(day.men) || 0),
+        vans: Math.max(0, Number(day.vans) || 1),
+        hours: safeDayPart === "Full Day" ? 8 : 4,
+        nightsOut: !!day.nightsOut
+    };
 });
 }
 
@@ -9799,17 +9820,17 @@ function saveManualScheduleToActiveSequence() {
     const safeDayPart = day.dayPart || "Full Day";
 
     return {
-    id: day.id,
-    groupId: day.groupId,
-    dayPart: safeDayPart,
-    task: day.task,
-    locationMode: day.locationMode || "Collection Only",
-    completionWindow: day.completionWindow || "None",
-    men: Math.max(0, Number(day.men) || 0),
-    vans: Math.max(0, Number(day.vans) || 0),
-    hours: safeDayPart === "Full Day" ? 8 : 4,
-    nightsOut: !!day.nightsOut
-};
+        id: day.id,
+        groupId: day.groupId,
+        dayPart: safeDayPart,
+        task: day.task,
+        travelPattern: day.travelPattern || "No travel",
+        completionWindow: day.completionWindow || "None",
+        men: Math.max(0, Number(day.men) || 0),
+        vans: Math.max(0, Number(day.vans) || 0),
+        hours: safeDayPart === "Full Day" ? 8 : 4,
+        nightsOut: !!day.nightsOut
+    };
 });
 
     saveToDevice();
@@ -10342,10 +10363,9 @@ function getDayPartHours(dayPart) {
     return dayPart === "Full Day" ? 8 : 4;
 }
 
-function getCompletionAdjustedCapacity(day, mode) {
+function getCompletionAdjustedCapacity(day, mode, taskHours) {
     const men = Number(day.men) || 0;
-    const hours = getDayPartHours(day.dayPart || "Full Day");
-    const baseCapacity = men * hours;
+    const baseCapacity = men * Number(taskHours || 0);
     const completionWindow = String(day.completionWindow || "None");
 
     if (completionWindow !== "Completion Day") {
@@ -10354,64 +10374,56 @@ function getCompletionAdjustedCapacity(day, mode) {
 
     if (mode === "load") {
         if (day.dayPart === "PM") return 0;
-        return men * 4;
+        return men * Math.min(Number(taskHours || 0), 4);
     }
 
     if (mode === "unload") {
         if (day.dayPart === "AM") return 0;
-        return men * 4;
+        return men * Math.min(Number(taskHours || 0), 4);
     }
 
     return baseCapacity;
 }
 
-function getTransitHoursForLocationMode(locationMode, state){
-    const mode = String(locationMode || "Collection Only");
+function getTravelPatternHours(travelPattern, state){
+    const ab = Number(state.depotToCollectionHours || 0) + (Number(state.depotToCollectionMinutes || 0) / 60);
+    const bc = Number(state.collectionToDeliveryHours || 0) + (Number(state.collectionToDeliveryMinutes || 0) / 60);
+    const ca = Number(state.deliveryToDepotHours || 0) + (Number(state.deliveryToDepotMinutes || 0) / 60);
 
-    if (mode === "Collection Only") {
-        return round2(
-            Number(state.depotToCollectionHours || 0) +
-            (Number(state.depotToCollectionMinutes || 0) / 60)
-        );
-    }
+    const pattern = String(travelPattern || "No travel");
 
-    if (mode === "Collection to Delivery") {
-        return round2(
-            Number(state.collectionToDeliveryHours || 0) +
-            (Number(state.collectionToDeliveryMinutes || 0) / 60)
-        );
-    }
-
-    if (mode === "Delivery Only") {
-        return round2(
-            Number(state.deliveryToDepotHours || 0) +
-            (Number(state.deliveryToDepotMinutes || 0) / 60)
-        );
-    }
+    if (pattern === "No travel") return 0;
+    if (pattern === "A-B") return round2(ab);
+    if (pattern === "B-C") return round2(bc);
+    if (pattern === "C-A") return round2(ca);
+    if (pattern === "A-B-A") return round2(ab + ab);
+    if (pattern === "A-B-C") return round2(ab + bc);
+    if (pattern === "B-C-A") return round2(bc + ca);
+    if (pattern === "A-B-C-A") return round2(ab + bc + ca);
 
     return 0;
 }
 
 function getNetTaskHoursForPlannerRow(day, state){
     const rowHours = Number(day.hours || 0);
-    const transitHours = getTransitHoursForLocationMode(day.locationMode, state);
-    return Math.max(0, round2(rowHours - transitHours));
+    const travelHours = getTravelPatternHours(day.travelPattern, state);
+    return Math.max(0, round2(rowHours - travelHours));
 }
 
 function addScheduleDay(){
     const groupId = createId();
     manualSchedule.push({
-    id: createId(),
-    groupId,
-    dayPart: "Full Day",
-    task: "Load",
-    locationMode: "Collection to Delivery",
-    completionWindow: "None",
-    men: 2,
-    vans: 1,
-    hours: 8,
-    nightsOut: false
-});
+        id: createId(),
+        groupId,
+        dayPart: "Full Day",
+        task: "Commence loading",
+        travelPattern: "A-B",
+        completionWindow: "None",
+        men: 2,
+        vans: 1,
+        hours: 8,
+        nightsOut: false
+    });
     saveManualScheduleToActiveSequence();
     renderScheduleCalculator();
 }
@@ -10431,12 +10443,12 @@ function removeScheduleDay(id){
 function ensurePmPair(row){
     const pairExists = manualSchedule.some(day => day.groupId === row.groupId && day.dayPart === "PM");
     if (!pairExists){
-        manualSchedule.push({
+       manualSchedule.push({
     id: createId(),
     groupId: row.groupId,
     dayPart: "PM",
-    task: "Unload",
-    locationMode: "Delivery Only",
+    task: "Deliver",
+    travelPattern: "B-C",
     completionWindow: "None",
     men: row.men,
     vans: row.vans,
@@ -10462,39 +10474,7 @@ function normalizeGroup(groupId){
     }
 }
 function normalizeCompletionDayRow(day) {
-    const completionWindow = String(day.completionWindow || "None");
-    if (completionWindow !== "Completion Day") return day;
-
-    const next = { ...day };
-
-    if (next.dayPart === "AM") {
-        if (
-            next.task === "Unload" ||
-            next.task === "Deliver and Crew Return"
-        ) {
-            next.task = "Load";
-        }
-
-        if (next.locationMode === "Delivery Only") {
-            next.locationMode = "Collection Only";
-        }
-    }
-
-    if (next.dayPart === "PM") {
-        if (
-            next.task === "Load" ||
-            next.task === "Load and Travel" ||
-            next.task === "Pack and Load"
-        ) {
-            next.task = "Unload";
-        }
-
-        if (next.locationMode === "Collection Only") {
-            next.locationMode = "Delivery Only";
-        }
-    }
-
-    return next;
+    return { ...day };
 }
 function updateScheduleDay(id, field, value){
     manualSchedule = manualSchedule.map(day => {
@@ -10521,40 +10501,42 @@ function updateScheduleDay(id, field, value){
         if (value === "AM"){
     const updated = manualSchedule.find(day => day.id === id);
     updated.hours = 4;
-    updated.task = "Load";
-    updated.locationMode = "Collection Only";
+    updated.task = "Commence loading";
+    updated.travelPattern = "A-B";
     ensurePmPair(updated);
 }
-       if (value === "PM"){
+
+if (value === "PM"){
     const updated = manualSchedule.find(day => day.id === id);
     updated.hours = 4;
-    updated.task = "Unload";
-    updated.locationMode = "Delivery Only";
+    updated.task = "Deliver";
+    updated.travelPattern = "B-C";
 
     const hasAm = manualSchedule.some(day => day.groupId === updated.groupId && day.dayPart === "AM");
     if (!hasAm){
         manualSchedule.push({
-    id: createId(),
-    groupId: updated.groupId,
-    dayPart: "AM",
-    task: "Load",
-    locationMode: "Collection Only",
-    completionWindow: "None",
-    men: updated.men,
-    vans: updated.vans,
-    hours: 4,
-    nightsOut: false
-});
+            id: createId(),
+            groupId: updated.groupId,
+            dayPart: "AM",
+            task: "Commence loading",
+            travelPattern: "A-B",
+            completionWindow: "None",
+            men: updated.men,
+            vans: updated.vans,
+            hours: 4,
+            nightsOut: false
+        });
     }
 }
-        if (value === "Full Day"){
-            manualSchedule = manualSchedule.filter(day => day.groupId !== row.groupId || day.id === row.id);
-            manualSchedule = manualSchedule.map(day =>
-                day.id === row.id
-                    ? { ...day, dayPart: "Full Day", hours: 8, task: day.task === "Unload" ? "Load and Deliver" : day.task }
-                    : day
-            );
-        }
+
+if (value === "Full Day"){
+    manualSchedule = manualSchedule.filter(day => day.groupId !== row.groupId || day.id === row.id);
+    manualSchedule = manualSchedule.map(day =>
+        day.id === row.id
+            ? { ...day, dayPart: "Full Day", hours: 8 }
+            : day
+    );
+}
         normalizeGroup(row.groupId);
     }
     manualSchedule = manualSchedule.map(function(day) {
@@ -10604,11 +10586,11 @@ function renderSchedulePlanner(){
         </select>
     </div>
     <div>
-        <label class="mini-label">Location Mode</label>
-        <select class="field" onchange="updateScheduleDay('${day.id}','locationMode',this.value)">
-            ${optionHtml(DAY_LOCATION_MODES, day.locationMode || "Collection Only")}
-        </select>
-    </div>
+    <label class="mini-label">Travel Pattern</label>
+    <select class="field" onchange="updateScheduleDay('${day.id}','travelPattern',this.value)">
+        ${optionHtml(TRAVEL_PATTERNS, day.travelPattern || "No travel")}
+    </select>
+</div>
     <div>
         <label class="mini-label">Completion Day</label>
         <select class="field" onchange="updateScheduleDay('${day.id}','completionWindow',this.value)">
@@ -10651,15 +10633,62 @@ function renderSchedulePlanner(){
 </div>
 
         <div class="schedule-debug-line">
-            Transit applied: ${getTransitHoursForLocationMode(day.locationMode, getState()).toFixed(2)} hrs ·
-            Net task time: ${getNetTaskHoursForPlannerRow(day, getState()).toFixed(2)} hrs ·
-            Net man-hours: ${(Number(day.men || 0) * getNetTaskHoursForPlannerRow(day, getState())).toFixed(2)}
+            Travel applied: ${getTravelPatternHours(day.travelPattern, getState()).toFixed(2)} hrs ·
+Net task time: ${getNetTaskHoursForPlannerRow(day, getState()).toFixed(2)} hrs ·
+Net man-hours: ${(Number(day.men || 0) * getNetTaskHoursForPlannerRow(day, getState())).toFixed(2)}
         </div>
     </div>
 `).join("");
     }).join("");
 }
 
+function getPlannerTaskMode(day) {
+    const task = String(day.task || "");
+    const completionWindow = String(day.completionWindow || "None");
+    const dayPart = String(day.dayPart || "Full Day");
+
+    const completionAmOnly = completionWindow === "Completion Day" && dayPart === "AM";
+    const completionPmOnly = completionWindow === "Completion Day" && dayPart === "PM";
+
+    if (task === "Pack & Prepare") return "pack";
+    if (task === "Pack fragiles & breakables") return "pack";
+    if (task === "Pack and part Load") return "packLoad";
+
+    if (task === "Pack, Load & Deliver") {
+        if (completionAmOnly) return "packLoad";
+        if (completionPmOnly) return "unload";
+        return "packLoadUnload";
+    }
+
+    if (
+        task === "Commence loading" ||
+        task === "Continue loading" ||
+        task === "Complete loading" ||
+        task === "Load & Travel"
+    ) {
+        return completionPmOnly ? "none" : "load";
+    }
+
+    if (task === "Load and Deliver") {
+        if (completionAmOnly) return "load";
+        if (completionPmOnly) return "unload";
+        return "loadUnload";
+    }
+
+    if (
+        task === "Deliver" ||
+        task === "Continue Delivery" ||
+        task === "Complete delivery" ||
+        task === "Deliver and Crew Return"
+    ) {
+        return completionAmOnly ? "none" : "unload";
+    }
+
+    if (task === "Travel") return "none";
+    if (task === "Unpack") return "none";
+
+    return "none";
+}
 function calcScheduleValidation(packing, loading, unloading, special, state){
     const loadingProfile = getLoadingProfile(state.loadingVariant, state.loadingScenario);
     const effectiveLoadHours = state.loadingScenario === "exStore" ? 0 : round2(loading.hours);
@@ -10676,100 +10705,65 @@ function calcScheduleValidation(packing, loading, unloading, special, state){
         Unload: 0
     };
 
-    let sharedPackLoadPool = 0;
-    let sharedLoadUnloadPool = 0;
-
     const groups = {};
+
     manualSchedule.forEach(day => {
         if (!groups[day.groupId]) groups[day.groupId] = [];
         groups[day.groupId].push(day);
     });
 
     Object.values(groups).forEach(rows => {
-        const hasAmLoadish = rows.some(day =>
-            day.dayPart === "AM" &&
-            ["Load", "Pack and Load", "Load and Deliver", "Load and Travel"].includes(day.task)
-        );
-
         rows.forEach(day => {
+            const taskMode = getPlannerTaskMode(day);
+            const taskHours = getNetTaskHoursForPlannerRow(day, state);
             const men = Number(day.men) || 0;
-const hours = getDayPartHours(day.dayPart || "Full Day");
-const loadCapacity = getCompletionAdjustedCapacity(day, "load");
-const unloadCapacity = getCompletionAdjustedCapacity(day, "unload");
-const baseCapacity = men * hours;
 
-            switch(day.task){
-    case "Pack":
-        allocated.Pack += baseCapacity;
-        break;
+            if (taskMode === "pack") {
+                allocated.Pack += men * taskHours;
+                return;
+            }
 
-    case "Unload":
-    case "Deliver and Crew Return":
-        allocated.Unload += unloadCapacity;
-        break;
+            if (taskMode === "load") {
+                const usableHours = getCompletionAdjustedCapacity(day, "load", taskHours);
+                allocated.Load += men * usableHours;
+                return;
+            }
 
-    case "Pack and Load":
-        if (day.dayPart === "AM") {
-            sharedPackLoadPool += loadCapacity;
-        } else if (day.dayPart === "PM" && hasAmLoadish) {
-            const pmLoadHours = loadingProfile.loadingApplies
-                ? round2((men * 4 * loadingProfile.pmAfterAmEquivalentRate) / state.loadRate)
-                : 0;
-            sharedPackLoadPool += Math.min(loadCapacity, pmLoadHours);
-        } else {
-            sharedPackLoadPool += loadCapacity;
-        }
-        break;
+            if (taskMode === "unload") {
+                const usableHours = getCompletionAdjustedCapacity(day, "unload", taskHours);
+                allocated.Unload += men * usableHours;
+                return;
+            }
 
-    case "Load and Deliver":
-        if (day.dayPart === "AM") {
-            sharedLoadUnloadPool += loadCapacity;
-        } else if (day.dayPart === "PM" && hasAmLoadish) {
-            const pmLoadHours = loadingProfile.loadingApplies
-                ? round2((men * 4 * loadingProfile.pmAfterAmEquivalentRate) / state.loadRate)
-                : 0;
-            const usableLoadHours = Math.min(loadCapacity, pmLoadHours);
-            const usableUnloadHours = unloadCapacity;
-            sharedLoadUnloadPool += usableLoadHours + usableUnloadHours;
-        } else {
-            sharedLoadUnloadPool += loadCapacity + unloadCapacity;
-        }
-        break;
+            if (taskMode === "pack_load") {
+                const usableHours = getCompletionAdjustedCapacity(day, "load", taskHours);
+                const rowManHours = men * usableHours;
 
-    case "Load":
-    case "Load and Travel": {
-        let loadHoursEquivalent = loadCapacity;
+                const packShortfall = Math.max(0, required.Pack - allocated.Pack);
+                const toPack = Math.min(rowManHours, packShortfall);
 
-        if (state.loadingScenario === "exStore") {
-            loadHoursEquivalent = 0;
-        } else if (day.dayPart === "PM" && hasAmLoadish) {
-            const pmVolume = loadingProfile.loadingApplies
-                ? men * 4 * loadingProfile.pmAfterAmEquivalentRate
-                : 0;
-            loadHoursEquivalent = round2(pmVolume / state.loadRate);
-            loadHoursEquivalent = Math.min(loadHoursEquivalent, loadCapacity);
-        }
+                allocated.Pack += toPack;
+                allocated.Load += Math.max(0, rowManHours - toPack);
+                return;
+            }
 
-        allocated.Load += loadHoursEquivalent;
-        break;
-    }
+            if (taskMode === "load_unload") {
+                const loadUsableHours = getCompletionAdjustedCapacity(day, "load", taskHours);
+                const unloadUsableHours = getCompletionAdjustedCapacity(day, "unload", taskHours);
 
-    default:
-        break;
-}
+                const rowLoadManHours = men * loadUsableHours;
+                const rowUnloadManHours = men * unloadUsableHours;
+                const rowManHours = rowLoadManHours + rowUnloadManHours;
 
+                const loadShortfall = Math.max(0, required.Load - allocated.Load);
+                const toLoad = Math.min(rowManHours, loadShortfall);
+
+                allocated.Load += toLoad;
+                allocated.Unload += Math.max(0, rowManHours - toLoad);
+                return;
+            }
         });
     });
-
-    const packNeedAfterDirect = Math.max(0, required.Pack - allocated.Pack);
-    const packLoadPoolToPack = Math.min(sharedPackLoadPool, packNeedAfterDirect);
-    allocated.Pack += packLoadPoolToPack;
-    allocated.Load += Math.max(0, sharedPackLoadPool - packLoadPoolToPack);
-
-    const loadNeedAfterPackPool = Math.max(0, required.Load - allocated.Load);
-    const loadUnloadPoolToLoad = Math.min(sharedLoadUnloadPool, loadNeedAfterPackPool);
-    allocated.Load += loadUnloadPoolToLoad;
-    allocated.Unload += Math.max(0, sharedLoadUnloadPool - loadUnloadPoolToLoad);
 
     const passIcon = "✓";
     const failIcon = "✕";
@@ -10783,60 +10777,50 @@ const baseCapacity = men * hours;
         if (req === 0 && cap === 0) {
             return { type: "ok", text: `${passIcon} ${task} not required and none allocated.` };
         }
+
         if (cap + 0.01 < req) {
             return { type: "error", text: `${failIcon} ${task} short by ${Math.abs(diff).toFixed(2)} man-hours.` };
         }
+
         if (diff > 0.5) {
             return { type: "warn", text: `${warnIcon} ${task} has ${diff.toFixed(2)} spare man-hours allocated.` };
         }
+
         return { type: "ok", text: `${passIcon} ${task} capacity matches requirement.` };
     });
 
-    if (sharedPackLoadPool > 0){
-        results.push({
-            type: "ok",
-            text: `${passIcon} Pack and Load rows use a shared labour pool, so spare pack capacity can offset load demand.`
-        });
-    }
-
-    if (sharedLoadUnloadPool > 0){
-        results.push({
-            type: "ok",
-            text: `${passIcon} Load and Deliver rows use a shared labour pool, so spare load capacity can offset unload demand.`
-        });
-    }
-
     results.push({
         type: "ok",
-        text: `${passIcon} Planner row capacity now subtracts transit time using the selected location mode before checking task labour.`
+        text: `${passIcon} Planner validation now uses task mode directly from the selected task.`
     });
 
     results.push({
         type: "ok",
-        text: `Collection Only uses Depot to Collection. Collection to Delivery uses Collection to Delivery. Delivery Only uses Delivery to Depot.`
+        text: `${passIcon} Travel patterns use the actual saved leg times: A-B = Depot to Collection, B-C = Collection to Delivery, C-A = Delivery to Depot. Travel is deducted before task labour is checked.`
     });
 
     results.push({
         type: "ok",
         text: state.loadingScenario === "exStore"
             ? `${passIcon} Ex store move type is treated as delivery only, so no loading capacity is required.`
-            : `${passIcon} Planner load validation uses ${loadingProfile.morningEquivalentRate} cuft per man-hour in the morning and ${loadingProfile.pmAfterAmEquivalentRate} cuft per man-hour for PM loading when it follows AM loading on the same day.`
+            : `${passIcon} Loading requirement still uses the ${loadingProfile.label} loading profile for calculated demand.`
     });
 
-    results.push({
-        type: "ok",
-        text: `${passIcon} Load-side specials are included in loading, and unload-side specials are included in unloading for schedule checking.`
-    });
     const hasCompletionWindow = manualSchedule.some(day =>
-    String(day.completionWindow || "None") === "Completion Day"
-);
+        String(day.completionWindow || "None") === "Completion Day"
+    );
 
-if (hasCompletionWindow) {
+    if (hasCompletionWindow) {
+        results.push({
+            type: "ok",
+            text: `${passIcon} Completion day rows are capped by the 1pm completion split when load or unload work is being validated.`
+        });
+    }
+
     results.push({
         type: "ok",
-        text: `${passIcon} Completion day rules are active, so loading is capped to the pre-1pm window and unloading is capped to the post-1pm window.`
+        text: `${passIcon} Load-side specials remain in loading demand, and unload-side specials remain in unloading demand.`
     });
-}
 
     return results;
 }
