@@ -9377,8 +9377,7 @@ const DAY_LOCATION_MODES = [
 ];
 const COMPLETION_WINDOWS = [
     "None",
-    "Must Finish Loading By 1pm",
-    "Cannot Start Unloading Until 1pm"
+    "Completion Day"
 ];
 
 function getQuoteLineLabel(line) {
@@ -10349,20 +10348,18 @@ function getCompletionAdjustedCapacity(day, mode) {
     const baseCapacity = men * hours;
     const completionWindow = String(day.completionWindow || "None");
 
-    if (mode === "load") {
-        if (completionWindow === "Must Finish Loading By 1pm") {
-            if (day.dayPart === "PM") return 0;
-            return men * 4;
-        }
+    if (completionWindow !== "Completion Day") {
         return baseCapacity;
     }
 
+    if (mode === "load") {
+        if (day.dayPart === "PM") return 0;
+        return men * 4;
+    }
+
     if (mode === "unload") {
-        if (completionWindow === "Cannot Start Unloading Until 1pm") {
-            if (day.dayPart === "AM") return 0;
-            return men * 4;
-        }
-        return baseCapacity;
+        if (day.dayPart === "AM") return 0;
+        return men * 4;
     }
 
     return baseCapacity;
@@ -10576,7 +10573,7 @@ function renderSchedulePlanner(){
         </select>
     </div>
     <div>
-        <label class="mini-label">Completion Window</label>
+        <label class="mini-label">Completion Day</label>
         <select class="field" onchange="updateScheduleDay('${day.id}','completionWindow',this.value)">
             ${optionHtml(COMPLETION_WINDOWS, day.completionWindow || "None")}
         </select>
@@ -10794,13 +10791,13 @@ const baseCapacity = men * hours;
         text: `${passIcon} Load-side specials are included in loading, and unload-side specials are included in unloading for schedule checking.`
     });
     const hasCompletionWindow = manualSchedule.some(day =>
-    String(day.completionWindow || "None") !== "None"
+    String(day.completionWindow || "None") === "Completion Day"
 );
 
 if (hasCompletionWindow) {
     results.push({
         type: "ok",
-        text: `${passIcon} Completion window rules are active, so loading is restricted by any 'finish by 1pm' rows and unloading is restricted by any 'start after 1pm' rows.`
+        text: `${passIcon} Completion day rules are active, so loading is capped to the pre-1pm window and unloading is capped to the post-1pm window.`
     });
 }
 
