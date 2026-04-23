@@ -10634,30 +10634,50 @@ function getDayPartHours(dayPart) {
     return dayPart === "Full Day" ? 8 : 4;
 }
 
-function getCompletionAdjustedCapacity(day, mode, taskHours, state) {
+function getCompletionWindowHours(dayPart) {
+    if (dayPart === "AM") return 5;       // 08:00 to 13:00
+    if (dayPart === "PM") return 4.5;     // 13:00 to 17:30
+    if (dayPart === "Full Day") return 9.5; // 08:00 to 17:30
+    return 0;
+}
+
+function getNormalWindowHours(dayPart) {
+    if (dayPart === "AM") return 5;
+    if (dayPart === "PM") return 4.5;
+    if (dayPart === "Full Day") return 9.5;
+    return 0;
+}
+
+function getWindowHoursForRow(day) {
     const completionWindow = String(day.completionWindow || "None");
 
-    if (completionWindow !== "Completion Day") {
-        return Math.max(0, Number(taskHours || 0));
+    if (completionWindow === "Completion Day") {
+        return getCompletionWindowHours(day.dayPart);
     }
 
-    const travelHours = getTravelPatternHours(day.travelPattern, state);
+    return getNormalWindowHours(day.dayPart);
+}
+function getCompletionAdjustedCapacity(day, mode, taskHours) {
+    const completionWindow = String(day.completionWindow || "None");
+    const usableTaskHours = Math.max(0, Number(taskHours || 0));
+
+    if (completionWindow !== "Completion Day") {
+        return usableTaskHours;
+    }
 
     if (mode === "load") {
         if (day.dayPart === "PM") return 0;
-
-        // 8am to 1pm completion window = 5 hours gross
-        return Math.max(0, 5 - travelHours);
+        if (day.dayPart === "AM") return Math.min(usableTaskHours, 5);
+        if (day.dayPart === "Full Day") return Math.min(usableTaskHours, 5);
     }
 
     if (mode === "unload") {
         if (day.dayPart === "AM") return 0;
-
-        // keep current half-day assumption for PM unless you want a different rule
-        return Math.max(0, 4 - travelHours);
+        if (day.dayPart === "PM") return Math.min(usableTaskHours, 4.5);
+        if (day.dayPart === "Full Day") return Math.min(usableTaskHours, 4.5);
     }
 
-    return Math.max(0, Number(taskHours || 0));
+    return usableTaskHours;
 }
 
 function getTravelPatternHours(travelPattern, state){
@@ -10680,8 +10700,8 @@ function getTravelPatternHours(travelPattern, state){
 }
 
 function getNetTaskHoursForPlannerRow(day, state){
-    const rowHours = Number(day.hours || 0);
-    const travelHours = getRowLegHours(day);
+    const rowHours = getWindowHoursForRow(day);
+    const travelHours = getTravelPatternHours(day.travelPattern, state);
     return Math.max(0, round2(rowHours - travelHours));
 }
 
