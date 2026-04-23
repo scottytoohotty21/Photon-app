@@ -10259,7 +10259,6 @@ function calcSpecialLabour(state) {
 const collectionToDeliveryMinutes = Number(state.collectionToDeliveryMinutes || 0);
 const deliveryToDepotMinutes = Number(state.deliveryToDepotMinutes || 0);
 
-const extraCollectionToDeliveryMinutes = Math.max(0, collectionToDeliveryMinutes - 30);
 
     const loadMinutes =
         (state.special.frameBeds * 15) +
@@ -10277,18 +10276,17 @@ const extraCollectionToDeliveryMinutes = Math.max(0, collectionToDeliveryMinutes
         ((extraExportWrapVol / 100) * 25);
 
     const unloadMinutes =
-        (state.special.frameBeds * 15) +
-        (state.special.ottomanBeds * 30) +
-        (state.special.bunkBeds * 30) +
-        (state.special.cots * 15) +
-        (state.special.diningTables * 15) +
-        (state.special.customMinutes > 0 ? state.special.customMinutes : 0) +
-        (state.special.upright * 25) +
-        (state.special.grand * 60) +
-        (state.special.clock * 30) +
-        (state.special.appliance * 30) +
-        (state.special.crate * 15) +
-        extraCollectionToDeliveryMinutes;
+    (state.special.frameBeds * 15) +
+    (state.special.ottomanBeds * 30) +
+    (state.special.bunkBeds * 30) +
+    (state.special.cots * 15) +
+    (state.special.diningTables * 15) +
+    (state.special.customMinutes > 0 ? state.special.customMinutes : 0) +
+    (state.special.upright * 25) +
+    (state.special.grand * 60) +
+    (state.special.clock * 30) +
+    (state.special.appliance * 30) +
+    (state.special.crate * 15);
 
     const totalHours = (loadMinutes + unloadMinutes) / 60;
 
@@ -10316,7 +10314,7 @@ extraCollectionToDeliveryHours: round2(extraCollectionToDeliveryMinutes / 60),
             crate: round2((state.special.crate * 30) / 60),
             loft: round2(((state.loftVol / 100) * 20) / 60),
             exportWrap: round2(((extraExportWrapVol / 100) * 25) / 60),
-            transit: round2(extraCollectionToDeliveryMinutes / 60),
+            transit: 0,
             includedExportWrapVol
         }
     };
@@ -10946,7 +10944,7 @@ function renderScheduleCalculator(){
         `Loft effects: ${special.breakdown.loft.toFixed(2)} hrs · ` +
         `Export wrapping: ${special.breakdown.exportWrap.toFixed(2)} hrs extra after first ${special.breakdown.includedExportWrapVol} cuft included · ` +
         `Depot to collection: ${special.depotToCollectionHours.toFixed(2)} hrs · ` +
-`Collection to delivery: ${special.collectionToDeliveryHours.toFixed(2)} hrs (${special.breakdown.transit.toFixed(2)} hrs chargeable after first 30 mins included) · ` +
+`Collection to delivery: ${special.collectionToDeliveryHours.toFixed(2)} hrs · ` +
 `Delivery to depot: ${special.deliveryToDepotHours.toFixed(2)} hrs · ` +
 `Load side specials: ${special.loadSideHours.toFixed(2)} hrs · Unload side specials: ${special.unloadSideHours.toFixed(2)} hrs.`;
 
