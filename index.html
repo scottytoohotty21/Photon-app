@@ -2557,28 +2557,8 @@ Enter as: Surname, First Name
         </select>
     </div>
 </div>
-               <div class="section-block">
-    <div class="section-title">Transit Times</div>
-
-    <div class="grid-2">
-        <div>
-            <label class="mini-label">Depot to Collection Minutes</label>
-            <input id="depotToCollectionMinutes" type="number" min="0" class="field" value="0" oninput="handleScheduleInputChange()" />
-        </div>
-
-        <div>
-            <label class="mini-label">Collection to Delivery Minutes</label>
-            <input id="collectionToDeliveryMinutes" type="number" min="0" class="field" value="30" oninput="handleScheduleInputChange()" />
-        </div>
-
-        <div>
-            <label class="mini-label">Delivery to Depot Minutes</label>
-            <input id="deliveryToDepotMinutes" type="number" min="0" class="field" value="0" oninput="handleScheduleInputChange()" />
-        </div>
-    </div>
-</div>
-
-                <div class="section-block">
+               
+<div class="section-block">
                     <div class="section-title">Volume Inputs</div>
                     <div class="grid-2">
                         <div>
@@ -3083,9 +3063,6 @@ const inventoryCategories = {
 function createEmptySequenceSchedule() {
     return {
         moveDate: "",
-        depotToCollectionMinutes: 0,
-        collectionToDeliveryMinutes: 30,
-        deliveryToDepotMinutes: 0,
         loftVol: 0,
         loadRate: 125,
         unloadRate: 132,
@@ -3314,21 +3291,9 @@ function saveInventoryContext() {
 
             const defaults = createEmptySequenceSchedule();
 
-           if (seq.schedule.depotToCollectionMinutes === undefined) {
-    seq.schedule.depotToCollectionMinutes =
-        ((Number(seq.schedule.depotToCollectionHours || 0) * 60) + Number(seq.schedule.depotToCollectionMinutes || 0));
-}
-
-if (seq.schedule.collectionToDeliveryMinutes === undefined) {
-    seq.schedule.collectionToDeliveryMinutes =
-        ((Number(seq.schedule.collectionToDeliveryHours || 0) * 60) + Number(seq.schedule.collectionToDeliveryMinutes || 0));
-}
-
-if (seq.schedule.deliveryToDepotMinutes === undefined) {
-    seq.schedule.deliveryToDepotMinutes =
-        ((Number(seq.schedule.deliveryToDepotHours || 0) * 60) + Number(seq.schedule.deliveryToDepotMinutes || 0));
-}
-
+           delete seq.schedule.depotToCollectionMinutes;
+delete seq.schedule.collectionToDeliveryMinutes;
+delete seq.schedule.deliveryToDepotMinutes;
 delete seq.schedule.depotToCollectionHours;
 delete seq.schedule.collectionToDeliveryHours;
 delete seq.schedule.deliveryToDepotHours;
@@ -9744,21 +9709,9 @@ function ensureSequenceScheduleShape(seq) {
 
     const defaults = createEmptySequenceSchedule();
 
-   if (seq.schedule.depotToCollectionMinutes === undefined) {
-    seq.schedule.depotToCollectionMinutes =
-        ((Number(seq.schedule.depotToCollectionHours || 0) * 60) + Number(seq.schedule.depotToCollectionMinutes || 0));
-}
-
-if (seq.schedule.collectionToDeliveryMinutes === undefined) {
-    seq.schedule.collectionToDeliveryMinutes =
-        ((Number(seq.schedule.collectionToDeliveryHours || 0) * 60) + Number(seq.schedule.collectionToDeliveryMinutes || 0));
-}
-
-if (seq.schedule.deliveryToDepotMinutes === undefined) {
-    seq.schedule.deliveryToDepotMinutes =
-        ((Number(seq.schedule.deliveryToDepotHours || 0) * 60) + Number(seq.schedule.deliveryToDepotMinutes || 0));
-}
-
+   delete seq.schedule.depotToCollectionMinutes;
+delete seq.schedule.collectionToDeliveryMinutes;
+delete seq.schedule.deliveryToDepotMinutes;
 delete seq.schedule.depotToCollectionHours;
 delete seq.schedule.collectionToDeliveryHours;
 delete seq.schedule.deliveryToDepotHours;
@@ -9801,14 +9754,12 @@ function getDefaultManualScheduleRows() {
             groupId: createId(),
             dayPart: "Full Day",
             task: "Load and Deliver",
-            fromAddress: "Depot",
-            toAddress: "Collection Address",
-            travelMinutes: 30,
             completionWindow: "None",
             vans: 1,
             men: 2,
             hours: 8,
-            nightsOut: false
+            nightsOut: false,
+            legs: []
         }
     ];
 }
@@ -10125,10 +10076,7 @@ function loadScheduleInputsFromActiveSequence() {
     const schedule = ensureSequenceScheduleShape(seq);
     const photonFeed = getPhotonFeed();
 
-    const depotToCollectionMinutesEl = document.getElementById("depotToCollectionMinutes");
-const collectionToDeliveryMinutesEl = document.getElementById("collectionToDeliveryMinutes");
-const deliveryToDepotMinutesEl = document.getElementById("deliveryToDepotMinutes");
-const loftVolEl = document.getElementById("loftVol");
+    const loftVolEl = document.getElementById("loftVol");
     const loadRateEl = document.getElementById("loadRate");
     const unloadRateEl = document.getElementById("unloadRate");
     const loadingVariantEl = document.getElementById("loadingVariant");
@@ -10150,10 +10098,7 @@ const loftVolEl = document.getElementById("loftVol");
     const svcCrateEl = document.getElementById("svc_crate");
     const exportWrapVolEl = document.getElementById("exportWrapVol");
 
-    if (depotToCollectionMinutesEl) depotToCollectionMinutesEl.value = schedule.depotToCollectionMinutes;
-if (collectionToDeliveryMinutesEl) collectionToDeliveryMinutesEl.value = schedule.collectionToDeliveryMinutes;
-if (deliveryToDepotMinutesEl) deliveryToDepotMinutesEl.value = schedule.deliveryToDepotMinutes;
-if (loftVolEl) loftVolEl.value = schedule.loftVol;
+    if (loftVolEl) loftVolEl.value = schedule.loftVol;
     if (loadRateEl) loadRateEl.value = schedule.loadRate;
     if (unloadRateEl) unloadRateEl.value = schedule.unloadRate;
     if (loadingVariantEl) loadingVariantEl.value = schedule.loadingVariant || "Standard";
@@ -10195,10 +10140,7 @@ function saveScheduleInputsToActiveSequence() {
         return String(el.value || "").trim();
     };
 
-    schedule.depotToCollectionMinutes = getNum("depotToCollectionMinutes", 0);
-schedule.collectionToDeliveryMinutes = getNum("collectionToDeliveryMinutes", 30);
-schedule.deliveryToDepotMinutes = getNum("deliveryToDepotMinutes", 0);
-schedule.loftVol = getNum("loftVol", 0);
+    schedule.loftVol = getNum("loftVol", 0);
     schedule.loadRate = getNum("loadRate", 125);
     schedule.unloadRate = getNum("unloadRate", 132);
     schedule.loadingVariant = getText("loadingVariant", "Standard");
@@ -10699,33 +10641,18 @@ function getCompletionAdjustedCapacity(day, mode, taskHours) {
 }
 
 function getTravelPatternHours(travelPattern, state){
-    const ab = Number(state.depotToCollectionMinutes || 0) / 60;
-    const bc = Number(state.collectionToDeliveryMinutes || 0) / 60;
-    const ca = Number(state.deliveryToDepotMinutes || 0) / 60;
-
-    const pattern = String(travelPattern || "None");
-
-    if (pattern === "None") return 0;
-    if (pattern === "A-B") return round2(ab);
-    if (pattern === "B-C") return round2(bc);
-    if (pattern === "C-A") return round2(ca);
-    if (pattern === "A-B-A") return round2(ab + ab);
-    if (pattern === "A-B-C") return round2(ab + bc);
-    if (pattern === "B-C-A") return round2(bc + ca);
-    if (pattern === "A-B-C-A") return round2(ab + bc + ca);
-
     return 0;
 }
 
 function getNetTaskHoursForPlannerRow(day, state){
     const rowHours = getWindowHoursForRow(day);
-    const travelHours = getTravelPatternHours(day.travelPattern, state);
+    const travelHours = getRowLegHours(day);
     return Math.max(0, round2(rowHours - travelHours));
 }
 
 function addScheduleDay(){
     const groupId = createId();
-   manualSchedule.push({
+ manualSchedule.push({
     id: createId(),
     groupId,
     dayPart: "Full Day",
@@ -10756,12 +10683,11 @@ function removeScheduleDay(id){
 function ensurePmPair(row){
     const pairExists = manualSchedule.some(day => day.groupId === row.groupId && day.dayPart === "PM");
     if (!pairExists){
-        manualSchedule.push({
+manualSchedule.push({
     id: createId(),
     groupId: row.groupId,
     dayPart: "PM",
     task: "Deliver",
-    travelPattern: "B-C-A",
     completionWindow: "None",
     men: row.men,
     vans: row.vans,
@@ -10813,11 +10739,10 @@ function updateScheduleDay(id, field, value){
     const row = manualSchedule.find(day => day.id === id);
 
     if (row && field === "dayPart"){
-        if (value === "AM"){
+if (value === "AM"){
     const updated = manualSchedule.find(day => day.id === id);
     updated.hours = 4;
     updated.task = "Commence loading";
-    updated.travelPattern = "A-B";
     updated.legs = updated.legs || [];
     ensurePmPair(updated);
 }
@@ -10826,7 +10751,6 @@ function updateScheduleDay(id, field, value){
     const updated = manualSchedule.find(day => day.id === id);
     updated.hours = 4;
     updated.task = "Deliver";
-    updated.travelPattern = "B-C-A";
     updated.legs = updated.legs || [];
 
     const hasAm = manualSchedule.some(day => day.groupId === updated.groupId && day.dayPart === "AM");
@@ -10836,7 +10760,6 @@ function updateScheduleDay(id, field, value){
             groupId: updated.groupId,
             dayPart: "AM",
             task: "Commence loading",
-            travelPattern: "A-B",
             completionWindow: "None",
             men: updated.men,
             vans: updated.vans,
@@ -10847,7 +10770,7 @@ function updateScheduleDay(id, field, value){
     }
 }
 
-        if (value === "Full Day"){
+       if (value === "Full Day"){
     manualSchedule = manualSchedule.filter(day => day.groupId !== row.groupId || day.id === row.id);
     manualSchedule = manualSchedule.map(day =>
         day.id === row.id
@@ -10856,7 +10779,6 @@ function updateScheduleDay(id, field, value){
                 dayPart: "Full Day",
                 hours: 8,
                 task: "Load and Deliver",
-                travelPattern: "A-B-C-A",
                 legs: Array.isArray(day.legs) ? day.legs : []
             }
             : day
