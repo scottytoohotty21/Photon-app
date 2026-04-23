@@ -9801,12 +9801,14 @@ function getDefaultManualScheduleRows() {
             groupId: createId(),
             dayPart: "Full Day",
             task: "Load and Deliver",
+            fromAddress: "Depot",
+            toAddress: "Collection Address",
+            travelMinutes: 30,
             completionWindow: "None",
-            men: 2,
             vans: 1,
+            men: 2,
             hours: 8,
-            nightsOut: false,
-            legs: []
+            nightsOut: false
         }
     ];
 }
@@ -10028,31 +10030,37 @@ function loadManualScheduleFromActiveSequence() {
         schedule.manualDays = getDefaultManualScheduleRows();
     }
 
-schedule.manualDays = manualSchedule.map(function(day) {
-    const safeDayPart = day.dayPart || "Full Day";
-    ensureScheduleRowShape(day);
+    manualSchedule = schedule.manualDays.map(function(day) {
+        const safeDayPart = day.dayPart || "Full Day";
+        ensureScheduleRowShape(day);
 
-    return {
-        id: day.id,
-        groupId: day.groupId,
-        dayPart: safeDayPart,
-        task: day.task,
-        travelPattern: day.travelPattern || "None",
-        completionWindow: day.completionWindow || "None",
-        men: Math.max(0, Number(day.men) || 0),
-        vans: Math.max(0, Number(day.vans) || 0),
-        hours: safeDayPart === "Full Day" ? 8 : 4,
-        nightsOut: !!day.nightsOut,
-        legs: day.legs.map(function(leg) {
-            return {
-                id: leg.id || createId(),
-                from: String(leg.from || "").trim(),
-                to: String(leg.to || "").trim(),
-                minutes: Math.max(0, Number(leg.minutes || 0))
-            };
-        })
-    };
-});
+        let safeLegs = Array.isArray(day.legs) ? day.legs : [];
+
+        if (!safeLegs.length && day.travelPattern) {
+            safeLegs = convertTravelPatternToLegs(day, schedule);
+        }
+
+        return {
+            id: day.id || createId(),
+            groupId: day.groupId || createId(),
+            dayPart: safeDayPart,
+            task: day.task || "Load and Deliver",
+            travelPattern: day.travelPattern || "None",
+            completionWindow: day.completionWindow || "None",
+            men: Math.max(0, Number(day.men) || 0),
+            vans: Math.max(0, Number(day.vans) || 0),
+            hours: safeDayPart === "Full Day" ? 8 : 4,
+            nightsOut: !!day.nightsOut,
+            legs: safeLegs.map(function(leg) {
+                return {
+                    id: leg.id || createId(),
+                    from: String(leg.from || "").trim(),
+                    to: String(leg.to || "").trim(),
+                    minutes: Math.max(0, Number(leg.minutes || 0))
+                };
+            })
+        };
+    });
 }
 
 function saveManualScheduleToActiveSequence() {
@@ -10061,25 +10069,35 @@ function saveManualScheduleToActiveSequence() {
 
     const schedule = ensureSequenceScheduleShape(seq);
 
- schedule.manualDays = manualSchedule.map(function(day) {
-    const safeDayPart = day.dayPart || "Full Day";
+    schedule.manualDays = manualSchedule.map(function(day) {
+        const safeDayPart = day.dayPart || "Full Day";
+        ensureScheduleRowShape(day);
 
-    return {
-        id: day.id,
-        groupId: day.groupId,
-        dayPart: safeDayPart,
-        task: day.task,
-                travelPattern: day.travelPattern || "None",
-        completionWindow: day.completionWindow || "None",
-        men: Math.max(0, Number(day.men) || 0),
-        vans: Math.max(0, Number(day.vans) || 0),
-        hours: safeDayPart === "Full Day" ? 8 : 4,
-        nightsOut: !!day.nightsOut
-    };
-});
+        return {
+            id: day.id || createId(),
+            groupId: day.groupId || createId(),
+            dayPart: safeDayPart,
+            task: day.task || "Load and Deliver",
+            travelPattern: day.travelPattern || "None",
+            completionWindow: day.completionWindow || "None",
+            men: Math.max(0, Number(day.men) || 0),
+            vans: Math.max(0, Number(day.vans) || 0),
+            hours: safeDayPart === "Full Day" ? 8 : 4,
+            nightsOut: !!day.nightsOut,
+            legs: (Array.isArray(day.legs) ? day.legs : []).map(function(leg) {
+                return {
+                    id: leg.id || createId(),
+                    from: String(leg.from || "").trim(),
+                    to: String(leg.to || "").trim(),
+                    minutes: Math.max(0, Number(leg.minutes || 0))
+                };
+            })
+        };
+    });
 
     saveToDevice();
 }
+
 function renderScheduleSequenceDropdown() {
     const dropdown = document.getElementById("schedule-seq-select");
     if (!dropdown || !currentJob || !Array.isArray(currentJob.sequences)) return;
@@ -10905,26 +10923,26 @@ function renderSchedulePlanner(){
             </div>
 
             <div>
-                <label class="mini-label">Men</label>
-                <button
-                    type="button"
-                    class="schedule-value-btn"
-                    onclick="openScheduleNumberModal('${day.id}','men',${Number(day.men || 0)})"
-                >
-                    ${Number(day.men || 0)}
-                </button>
-            </div>
+    <label class="mini-label">Vans</label>
+    <button
+        type="button"
+        class="schedule-value-btn"
+        onclick="openScheduleNumberModal('${day.id}','vans',${Number(day.vans || 0)})"
+    >
+        ${Number(day.vans || 0)}
+    </button>
+</div>
 
-            <div>
-                <label class="mini-label">Vans</label>
-                <button
-                    type="button"
-                    class="schedule-value-btn"
-                    onclick="openScheduleNumberModal('${day.id}','vans',${Number(day.vans || 0)})"
-                >
-                    ${Number(day.vans || 0)}
-                </button>
-            </div>
+<div>
+    <label class="mini-label">Men</label>
+    <button
+        type="button"
+        class="schedule-value-btn"
+        onclick="openScheduleNumberModal('${day.id}','men',${Number(day.men || 0)})"
+    >
+        ${Number(day.men || 0)}
+    </button>
+</div>
 
             <div>
                 <label class="mini-label">Night Out</label>
