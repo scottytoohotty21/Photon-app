@@ -2535,30 +2535,18 @@ Enter as: Surname, First Name
 
     <div class="grid-2">
         <div>
-            <label class="mini-label">Depot to Collection Hours</label>
-            <input id="depotToCollectionHours" type="number" min="0" class="field" value="0" oninput="handleScheduleInputChange()" />
-        </div>
-        <div>
             <label class="mini-label">Depot to Collection Minutes</label>
-            <input id="depotToCollectionMinutes" type="number" min="0" max="59" class="field" value="0" oninput="handleScheduleInputChange()" />
+            <input id="depotToCollectionMinutes" type="number" min="0" class="field" value="0" oninput="handleScheduleInputChange()" />
         </div>
 
-        <div>
-            <label class="mini-label">Collection to Delivery Hours</label>
-            <input id="collectionToDeliveryHours" type="number" min="0" class="field" value="0" oninput="handleScheduleInputChange()" />
-        </div>
         <div>
             <label class="mini-label">Collection to Delivery Minutes</label>
-            <input id="collectionToDeliveryMinutes" type="number" min="0" max="59" class="field" value="30" oninput="handleScheduleInputChange()" />
+            <input id="collectionToDeliveryMinutes" type="number" min="0" class="field" value="30" oninput="handleScheduleInputChange()" />
         </div>
 
         <div>
-            <label class="mini-label">Delivery to Depot Hours</label>
-            <input id="deliveryToDepotHours" type="number" min="0" class="field" value="0" oninput="handleScheduleInputChange()" />
-        </div>
-        <div>
             <label class="mini-label">Delivery to Depot Minutes</label>
-            <input id="deliveryToDepotMinutes" type="number" min="0" max="59" class="field" value="0" oninput="handleScheduleInputChange()" />
+            <input id="deliveryToDepotMinutes" type="number" min="0" class="field" value="0" oninput="handleScheduleInputChange()" />
         </div>
     </div>
 </div>
@@ -3067,16 +3055,13 @@ const inventoryCategories = {
 };
 function createEmptySequenceSchedule() {
     return {
-    moveDate: "",
-    depotToCollectionHours: 0,
-    depotToCollectionMinutes: 0,
-    collectionToDeliveryHours: 0,
-    collectionToDeliveryMinutes: 30,
-    deliveryToDepotHours: 0,
-    deliveryToDepotMinutes: 0,
-    loftVol: 0,
-    loadRate: 125,
-    unloadRate: 132,
+        moveDate: "",
+        depotToCollectionMinutes: 0,
+        collectionToDeliveryMinutes: 30,
+        deliveryToDepotMinutes: 0,
+        loftVol: 0,
+        loadRate: 125,
+        unloadRate: 132,
         loadingVariant: "Standard",
         exportWrapVol: 0,
         manualDays: [],
@@ -3302,12 +3287,24 @@ function saveInventoryContext() {
 
             const defaults = createEmptySequenceSchedule();
 
-            if (seq.schedule.depotToCollectionHours === undefined) seq.schedule.depotToCollectionHours = defaults.depotToCollectionHours;
-if (seq.schedule.depotToCollectionMinutes === undefined) seq.schedule.depotToCollectionMinutes = defaults.depotToCollectionMinutes;
-if (seq.schedule.collectionToDeliveryHours === undefined) seq.schedule.collectionToDeliveryHours = defaults.collectionToDeliveryHours;
-if (seq.schedule.collectionToDeliveryMinutes === undefined) seq.schedule.collectionToDeliveryMinutes = defaults.collectionToDeliveryMinutes;
-if (seq.schedule.deliveryToDepotHours === undefined) seq.schedule.deliveryToDepotHours = defaults.deliveryToDepotHours;
-if (seq.schedule.deliveryToDepotMinutes === undefined) seq.schedule.deliveryToDepotMinutes = defaults.deliveryToDepotMinutes;
+           if (seq.schedule.depotToCollectionMinutes === undefined) {
+    seq.schedule.depotToCollectionMinutes =
+        ((Number(seq.schedule.depotToCollectionHours || 0) * 60) + Number(seq.schedule.depotToCollectionMinutes || 0));
+}
+
+if (seq.schedule.collectionToDeliveryMinutes === undefined) {
+    seq.schedule.collectionToDeliveryMinutes =
+        ((Number(seq.schedule.collectionToDeliveryHours || 0) * 60) + Number(seq.schedule.collectionToDeliveryMinutes || 0));
+}
+
+if (seq.schedule.deliveryToDepotMinutes === undefined) {
+    seq.schedule.deliveryToDepotMinutes =
+        ((Number(seq.schedule.deliveryToDepotHours || 0) * 60) + Number(seq.schedule.deliveryToDepotMinutes || 0));
+}
+
+delete seq.schedule.depotToCollectionHours;
+delete seq.schedule.collectionToDeliveryHours;
+delete seq.schedule.deliveryToDepotHours;
             if (seq.schedule.loftVol === undefined) seq.schedule.loftVol = defaults.loftVol;
             if (seq.schedule.loadRate === undefined) seq.schedule.loadRate = defaults.loadRate;
             if (seq.schedule.unloadRate === undefined) seq.schedule.unloadRate = defaults.unloadRate;
@@ -9720,12 +9717,24 @@ function ensureSequenceScheduleShape(seq) {
 
     const defaults = createEmptySequenceSchedule();
 
-    if (seq.schedule.depotToCollectionHours === undefined) seq.schedule.depotToCollectionHours = defaults.depotToCollectionHours;
-if (seq.schedule.depotToCollectionMinutes === undefined) seq.schedule.depotToCollectionMinutes = defaults.depotToCollectionMinutes;
-if (seq.schedule.collectionToDeliveryHours === undefined) seq.schedule.collectionToDeliveryHours = defaults.collectionToDeliveryHours;
-if (seq.schedule.collectionToDeliveryMinutes === undefined) seq.schedule.collectionToDeliveryMinutes = defaults.collectionToDeliveryMinutes;
-if (seq.schedule.deliveryToDepotHours === undefined) seq.schedule.deliveryToDepotHours = defaults.deliveryToDepotHours;
-if (seq.schedule.deliveryToDepotMinutes === undefined) seq.schedule.deliveryToDepotMinutes = defaults.deliveryToDepotMinutes;
+   if (seq.schedule.depotToCollectionMinutes === undefined) {
+    seq.schedule.depotToCollectionMinutes =
+        ((Number(seq.schedule.depotToCollectionHours || 0) * 60) + Number(seq.schedule.depotToCollectionMinutes || 0));
+}
+
+if (seq.schedule.collectionToDeliveryMinutes === undefined) {
+    seq.schedule.collectionToDeliveryMinutes =
+        ((Number(seq.schedule.collectionToDeliveryHours || 0) * 60) + Number(seq.schedule.collectionToDeliveryMinutes || 0));
+}
+
+if (seq.schedule.deliveryToDepotMinutes === undefined) {
+    seq.schedule.deliveryToDepotMinutes =
+        ((Number(seq.schedule.deliveryToDepotHours || 0) * 60) + Number(seq.schedule.deliveryToDepotMinutes || 0));
+}
+
+delete seq.schedule.depotToCollectionHours;
+delete seq.schedule.collectionToDeliveryHours;
+delete seq.schedule.deliveryToDepotHours;
     if (seq.schedule.loftVol === undefined) seq.schedule.loftVol = defaults.loftVol;
     if (seq.schedule.loadRate === undefined) seq.schedule.loadRate = defaults.loadRate;
     if (seq.schedule.unloadRate === undefined) seq.schedule.unloadRate = defaults.unloadRate;
@@ -9866,11 +9875,8 @@ function loadScheduleInputsFromActiveSequence() {
     const schedule = ensureSequenceScheduleShape(seq);
     const photonFeed = getPhotonFeed();
 
-    const depotToCollectionHoursEl = document.getElementById("depotToCollectionHours");
-const depotToCollectionMinutesEl = document.getElementById("depotToCollectionMinutes");
-const collectionToDeliveryHoursEl = document.getElementById("collectionToDeliveryHours");
+    const depotToCollectionMinutesEl = document.getElementById("depotToCollectionMinutes");
 const collectionToDeliveryMinutesEl = document.getElementById("collectionToDeliveryMinutes");
-const deliveryToDepotHoursEl = document.getElementById("deliveryToDepotHours");
 const deliveryToDepotMinutesEl = document.getElementById("deliveryToDepotMinutes");
 const loftVolEl = document.getElementById("loftVol");
     const loadRateEl = document.getElementById("loadRate");
@@ -9894,11 +9900,8 @@ const loftVolEl = document.getElementById("loftVol");
     const svcCrateEl = document.getElementById("svc_crate");
     const exportWrapVolEl = document.getElementById("exportWrapVol");
 
-    if (depotToCollectionHoursEl) depotToCollectionHoursEl.value = schedule.depotToCollectionHours;
-if (depotToCollectionMinutesEl) depotToCollectionMinutesEl.value = schedule.depotToCollectionMinutes;
-if (collectionToDeliveryHoursEl) collectionToDeliveryHoursEl.value = schedule.collectionToDeliveryHours;
+    if (depotToCollectionMinutesEl) depotToCollectionMinutesEl.value = schedule.depotToCollectionMinutes;
 if (collectionToDeliveryMinutesEl) collectionToDeliveryMinutesEl.value = schedule.collectionToDeliveryMinutes;
-if (deliveryToDepotHoursEl) deliveryToDepotHoursEl.value = schedule.deliveryToDepotHours;
 if (deliveryToDepotMinutesEl) deliveryToDepotMinutesEl.value = schedule.deliveryToDepotMinutes;
 if (loftVolEl) loftVolEl.value = schedule.loftVol;
     if (loadRateEl) loadRateEl.value = schedule.loadRate;
@@ -9942,11 +9945,8 @@ function saveScheduleInputsToActiveSequence() {
         return String(el.value || "").trim();
     };
 
-    schedule.depotToCollectionHours = getNum("depotToCollectionHours", 0);
-schedule.depotToCollectionMinutes = getNum("depotToCollectionMinutes", 0);
-schedule.collectionToDeliveryHours = getNum("collectionToDeliveryHours", 0);
+    schedule.depotToCollectionMinutes = getNum("depotToCollectionMinutes", 0);
 schedule.collectionToDeliveryMinutes = getNum("collectionToDeliveryMinutes", 30);
-schedule.deliveryToDepotHours = getNum("deliveryToDepotHours", 0);
 schedule.deliveryToDepotMinutes = getNum("deliveryToDepotMinutes", 0);
 schedule.loftVol = getNum("loftVol", 0);
     schedule.loadRate = getNum("loadRate", 125);
@@ -10194,11 +10194,8 @@ const loadingScenario = getLoadingScenarioFromMoveType(seq ? seq.moveType : "");
         ? document.getElementById("loadingVariant").value
         : "Standard",
     loadingScenario: loadingScenario,
-    depotToCollectionHours: num("depotToCollectionHours"),
-depotToCollectionMinutes: num("depotToCollectionMinutes"),
-collectionToDeliveryHours: num("collectionToDeliveryHours"),
+    depotToCollectionMinutes: num("depotToCollectionMinutes"),
 collectionToDeliveryMinutes: num("collectionToDeliveryMinutes"),
-deliveryToDepotHours: num("deliveryToDepotHours"),
 deliveryToDepotMinutes: num("deliveryToDepotMinutes"),
 
         qty: {
@@ -10258,14 +10255,9 @@ function calcSpecialLabour(state) {
     const includedExportWrapVol = 50;
 
     const extraExportWrapVol = Math.max(0, state.exportWrapVol - includedExportWrapVol);
-    const depotToCollectionMinutes =
-    (state.depotToCollectionHours * 60) + state.depotToCollectionMinutes;
-
-const collectionToDeliveryMinutes =
-    (state.collectionToDeliveryHours * 60) + state.collectionToDeliveryMinutes;
-
-const deliveryToDepotMinutes =
-    (state.deliveryToDepotHours * 60) + state.deliveryToDepotMinutes;
+    const depotToCollectionMinutes = Number(state.depotToCollectionMinutes || 0);
+const collectionToDeliveryMinutes = Number(state.collectionToDeliveryMinutes || 0);
+const deliveryToDepotMinutes = Number(state.deliveryToDepotMinutes || 0);
 
 const extraCollectionToDeliveryMinutes = Math.max(0, collectionToDeliveryMinutes - 30);
 
@@ -10436,9 +10428,9 @@ function getCompletionAdjustedCapacity(day, mode, taskHours) {
 }
 
 function getTravelPatternHours(travelPattern, state){
-    const ab = Number(state.depotToCollectionHours || 0) + (Number(state.depotToCollectionMinutes || 0) / 60);
-    const bc = Number(state.collectionToDeliveryHours || 0) + (Number(state.collectionToDeliveryMinutes || 0) / 60);
-    const ca = Number(state.deliveryToDepotHours || 0) + (Number(state.deliveryToDepotMinutes || 0) / 60);
+    const ab = Number(state.depotToCollectionMinutes || 0) / 60;
+    const bc = Number(state.collectionToDeliveryMinutes || 0) / 60;
+    const ca = Number(state.deliveryToDepotMinutes || 0) / 60;
 
     const pattern = String(travelPattern || "None");
 
@@ -10498,7 +10490,7 @@ function ensurePmPair(row){
             groupId: row.groupId,
             dayPart: "PM",
             task: "Deliver",
-            travelPattern: "C-A",
+travelPattern: "B-C-A",
             completionWindow: "None",
             men: row.men,
             vans: row.vans,
@@ -10561,7 +10553,7 @@ function updateScheduleDay(id, field, value){
             const updated = manualSchedule.find(day => day.id === id);
             updated.hours = 4;
             updated.task = "Deliver";
-            updated.travelPattern = "C-A";
+updated.travelPattern = "B-C-A";
 
             const hasAm = manualSchedule.some(day => day.groupId === updated.groupId && day.dayPart === "AM");
             if (!hasAm){
