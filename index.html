@@ -10402,25 +10402,30 @@ function getDayPartHours(dayPart) {
     return dayPart === "Full Day" ? 8 : 4;
 }
 
-function getCompletionAdjustedCapacity(day, mode, taskHours) {
+function getCompletionAdjustedCapacity(day, mode, taskHours, state) {
     const completionWindow = String(day.completionWindow || "None");
-    const usableTaskHours = Math.max(0, Number(taskHours || 0));
 
     if (completionWindow !== "Completion Day") {
-        return usableTaskHours;
+        return Math.max(0, Number(taskHours || 0));
     }
+
+    const travelHours = getTravelPatternHours(day.travelPattern, state);
 
     if (mode === "load") {
         if (day.dayPart === "PM") return 0;
-        return Math.min(usableTaskHours, 4);
+
+        // 8am to 1pm completion window = 5 hours gross
+        return Math.max(0, 5 - travelHours);
     }
 
     if (mode === "unload") {
         if (day.dayPart === "AM") return 0;
-        return Math.min(usableTaskHours, 4);
+
+        // keep current half-day assumption for PM unless you want a different rule
+        return Math.max(0, 4 - travelHours);
     }
 
-    return usableTaskHours;
+    return Math.max(0, Number(taskHours || 0));
 }
 
 function getTravelPatternHours(travelPattern, state){
@@ -10725,13 +10730,13 @@ function calcScheduleValidation(packing, loading, unloading, special, state){
             }
 
             if (taskMode === "load") {
-                const usableHours = getCompletionAdjustedCapacity(day, "load", taskHours);
+                const usableHours = getCompletionAdjustedCapacity(day, "load", taskHours, state);
                 allocated.Load += men * usableHours;
                 return;
             }
 
             if (taskMode === "unload") {
-                const usableHours = getCompletionAdjustedCapacity(day, "unload", taskHours);
+                const usableHours = getCompletionAdjustedCapacity(day, "unload", taskHours, state);
                 allocated.Unload += men * usableHours;
                 return;
             }
@@ -10749,8 +10754,8 @@ function calcScheduleValidation(packing, loading, unloading, special, state){
             }
 
             if (taskMode === "load_unload") {
-                const loadUsableHours = getCompletionAdjustedCapacity(day, "load", taskHours);
-                const unloadUsableHours = getCompletionAdjustedCapacity(day, "unload", taskHours);
+                const loadUsableHours = getCompletionAdjustedCapacity(day, "load", taskHours, state);
+const unloadUsableHours = getCompletionAdjustedCapacity(day, "unload", taskHours, state);
 
                 const rowLoadManHours = men * loadUsableHours;
                 const rowUnloadManHours = men * unloadUsableHours;
