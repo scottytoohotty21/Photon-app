@@ -1985,6 +1985,32 @@ button {
     grid-template-columns:1.1fr 1fr 1.2fr 1fr .75fr .75fr .75fr;
     gap:10px;
 }
+.schedule-legs-shell{
+    margin-top:12px;
+    padding-top:12px;
+    border-top:1px solid var(--slate-200);
+}
+
+.schedule-legs-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    margin-bottom:10px;
+    flex-wrap:wrap;
+}
+
+.schedule-legs-list{
+    display:grid;
+    gap:10px;
+}
+
+.schedule-leg-row{
+    display:grid;
+    grid-template-columns:1fr 1fr 120px 72px;
+    gap:10px;
+    align-items:end;
+}
 .validation-list{display:grid;gap:8px;margin-top:12px;}
 .validation-item{border-radius:12px;padding:10px 12px;font-size:11px;font-weight:800;text-transform:uppercase;line-height:1.4;}
 .validation-ok{background:var(--green-50);border:1px solid var(--green-200);color:var(--green-800);}
@@ -2095,6 +2121,7 @@ button {
 }
 @media (max-width: 760px){
     .schedule-grid{grid-template-columns:1fr 1fr;}
+    .schedule-leg-row{grid-template-columns:1fr;}
 }
 @media (max-width: 680px){
     .summary-grid,.grid-2,.schedule-grid{grid-template-columns:1fr;}
@@ -9774,14 +9801,218 @@ function getDefaultManualScheduleRows() {
             groupId: createId(),
             dayPart: "Full Day",
             task: "Load and Deliver",
-            travelPattern: "A-B-C-A",
             completionWindow: "None",
             men: 2,
             vans: 1,
             hours: 8,
-            nightsOut: false
+            nightsOut: false,
+            legs: []
         }
     ];
+}
+
+function createEmptyScheduleLeg(from = "Depot", to = "Collection", minutes = 0) {
+    return {
+        id: createId(),
+        from: from,
+        to: to,
+        minutes: Math.max(0, Number(minutes) || 0)
+    };
+}
+
+function ensureScheduleRowShape(day) {
+    if (!day || typeof day !== "object") return day;
+
+    if (!Array.isArray(day.legs)) {
+        day.legs = [];
+    }
+
+    return day;
+}
+
+function convertTravelPatternToLegs(day, schedule) {
+    if (Array.isArray(day.legs) && day.legs.length) {
+        return day.legs;
+    }
+
+    const pattern = String(day.travelPattern || "None");
+
+    const ab = Number(schedule?.depotToCollectionMinutes || 0);
+    const bc = Number(schedule?.collectionToDeliveryMinutes || 0);
+    const ca = Number(schedule?.deliveryToDepotMinutes || 0);
+
+    const legs = [];
+
+    if (pattern === "A-B") {
+        legs.push(createEmptyScheduleLeg("Depot", "Collection", ab));
+    } else if (pattern === "B-C") {
+        legs.push(createEmptyScheduleLeg("Collection", "Delivery", bc));
+    } else if (pattern === "C-A") {
+        legs.push(createEmptyScheduleLeg("Delivery", "Depot", ca));
+    } else if (pattern === "A-B-A") {
+        legs.push(createEmptyScheduleLeg("Depot", "Collection", ab));
+        legs.push(createEmptyScheduleLeg("Collection", "Depot", ab));
+    } else if (pattern === "A-B-C") {
+        legs.push(createEmptyScheduleLeg("Depot", "Collection", ab));
+        legs.push(createEmptyScheduleLeg("Collection", "Delivery", bc));
+    } else if (pattern === "B-C-A") {
+        legs.push(createEmptyScheduleLeg("Collection", "Delivery", bc));
+        legs.push(createEmptyScheduleLeg("Delivery", "Depot", ca));
+    } else if (pattern === "A-B-C-A") {
+        legs.push(createEmptyScheduleLeg("Depot", "Collection", ab));
+        legs.push(createEmptyScheduleLeg("Collection", "Delivery", bc));
+        legs.push(createEmptyScheduleLeg("Delivery", "Depot", ca));
+    }
+
+    return legs;
+}
+
+function getRowLegHours(day) {
+    if (!day || !Array.isArray(day.legs)) return 0;
+
+    const totalMinutes = day.legs.reduce(function(sum, leg) {
+        return sum + Math.max(0, Number(leg.minutes || 0));
+    }, 0);
+
+    return round2(totalMinutes / 60);
+}
+
+function addScheduleLeg(dayId) {
+    manualSchedule = manualSchedule.map(function(day) {
+        if (day.id !== dayId) return day;
+
+        ensureScheduleRowShape(day);
+        day.legs.push(createEmptyScheduleLeg());
+        return day;
+    });
+
+    saveManualScheduleToActiveSequence();
+    renderScheduleCalculator();
+}
+
+function updateScheduleLeg(dayId, legId, field, value) {
+    manualSchedule = manualSchedule.map(function(day) {
+        if (day.id !== dayId) return day;
+
+        ensureScheduleRowShape(day);
+
+        day.legs = day.legs.map(function(leg) {
+            if (leg.id !== legId) return leg;
+
+            if (field === "minutes") {
+                return {
+                    ...leg,
+                    minutes: Math.max(0, Number(value) || 0)
+                };
+            }
+
+            return {
+                ...leg,
+                [field]: value
+            };
+        });
+
+        return day;
+    });
+
+    saveManualScheduleToActiveSequence();
+    renderScheduleCalculator();
+}
+
+function removeScheduleLeg(dayId, legId) {
+    manualSchedule = manualSchedule.map(function(day) {
+        if (day.id !== dayId) return day;
+
+        ensureScheduleRowShape(day);
+        day.legs = day.legs.filter(function(leg) {
+            return leg.id !== legId;
+        });
+
+        return day;
+    });
+
+    saveManualScheduleToActiveSequence();
+    renderScheduleCalculator();
+}
+
+function renderScheduleLegs(day) {
+    ensureScheduleRowShape(day);
+
+    return `
+        <div class="schedule-legs-shell">
+            <div class="schedule-legs-head">
+                <div class="mini-label">Travel Legs</div>
+                <button
+                    type="button"
+                    class="schedule-btn"
+                    onclick="addScheduleLeg('${day.id}')"
+                >
+                    Add Leg
+                </button>
+            </div>
+
+            <div class="schedule-legs-list">
+                ${
+                    day.legs.length
+                        ? day.legs.map(function(leg) {
+                            return `
+                                <div class="schedule-leg-row">
+                                    <div>
+                                        <label class="mini-label">From</label>
+                                        <input
+                                            type="text"
+                                            class="field"
+                                            value="${escapeHtml(leg.from || "")}"
+                                            oninput="updateScheduleLeg('${day.id}','${leg.id}','from',this.value)"
+                                            placeholder="From"
+                                        >
+                                    </div>
+
+                                    <div>
+                                        <label class="mini-label">To</label>
+                                        <input
+                                            type="text"
+                                            class="field"
+                                            value="${escapeHtml(leg.to || "")}"
+                                            oninput="updateScheduleLeg('${day.id}','${leg.id}','to',this.value)"
+                                            placeholder="To"
+                                        >
+                                    </div>
+
+                                    <div>
+                                        <label class="mini-label">Minutes</label>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            class="field"
+                                            value="${Number(leg.minutes || 0)}"
+                                            oninput="updateScheduleLeg('${day.id}','${leg.id}','minutes',this.value)"
+                                            placeholder="0"
+                                        >
+                                    </div>
+
+                                    <div>
+                                        <label class="mini-label">Remove</label>
+                                        <button
+                                            type="button"
+                                            class="schedule-remove"
+                                            onclick="removeScheduleLeg('${day.id}','${leg.id}')"
+                                        >
+                                            Del
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
+                        }).join("")
+                        : `
+                            <div class="text-[10px] font-bold uppercase text-slate-400">
+                                No travel legs added
+                            </div>
+                        `
+                }
+            </div>
+        </div>
+    `;
 }
 
 function loadManualScheduleFromActiveSequence() {
@@ -9797,28 +10028,29 @@ function loadManualScheduleFromActiveSequence() {
         schedule.manualDays = getDefaultManualScheduleRows();
     }
 
-manualSchedule = schedule.manualDays.map(function(day) {
+schedule.manualDays = manualSchedule.map(function(day) {
     const safeDayPart = day.dayPart || "Full Day";
-
-    let safeTravelPattern = day.travelPattern || "None";
-
-    if (!day.travelPattern && day.locationMode) {
-        if (day.locationMode === "Collection Only") safeTravelPattern = "A-B";
-        else if (day.locationMode === "Collection to Delivery") safeTravelPattern = "B-C";
-        else if (day.locationMode === "Delivery Only") safeTravelPattern = "C-A";
-    }
+    ensureScheduleRowShape(day);
 
     return {
-        id: day.id || createId(),
-        groupId: day.groupId || createId(),
+        id: day.id,
+        groupId: day.groupId,
         dayPart: safeDayPart,
-                task: day.task || "Load and Deliver",
-        travelPattern: safeTravelPattern,
+        task: day.task,
+        travelPattern: day.travelPattern || "None",
         completionWindow: day.completionWindow || "None",
         men: Math.max(0, Number(day.men) || 0),
-        vans: Math.max(0, Number(day.vans) || 1),
+        vans: Math.max(0, Number(day.vans) || 0),
         hours: safeDayPart === "Full Day" ? 8 : 4,
-        nightsOut: !!day.nightsOut
+        nightsOut: !!day.nightsOut,
+        legs: day.legs.map(function(leg) {
+            return {
+                id: leg.id || createId(),
+                from: String(leg.from || "").trim(),
+                to: String(leg.to || "").trim(),
+                minutes: Math.max(0, Number(leg.minutes || 0))
+            };
+        })
     };
 });
 }
@@ -10449,24 +10681,24 @@ function getTravelPatternHours(travelPattern, state){
 
 function getNetTaskHoursForPlannerRow(day, state){
     const rowHours = Number(day.hours || 0);
-    const travelHours = getTravelPatternHours(day.travelPattern, state);
+    const travelHours = getRowLegHours(day);
     return Math.max(0, round2(rowHours - travelHours));
 }
 
 function addScheduleDay(){
     const groupId = createId();
-    manualSchedule.push({
-        id: createId(),
-        groupId,
-        dayPart: "Full Day",
-        task: "Load and Deliver",
-        travelPattern: "A-B-C-A",
-        completionWindow: "None",
-        men: 2,
-        vans: 1,
-        hours: 8,
-        nightsOut: false
-    });
+   manualSchedule.push({
+    id: createId(),
+    groupId,
+    dayPart: "Full Day",
+    task: "Load and Deliver",
+    completionWindow: "None",
+    men: 2,
+    vans: 1,
+    hours: 8,
+    nightsOut: false,
+    legs: []
+});
     saveManualScheduleToActiveSequence();
     renderScheduleCalculator();
 }
@@ -10487,17 +10719,18 @@ function ensurePmPair(row){
     const pairExists = manualSchedule.some(day => day.groupId === row.groupId && day.dayPart === "PM");
     if (!pairExists){
         manualSchedule.push({
-            id: createId(),
-            groupId: row.groupId,
-            dayPart: "PM",
-            task: "Deliver",
-travelPattern: "B-C-A",
-            completionWindow: "None",
-            men: row.men,
-            vans: row.vans,
-            hours: 4,
-            nightsOut: false
-        });
+    id: createId(),
+    groupId: row.groupId,
+    dayPart: "PM",
+    task: "Deliver",
+    travelPattern: "B-C-A",
+    completionWindow: "None",
+    men: row.men,
+    vans: row.vans,
+    hours: 4,
+    nightsOut: false,
+    legs: []
+});
     }
 }
 
@@ -10543,50 +10776,54 @@ function updateScheduleDay(id, field, value){
 
     if (row && field === "dayPart"){
         if (value === "AM"){
-            const updated = manualSchedule.find(day => day.id === id);
-            updated.hours = 4;
-            updated.task = "Commence loading";
-            updated.travelPattern = "A-B";
-            ensurePmPair(updated);
-        }
+    const updated = manualSchedule.find(day => day.id === id);
+    updated.hours = 4;
+    updated.task = "Commence loading";
+    updated.travelPattern = "A-B";
+    updated.legs = updated.legs || [];
+    ensurePmPair(updated);
+}
 
         if (value === "PM"){
-            const updated = manualSchedule.find(day => day.id === id);
-            updated.hours = 4;
-            updated.task = "Deliver";
-updated.travelPattern = "B-C-A";
+    const updated = manualSchedule.find(day => day.id === id);
+    updated.hours = 4;
+    updated.task = "Deliver";
+    updated.travelPattern = "B-C-A";
+    updated.legs = updated.legs || [];
 
-            const hasAm = manualSchedule.some(day => day.groupId === updated.groupId && day.dayPart === "AM");
-            if (!hasAm){
-                manualSchedule.push({
-                    id: createId(),
-                    groupId: updated.groupId,
-                    dayPart: "AM",
-                    task: "Commence loading",
-                    travelPattern: "A-B",
-                    completionWindow: "None",
-                    men: updated.men,
-                    vans: updated.vans,
-                    hours: 4,
-                    nightsOut: false
-                });
-            }
-        }
+    const hasAm = manualSchedule.some(day => day.groupId === updated.groupId && day.dayPart === "AM");
+    if (!hasAm){
+        manualSchedule.push({
+            id: createId(),
+            groupId: updated.groupId,
+            dayPart: "AM",
+            task: "Commence loading",
+            travelPattern: "A-B",
+            completionWindow: "None",
+            men: updated.men,
+            vans: updated.vans,
+            hours: 4,
+            nightsOut: false,
+            legs: []
+        });
+    }
+}
 
         if (value === "Full Day"){
-            manualSchedule = manualSchedule.filter(day => day.groupId !== row.groupId || day.id === row.id);
-            manualSchedule = manualSchedule.map(day =>
-                day.id === row.id
-                    ? {
-                        ...day,
-                        dayPart: "Full Day",
-                        hours: 8,
-                        task: "Load and Deliver",
-                        travelPattern: "A-B-C-A"
-                    }
-                    : day
-            );
-        }
+    manualSchedule = manualSchedule.filter(day => day.groupId !== row.groupId || day.id === row.id);
+    manualSchedule = manualSchedule.map(day =>
+        day.id === row.id
+            ? {
+                ...day,
+                dayPart: "Full Day",
+                hours: 8,
+                task: "Load and Deliver",
+                travelPattern: "A-B-C-A",
+                legs: Array.isArray(day.legs) ? day.legs : []
+            }
+            : day
+    );
+}
 
         normalizeGroup(row.groupId);
     }
@@ -10624,70 +10861,72 @@ function renderSchedulePlanner(){
             <div class="schedule-row-title">Day ${groupIndex + 1}${rows.length > 1 ? ` · ${day.dayPart}` : ""}</div>
             ${rowIndex === 0 && manualSchedule.length > 1 ? `<button class="schedule-remove" onclick="removeScheduleDay('${day.id}')">Delete</button>` : ""}
         </div>
+
         <div class="schedule-grid">
-    <div>
-        <label class="mini-label">Task</label>
-        <select class="field" onchange="updateScheduleDay('${day.id}','task',this.value)">
-            ${optionHtml(TASK_OPTIONS, day.task)}
-        </select>
-    </div>
-    <div>
-        <label class="mini-label">Day Part</label>
-        <select class="field" onchange="updateScheduleDay('${day.id}','dayPart',this.value)">
-            ${optionHtml(DAY_PARTS, day.dayPart)}
-        </select>
-    </div>
-        <div>
-        <label class="mini-label">Travel Pattern</label>
-        <select class="field" onchange="updateScheduleDay('${day.id}','travelPattern',this.value)">
-            ${optionHtml(TRAVEL_PATTERN_OPTIONS, day.travelPattern || "None")}
-        </select>
-    </div>
-    <div>
-        <label class="mini-label">Completion Day</label>
-        <select class="field" onchange="updateScheduleDay('${day.id}','completionWindow',this.value)">
-            ${optionHtml(COMPLETION_WINDOWS, day.completionWindow || "None")}
-        </select>
-    </div>
-    <div>
-        <label class="mini-label">Men</label>
-        <button
-            type="button"
-            class="schedule-value-btn"
-            onclick="openScheduleNumberModal('${day.id}','men',${Number(day.men || 0)})"
-        >
-            ${Number(day.men || 0)}
-        </button>
-    </div>
-    <div>
-        <label class="mini-label">Vans</label>
-        <button
-            type="button"
-            class="schedule-value-btn"
-            onclick="openScheduleNumberModal('${day.id}','vans',${Number(day.vans || 0)})"
-        >
-            ${Number(day.vans || 0)}
-        </button>
-    </div>
-    <div>
-        <label class="mini-label">Night Out</label>
-        <div class="schedule-toggle-wrap">
-            <label class="schedule-toggle-switch">
-                <input
-                    type="checkbox"
-                    ${day.nightsOut ? 'checked' : ''}
-                    onchange="updateScheduleDay('${day.id}','nightsOut', this.checked)"
-                />
-                <span class="schedule-toggle-slider"></span>
-            </label>
+            <div>
+                <label class="mini-label">Task</label>
+                <select class="field" onchange="updateScheduleDay('${day.id}','task',this.value)">
+                    ${optionHtml(TASK_OPTIONS, day.task)}
+                </select>
+            </div>
+
+            <div>
+                <label class="mini-label">Day Part</label>
+                <select class="field" onchange="updateScheduleDay('${day.id}','dayPart',this.value)">
+                    ${optionHtml(DAY_PARTS, day.dayPart)}
+                </select>
+            </div>
+
+            <div>
+                <label class="mini-label">Completion Day</label>
+                <select class="field" onchange="updateScheduleDay('${day.id}','completionWindow',this.value)">
+                    ${optionHtml(COMPLETION_WINDOWS, day.completionWindow || "None")}
+                </select>
+            </div>
+
+            <div>
+                <label class="mini-label">Men</label>
+                <button
+                    type="button"
+                    class="schedule-value-btn"
+                    onclick="openScheduleNumberModal('${day.id}','men',${Number(day.men || 0)})"
+                >
+                    ${Number(day.men || 0)}
+                </button>
+            </div>
+
+            <div>
+                <label class="mini-label">Vans</label>
+                <button
+                    type="button"
+                    class="schedule-value-btn"
+                    onclick="openScheduleNumberModal('${day.id}','vans',${Number(day.vans || 0)})"
+                >
+                    ${Number(day.vans || 0)}
+                </button>
+            </div>
+
+            <div>
+                <label class="mini-label">Night Out</label>
+                <div class="schedule-toggle-wrap">
+                    <label class="schedule-toggle-switch">
+                        <input
+                            type="checkbox"
+                            ${day.nightsOut ? 'checked' : ''}
+                            onchange="updateScheduleDay('${day.id}','nightsOut', this.checked)"
+                        />
+                        <span class="schedule-toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
         </div>
-    </div>
-</div>
+
+        ${renderScheduleLegs(day)}
 
         <div class="schedule-debug-line">
-            Travel applied: ${getTravelPatternHours(day.travelPattern, getState()).toFixed(2)} hrs ·
-Net task time: ${getNetTaskHoursForPlannerRow(day, getState()).toFixed(2)} hrs ·
-Net man-hours: ${(Number(day.men || 0) * getNetTaskHoursForPlannerRow(day, getState())).toFixed(2)}
+            Travel applied: ${getRowLegHours(day).toFixed(2)} hrs ·
+            Net task time: ${getNetTaskHoursForPlannerRow(day, getState()).toFixed(2)} hrs ·
+            Net man-hours: ${(Number(day.men || 0) * getNetTaskHoursForPlannerRow(day, getState())).toFixed(2)}
         </div>
     </div>
 `).join("");
@@ -10802,7 +11041,7 @@ const unloadUsableHours = getCompletionAdjustedCapacity(day, "unload", taskHours
 
     results.push({
         type: "ok",
-        text: `${passIcon} Travel patterns use the actual saved leg times: A-B = Depot to Collection, B-C = Collection to Delivery, C-A = Delivery to Depot.`
+        text: `${passIcon} Travel is now taken from the row travel legs list, and deducted before task labour is validated.`
     });
 
     results.push({
@@ -10927,7 +11166,7 @@ function renderScheduleCalculator(){
             ? "This move type is treated as loading only into store, so delivery-side logic should be interpreted separately. "
             : ""}` +
         `Unloading uses total volume ÷ ${state.unloadRate} cuft per man-hour, then adds unload-side specials. ` +
-        `Travel patterns use the actual saved leg times: A-B = Depot to Collection, B-C = Collection to Delivery, C-A = Delivery to Depot. ` +
+        `Travel is taken from the travel legs added to each planner row, and is deducted before net working time is validated. ` +
         `Two standard beds and 50 cuft of export wrap are treated as already included before extra special time is added.`;
 
     document.getElementById("specialText").textContent =
