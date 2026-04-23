@@ -10276,17 +10276,18 @@ const deliveryToDepotMinutes = Number(state.deliveryToDepotMinutes || 0);
         ((extraExportWrapVol / 100) * 25);
 
     const unloadMinutes =
-    (state.special.frameBeds * 15) +
-    (state.special.ottomanBeds * 30) +
-    (state.special.bunkBeds * 30) +
-    (state.special.cots * 15) +
-    (state.special.diningTables * 15) +
-    (state.special.customMinutes > 0 ? state.special.customMinutes : 0) +
-    (state.special.upright * 25) +
-    (state.special.grand * 60) +
-    (state.special.clock * 30) +
-    (state.special.appliance * 30) +
-    (state.special.crate * 15);
+        (state.special.frameBeds * 15) +
+        (state.special.ottomanBeds * 30) +
+        (state.special.bunkBeds * 30) +
+        (state.special.cots * 15) +
+        (state.special.diningTables * 15) +
+        (state.special.customMinutes > 0 ? state.special.customMinutes : 0) +
+        (state.special.upright * 25) +
+        (state.special.grand * 60) +
+        (state.special.clock * 30) +
+        (state.special.appliance * 30) +
+        (state.special.crate * 15) +
+        extraCollectionToDeliveryMinutes;
 
     const totalHours = (loadMinutes + unloadMinutes) / 60;
 
