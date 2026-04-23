@@ -10256,9 +10256,8 @@ function calcSpecialLabour(state) {
 
     const extraExportWrapVol = Math.max(0, state.exportWrapVol - includedExportWrapVol);
     const depotToCollectionMinutes = Number(state.depotToCollectionMinutes || 0);
-const collectionToDeliveryMinutes = Number(state.collectionToDeliveryMinutes || 0);
-const deliveryToDepotMinutes = Number(state.deliveryToDepotMinutes || 0);
-
+    const collectionToDeliveryMinutes = Number(state.collectionToDeliveryMinutes || 0);
+    const deliveryToDepotMinutes = Number(state.deliveryToDepotMinutes || 0);
 
     const loadMinutes =
         (state.special.frameBeds * 15) +
@@ -10286,8 +10285,7 @@ const deliveryToDepotMinutes = Number(state.deliveryToDepotMinutes || 0);
         (state.special.grand * 60) +
         (state.special.clock * 30) +
         (state.special.appliance * 30) +
-        (state.special.crate * 15) +
-        extraCollectionToDeliveryMinutes;
+        (state.special.crate * 15);
 
     const totalHours = (loadMinutes + unloadMinutes) / 60;
 
@@ -10296,9 +10294,8 @@ const deliveryToDepotMinutes = Number(state.deliveryToDepotMinutes || 0);
         loadSideHours: round2(loadMinutes / 60),
         unloadSideHours: round2(unloadMinutes / 60),
         depotToCollectionHours: round2(depotToCollectionMinutes / 60),
-collectionToDeliveryHours: round2(collectionToDeliveryMinutes / 60),
-deliveryToDepotHours: round2(deliveryToDepotMinutes / 60),
-extraCollectionToDeliveryHours: round2(extraCollectionToDeliveryMinutes / 60),
+        collectionToDeliveryHours: round2(collectionToDeliveryMinutes / 60),
+        deliveryToDepotHours: round2(deliveryToDepotMinutes / 60),
         breakdown: {
             frameBeds: round2((state.special.frameBeds * 30) / 60),
             ottomanBeds: round2((state.special.ottomanBeds * 60) / 60),
