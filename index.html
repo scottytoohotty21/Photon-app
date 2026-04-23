@@ -9361,6 +9361,7 @@ const SPECIAL_MINUTES = {
 
 
 const DAY_PARTS = ["Full Day", "AM", "PM"];
+
 const TASK_OPTIONS = [
     "Pack & Prepare",
     "Pack fragiles & breakables",
@@ -9369,6 +9370,7 @@ const TASK_OPTIONS = [
     "Commence loading",
     "Continue loading",
     "Complete loading",
+    "Load",
     "Load and Deliver",
     "Load & Travel",
     "Travel",
@@ -9378,8 +9380,9 @@ const TASK_OPTIONS = [
     "Deliver and Crew Return",
     "Unpack"
 ];
-const TRAVEL_PATTERNS = [
-    "No travel",
+
+const TRAVEL_PATTERN_OPTIONS = [
+    "None",
     "A-B",
     "B-C",
     "C-A",
@@ -9388,6 +9391,7 @@ const TRAVEL_PATTERNS = [
     "B-C-A",
     "A-B-C-A"
 ];
+
 const COMPLETION_WINDOWS = [
     "None",
     "Completion Day"
@@ -9760,8 +9764,8 @@ function getDefaultManualScheduleRows() {
             id: createId(),
             groupId: createId(),
             dayPart: "Full Day",
-            task: "Commence loading",
-            travelPattern: "A-B",
+            task: "Load and Deliver",
+            travelPattern: "A-B-C-A",
             completionWindow: "None",
             men: 2,
             vans: 1,
@@ -9787,7 +9791,7 @@ function loadManualScheduleFromActiveSequence() {
 manualSchedule = schedule.manualDays.map(function(day) {
     const safeDayPart = day.dayPart || "Full Day";
 
-    let safeTravelPattern = day.travelPattern || "No travel";
+    let safeTravelPattern = day.travelPattern || "None";
 
     if (!day.travelPattern && day.locationMode) {
         if (day.locationMode === "Collection Only") safeTravelPattern = "A-B";
@@ -9799,7 +9803,7 @@ manualSchedule = schedule.manualDays.map(function(day) {
         id: day.id || createId(),
         groupId: day.groupId || createId(),
         dayPart: safeDayPart,
-        task: day.task || "Commence loading",
+                task: day.task || "Load and Deliver",
         travelPattern: safeTravelPattern,
         completionWindow: day.completionWindow || "None",
         men: Math.max(0, Number(day.men) || 0),
@@ -9824,7 +9828,7 @@ function saveManualScheduleToActiveSequence() {
         groupId: day.groupId,
         dayPart: safeDayPart,
         task: day.task,
-        travelPattern: day.travelPattern || "No travel",
+                travelPattern: day.travelPattern || "None",
         completionWindow: day.completionWindow || "None",
         men: Math.max(0, Number(day.men) || 0),
         vans: Math.max(0, Number(day.vans) || 0),
@@ -10359,30 +10363,76 @@ function calcUnloading(totalVolume, unloadRate, unloadSideSpecialHours){
 function optionHtml(options, selected){
     return options.map(opt => `<option value="${opt}" ${String(opt) === String(selected) ? "selected" : ""}>${opt}</option>`).join("");
 }
+function getPlannerTaskMode(day) {
+    const task = String(day && day.task ? day.task : "").trim();
+
+    if (
+        task === "Pack & Prepare" ||
+        task === "Pack fragiles & breakables"
+    ) {
+        return "pack";
+    }
+
+    if (
+        task === "Commence loading" ||
+        task === "Continue loading" ||
+        task === "Complete loading" ||
+        task === "Load" ||
+        task === "Load & Travel"
+    ) {
+        return "load";
+    }
+
+    if (
+        task === "Deliver" ||
+        task === "Continue Delivery" ||
+        task === "Complete delivery" ||
+        task === "Deliver and Crew Return" ||
+        task === "Unpack"
+    ) {
+        return "unload";
+    }
+
+    if (task === "Pack and part Load") {
+        return "pack_load";
+    }
+
+    if (
+        task === "Pack, Load & Deliver" ||
+        task === "Load and Deliver"
+    ) {
+        return "load_unload";
+    }
+
+    if (task === "Travel") {
+        return "travel";
+    }
+
+    return "none";
+}
 function getDayPartHours(dayPart) {
     return dayPart === "Full Day" ? 8 : 4;
 }
 
 function getCompletionAdjustedCapacity(day, mode, taskHours) {
-    const men = Number(day.men) || 0;
-    const baseCapacity = men * Number(taskHours || 0);
     const completionWindow = String(day.completionWindow || "None");
+    const usableTaskHours = Math.max(0, Number(taskHours || 0));
 
     if (completionWindow !== "Completion Day") {
-        return baseCapacity;
+        return usableTaskHours;
     }
 
     if (mode === "load") {
         if (day.dayPart === "PM") return 0;
-        return men * Math.min(Number(taskHours || 0), 4);
+        return Math.min(usableTaskHours, 4);
     }
 
     if (mode === "unload") {
         if (day.dayPart === "AM") return 0;
-        return men * Math.min(Number(taskHours || 0), 4);
+        return Math.min(usableTaskHours, 4);
     }
 
-    return baseCapacity;
+    return usableTaskHours;
 }
 
 function getTravelPatternHours(travelPattern, state){
@@ -10390,9 +10440,9 @@ function getTravelPatternHours(travelPattern, state){
     const bc = Number(state.collectionToDeliveryHours || 0) + (Number(state.collectionToDeliveryMinutes || 0) / 60);
     const ca = Number(state.deliveryToDepotHours || 0) + (Number(state.deliveryToDepotMinutes || 0) / 60);
 
-    const pattern = String(travelPattern || "No travel");
+    const pattern = String(travelPattern || "None");
 
-    if (pattern === "No travel") return 0;
+    if (pattern === "None") return 0;
     if (pattern === "A-B") return round2(ab);
     if (pattern === "B-C") return round2(bc);
     if (pattern === "C-A") return round2(ca);
@@ -10416,8 +10466,8 @@ function addScheduleDay(){
         id: createId(),
         groupId,
         dayPart: "Full Day",
-        task: "Commence loading",
-        travelPattern: "A-B",
+        task: "Load and Deliver",
+        travelPattern: "A-B-C-A",
         completionWindow: "None",
         men: 2,
         vans: 1,
@@ -10443,18 +10493,18 @@ function removeScheduleDay(id){
 function ensurePmPair(row){
     const pairExists = manualSchedule.some(day => day.groupId === row.groupId && day.dayPart === "PM");
     if (!pairExists){
-       manualSchedule.push({
-    id: createId(),
-    groupId: row.groupId,
-    dayPart: "PM",
-    task: "Deliver",
-    travelPattern: "B-C",
-    completionWindow: "None",
-    men: row.men,
-    vans: row.vans,
-    hours: 4,
-    nightsOut: false
-});
+        manualSchedule.push({
+            id: createId(),
+            groupId: row.groupId,
+            dayPart: "PM",
+            task: "Deliver",
+            travelPattern: "C-A",
+            completionWindow: "None",
+            men: row.men,
+            vans: row.vans,
+            hours: 4,
+            nightsOut: false
+        });
     }
 }
 
@@ -10478,70 +10528,79 @@ function normalizeCompletionDayRow(day) {
 }
 function updateScheduleDay(id, field, value){
     manualSchedule = manualSchedule.map(day => {
-    if (day.id !== id) return day;
+        if (day.id !== id) return day;
 
-    let updatedDay;
+        let updatedDay;
 
-    if (field === "men" || field === "vans") {
-        updatedDay = { ...day, [field]: Math.max(0, Number(value) || 0) };
-    } else if (field === "nightsOut") {
-        updatedDay = { ...day, nightsOut: !!value };
-    } else if (field === "dayPart") {
-        const nextHours = value === "Full Day" ? 8 : 4;
-        updatedDay = { ...day, dayPart: value, hours: nextHours };
-    } else {
-        updatedDay = { ...day, [field]: value };
-    }
+        if (field === "men" || field === "vans") {
+            updatedDay = { ...day, [field]: Math.max(0, Number(value) || 0) };
+        } else if (field === "nightsOut") {
+            updatedDay = { ...day, nightsOut: !!value };
+        } else if (field === "dayPart") {
+            const nextHours = value === "Full Day" ? 8 : 4;
+            updatedDay = { ...day, dayPart: value, hours: nextHours };
+        } else {
+            updatedDay = { ...day, [field]: value };
+        }
 
-    return normalizeCompletionDayRow(updatedDay);
-});
+        return normalizeCompletionDayRow(updatedDay);
+    });
 
     const row = manualSchedule.find(day => day.id === id);
+
     if (row && field === "dayPart"){
         if (value === "AM"){
-    const updated = manualSchedule.find(day => day.id === id);
-    updated.hours = 4;
-    updated.task = "Commence loading";
-    updated.travelPattern = "A-B";
-    ensurePmPair(updated);
-}
+            const updated = manualSchedule.find(day => day.id === id);
+            updated.hours = 4;
+            updated.task = "Commence loading";
+            updated.travelPattern = "A-B";
+            ensurePmPair(updated);
+        }
 
-if (value === "PM"){
-    const updated = manualSchedule.find(day => day.id === id);
-    updated.hours = 4;
-    updated.task = "Deliver";
-    updated.travelPattern = "B-C";
+        if (value === "PM"){
+            const updated = manualSchedule.find(day => day.id === id);
+            updated.hours = 4;
+            updated.task = "Deliver";
+            updated.travelPattern = "C-A";
 
-    const hasAm = manualSchedule.some(day => day.groupId === updated.groupId && day.dayPart === "AM");
-    if (!hasAm){
-        manualSchedule.push({
-            id: createId(),
-            groupId: updated.groupId,
-            dayPart: "AM",
-            task: "Commence loading",
-            travelPattern: "A-B",
-            completionWindow: "None",
-            men: updated.men,
-            vans: updated.vans,
-            hours: 4,
-            nightsOut: false
-        });
-    }
-}
+            const hasAm = manualSchedule.some(day => day.groupId === updated.groupId && day.dayPart === "AM");
+            if (!hasAm){
+                manualSchedule.push({
+                    id: createId(),
+                    groupId: updated.groupId,
+                    dayPart: "AM",
+                    task: "Commence loading",
+                    travelPattern: "A-B",
+                    completionWindow: "None",
+                    men: updated.men,
+                    vans: updated.vans,
+                    hours: 4,
+                    nightsOut: false
+                });
+            }
+        }
 
-if (value === "Full Day"){
-    manualSchedule = manualSchedule.filter(day => day.groupId !== row.groupId || day.id === row.id);
-    manualSchedule = manualSchedule.map(day =>
-        day.id === row.id
-            ? { ...day, dayPart: "Full Day", hours: 8 }
-            : day
-    );
-}
+        if (value === "Full Day"){
+            manualSchedule = manualSchedule.filter(day => day.groupId !== row.groupId || day.id === row.id);
+            manualSchedule = manualSchedule.map(day =>
+                day.id === row.id
+                    ? {
+                        ...day,
+                        dayPart: "Full Day",
+                        hours: 8,
+                        task: "Load and Deliver",
+                        travelPattern: "A-B-C-A"
+                    }
+                    : day
+            );
+        }
+
         normalizeGroup(row.groupId);
     }
+
     manualSchedule = manualSchedule.map(function(day) {
-    return day.groupId === row.groupId ? normalizeCompletionDayRow(day) : day;
-});
+        return day.groupId === row.groupId ? normalizeCompletionDayRow(day) : day;
+    });
 
     saveManualScheduleToActiveSequence();
     renderScheduleCalculator();
@@ -10585,12 +10644,12 @@ function renderSchedulePlanner(){
             ${optionHtml(DAY_PARTS, day.dayPart)}
         </select>
     </div>
-    <div>
-    <label class="mini-label">Travel Pattern</label>
-    <select class="field" onchange="updateScheduleDay('${day.id}','travelPattern',this.value)">
-        ${optionHtml(TRAVEL_PATTERNS, day.travelPattern || "No travel")}
-    </select>
-</div>
+        <div>
+        <label class="mini-label">Travel Pattern</label>
+        <select class="field" onchange="updateScheduleDay('${day.id}','travelPattern',this.value)">
+            ${optionHtml(TRAVEL_PATTERN_OPTIONS, day.travelPattern || "None")}
+        </select>
+    </div>
     <div>
         <label class="mini-label">Completion Day</label>
         <select class="field" onchange="updateScheduleDay('${day.id}','completionWindow',this.value)">
@@ -10642,53 +10701,7 @@ Net man-hours: ${(Number(day.men || 0) * getNetTaskHoursForPlannerRow(day, getSt
     }).join("");
 }
 
-function getPlannerTaskMode(day) {
-    const task = String(day.task || "");
-    const completionWindow = String(day.completionWindow || "None");
-    const dayPart = String(day.dayPart || "Full Day");
 
-    const completionAmOnly = completionWindow === "Completion Day" && dayPart === "AM";
-    const completionPmOnly = completionWindow === "Completion Day" && dayPart === "PM";
-
-    if (task === "Pack & Prepare") return "pack";
-    if (task === "Pack fragiles & breakables") return "pack";
-    if (task === "Pack and part Load") return "packLoad";
-
-    if (task === "Pack, Load & Deliver") {
-        if (completionAmOnly) return "packLoad";
-        if (completionPmOnly) return "unload";
-        return "packLoadUnload";
-    }
-
-    if (
-        task === "Commence loading" ||
-        task === "Continue loading" ||
-        task === "Complete loading" ||
-        task === "Load & Travel"
-    ) {
-        return completionPmOnly ? "none" : "load";
-    }
-
-    if (task === "Load and Deliver") {
-        if (completionAmOnly) return "load";
-        if (completionPmOnly) return "unload";
-        return "loadUnload";
-    }
-
-    if (
-        task === "Deliver" ||
-        task === "Continue Delivery" ||
-        task === "Complete delivery" ||
-        task === "Deliver and Crew Return"
-    ) {
-        return completionAmOnly ? "none" : "unload";
-    }
-
-    if (task === "Travel") return "none";
-    if (task === "Unpack") return "none";
-
-    return "none";
-}
 function calcScheduleValidation(packing, loading, unloading, special, state){
     const loadingProfile = getLoadingProfile(state.loadingVariant, state.loadingScenario);
     const effectiveLoadHours = state.loadingScenario === "exStore" ? 0 : round2(loading.hours);
@@ -10796,7 +10809,12 @@ function calcScheduleValidation(packing, loading, unloading, special, state){
 
     results.push({
         type: "ok",
-        text: `${passIcon} Travel patterns use the actual saved leg times: A-B = Depot to Collection, B-C = Collection to Delivery, C-A = Delivery to Depot. Travel is deducted before task labour is checked.`
+        text: `${passIcon} Travel patterns use the actual saved leg times: A-B = Depot to Collection, B-C = Collection to Delivery, C-A = Delivery to Depot.`
+    });
+
+    results.push({
+        type: "ok",
+        text: `${passIcon} Travel is deducted before task labour is checked, so only net working time counts toward validation.`
     });
 
     results.push({
@@ -10905,7 +10923,7 @@ function renderScheduleCalculator(){
             ? "CG packing selected, so only CG cartons contribute to packing labour."
             : "Full packing selected, so all carton types contribute to packing labour.";
 
-    document.getElementById("logicText").textContent =
+        document.getElementById("logicText").textContent =
         `${packingRule} Loading profile is ${loadingProfile.label}. ` +
         `Total volume is furniture volume plus calculated box volume. ` +
         `Loft effects volume is used for extra loft labour only and does not change total move volume. ` +
@@ -10916,6 +10934,7 @@ function renderScheduleCalculator(){
             ? "This move type is treated as loading only into store, so delivery-side logic should be interpreted separately. "
             : ""}` +
         `Unloading uses total volume ÷ ${state.unloadRate} cuft per man-hour, then adds unload-side specials. ` +
+        `Travel patterns use the actual saved leg times: A-B = Depot to Collection, B-C = Collection to Delivery, C-A = Delivery to Depot. ` +
         `Two standard beds and 50 cuft of export wrap are treated as already included before extra special time is added.`;
 
     document.getElementById("specialText").textContent =
