@@ -6663,6 +6663,34 @@ function getPropertyDisplayText(propertyId) {
     return prop ? getPropertyDisplayText(prop.id) : "Unknown Address";
 }
 
+function getScheduleLegLocationOptions() {
+    const options = [
+        { value: "Depot", label: "Depot" }
+    ];
+
+    if (!currentJob || !Array.isArray(currentJob.properties)) {
+        return options;
+    }
+
+    currentJob.properties.forEach(function(prop) {
+        const label = getPropertyDisplayText(prop.id);
+        options.push({
+            value: String(prop.id),
+            label: label
+        });
+    });
+
+    return options;
+}
+function renderScheduleLegLocationOptions(selectedValue) {
+    const options = getScheduleLegLocationOptions();
+
+    return options.map(function(option) {
+        const selected = String(option.value) === String(selectedValue) ? "selected" : "";
+        return `<option value="${escapeHtml(option.value)}" ${selected}>${escapeHtml(option.label)}</option>`;
+    }).join("");
+}
+
 function getSequenceLabelById(sequenceId) {
     if (!currentJob || !Array.isArray(currentJob.sequences)) return "Unknown Sequence";
 
@@ -9764,7 +9792,7 @@ function getDefaultManualScheduleRows() {
     ];
 }
 
-function createEmptyScheduleLeg(from = "Depot", to = "Collection", minutes = 0) {
+function createEmptyScheduleLeg(from = "Depot", to = "", minutes = 0) {
     return {
         id: createId(),
         from: from,
@@ -9790,31 +9818,35 @@ function convertTravelPatternToLegs(day, schedule) {
 
     const pattern = String(day.travelPattern || "None");
 
-    const ab = Number(schedule?.depotToCollectionMinutes || 0);
-    const bc = Number(schedule?.collectionToDeliveryMinutes || 0);
-    const ca = Number(schedule?.deliveryToDepotMinutes || 0);
+    const seq = getActiveSequenceRecord();
+    const firstCollectionId = seq && Array.isArray(seq.collections) && seq.collections.length
+        ? String(seq.collections[0])
+        : "";
+    const firstDeliveryId = seq && Array.isArray(seq.deliveries) && seq.deliveries.length
+        ? String(seq.deliveries[0])
+        : "";
 
     const legs = [];
 
     if (pattern === "A-B") {
-        legs.push(createEmptyScheduleLeg("Depot", "Collection", ab));
+        legs.push(createEmptyScheduleLeg("Depot", firstCollectionId, 0));
     } else if (pattern === "B-C") {
-        legs.push(createEmptyScheduleLeg("Collection", "Delivery", bc));
+        legs.push(createEmptyScheduleLeg(firstCollectionId, firstDeliveryId, 0));
     } else if (pattern === "C-A") {
-        legs.push(createEmptyScheduleLeg("Delivery", "Depot", ca));
+        legs.push(createEmptyScheduleLeg(firstDeliveryId, "Depot", 0));
     } else if (pattern === "A-B-A") {
-        legs.push(createEmptyScheduleLeg("Depot", "Collection", ab));
-        legs.push(createEmptyScheduleLeg("Collection", "Depot", ab));
+        legs.push(createEmptyScheduleLeg("Depot", firstCollectionId, 0));
+        legs.push(createEmptyScheduleLeg(firstCollectionId, "Depot", 0));
     } else if (pattern === "A-B-C") {
-        legs.push(createEmptyScheduleLeg("Depot", "Collection", ab));
-        legs.push(createEmptyScheduleLeg("Collection", "Delivery", bc));
+        legs.push(createEmptyScheduleLeg("Depot", firstCollectionId, 0));
+        legs.push(createEmptyScheduleLeg(firstCollectionId, firstDeliveryId, 0));
     } else if (pattern === "B-C-A") {
-        legs.push(createEmptyScheduleLeg("Collection", "Delivery", bc));
-        legs.push(createEmptyScheduleLeg("Delivery", "Depot", ca));
+        legs.push(createEmptyScheduleLeg(firstCollectionId, firstDeliveryId, 0));
+        legs.push(createEmptyScheduleLeg(firstDeliveryId, "Depot", 0));
     } else if (pattern === "A-B-C-A") {
-        legs.push(createEmptyScheduleLeg("Depot", "Collection", ab));
-        legs.push(createEmptyScheduleLeg("Collection", "Delivery", bc));
-        legs.push(createEmptyScheduleLeg("Delivery", "Depot", ca));
+        legs.push(createEmptyScheduleLeg("Depot", firstCollectionId, 0));
+        legs.push(createEmptyScheduleLeg(firstCollectionId, firstDeliveryId, 0));
+        legs.push(createEmptyScheduleLeg(firstDeliveryId, "Depot", 0));
     }
 
     return legs;
@@ -9910,27 +9942,25 @@ function renderScheduleLegs(day) {
                         ? day.legs.map(function(leg) {
                             return `
                                 <div class="schedule-leg-row">
-                                    <div>
-                                        <label class="mini-label">From</label>
-                                        <input
-                                            type="text"
-                                            class="field"
-                                            value="${escapeHtml(leg.from || "")}"
-                                            oninput="updateScheduleLeg('${day.id}','${leg.id}','from',this.value)"
-                                            placeholder="From"
-                                        >
-                                    </div>
+                                   <div>
+    <label class="mini-label">From</label>
+    <select
+        class="field"
+        onchange="updateScheduleLeg('${day.id}','${leg.id}','from',this.value)"
+    >
+        ${renderScheduleLegLocationOptions(leg.from || "Depot")}
+    </select>
+</div>
 
-                                    <div>
-                                        <label class="mini-label">To</label>
-                                        <input
-                                            type="text"
-                                            class="field"
-                                            value="${escapeHtml(leg.to || "")}"
-                                            oninput="updateScheduleLeg('${day.id}','${leg.id}','to',this.value)"
-                                            placeholder="To"
-                                        >
-                                    </div>
+                                  <div>
+    <label class="mini-label">To</label>
+    <select
+        class="field"
+        onchange="updateScheduleLeg('${day.id}','${leg.id}','to',this.value)"
+    >
+        ${renderScheduleLegLocationOptions(leg.to || "")}
+    </select>
+</div>
 
                                     <div>
                                         <label class="mini-label">Minutes</label>
