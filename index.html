@@ -9792,7 +9792,7 @@ function getDefaultManualScheduleRows() {
     ];
 }
 
-function createEmptyScheduleLeg(from = "Depot", to = "", minutes = 0) {
+function createEmptyScheduleLeg(from = "Depot", to = "Collection Address", minutes = 0) {
     return {
         id: createId(),
         from: from,
@@ -9807,6 +9807,23 @@ function ensureScheduleRowShape(day) {
     if (!Array.isArray(day.legs)) {
         day.legs = [];
     }
+
+    day.legs = day.legs.map(function(leg) {
+        let from = String(leg.from || "").trim();
+        let to = String(leg.to || "").trim();
+
+        if (from === "Collection") from = "Collection Address";
+        if (to === "Collection") to = "Collection Address";
+        if (from === "Delivery") from = "Delivery Address";
+        if (to === "Delivery") to = "Delivery Address";
+
+        return {
+            id: leg.id || createId(),
+            from: from || "Depot",
+            to: to || "Collection Address",
+            minutes: Math.max(0, Number(leg.minutes || 0))
+        };
+    });
 
     return day;
 }
@@ -9919,9 +9936,28 @@ function removeScheduleLeg(dayId, legId) {
     saveManualScheduleToActiveSequence();
     renderScheduleCalculator();
 }
+function getScheduleLegAddressOptions() {
+    const options = [{ value: "Depot", label: "Depot" }];
+
+    if (!currentJob || !Array.isArray(currentJob.properties)) {
+        return options;
+    }
+
+    currentJob.properties.forEach(function(prop) {
+        const label = getPropertyDisplayText(prop.id);
+        options.push({
+            value: label,
+            label: label
+        });
+    });
+
+    return options;
+}
 
 function renderScheduleLegs(day) {
     ensureScheduleRowShape(day);
+
+    const addressOptions = getScheduleLegAddressOptions();
 
     return `
         <div class="schedule-legs-shell">
@@ -9942,25 +9978,31 @@ function renderScheduleLegs(day) {
                         ? day.legs.map(function(leg) {
                             return `
                                 <div class="schedule-leg-row">
-                                   <div>
-    <label class="mini-label">From</label>
-    <select
-        class="field"
-        onchange="updateScheduleLeg('${day.id}','${leg.id}','from',this.value)"
-    >
-        ${renderScheduleLegLocationOptions(leg.from || "Depot")}
-    </select>
-</div>
+                                    <div>
+                                        <label class="mini-label">From</label>
+                                        <select
+                                            class="field"
+                                            onchange="updateScheduleLeg('${day.id}','${leg.id}','from',this.value)"
+                                            title="${escapeHtml(leg.from || "")}"
+                                        >
+                                            ${addressOptions.map(function(option) {
+                                                return `<option value="${escapeHtml(option.value)}" ${String(option.value) === String(leg.from || "") ? "selected" : ""}>${escapeHtml(option.label)}</option>`;
+                                            }).join("")}
+                                        </select>
+                                    </div>
 
-                                  <div>
-    <label class="mini-label">To</label>
-    <select
-        class="field"
-        onchange="updateScheduleLeg('${day.id}','${leg.id}','to',this.value)"
-    >
-        ${renderScheduleLegLocationOptions(leg.to || "")}
-    </select>
-</div>
+                                    <div>
+                                        <label class="mini-label">To</label>
+                                        <select
+                                            class="field"
+                                            onchange="updateScheduleLeg('${day.id}','${leg.id}','to',this.value)"
+                                            title="${escapeHtml(leg.to || "")}"
+                                        >
+                                            ${addressOptions.map(function(option) {
+                                                return `<option value="${escapeHtml(option.value)}" ${String(option.value) === String(leg.to || "") ? "selected" : ""}>${escapeHtml(option.label)}</option>`;
+                                            }).join("")}
+                                        </select>
+                                    </div>
 
                                     <div>
                                         <label class="mini-label">Minutes</label>
@@ -10692,7 +10734,11 @@ function addScheduleDay(){
     vans: 1,
     hours: 8,
     nightsOut: false,
-    legs: []
+    legs: [
+    createEmptyScheduleLeg("Depot", "Collection Address", 0),
+    createEmptyScheduleLeg("Collection Address", "Delivery Address", 0),
+    createEmptyScheduleLeg("Delivery Address", "Depot", 0)
+]
 });
     saveManualScheduleToActiveSequence();
     renderScheduleCalculator();
@@ -10723,7 +10769,10 @@ manualSchedule.push({
     vans: row.vans,
     hours: 4,
     nightsOut: false,
-    legs: []
+    legs: [
+    createEmptyScheduleLeg("Collection Address", "Delivery Address", 0),
+    createEmptyScheduleLeg("Delivery Address", "Depot", 0)
+]
 });
     }
 }
@@ -10795,7 +10844,9 @@ if (value === "AM"){
             vans: updated.vans,
             hours: 4,
             nightsOut: false,
-            legs: []
+            legs: [
+    createEmptyScheduleLeg("Depot", "Collection Address", 0)
+]
         });
     }
 }
@@ -10809,7 +10860,13 @@ if (value === "AM"){
                 dayPart: "Full Day",
                 hours: 8,
                 task: "Load and Deliver",
-                legs: Array.isArray(day.legs) ? day.legs : []
+                legs: Array.isArray(day.legs) && day.legs.length
+    ? day.legs
+    : [
+        createEmptyScheduleLeg("Depot", "Collection Address", 0),
+        createEmptyScheduleLeg("Collection Address", "Delivery Address", 0),
+        createEmptyScheduleLeg("Delivery Address", "Depot", 0)
+    ]
             }
             : day
     );
