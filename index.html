@@ -9731,37 +9731,47 @@ function saveMileageToCosting() {
     const sequenceId = String(activeSeqId || getDefaultSequenceId() || "");
     if (!sequenceId) return;
 
-    const state = ensureQuoteSequenceState(sequenceId);
-    if (!state) return;
-
     const mileageInput = document.getElementById("schedule-mileage-input");
     if (!mileageInput) {
-        alert("Mileage input not found.");
+        alert("Mileage input box not found.");
         return;
     }
 
     const mileageValue = Number(mileageInput.value || 0);
 
-    let mileageLine = state.pricingLines.find(function(line) {
+    ensureQuoteSequenceState(sequenceId);
+
+    // IMPORTANT:
+    // this forces the standard costing rows to exist first
+    const pricingLines = getQuotePricingLines(sequenceId);
+
+    let mileageLine = pricingLines.find(function(line) {
         return line.label === "Mileage";
     });
 
     if (!mileageLine) {
-        state.pricingLines.push({
+        pricingLines.push({
             id: createQuoteLineId(),
             label: "Mileage",
             customLabel: "",
             qty: mileageValue,
-            unitCost: 1.2
+            unitCost: 0.45
         });
     } else {
         mileageLine.qty = mileageValue;
     }
 
-    quotePricingSaved = true;
+    quotePricingSaved = false;
     saveToDevice();
 
-    alert("Mileage saved to Costing.");
+    if (
+        document.getElementById("content-quote") &&
+        !document.getElementById("content-quote").classList.contains("hidden")
+    ) {
+        renderQuoteTab();
+    }
+
+    alert("Mileage added to costing.");
 }
 function createId(){
     return `day_${Date.now()}_${Math.random().toString(36).slice(2,7)}`;
