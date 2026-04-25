@@ -10778,6 +10778,14 @@ function autoBuildScheduleDays() {
     const newRows = [];
     const moveGroupId = createId();
 
+    const collectionId = seq && Array.isArray(seq.collections) && seq.collections.length
+        ? String(seq.collections[0])
+        : "";
+
+    const deliveryId = seq && Array.isArray(seq.deliveries) && seq.deliveries.length
+        ? String(seq.deliveries[0])
+        : "";
+
     const hasPacking =
         packMode === "cg" ||
         packMode === "full";
@@ -10794,8 +10802,8 @@ function autoBuildScheduleDays() {
             hours: 8,
             nightsOut: false,
             legs: [
-                createEmptyScheduleLeg("Depot", "Collection Address", 30),
-                createEmptyScheduleLeg("Collection Address", "Depot", 30)
+                createEmptyScheduleLeg("Depot", collectionId, 30),
+                createEmptyScheduleLeg(collectionId, "Depot", 30)
             ]
         });
     }
@@ -10812,8 +10820,8 @@ function autoBuildScheduleDays() {
             hours: 8,
             nightsOut: false,
             legs: [
-                createEmptyScheduleLeg("Depot", "Collection Address", 30),
-                createEmptyScheduleLeg("Collection Address", "Store", 30)
+                createEmptyScheduleLeg("Depot", collectionId, 30),
+                createEmptyScheduleLeg(collectionId, deliveryId, 30)
             ]
         });
     } else if (moveMode === "exStore") {
@@ -10828,8 +10836,8 @@ function autoBuildScheduleDays() {
             hours: 8,
             nightsOut: false,
             legs: [
-                createEmptyScheduleLeg("Store", "Delivery Address", 30),
-                createEmptyScheduleLeg("Delivery Address", "Depot", 30)
+                createEmptyScheduleLeg(collectionId, deliveryId, 30),
+                createEmptyScheduleLeg(deliveryId, "Depot", 30)
             ]
         });
     } else {
@@ -10844,9 +10852,9 @@ function autoBuildScheduleDays() {
             hours: 8,
             nightsOut: false,
             legs: [
-                createEmptyScheduleLeg("Depot", "Collection Address", 30),
-                createEmptyScheduleLeg("Collection Address", "Delivery Address", 30),
-                createEmptyScheduleLeg("Delivery Address", "Depot", 30)
+                createEmptyScheduleLeg("Depot", collectionId, 30),
+                createEmptyScheduleLeg(collectionId, deliveryId, 30),
+                createEmptyScheduleLeg(deliveryId, "Depot", 30)
             ]
         });
     }
