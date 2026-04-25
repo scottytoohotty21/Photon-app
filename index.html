@@ -11168,20 +11168,16 @@ function calcScheduleValidation(packing, loading, unloading, special, state){
             }
 
             if (taskMode === "load_unload") {
-                const loadUsableHours = getCompletionAdjustedCapacity(day, "load", taskHours, state);
-const unloadUsableHours = getCompletionAdjustedCapacity(day, "unload", taskHours, state);
+    const usableHours = getCompletionAdjustedCapacity(day, "load", taskHours, state);
+    const rowManHours = men * usableHours;
 
-                const rowLoadManHours = men * loadUsableHours;
-                const rowUnloadManHours = men * unloadUsableHours;
-                const rowManHours = rowLoadManHours + rowUnloadManHours;
+    const loadShortfall = Math.max(0, required.Load - allocated.Load);
+    const toLoad = Math.min(rowManHours, loadShortfall);
 
-                const loadShortfall = Math.max(0, required.Load - allocated.Load);
-                const toLoad = Math.min(rowManHours, loadShortfall);
-
-                allocated.Load += toLoad;
-                allocated.Unload += Math.max(0, rowManHours - toLoad);
-                return;
-            }
+    allocated.Load += toLoad;
+    allocated.Unload += Math.max(0, rowManHours - toLoad);
+    return;
+}
         });
     });
 
