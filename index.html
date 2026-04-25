@@ -11589,12 +11589,13 @@ function renderSchedulePlanner() {
             pushTimedSegment(segments, cursorRef, "packing", packPart);
             pushTimedSegment(segments, cursorRef, "loading", loadPart);
             pushLegList(legGroups.after);
-        } else if (taskMode === "load_unload") {
+        }         } else if (taskMode === "load_unload") {
             let loadPart = 0;
             let unloadPart = 0;
 
             if (isCompletion) {
-                const maxLoadWindow = Math.max(0, 13 - rowWindow.start - beforeTravelHours);
+                const latestLoadingFinish = 13 - middleTravelHours;
+                const maxLoadWindow = Math.max(0, latestLoadingFinish - rowWindow.start - beforeTravelHours);
                 loadPart = Math.min(safeTaskHours, maxLoadWindow);
                 unloadPart = Math.max(0, safeTaskHours - loadPart);
             } else {
