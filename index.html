@@ -2772,9 +2772,12 @@ Enter as: Surname, First Name
 
                 <div class="schedule-shell">
                     <div class="schedule-toolbar">
-                        <div class="schedule-title">Manual Schedule Planner</div>
-                        <button class="schedule-btn" onclick="addScheduleDay()">Add Day</button>
-                    </div>
+    <div class="schedule-title">Manual Schedule Planner</div>
+    <div class="flex gap-2">
+        <button class="schedule-btn" onclick="autoBuildScheduleDays()">Auto Build</button>
+        <button class="schedule-btn" onclick="addScheduleDay()">Add Day</button>
+    </div>
+</div>
                     <div class="schedule-list" id="scheduleList"></div>
                     <div class="validation-list" id="validationList"></div>
                 </div>
@@ -9801,6 +9804,40 @@ function createEmptyScheduleLeg(from = "Depot", to = "Collection Address", minut
     };
 }
 
+function getDefaultLegMinutes(from, to) {
+    const fromText = String(from || "").toLowerCase().trim();
+    const toText = String(to || "").toLowerCase().trim();
+
+    if (fromText === "depot" && toText === "collection") {
+        return 30;
+    }
+
+    if (fromText === "collection" && toText === "delivery") {
+        return 30;
+    }
+
+    if (fromText === "delivery" && toText === "depot") {
+        return 30;
+    }
+
+    if (fromText === "depot" && toText === "store") {
+        return 30;
+    }
+
+    if (fromText === "store" && toText === "delivery") {
+        return 30;
+    }
+
+    if (fromText === "collection" && toText === "store") {
+        return 30;
+    }
+
+    if (fromText === "store" && toText === "depot") {
+        return 30;
+    }
+
+    return 0;
+}
 function ensureScheduleRowShape(day) {
     if (!day || typeof day !== "object") return day;
 
@@ -10243,6 +10280,14 @@ function getLoadingScenarioFromMoveType(moveType) {
     return "direct";
 }
 
+function getAutoBuildMoveMode(moveType) {
+    const raw = String(moveType || "").toLowerCase();
+
+    if (raw.includes("to store")) return "intoStore";
+    if (raw.includes("ex store")) return "exStore";
+
+    return "direct";
+}
 function getLoadingProfile(loadingVariant, loadingScenario) {
     const variant = String(loadingVariant || "Standard");
     const scenario = String(loadingScenario || "direct");
@@ -10722,6 +10767,93 @@ function getNetTaskHoursForPlannerRow(day, state){
     return Math.max(0, round2(rowHours - travelHours));
 }
 
+function autoBuildScheduleDays() {
+    const seq = getActiveSequenceRecord();
+    if (!seq) return;
+
+    const photonFeed = getPhotonFeed();
+    const moveMode = getAutoBuildMoveMode(seq.moveType || "");
+    const packMode = photonFeed.packOption || "none";
+
+    const newRows = [];
+    const moveGroupId = createId();
+
+    const hasPacking =
+        packMode === "cg" ||
+        packMode === "full";
+
+    if (hasPacking) {
+        newRows.push({
+            id: createId(),
+            groupId: createId(),
+            dayPart: "Full Day",
+            task: packMode === "cg" ? "Pack fragiles & breakables" : "Pack & Prepare",
+            completionWindow: "None",
+            men: 2,
+            vans: 1,
+            hours: 8,
+            nightsOut: false,
+            legs: []
+        });
+    }
+
+    if (moveMode === "intoStore") {
+        newRows.push({
+            id: createId(),
+            groupId: moveGroupId,
+            dayPart: "Full Day",
+            task: "Load",
+            completionWindow: "None",
+            men: 2,
+            vans: 1,
+            hours: 8,
+            nightsOut: false,
+            legs: [
+                createEmptyScheduleLeg("Depot", "Collection", getDefaultLegMinutes("Depot", "Collection")),
+createEmptyScheduleLeg("Collection", "Store", getDefaultLegMinutes("Collection", "Store")),
+createEmptyScheduleLeg("Store", "Depot", getDefaultLegMinutes("Store", "Depot"))
+            ]
+        });
+    } else if (moveMode === "exStore") {
+        newRows.push({
+            id: createId(),
+            groupId: moveGroupId,
+            dayPart: "Full Day",
+            task: "Deliver",
+            completionWindow: "None",
+            men: 2,
+            vans: 1,
+            hours: 8,
+            nightsOut: false,
+            legs: [
+                createEmptyScheduleLeg("Depot", "Store", getDefaultLegMinutes("Depot", "Store")),
+createEmptyScheduleLeg("Store", "Delivery", getDefaultLegMinutes("Store", "Delivery")),
+createEmptyScheduleLeg("Delivery", "Depot", getDefaultLegMinutes("Delivery", "Depot"))
+            ]
+        });
+    } else {
+        newRows.push({
+            id: createId(),
+            groupId: moveGroupId,
+            dayPart: "Full Day",
+            task: "Load and Deliver",
+            completionWindow: "None",
+            men: 2,
+            vans: 1,
+            hours: 8,
+            nightsOut: false,
+            legs: [
+                createEmptyScheduleLeg("Depot", "Collection", getDefaultLegMinutes("Depot", "Collection")),
+createEmptyScheduleLeg("Collection", "Delivery", getDefaultLegMinutes("Collection", "Delivery")),
+createEmptyScheduleLeg("Delivery", "Depot", getDefaultLegMinutes("Delivery", "Depot"))A
+            ]
+        });
+    }
+
+    manualSchedule = newRows;
+    saveManualScheduleToActiveSequence();
+    renderScheduleCalculator();
+}
 function addScheduleDay(){
     const groupId = createId();
  manualSchedule.push({
