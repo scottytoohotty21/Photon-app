@@ -10778,12 +10778,12 @@ function autoBuildScheduleDays() {
     const newRows = [];
     const moveGroupId = createId();
 
-    const collectionText = seq && Array.isArray(seq.collections) && seq.collections.length
-        ? getPropertyDisplayText(seq.collections[0])
+    const collectionId = seq && Array.isArray(seq.collections) && seq.collections.length
+        ? String(seq.collections[0])
         : "";
 
-    const deliveryText = seq && Array.isArray(seq.deliveries) && seq.deliveries.length
-        ? getPropertyDisplayText(seq.deliveries[0])
+    const deliveryId = seq && Array.isArray(seq.deliveries) && seq.deliveries.length
+        ? String(seq.deliveries[0])
         : "";
 
     const hasPacking =
@@ -10802,8 +10802,8 @@ function autoBuildScheduleDays() {
             hours: 8,
             nightsOut: false,
             legs: [
-                createEmptyScheduleLeg("Depot", collectionText, 30),
-                createEmptyScheduleLeg(collectionText, "Depot", 30)
+                createEmptyScheduleLeg("Depot", collectionId, 30),
+                createEmptyScheduleLeg(collectionId, "Depot", 30)
             ]
         });
     }
@@ -10820,8 +10820,8 @@ function autoBuildScheduleDays() {
             hours: 8,
             nightsOut: false,
             legs: [
-                createEmptyScheduleLeg("Depot", collectionText, 30),
-                createEmptyScheduleLeg(collectionText, deliveryText, 30)
+                createEmptyScheduleLeg("Depot", collectionId, 30),
+                createEmptyScheduleLeg(collectionId, deliveryId, 30)
             ]
         });
     } else if (moveMode === "exStore") {
@@ -10836,8 +10836,8 @@ function autoBuildScheduleDays() {
             hours: 8,
             nightsOut: false,
             legs: [
-                createEmptyScheduleLeg(collectionText, deliveryText, 30),
-                createEmptyScheduleLeg(deliveryText, "Depot", 30)
+                createEmptyScheduleLeg(collectionId, deliveryId, 30),
+                createEmptyScheduleLeg(deliveryId, "Depot", 30)
             ]
         });
     } else {
@@ -10852,9 +10852,9 @@ function autoBuildScheduleDays() {
             hours: 8,
             nightsOut: false,
             legs: [
-                createEmptyScheduleLeg("Depot", collectionText, 30),
-                createEmptyScheduleLeg(collectionText, deliveryText, 30),
-                createEmptyScheduleLeg(deliveryText, "Depot", 30)
+                createEmptyScheduleLeg("Depot", collectionId, 30),
+                createEmptyScheduleLeg(collectionId, deliveryId, 30),
+                createEmptyScheduleLeg(deliveryId, "Depot", 30)
             ]
         });
     }
