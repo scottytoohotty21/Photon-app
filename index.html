@@ -11191,6 +11191,128 @@ if (value === "AM"){
     saveManualScheduleToActiveSequence();
     renderScheduleCalculator();
 }
+function minutesToClock(totalMinutes) {
+    const mins = Math.max(0, Math.round(Number(totalMinutes || 0)));
+    const hours = Math.floor(mins / 60);
+    const remainder = mins % 60;
+    return String(hours).padStart(2, "0") + ":" + String(remainder).padStart(2, "0");
+}
+
+function getScheduleWindowTimes(dayPart) {
+    if (dayPart === "AM") {
+        return {
+            startMinutes: 8 * 60,
+            endMinutes: 13 * 60
+        };
+    }
+
+    if (dayPart === "PM") {
+        return {
+            startMinutes: 13 * 60,
+            endMinutes: (17 * 60) + 30
+        };
+    }
+
+    return {
+        startMinutes: 8 * 60,
+        endMinutes: (17 * 60) + 30
+    };
+}
+
+function getTaskLabelFromMode(mode, day) {
+    const rawTask = String(day && day.task ? day.task : "").trim();
+
+    if (mode === "pack") return "Pack";
+    if (mode === "load") return "Load";
+    if (mode === "unload") return "Unload";
+    if (mode === "travel") return "Travel";
+
+    if (mode === "pack_load") {
+        return rawTask === "Pack and part Load" ? "Pack / Load" : "Pack / Load";
+    }
+
+    if (mode === "load_unload") {
+        return rawTask === "Pack, Load & Deliver" ? "Load / Unload" : "Load / Unload";
+    }
+
+    return rawTask || "Task";
+}
+
+function buildScheduleTimeline(day, state) {
+    const windowTimes = getScheduleWindowTimes(day.dayPart || "Full Day");
+    const taskMode = getPlannerTaskMode(day);
+    const legs = Array.isArray(day.legs) ? day.legs : [];
+
+    let cursor = windowTimes.startMinutes;
+    const blocks = [];
+
+    legs.forEach(function(leg, index) {
+        const mins = Math.max(0, Number(leg.minutes || 0));
+        if (mins <= 0) return;
+
+        const fromLabel = leg.from === "Depot" ? "Depot" : getPropertyDisplayText(leg.from);
+        const toLabel = leg.to === "Depot" ? "Depot" : getPropertyDisplayText(leg.to);
+
+        const start = cursor;
+        const end = cursor + mins;
+
+        blocks.push({
+            type: "travel",
+            label: "Leg " + (index + 1) + ": " + fromLabel + " → " + toLabel,
+            start: start,
+            end: end
+        });
+
+        cursor = end;
+    });
+
+    const windowHours = getWindowHoursForRow(day);
+    const taskHours = getNetTaskHoursForPlannerRow(day, state);
+    const taskMinutes = Math.max(0, Math.round(taskHours * 60));
+
+    if (taskMinutes > 0) {
+        blocks.push({
+            type: "task",
+            label: getTaskLabelFromMode(taskMode, day),
+            start: cursor,
+            end: cursor + taskMinutes
+        });
+
+        cursor += taskMinutes;
+    }
+
+    return {
+        windowStart: windowTimes.startMinutes,
+        windowEnd: windowTimes.endMinutes,
+        finish: cursor,
+        overrunMinutes: Math.max(0, cursor - windowTimes.endMinutes),
+        fits: cursor <= windowTimes.endMinutes,
+        blocks: blocks
+    };
+}
+
+function renderScheduleTimeline(day, state) {
+    const timeline = buildScheduleTimeline(day, state);
+
+    return `
+        <div class="schedule-debug-line">
+            <div><strong>Window:</strong> ${minutesToClock(timeline.windowStart)}–${minutesToClock(timeline.windowEnd)}</div>
+            ${
+                timeline.blocks.length
+                    ? timeline.blocks.map(function(block) {
+                        return `<div><strong>${escapeHtml(block.label)}:</strong> ${minutesToClock(block.start)}–${minutesToClock(block.end)}</div>`;
+                    }).join("")
+                    : `<div><strong>No timed blocks</strong></div>`
+            }
+            <div><strong>Finish:</strong> ${minutesToClock(timeline.finish)}</div>
+            <div><strong>Status:</strong> ${
+                timeline.fits
+                    ? `Fits within window`
+                    : `Overruns by ${timeline.overrunMinutes} mins`
+            }</div>
+        </div>
+    `;
+}
 
 function renderSchedulePlanner(){
     const list = document.getElementById("scheduleList");
@@ -11284,6 +11406,7 @@ function renderSchedulePlanner(){
             Net task time: ${getNetTaskHoursForPlannerRow(day, getState()).toFixed(2)} hrs ·
             Net man-hours: ${(Number(day.men || 0) * getNetTaskHoursForPlannerRow(day, getState())).toFixed(2)}
         </div>
+                ${renderScheduleTimeline(day, getState())}
     </div>
 `).join("");
     }).join("");
