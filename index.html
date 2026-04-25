@@ -10921,6 +10921,90 @@ function normalizeGroup(groupId){
 function normalizeCompletionDayRow(day) {
     return { ...day };
 }
+
+function shouldAutoSplitCompletionRow(day) {
+    if (!day) return false;
+
+    const completionOn = String(day.completionWindow || "None") === "Completion Day";
+    if (!completionOn) return false;
+
+    const seq = getActiveSequenceRecord();
+    const moveMode = getAutoBuildMoveMode(seq ? seq.moveType || "" : "");
+
+    // only direct moves auto-split
+    if (moveMode !== "direct") return false;
+
+    const task = String(day.task || "");
+
+    return (
+        task === "Load and Deliver" ||
+        task === "Pack, Load & Deliver"
+    );
+}
+function splitCompletionRowIntoAmPm(row) {
+    if (!row) return;
+
+    const existingRows = manualSchedule.filter(function(day) {
+        return day.groupId === row.groupId;
+    });
+
+    const alreadySplit = existingRows.some(function(day) {
+        return day.dayPart === "AM" || day.dayPart === "PM";
+    });
+
+    if (alreadySplit) return;
+
+    const legs = Array.isArray(row.legs) ? row.legs.slice() : [];
+
+    const amLegs = [];
+    const pmLegs = [];
+
+    if (legs[0]) amLegs.push({ ...legs[0] });
+    if (legs[1]) pmLegs.push({ ...legs[1] });
+    if (legs[2]) pmLegs.push({ ...legs[2] });
+
+    const amTask =
+        row.task === "Pack, Load & Deliver"
+            ? "Pack and part Load"
+            : "Commence loading";
+
+    const pmTask =
+        row.task === "Pack, Load & Deliver"
+            ? "Deliver"
+            : "Deliver";
+
+    const amRow = {
+        id: createId(),
+        groupId: row.groupId,
+        dayPart: "AM",
+        task: amTask,
+        completionWindow: "Completion Day",
+        men: row.men,
+        vans: row.vans,
+        hours: 4,
+        nightsOut: false,
+        legs: amLegs
+    };
+
+    const pmRow = {
+        id: createId(),
+        groupId: row.groupId,
+        dayPart: "PM",
+        task: pmTask,
+        completionWindow: "Completion Day",
+        men: row.men,
+        vans: row.vans,
+        hours: 4,
+        nightsOut: false,
+        legs: pmLegs
+    };
+
+    manualSchedule = manualSchedule.filter(function(day) {
+        return day.id !== row.id;
+    });
+
+    manualSchedule.push(amRow, pmRow);
+}
 function updateScheduleDay(id, field, value){
     manualSchedule = manualSchedule.map(day => {
         if (day.id !== id) return day;
@@ -10942,6 +11026,15 @@ function updateScheduleDay(id, field, value){
     });
 
     const row = manualSchedule.find(day => day.id === id);
+        if (row && field === "completionWindow") {
+        const updatedRow = manualSchedule.find(function(day) {
+            return day.id === id;
+        });
+
+        if (shouldAutoSplitCompletionRow(updatedRow)) {
+            splitCompletionRowIntoAmPm(updatedRow);
+        }
+    }
 
     if (row && field === "dayPart"){
 if (value === "AM"){
