@@ -9795,11 +9795,11 @@ function getDefaultManualScheduleRows() {
     ];
 }
 
-function createEmptyScheduleLeg(from = "Depot", to = "Collection Address", minutes = 0) {
+function createEmptyScheduleLeg(from = "Depot", to = "", minutes = 0) {
     return {
         id: createId(),
-        from: from,
-        to: to,
+        from: String(from || "Depot"),
+        to: String(to || ""),
         minutes: Math.max(0, Number(minutes) || 0)
     };
 }
@@ -9845,6 +9845,14 @@ function ensureScheduleRowShape(day) {
         day.legs = [];
     }
 
+    const labelToIdMap = {};
+    if (currentJob && Array.isArray(currentJob.properties)) {
+        currentJob.properties.forEach(function(prop) {
+            const label = getPropertyDisplayText(prop.id);
+            labelToIdMap[String(label)] = String(prop.id);
+        });
+    }
+
     day.legs = day.legs.map(function(leg) {
         let from = String(leg.from || "").trim();
         let to = String(leg.to || "").trim();
@@ -9854,10 +9862,17 @@ function ensureScheduleRowShape(day) {
         if (from === "Delivery") from = "Delivery Address";
         if (to === "Delivery") to = "Delivery Address";
 
+        if (from !== "Depot" && labelToIdMap[from]) {
+            from = labelToIdMap[from];
+        }
+        if (to !== "Depot" && labelToIdMap[to]) {
+            to = labelToIdMap[to];
+        }
+
         return {
             id: leg.id || createId(),
             from: from || "Depot",
-            to: to || "Collection Address",
+            to: to || "",
             minutes: Math.max(0, Number(leg.minutes || 0))
         };
     });
@@ -9994,7 +10009,14 @@ function getScheduleLegAddressOptions() {
 function renderScheduleLegs(day) {
     ensureScheduleRowShape(day);
 
-    const addressOptions = getScheduleLegAddressOptions();
+    const addressOptions = getScheduleLegLocationOptions();
+
+    const getLegLabel = function(value) {
+        const match = addressOptions.find(function(option) {
+            return String(option.value) === String(value);
+        });
+        return match ? match.label : value;
+    };
 
     return `
         <div class="schedule-legs-shell">
@@ -10020,11 +10042,9 @@ function renderScheduleLegs(day) {
                                         <select
                                             class="field"
                                             onchange="updateScheduleLeg('${day.id}','${leg.id}','from',this.value)"
-                                            title="${escapeHtml(leg.from || "")}"
+                                            title="${escapeHtml(getLegLabel(leg.from || ""))}"
                                         >
-                                            ${addressOptions.map(function(option) {
-                                                return `<option value="${escapeHtml(option.value)}" ${String(option.value) === String(leg.from || "") ? "selected" : ""}>${escapeHtml(option.label)}</option>`;
-                                            }).join("")}
+                                            ${renderScheduleLegLocationOptions(leg.from || "")}
                                         </select>
                                     </div>
 
@@ -10033,11 +10053,9 @@ function renderScheduleLegs(day) {
                                         <select
                                             class="field"
                                             onchange="updateScheduleLeg('${day.id}','${leg.id}','to',this.value)"
-                                            title="${escapeHtml(leg.to || "")}"
+                                            title="${escapeHtml(getLegLabel(leg.to || ""))}"
                                         >
-                                            ${addressOptions.map(function(option) {
-                                                return `<option value="${escapeHtml(option.value)}" ${String(option.value) === String(leg.to || "") ? "selected" : ""}>${escapeHtml(option.label)}</option>`;
-                                            }).join("")}
+                                            ${renderScheduleLegLocationOptions(leg.to || "")}
                                         </select>
                                     </div>
 
