@@ -10778,6 +10778,21 @@ function autoBuildScheduleDays() {
     const newRows = [];
     const moveGroupId = createId();
 
+    const collectionId = Array.isArray(seq.collections) && seq.collections.length
+        ? seq.collections[0]
+        : null;
+
+    const deliveryId = Array.isArray(seq.deliveries) && seq.deliveries.length
+        ? seq.deliveries[0]
+        : null;
+
+    const collectionText = collectionId ? getPropertyDisplayText(collectionId) : "Collection";
+    const deliveryText = deliveryId ? getPropertyDisplayText(deliveryId) : "Delivery";
+    const storeProp = currentJob.properties.find(function(p) {
+        return String(p.label || "").toLowerCase().trim() === "store";
+    });
+    const storeText = storeProp ? getPropertyDisplayText(storeProp.id) : "Store";
+
     const hasPacking =
         packMode === "cg" ||
         packMode === "full";
@@ -10809,9 +10824,9 @@ function autoBuildScheduleDays() {
             hours: 8,
             nightsOut: false,
             legs: [
-                createEmptyScheduleLeg("Depot", "Collection", getDefaultLegMinutes("Depot", "Collection")),
-createEmptyScheduleLeg("Collection", "Store", getDefaultLegMinutes("Collection", "Store")),
-createEmptyScheduleLeg("Store", "Depot", getDefaultLegMinutes("Store", "Depot"))
+                createEmptyScheduleLeg("Depot", collectionText, 30),
+                createEmptyScheduleLeg(collectionText, storeText, 30),
+                createEmptyScheduleLeg(storeText, "Depot", 30)
             ]
         });
     } else if (moveMode === "exStore") {
@@ -10826,9 +10841,9 @@ createEmptyScheduleLeg("Store", "Depot", getDefaultLegMinutes("Store", "Depot"))
             hours: 8,
             nightsOut: false,
             legs: [
-                createEmptyScheduleLeg("Depot", "Store", getDefaultLegMinutes("Depot", "Store")),
-createEmptyScheduleLeg("Store", "Delivery", getDefaultLegMinutes("Store", "Delivery")),
-createEmptyScheduleLeg("Delivery", "Depot", getDefaultLegMinutes("Delivery", "Depot"))
+                createEmptyScheduleLeg("Depot", storeText, 30),
+                createEmptyScheduleLeg(storeText, deliveryText, 30),
+                createEmptyScheduleLeg(deliveryText, "Depot", 30)
             ]
         });
     } else {
@@ -10843,9 +10858,9 @@ createEmptyScheduleLeg("Delivery", "Depot", getDefaultLegMinutes("Delivery", "De
             hours: 8,
             nightsOut: false,
             legs: [
-                createEmptyScheduleLeg("Depot", "Collection", getDefaultLegMinutes("Depot", "Collection")),
-createEmptyScheduleLeg("Collection", "Delivery", getDefaultLegMinutes("Collection", "Delivery")),
-createEmptyScheduleLeg("Delivery", "Depot", getDefaultLegMinutes("Delivery", "Depot"))A
+                createEmptyScheduleLeg("Depot", collectionText, 30),
+                createEmptyScheduleLeg(collectionText, deliveryText, 30),
+                createEmptyScheduleLeg(deliveryText, "Depot", 30)
             ]
         });
     }
