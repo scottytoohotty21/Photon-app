@@ -2557,7 +2557,14 @@ Enter as: Surname, First Name
         </select>
     </div>
 </div>
-               
+  
+<div class="section-block">
+    <div class="section-title">Mileage</div>
+    <div>
+        <label class="mini-label">Estimated Mileage</label>
+        <input id="schedule-mileage-input" type="number" min="0" class="field" value="0" />
+    </div>
+</div>
 <div class="section-block">
                     <div class="section-title">Volume Inputs</div>
                     <div class="grid-2">
@@ -2776,6 +2783,7 @@ Enter as: Surname, First Name
     <div class="flex gap-2">
         <button class="schedule-btn" onclick="autoBuildScheduleDays()">Auto Build</button>
         <button class="schedule-btn" onclick="addScheduleDay()">Add Day</button>
+        <button class="schedule-btn" onclick="saveMileageToCosting()">Add Mileage and Save for Costing</button>
     </div>
 </div>
                     <div class="schedule-list" id="scheduleList"></div>
@@ -9719,6 +9727,42 @@ function renderQuoteAdditionalCostsGrid(sequenceId) {
         </div>
     `;
 }
+function saveMileageToCosting() {
+    const sequenceId = String(activeSeqId || getDefaultSequenceId() || "");
+    if (!sequenceId) return;
+
+    const state = ensureQuoteSequenceState(sequenceId);
+    if (!state) return;
+
+    const mileageInput = document.getElementById("schedule-mileage-input");
+    if (!mileageInput) {
+        alert("Mileage input not found.");
+        return;
+    }
+
+    const mileageValue = Number(mileageInput.value || 0);
+
+    let mileageLine = state.pricingLines.find(function(line) {
+        return line.label === "Mileage";
+    });
+
+    if (!mileageLine) {
+        state.pricingLines.push({
+            id: createQuoteLineId(),
+            label: "Mileage",
+            customLabel: "",
+            qty: mileageValue,
+            unitCost: 1.2
+        });
+    } else {
+        mileageLine.qty = mileageValue;
+    }
+
+    quotePricingSaved = true;
+    saveToDevice();
+
+    alert("Mileage saved to Costing.");
+}
 function createId(){
     return `day_${Date.now()}_${Math.random().toString(36).slice(2,7)}`;
 }
@@ -10062,13 +10106,13 @@ function renderScheduleLegs(day) {
                                     <div>
                                         <label class="mini-label">Minutes</label>
                                         <input
-                                            type="number"
-                                            min="0"
-                                            class="field"
-                                            value="${Number(leg.minutes || 0)}"
-                                            oninput="updateScheduleLeg('${day.id}','${leg.id}','minutes',this.value)"
-                                            placeholder="0"
-                                        >
+    type="number"
+    min="0"
+    class="field"
+    value="${Number(leg.minutes || 0)}"
+    onchange="updateScheduleLeg('${day.id}','${leg.id}','minutes',this.value)"
+    placeholder="0"
+>
                                     </div>
 
                                     <div>
