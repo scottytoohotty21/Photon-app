@@ -11168,14 +11168,22 @@ function calcScheduleValidation(packing, loading, unloading, special, state){
             }
 
             if (taskMode === "load_unload") {
-    const usableHours = getCompletionAdjustedCapacity(day, "load", taskHours, state);
-    const rowManHours = men * usableHours;
+    const totalRowManHours = men * taskHours;
+
+    const maxLoadManHours =
+        men * getCompletionAdjustedCapacity(day, "load", taskHours, state);
+
+    const maxUnloadManHours =
+        men * getCompletionAdjustedCapacity(day, "unload", taskHours, state);
 
     const loadShortfall = Math.max(0, required.Load - allocated.Load);
-    const toLoad = Math.min(rowManHours, loadShortfall);
+    const toLoad = Math.min(loadShortfall, maxLoadManHours, totalRowManHours);
+
+    const remainingAfterLoad = Math.max(0, totalRowManHours - toLoad);
+    const toUnload = Math.min(maxUnloadManHours, remainingAfterLoad);
 
     allocated.Load += toLoad;
-    allocated.Unload += Math.max(0, rowManHours - toLoad);
+    allocated.Unload += toUnload;
     return;
 }
         });
