@@ -10865,6 +10865,74 @@ function getCompletionAdjustedCapacity(day, mode, taskHours) {
     return usableTaskHours;
 }
 
+function buildCompletionTimeline(day, loadHoursNeeded, unloadHoursNeeded) {
+    const legs = Array.isArray(day.legs) ? day.legs : [];
+
+    const depotToCollection = Number(legs[0]?.minutes || 0);
+    const collectionToDelivery = Number(legs[1]?.minutes || 0);
+    const deliveryToDepot = Number(legs[2]?.minutes || 0);
+
+    const startMinutes = 8 * 60;     // 08:00
+    const completionCutoff = 13 * 60; // 13:00
+    const dayEndMinutes = (17 * 60) + 30; // 17:30
+
+    let clock = startMinutes;
+
+    // Leg 1: depot to collection
+    clock += depotToCollection;
+
+    const loadStart = clock;
+    const loadEnd = loadStart + Math.round(loadHoursNeeded * 60);
+
+    // travel after loading
+    const travelToDeliveryStart = loadEnd;
+    const travelToDeliveryEnd = travelToDeliveryStart + collectionToDelivery;
+
+    // unloading cannot begin before 1pm
+    const unloadStart = Math.max(travelToDeliveryEnd, completionCutoff);
+    const waitMinutes = Math.max(0, completionCutoff - travelToDeliveryEnd);
+
+    const unloadEnd = unloadStart + Math.round(unloadHoursNeeded * 60);
+
+    const returnStart = unloadEnd;
+    const returnEnd = returnStart + deliveryToDepot;
+
+    return {
+        depotToCollection,
+        collectionToDelivery,
+        deliveryToDepot,
+
+        loadStart,
+        loadEnd,
+
+        travelToDeliveryStart,
+        travelToDeliveryEnd,
+
+        waitMinutes,
+
+        unloadStart,
+        unloadEnd,
+
+        returnStart,
+        returnEnd,
+
+        loadingFinishesBeforeOne: loadEnd <= completionCutoff,
+        unloadingStartsAfterOne: unloadStart >= completionCutoff,
+        finishesByDayEnd: returnEnd <= dayEndMinutes
+    };
+}
+
+function formatClockTime(totalMinutes) {
+    const mins = Math.max(0, Math.round(totalMinutes));
+    const hours = Math.floor(mins / 60);
+    const minutes = mins % 60;
+
+    const hh = String(hours).padStart(2, "0");
+    const mm = String(minutes).padStart(2, "0");
+
+    return `${hh}:${mm}`;
+}
+
 function getTravelPatternHours(travelPattern, state){
     return 0;
 }
@@ -11333,82 +11401,115 @@ function renderSchedulePlanner(){
             return order[a.dayPart] - order[b.dayPart];
         });
 
-       return rows.map((day, rowIndex) => `
-    <div class="schedule-row">
-        <div class="schedule-row-head">
-            <div class="schedule-row-title">Day ${groupIndex + 1}${rows.length > 1 ? ` · ${day.dayPart}` : ""}</div>
-            ${rowIndex === 0 && manualSchedule.length > 1 ? `<button class="schedule-remove" onclick="removeScheduleDay('${day.id}')">Delete</button>` : ""}
-        </div>
-
-        <div class="schedule-grid">
-            <div>
-                <label class="mini-label">Task</label>
-                <select class="field" onchange="updateScheduleDay('${day.id}','task',this.value)">
-                    ${optionHtml(TASK_OPTIONS, day.task)}
-                </select>
-            </div>
-
-            <div>
-                <label class="mini-label">Day Part</label>
-                <select class="field" onchange="updateScheduleDay('${day.id}','dayPart',this.value)">
-                    ${optionHtml(DAY_PARTS, day.dayPart)}
-                </select>
-            </div>
-
-            <div>
-                <label class="mini-label">Completion Day</label>
-                <select class="field" onchange="updateScheduleDay('${day.id}','completionWindow',this.value)">
-                    ${optionHtml(COMPLETION_WINDOWS, day.completionWindow || "None")}
-                </select>
-            </div>
-
-            <div>
-    <label class="mini-label">Vans</label>
-    <button
-        type="button"
-        class="schedule-value-btn"
-        onclick="openScheduleNumberModal('${day.id}','vans',${Number(day.vans || 0)})"
-    >
-        ${Number(day.vans || 0)}
-    </button>
-</div>
-
-<div>
-    <label class="mini-label">Men</label>
-    <button
-        type="button"
-        class="schedule-value-btn"
-        onclick="openScheduleNumberModal('${day.id}','men',${Number(day.men || 0)})"
-    >
-        ${Number(day.men || 0)}
-    </button>
-</div>
-
-            <div>
-                <label class="mini-label">Night Out</label>
-                <div class="schedule-toggle-wrap">
-                    <label class="schedule-toggle-switch">
-                        <input
-                            type="checkbox"
-                            ${day.nightsOut ? 'checked' : ''}
-                            onchange="updateScheduleDay('${day.id}','nightsOut', this.checked)"
-                        />
-                        <span class="schedule-toggle-slider"></span>
-                    </label>
+        return rows.map((day, rowIndex) => `
+            <div class="schedule-row">
+                <div class="schedule-row-head">
+                    <div class="schedule-row-title">Day ${groupIndex + 1}${rows.length > 1 ? ` · ${day.dayPart}` : ""}</div>
+                    ${rowIndex === 0 && manualSchedule.length > 1 ? `<button class="schedule-remove" onclick="removeScheduleDay('${day.id}')">Delete</button>` : ""}
                 </div>
+
+                <div class="schedule-grid">
+                    <div>
+                        <label class="mini-label">Task</label>
+                        <select class="field" onchange="updateScheduleDay('${day.id}','task',this.value)">
+                            ${optionHtml(TASK_OPTIONS, day.task)}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="mini-label">Day Part</label>
+                        <select class="field" onchange="updateScheduleDay('${day.id}','dayPart',this.value)">
+                            ${optionHtml(DAY_PARTS, day.dayPart)}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="mini-label">Completion Day</label>
+                        <select class="field" onchange="updateScheduleDay('${day.id}','completionWindow',this.value)">
+                            ${optionHtml(COMPLETION_WINDOWS, day.completionWindow || "None")}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="mini-label">Vans</label>
+                        <button
+                            type="button"
+                            class="schedule-value-btn"
+                            onclick="openScheduleNumberModal('${day.id}','vans',${Number(day.vans || 0)})"
+                        >
+                            ${Number(day.vans || 0)}
+                        </button>
+                    </div>
+
+                    <div>
+                        <label class="mini-label">Men</label>
+                        <button
+                            type="button"
+                            class="schedule-value-btn"
+                            onclick="openScheduleNumberModal('${day.id}','men',${Number(day.men || 0)})"
+                        >
+                            ${Number(day.men || 0)}
+                        </button>
+                    </div>
+
+                    <div>
+                        <label class="mini-label">Night Out</label>
+                        <div class="schedule-toggle-wrap">
+                            <label class="schedule-toggle-switch">
+                                <input
+                                    type="checkbox"
+                                    ${day.nightsOut ? 'checked' : ''}
+                                    onchange="updateScheduleDay('${day.id}','nightsOut', this.checked)"
+                                />
+                                <span class="schedule-toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                ${renderScheduleLegs(day)}
+
+                ${(() => {
+                    const state = getState();
+                    const taskMode = getPlannerTaskMode(day);
+                    const men = Math.max(1, Number(day.men || 1));
+                    const isCompletion = String(day.completionWindow || "None") === "Completion Day";
+                    const isDirectLoadDeliver = taskMode === "load_unload";
+
+                    if (isCompletion && isDirectLoadDeliver) {
+                        const totalVolume = round2(state.furnitureVol + calcBoxVolume(state));
+                        const special = calcSpecialLabour(state);
+                        const loading = calcLoading(totalVolume, state.loadRate, special.loadSideHours, state.loadingScenario);
+                        const unloading = calcUnloading(totalVolume, state.unloadRate, special.unloadSideHours);
+
+                        const timeline = buildCompletionTimeline(
+                            day,
+                            loading.hours / men,
+                            unloading.hours / men
+                        );
+
+                        return `
+                            <div class="schedule-debug-line">
+                                Depot→Collection: ${formatClockTime(8 * 60)} to ${formatClockTime((8 * 60) + timeline.depotToCollection)} ·
+                                Load: ${formatClockTime(timeline.loadStart)} to ${formatClockTime(timeline.loadEnd)} ·
+                                Collection→Delivery: ${formatClockTime(timeline.travelToDeliveryStart)} to ${formatClockTime(timeline.travelToDeliveryEnd)} ·
+                                ${timeline.waitMinutes > 0 ? `Wait: ${Math.round(timeline.waitMinutes)} mins · ` : ``}
+                                Unload: ${formatClockTime(timeline.unloadStart)} to ${formatClockTime(timeline.unloadEnd)} ·
+                                Return: ${formatClockTime(timeline.returnStart)} to ${formatClockTime(timeline.returnEnd)}
+                            </div>
+                        `;
+                    }
+
+                    return `
+                        <div class="schedule-debug-line">
+                            Travel applied: ${getRowLegHours(day).toFixed(2)} hrs ·
+                            Net task time: ${getNetTaskHoursForPlannerRow(day, state).toFixed(2)} hrs ·
+                            Net man-hours: ${(Number(day.men || 0) * getNetTaskHoursForPlannerRow(day, state)).toFixed(2)}
+                        </div>
+                    `;
+                })()}
             </div>
-        </div>
-
-        ${renderScheduleLegs(day)}
-
-        <div class="schedule-debug-line">
-            Travel applied: ${getRowLegHours(day).toFixed(2)} hrs ·
-            Net task time: ${getNetTaskHoursForPlannerRow(day, getState()).toFixed(2)} hrs ·
-            Net man-hours: ${(Number(day.men || 0) * getNetTaskHoursForPlannerRow(day, getState())).toFixed(2)}
-        </div>
-                ${renderScheduleTimeline(day, getState())}
-    </div>
-`).join("");
+        `).join("");
     }).join("");
 }
 
@@ -11474,19 +11575,33 @@ function calcScheduleValidation(packing, loading, unloading, special, state){
             }
 
             if (taskMode === "load_unload") {
+    const completionOn = String(day.completionWindow || "None") === "Completion Day";
+
+    if (completionOn) {
+        const timeline = buildCompletionTimeline(
+            day,
+            loading.hours / Math.max(1, men),
+            unloading.hours / Math.max(1, men)
+        );
+
+        if (timeline.loadingFinishesBeforeOne) {
+            allocated.Load += loading.hours;
+        }
+
+        if (timeline.unloadingStartsAfterOne) {
+            allocated.Unload += unloading.hours;
+        }
+
+        return;
+    }
+
     const totalRowManHours = men * taskHours;
 
-    const maxLoadManHours =
-        men * getCompletionAdjustedCapacity(day, "load", taskHours, state);
-
-    const maxUnloadManHours =
-        men * getCompletionAdjustedCapacity(day, "unload", taskHours, state);
-
     const loadShortfall = Math.max(0, required.Load - allocated.Load);
-    const toLoad = Math.min(loadShortfall, maxLoadManHours, totalRowManHours);
+    const toLoad = Math.min(loadShortfall, totalRowManHours);
 
     const remainingAfterLoad = Math.max(0, totalRowManHours - toLoad);
-    const toUnload = Math.min(maxUnloadManHours, remainingAfterLoad);
+    const toUnload = remainingAfterLoad;
 
     allocated.Load += toLoad;
     allocated.Unload += toUnload;
