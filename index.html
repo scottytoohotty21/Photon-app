@@ -11386,8 +11386,172 @@ function renderSchedulePlanner(){
     const list = document.getElementById("scheduleList");
     if (!list) return;
 
+    const state = getState();
+
+    function formatClock(hoursDecimal) {
+        const totalMinutes = Math.round((Number(hoursDecimal || 0)) * 60);
+        const hrs = Math.floor(totalMinutes / 60);
+        const mins = totalMinutes % 60;
+        const hh = String(hrs).padStart(2, "0");
+        const mm = String(mins).padStart(2, "0");
+        return `${hh}:${mm}`;
+    }
+
+    function getRowWindow(dayPart) {
+        if (dayPart === "AM") {
+            return { start: 8, end: 13 };
+        }
+        if (dayPart === "PM") {
+            return { start: 13, end: 17.5 };
+        }
+        return { start: 8, end: 17.5 };
+    }
+
+    function getTaskModeLabel(taskMode) {
+        if (taskMode === "pack") return "Packing";
+        if (taskMode === "load") return "Loading";
+        if (taskMode === "unload") return "Delivery / Unloading";
+        if (taskMode === "pack_load") return "Packing + Loading";
+        if (taskMode === "load_unload") return "Loading + Delivery";
+        if (taskMode === "travel") return "Travel";
+        return "General";
+    }
+
+    function formatHoursText(value) {
+        return `${Number(value || 0).toFixed(2)} hrs`;
+    }
+
+    function addHours(startHours, addHoursValue) {
+    return Number(startHours || 0) + Number(addHoursValue || 0);
+}
+
+function buildRowTimeline(day, taskMode, travelHours, taskHours) {
+    const rowWindow = getRowWindow(day.dayPart || "Full Day");
+    const start = rowWindow.start;
+    const end = rowWindow.end;
+
+    const isCompletion = String(day.completionWindow || "None") === "Completion Day";
+
+    let segments = [];
+    let cursor = start;
+
+    function pushSegment(label, hoursValue) {
+        const safeHours = Math.max(0, Number(hoursValue || 0));
+        if (safeHours <= 0) return;
+
+        const segStart = cursor;
+        const segEnd = addHours(cursor, safeHours);
+
+        segments.push({
+            label: label,
+            start: segStart,
+            end: segEnd,
+            hours: safeHours
+        });
+
+        cursor = segEnd;
+    }
+
+    if (isCompletion && taskMode === "unload" && cursor < 13) {
+        cursor = 13;
+    }
+
+    if (taskMode === "travel") {
+        pushSegment("travel", travelHours);
+    } else if (taskMode === "pack") {
+        pushSegment("packing", taskHours);
+        pushSegment("travel", travelHours);
+    } else if (taskMode === "load") {
+        pushSegment("loading", taskHours);
+        pushSegment("travel", travelHours);
+    } else if (taskMode === "pack_load") {
+        const packPart = Math.min(taskHours, 2);
+        const loadPart = Math.max(0, taskHours - packPart);
+
+        pushSegment("packing", packPart);
+        pushSegment("loading", loadPart);
+        pushSegment("travel", travelHours);
+    } else if (taskMode === "unload") {
+        pushSegment("travel", travelHours);
+        pushSegment("delivery", taskHours);
+    } else if (taskMode === "load_unload") {
+        if (isCompletion) {
+            const loadPart = Math.min(taskHours, 5);
+            const remaining = Math.max(0, taskHours - loadPart);
+
+            pushSegment("loading", loadPart);
+            pushSegment("travel", travelHours);
+
+            if (cursor < 13) cursor = 13;
+
+            pushSegment("delivery", remaining);
+        } else {
+            const loadPart = Math.min(taskHours, taskHours / 2);
+            const unloadPart = Math.max(0, taskHours - loadPart);
+
+            pushSegment("loading", loadPart);
+            pushSegment("travel", travelHours);
+            pushSegment("delivery", unloadPart);
+        }
+    } else {
+        pushSegment("task", taskHours);
+        pushSegment("travel", travelHours);
+    }
+
+    const spare = Math.max(0, end - cursor);
+
+    if (spare > 0) {
+        segments.push({
+            label: "spare",
+            start: cursor,
+            end: end,
+            hours: spare
+        });
+    }
+
+    return segments;
+}
+
+function renderTimelineText(segments) {
+    if (!Array.isArray(segments) || !segments.length) return "No planned time";
+
+    return segments.map(function(seg) {
+        return `${formatClock(seg.start)}–${formatClock(seg.end)} ${seg.label}`;
+    }).join(" · ");
+}
+
+    function getCompletionTimingNote(day, taskMode, travelHours, taskHours, spareHours) {
+        const isCompletion = String(day.completionWindow || "None") === "Completion Day";
+        if (!isCompletion) {
+            return `Normal planner row. Travel is counted inside this row and task time is validated from the remaining window.`;
+        }
+
+        if (taskMode === "load") {
+            return `Completion day loading row. Loading must be finished by 13:00. Travel shown here can sit inside this row wherever the planner places it.`;
+        }
+
+        if (taskMode === "unload") {
+            return `Completion day delivery row. Delivery work cannot begin before 13:00, but any travel placed in this row is still counted here.`;
+        }
+
+        if (taskMode === "pack_load") {
+            return `Completion day AM row. Packing / loading must still work within the pre-13:00 completion window. Travel in this row is flexible.`;
+        }
+
+        if (taskMode === "load_unload") {
+            return `Single completion row. Loading must still be done by 13:00, delivery starts after 13:00, and the travel shown here is counted wherever this row holds it.`;
+        }
+
+        if (taskMode === "travel") {
+            return `Completion day travel-only row. Travel is flexible and is not tied to the same AM/PM rule as loading or unloading work.`;
+        }
+
+        return `Completion day row. Travel is flexible, but loading must finish by 13:00 and delivery work begins after 13:00.`;
+    }
+
     const groups = [];
     const seen = new Set();
+
     manualSchedule.forEach(day => {
         if (!seen.has(day.groupId)){
             seen.add(day.groupId);
@@ -11396,120 +11560,152 @@ function renderSchedulePlanner(){
     });
 
     list.innerHTML = groups.map((groupId, groupIndex) => {
-        const rows = manualSchedule.filter(day => day.groupId === groupId).sort((a,b) => {
-            const order = { "Full Day": 0, "AM": 1, "PM": 2 };
-            return order[a.dayPart] - order[b.dayPart];
-        });
+        const rows = manualSchedule
+            .filter(day => day.groupId === groupId)
+            .sort((a,b) => {
+                const order = { "Full Day": 0, "AM": 1, "PM": 2 };
+                return (order[a.dayPart] || 99) - (order[b.dayPart] || 99);
+            });
 
-        return rows.map((day, rowIndex) => `
-            <div class="schedule-row">
-                <div class="schedule-row-head">
-                    <div class="schedule-row-title">Day ${groupIndex + 1}${rows.length > 1 ? ` · ${day.dayPart}` : ""}</div>
-                    ${rowIndex === 0 && manualSchedule.length > 1 ? `<button class="schedule-remove" onclick="removeScheduleDay('${day.id}')">Delete</button>` : ""}
-                </div>
+        const groupHasCompletion = rows.some(day => String(day.completionWindow || "None") === "Completion Day");
 
-                <div class="schedule-grid">
-                    <div>
-                        <label class="mini-label">Task</label>
-                        <select class="field" onchange="updateScheduleDay('${day.id}','task',this.value)">
-                            ${optionHtml(TASK_OPTIONS, day.task)}
-                        </select>
-                    </div>
+        const groupSummaryHtml = groupHasCompletion ? `
+            <div class="schedule-debug-line" style="margin-bottom:10px;">
+                Completion timing active · Loading must be finished by 13:00 · Delivery work starts after 13:00 · Travel is counted in whichever row currently holds the leg
+            </div>
+        ` : "";
 
-                    <div>
-                        <label class="mini-label">Day Part</label>
-                        <select class="field" onchange="updateScheduleDay('${day.id}','dayPart',this.value)">
-                            ${optionHtml(DAY_PARTS, day.dayPart)}
-                        </select>
-                    </div>
+        return `
+            <div>
+                ${groupSummaryHtml}
 
-                    <div>
-                        <label class="mini-label">Completion Day</label>
-                        <select class="field" onchange="updateScheduleDay('${day.id}','completionWindow',this.value)">
-                            ${optionHtml(COMPLETION_WINDOWS, day.completionWindow || "None")}
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="mini-label">Vans</label>
-                        <button
-                            type="button"
-                            class="schedule-value-btn"
-                            onclick="openScheduleNumberModal('${day.id}','vans',${Number(day.vans || 0)})"
-                        >
-                            ${Number(day.vans || 0)}
-                        </button>
-                    </div>
-
-                    <div>
-                        <label class="mini-label">Men</label>
-                        <button
-                            type="button"
-                            class="schedule-value-btn"
-                            onclick="openScheduleNumberModal('${day.id}','men',${Number(day.men || 0)})"
-                        >
-                            ${Number(day.men || 0)}
-                        </button>
-                    </div>
-
-                    <div>
-                        <label class="mini-label">Night Out</label>
-                        <div class="schedule-toggle-wrap">
-                            <label class="schedule-toggle-switch">
-                                <input
-                                    type="checkbox"
-                                    ${day.nightsOut ? 'checked' : ''}
-                                    onchange="updateScheduleDay('${day.id}','nightsOut', this.checked)"
-                                />
-                                <span class="schedule-toggle-slider"></span>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-
-                ${renderScheduleLegs(day)}
-
-                ${(() => {
-                    const state = getState();
+                ${rows.map((day, rowIndex) => {
                     const taskMode = getPlannerTaskMode(day);
-                    const men = Math.max(1, Number(day.men || 1));
+                    const travelHours = getRowLegHours(day);
+                    const rowWindow = getRowWindow(day.dayPart || "Full Day");
+                    const rowWindowHours = round2(rowWindow.end - rowWindow.start);
+                    const netTaskHours = getNetTaskHoursForPlannerRow(day, state);
+                    const usedHours = round2(travelHours + netTaskHours);
+                    const spareHours = round2(Math.max(0, rowWindowHours - usedHours));
                     const isCompletion = String(day.completionWindow || "None") === "Completion Day";
-                    const isDirectLoadDeliver = taskMode === "load_unload";
 
-                    if (isCompletion && isDirectLoadDeliver) {
-                        const totalVolume = round2(state.furnitureVol + calcBoxVolume(state));
-                        const special = calcSpecialLabour(state);
-                        const loading = calcLoading(totalVolume, state.loadRate, special.loadSideHours, state.loadingScenario);
-                        const unloading = calcUnloading(totalVolume, state.unloadRate, special.unloadSideHours);
+                    const completionAdjustedLoadHours = round2(
+                        getCompletionAdjustedCapacity(day, "load", netTaskHours)
+                    );
 
-                        const timeline = buildCompletionTimeline(
-                            day,
-                            loading.hours / men,
-                            unloading.hours / men
-                        );
+                    const completionAdjustedUnloadHours = round2(
+                        getCompletionAdjustedCapacity(day, "unload", netTaskHours)
+                    );
 
-                        return `
-                            <div class="schedule-debug-line">
-                                Depot→Collection: ${formatClockTime(8 * 60)} to ${formatClockTime((8 * 60) + timeline.depotToCollection)} ·
-                                Load: ${formatClockTime(timeline.loadStart)} to ${formatClockTime(timeline.loadEnd)} ·
-                                Collection→Delivery: ${formatClockTime(timeline.travelToDeliveryStart)} to ${formatClockTime(timeline.travelToDeliveryEnd)} ·
-                                ${timeline.waitMinutes > 0 ? `Wait: ${Math.round(timeline.waitMinutes)} mins · ` : ``}
-                                Unload: ${formatClockTime(timeline.unloadStart)} to ${formatClockTime(timeline.unloadEnd)} ·
-                                Return: ${formatClockTime(timeline.returnStart)} to ${formatClockTime(timeline.returnEnd)}
-                            </div>
-                        `;
+                    let completionCapacityText = "";
+                    if (isCompletion && taskMode === "load") {
+                        completionCapacityText = `Usable loading window: ${formatHoursText(completionAdjustedLoadHours)}`;
+                    } else if (isCompletion && taskMode === "unload") {
+                        completionCapacityText = `Usable delivery window: ${formatHoursText(completionAdjustedUnloadHours)}`;
+                    } else if (isCompletion && taskMode === "load_unload") {
+                        completionCapacityText = `Completion logic applies: loading must finish by 13:00, delivery starts after 13:00`;
+                    } else if (isCompletion && taskMode === "pack_load") {
+                        completionCapacityText = `AM completion logic applies before 13:00`;
+                    } else {
+                        completionCapacityText = `Usable working time: ${formatHoursText(netTaskHours)}`;
                     }
 
+                    const timingNote = getCompletionTimingNote(day, taskMode, travelHours, netTaskHours, spareHours);
+                    const timelineSegments = buildRowTimeline(day, taskMode, travelHours, netTaskHours);
+
                     return `
-                        <div class="schedule-debug-line">
-                            Travel applied: ${getRowLegHours(day).toFixed(2)} hrs ·
-                            Net task time: ${getNetTaskHoursForPlannerRow(day, state).toFixed(2)} hrs ·
-                            Net man-hours: ${(Number(day.men || 0) * getNetTaskHoursForPlannerRow(day, state)).toFixed(2)}
+                        <div class="schedule-row">
+                            <div class="schedule-row-head">
+                                <div class="schedule-row-title">Day ${groupIndex + 1}${rows.length > 1 ? ` · ${day.dayPart}` : ""}</div>
+                                ${rowIndex === 0 && manualSchedule.length > 1 ? `<button class="schedule-remove" onclick="removeScheduleDay('${day.id}')">Delete</button>` : ""}
+                            </div>
+
+                            <div class="schedule-grid">
+                                <div>
+                                    <label class="mini-label">Task</label>
+                                    <select class="field" onchange="updateScheduleDay('${day.id}','task',this.value)">
+                                        ${optionHtml(TASK_OPTIONS, day.task)}
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="mini-label">Day Part</label>
+                                    <select class="field" onchange="updateScheduleDay('${day.id}','dayPart',this.value)">
+                                        ${optionHtml(DAY_PARTS, day.dayPart)}
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="mini-label">Completion Day</label>
+                                    <select class="field" onchange="updateScheduleDay('${day.id}','completionWindow',this.value)">
+                                        ${optionHtml(COMPLETION_WINDOWS, day.completionWindow || "None")}
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="mini-label">Vans</label>
+                                    <button
+                                        type="button"
+                                        class="schedule-value-btn"
+                                        onclick="openScheduleNumberModal('${day.id}','vans',${Number(day.vans || 0)})"
+                                    >
+                                        ${Number(day.vans || 0)}
+                                    </button>
+                                </div>
+
+                                <div>
+                                    <label class="mini-label">Men</label>
+                                    <button
+                                        type="button"
+                                        class="schedule-value-btn"
+                                        onclick="openScheduleNumberModal('${day.id}','men',${Number(day.men || 0)})"
+                                    >
+                                        ${Number(day.men || 0)}
+                                    </button>
+                                </div>
+
+                                <div>
+                                    <label class="mini-label">Night Out</label>
+                                    <div class="schedule-toggle-wrap">
+                                        <label class="schedule-toggle-switch">
+                                            <input
+                                                type="checkbox"
+                                                ${day.nightsOut ? 'checked' : ''}
+                                                onchange="updateScheduleDay('${day.id}','nightsOut', this.checked)"
+                                            />
+                                            <span class="schedule-toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            ${renderScheduleLegs(day)}
+
+                            <div class="schedule-debug-line">
+    Window: ${formatClock(rowWindow.start)}–${formatClock(rowWindow.end)} ·
+    Task mode: ${getTaskModeLabel(taskMode)} ·
+    Travel in this row: ${formatHoursText(travelHours)} ·
+    Task time in this row: ${formatHoursText(netTaskHours)} ·
+    Total used: ${formatHoursText(usedHours)} ·
+    Spare: ${formatHoursText(spareHours)}
+</div>
+
+<div class="schedule-debug-line">
+    Planned flow: ${renderTimelineText(timelineSegments)}
+</div>
+
+                            <div class="schedule-debug-line">
+                                ${completionCapacityText}
+                            </div>
+
+                            <div class="schedule-debug-line">
+                                ${timingNote}
+                            </div>
                         </div>
                     `;
-                })()}
+                }).join("")}
             </div>
-        `).join("");
+        `;
     }).join("");
 }
 
