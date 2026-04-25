@@ -1514,6 +1514,33 @@ button {
             font-weight: 900;
             text-transform: uppercase;
         }
+
+        <!-- MILEAGE MODAL -->
+<div id="mileage-overlay" class="simple-input-overlay" onclick="closeMileageModal()">
+    <div class="simple-input-panel" onclick="event.stopPropagation()">
+        <div class="simple-input-title">Add Mileage</div>
+        <div class="simple-input-subtitle">Enter total estimated mileage for this sequence</div>
+
+        <div>
+            <label class="simple-input-label" for="mileage-input-field">Mileage</label>
+            <input
+                type="number"
+                id="mileage-input-field"
+                class="simple-input-field"
+                placeholder="e.g. 120"
+                min="0"
+                step="0.1"
+            >
+        </div>
+
+        <div id="mileage-error-text" class="modal-error-text"></div>
+
+        <div class="simple-input-actions">
+            <button type="button" class="simple-input-cancel-btn" onclick="closeMileageModal()">Cancel</button>
+            <button type="button" class="simple-input-save-btn" onclick="saveMileageToCosting()">Save to Costing</button>
+        </div>
+    </div>
+</div>
         /* --- LISTED FLAGS MODAL --- */
 .listed-flags-overlay {
     display: none;
@@ -2783,7 +2810,7 @@ Enter as: Surname, First Name
     <div class="flex gap-2">
         <button class="schedule-btn" onclick="autoBuildScheduleDays()">Auto Build</button>
         <button class="schedule-btn" onclick="addScheduleDay()">Add Day</button>
-        <button class="schedule-btn" onclick="saveMileageToCosting()">Add Mileage and Save for Costing</button>
+        <button class="schedule-btn" onclick="openMileageModal()">Add Mileage to Costing</button>
     </div>
 </div>
                     <div class="schedule-list" id="scheduleList"></div>
@@ -4964,6 +4991,71 @@ saveCalculatorFeedForActiveSequence();
 closeSimpleInputModal();
 return;
     }
+}
+
+function openMileageModal() {
+    const overlay = document.getElementById("mileage-overlay");
+    const input = document.getElementById("mileage-input-field");
+
+    if (!overlay || !input) return;
+
+    input.value = "";
+    setModalErrorText("mileage-error-text", "");
+    overlay.style.display = "flex";
+
+    setTimeout(function () {
+        input.focus();
+        input.select();
+    }, 50);
+}
+
+function closeMileageModal() {
+    const overlay = document.getElementById("mileage-overlay");
+    const input = document.getElementById("mileage-input-field");
+
+    if (overlay) overlay.style.display = "none";
+    if (input) input.value = "";
+
+    setModalErrorText("mileage-error-text", "");
+}
+
+function saveMileageToCosting() {
+    const seq = getQuoteSelectedSequence();
+    if (!seq) return;
+
+    const input = document.getElementById("mileage-input-field");
+    if (!input) return;
+
+    const mileageValue = parseFloat(input.value);
+
+    if (isNaN(mileageValue) || mileageValue < 0) {
+        setModalErrorText("mileage-error-text", "Enter a valid mileage");
+        return;
+    }
+
+    const state = ensureQuoteSequenceState(seq.id);
+    if (!state) return;
+
+    const mileageLine = state.pricingLines.find(function(line) {
+        return line.label === "Mileage";
+    });
+
+    if (!mileageLine) {
+        setModalErrorText("mileage-error-text", "Mileage row not found in costing");
+        return;
+    }
+
+    mileageLine.qty = mileageValue;
+
+    quotePricingSaved = false;
+    saveToDevice();
+    closeMileageModal();
+
+    if (!document.getElementById("content-quote").classList.contains("hidden")) {
+        renderQuoteTab();
+    }
+
+    updateInventoryDisplay("MILEAGE SENT TO COSTING");
 }
         function renderSequenceUI() {
     const seq = currentJob.sequences.find(s => s.id == activeSeqId); 
