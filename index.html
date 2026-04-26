@@ -1515,25 +1515,7 @@ button {
             text-transform: uppercase;
         }
 
-        <!-- MILEAGE MODAL -->
-<div id="mileage-overlay" class="simple-input-overlay" onclick="closeMileageModal()">
-    <div class="simple-input-panel" onclick="event.stopPropagation()">
-        <div class="simple-input-title">Add Mileage</div>
-        <div class="simple-input-subtitle">Enter total estimated mileage for this sequence</div>
-
-        <div>
-            <label class="simple-input-label" for="mileage-input-field">Mileage</label>
-            <input
-                type="number"
-                id="mileage-input-field"
-                class="simple-input-field"
-                placeholder="e.g. 120"
-                min="0"
-                step="0.1"
-            >
-        </div>
-
-        <div id="mileage-error-text" class="modal-error-text"></div>
+            <div id="mileage-error-text" class="modal-error-text"></div>
 
         <div class="simple-input-actions">
             <button type="button" class="simple-input-cancel-btn" onclick="closeMileageModal()">Cancel</button>
@@ -9843,52 +9825,7 @@ function renderQuoteAdditionalCostsGrid(sequenceId) {
         </div>
     `;
 }
-function saveMileageToCosting() {
-    const sequenceId = String(activeSeqId || getDefaultSequenceId() || "");
-    if (!sequenceId) return;
 
-    const mileageInput = document.getElementById("schedule-mileage-input");
-    if (!mileageInput) {
-        alert("Mileage input box not found.");
-        return;
-    }
-
-    const mileageValue = Number(mileageInput.value || 0);
-
-    ensureQuoteSequenceState(sequenceId);
-
-    // IMPORTANT:
-    // this forces the standard costing rows to exist first
-    const pricingLines = getQuotePricingLines(sequenceId);
-
-    let mileageLine = pricingLines.find(function(line) {
-        return line.label === "Mileage";
-    });
-
-    if (!mileageLine) {
-        pricingLines.push({
-            id: createQuoteLineId(),
-            label: "Mileage",
-            customLabel: "",
-            qty: mileageValue,
-            unitCost: 0.45
-        });
-    } else {
-        mileageLine.qty = mileageValue;
-    }
-
-    quotePricingSaved = false;
-    saveToDevice();
-
-    if (
-        document.getElementById("content-quote") &&
-        !document.getElementById("content-quote").classList.contains("hidden")
-    ) {
-        renderQuoteTab();
-    }
-
-    alert("Mileage added to costing.");
-}
 function createId(){
     return `day_${Date.now()}_${Math.random().toString(36).slice(2,7)}`;
 }
@@ -12115,6 +12052,32 @@ document.addEventListener('DOMContentLoaded', function () {
         <div class="simple-input-actions">
             <button type="button" class="simple-input-cancel-btn" onclick="closeSimpleInputModal()">Cancel</button>
             <button type="button" class="simple-input-save-btn" onclick="saveSimpleInputModal()">Save</button>
+        </div>
+    </div>
+</div>
+        <!-- MILEAGE MODAL -->
+<div id="mileage-overlay" class="simple-input-overlay" onclick="closeMileageModal()">
+    <div class="simple-input-panel" onclick="event.stopPropagation()">
+        <div class="simple-input-title">Add Mileage</div>
+        <div class="simple-input-subtitle">Enter total estimated mileage for this sequence</div>
+
+        <div>
+            <label class="simple-input-label" for="mileage-input-field">Mileage</label>
+            <input
+                type="number"
+                id="mileage-input-field"
+                class="simple-input-field"
+                placeholder="e.g. 120"
+                min="0"
+                step="0.1"
+            >
+        </div>
+
+        <div id="mileage-error-text" class="modal-error-text"></div>
+
+        <div class="simple-input-actions">
+            <button type="button" class="simple-input-cancel-btn" onclick="closeMileageModal()">Cancel</button>
+            <button type="button" class="simple-input-save-btn" onclick="saveMileageToCosting()">Save to Costing</button>
         </div>
     </div>
 </div>
