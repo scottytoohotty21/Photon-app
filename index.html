@@ -2034,7 +2034,7 @@ button {
 
 .schedule-leg-row{
     display:grid;
-    grid-template-columns:1fr 1fr 120px 72px;
+    grid-template-columns:1fr 1fr 90px 140px 100px 72px;
     gap:10px;
     align-items:end;
 }
@@ -10100,6 +10100,13 @@ const TRAVEL_PATTERN_OPTIONS = [
     "A-B-C-A"
 ];
 
+const TRAVEL_SPEED_OPTIONS = [
+    { value: "London", label: "London / Urban - 16mph", mph: 16 },
+    { value: "Road", label: "Road / Mixed - 30mph", mph: 30 },
+    { value: "Motorway", label: "Motorway / Clear Run - 42mph", mph: 42 },
+    { value: "Manual", label: "Manual Minutes", mph: 0 }
+];
+
 const COMPLETION_WINDOWS = [
     "None",
     "Completion Day"
@@ -10484,13 +10491,53 @@ function getDefaultManualScheduleRows() {
     ];
 }
 
-function createEmptyScheduleLeg(from = "Depot", to = "", minutes = 0) {
+function createEmptyScheduleLeg(from = "Depot", to = "", minutes = 0, miles = 0, roadType = "Road") {
     return {
         id: createId(),
         from: String(from || "Depot"),
         to: String(to || ""),
+        miles: Math.max(0, Number(miles) || 0),
+        roadType: String(roadType || "Road"),
         minutes: Math.max(0, Number(minutes) || 0)
     };
+}
+function getTravelSpeedOption(roadType) {
+    return TRAVEL_SPEED_OPTIONS.find(function(option) {
+        return option.value === roadType;
+    }) || TRAVEL_SPEED_OPTIONS[1];
+}
+
+function calculateTravelMinutesFromMiles(miles, roadType) {
+    const cleanMiles = Math.max(0, Number(miles) || 0);
+    const speedOption = getTravelSpeedOption(roadType);
+
+    if (!speedOption || !speedOption.mph) {
+        return 0;
+    }
+
+    return Math.round((cleanMiles / speedOption.mph) * 60);
+}
+
+function renderTravelSpeedOptions(selectedRoadType) {
+    return TRAVEL_SPEED_OPTIONS.map(function(option) {
+        const selected = String(option.value) === String(selectedRoadType || "Road") ? "selected" : "";
+        return `<option value="${escapeHtml(option.value)}" ${selected}>${escapeHtml(option.label)}</option>`;
+    }).join("");
+}
+
+function getScheduleLegMiles(day) {
+    if (!day || !Array.isArray(day.legs)) return 0;
+
+    return day.legs.reduce(function(sum, leg) {
+        return sum + Math.max(0, Number(leg.miles || 0));
+    }, 0);
+}
+
+function getScheduleLegVanMiles(day) {
+    const routeMiles = getScheduleLegMiles(day);
+    const vans = Math.max(1, Number(day && day.vans ? day.vans : 1));
+
+    return routeMiles * vans;
 }
 
 function getDefaultLegMinutes(from, to) {
@@ -10554,15 +10601,27 @@ function ensureScheduleRowShape(day) {
         if (from !== "Depot" && labelToIdMap[from]) {
             from = labelToIdMap[from];
         }
+
         if (to !== "Depot" && labelToIdMap[to]) {
             to = labelToIdMap[to];
+        }
+
+        const roadType = leg.roadType || "Road";
+        const miles = Math.max(0, Number(leg.miles || 0));
+
+        let minutes = Math.max(0, Number(leg.minutes || 0));
+
+        if (roadType !== "Manual" && miles > 0) {
+            minutes = calculateTravelMinutesFromMiles(miles, roadType);
         }
 
         return {
             id: leg.id || createId(),
             from: from || "Depot",
             to: to || "",
-            minutes: Math.max(0, Number(leg.minutes || 0))
+            miles: miles,
+            roadType: roadType,
+            minutes: minutes
         };
     });
 
@@ -10642,17 +10701,44 @@ function updateScheduleLeg(dayId, legId, field, value) {
         day.legs = day.legs.map(function(leg) {
             if (leg.id !== legId) return leg;
 
-            if (field === "minutes") {
-                return {
-                    ...leg,
-                    minutes: Math.max(0, Number(value) || 0)
-                };
+            const updatedLeg = {
+                ...leg
+            };
+
+            if (field === "miles") {
+                updatedLeg.miles = Math.max(0, Number(value) || 0);
+
+                if (updatedLeg.roadType !== "Manual") {
+                    updatedLeg.minutes = calculateTravelMinutesFromMiles(
+                        updatedLeg.miles,
+                        updatedLeg.roadType
+                    );
+                }
+
+                return updatedLeg;
             }
 
-            return {
-                ...leg,
-                [field]: value
-            };
+            if (field === "roadType") {
+                updatedLeg.roadType = String(value || "Road");
+
+                if (updatedLeg.roadType !== "Manual") {
+                    updatedLeg.minutes = calculateTravelMinutesFromMiles(
+                        updatedLeg.miles,
+                        updatedLeg.roadType
+                    );
+                }
+
+                return updatedLeg;
+            }
+
+            if (field === "minutes") {
+                updatedLeg.minutes = Math.max(0, Number(value) || 0);
+                updatedLeg.roadType = "Manual";
+                return updatedLeg;
+            }
+
+            updatedLeg[field] = value;
+            return updatedLeg;
         });
 
         return day;
@@ -10707,10 +10793,21 @@ function renderScheduleLegs(day) {
         return match ? match.label : value;
     };
 
+    const routeMiles = getScheduleLegMiles(day);
+    const vanMiles = getScheduleLegVanMiles(day);
+    const travelHours = getRowLegHours(day);
+    const vans = Math.max(1, Number(day.vans || 1));
+
     return `
         <div class="schedule-legs-shell">
             <div class="schedule-legs-head">
-                <div class="mini-label">Travel Legs</div>
+                <div>
+                    <div class="mini-label">Travel Legs</div>
+                    <div class="text-[10px] font-bold uppercase text-slate-400">
+                        Route miles: ${routeMiles.toFixed(1)} · Vans: ${vans} · Possible van-miles: ${vanMiles.toFixed(1)} · Travel: ${travelHours.toFixed(2)} hrs
+                    </div>
+                </div>
+
                 <button
                     type="button"
                     class="schedule-btn"
@@ -10719,6 +10816,16 @@ function renderScheduleLegs(day) {
                     Add Leg
                 </button>
             </div>
+
+            ${
+                vans > 1
+                    ? `
+                        <div class="validation-item validation-warn" style="margin-bottom:10px;">
+                            Extra van check: this row has ${vans} vans. Confirm whether costing mileage should use route miles or van-miles.
+                        </div>
+                    `
+                    : ""
+            }
 
             <div class="schedule-legs-list">
                 ${
@@ -10749,15 +10856,38 @@ function renderScheduleLegs(day) {
                                     </div>
 
                                     <div>
+                                        <label class="mini-label">Miles</label>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            step="0.1"
+                                            class="field"
+                                            value="${Number(leg.miles || 0)}"
+                                            onchange="updateScheduleLeg('${day.id}','${leg.id}','miles',this.value)"
+                                            placeholder="0"
+                                        >
+                                    </div>
+
+                                    <div>
+                                        <label class="mini-label">Road Type</label>
+                                        <select
+                                            class="field"
+                                            onchange="updateScheduleLeg('${day.id}','${leg.id}','roadType',this.value)"
+                                        >
+                                            ${renderTravelSpeedOptions(leg.roadType || "Road")}
+                                        </select>
+                                    </div>
+
+                                    <div>
                                         <label class="mini-label">Minutes</label>
                                         <input
-    type="number"
-    min="0"
-    class="field"
-    value="${Number(leg.minutes || 0)}"
-    onchange="updateScheduleLeg('${day.id}','${leg.id}','minutes',this.value)"
-    placeholder="0"
->
+                                            type="number"
+                                            min="0"
+                                            class="field"
+                                            value="${Number(leg.minutes || 0)}"
+                                            onchange="updateScheduleLeg('${day.id}','${leg.id}','minutes',this.value)"
+                                            placeholder="0"
+                                        >
                                     </div>
 
                                     <div>
@@ -10819,11 +10949,22 @@ function loadManualScheduleFromActiveSequence() {
             hours: safeDayPart === "Full Day" ? 8 : 4,
             nightsOut: !!day.nightsOut,
             legs: safeLegs.map(function(leg) {
+                const roadType = leg.roadType || "Road";
+                const miles = Math.max(0, Number(leg.miles || 0));
+
+                let minutes = Math.max(0, Number(leg.minutes || 0));
+
+                if (roadType !== "Manual" && miles > 0) {
+                    minutes = calculateTravelMinutesFromMiles(miles, roadType);
+                }
+
                 return {
                     id: leg.id || createId(),
                     from: String(leg.from || "").trim(),
                     to: String(leg.to || "").trim(),
-                    minutes: Math.max(0, Number(leg.minutes || 0))
+                    miles: miles,
+                    roadType: roadType,
+                    minutes: minutes
                 };
             })
         };
@@ -10852,11 +10993,22 @@ function saveManualScheduleToActiveSequence() {
             hours: safeDayPart === "Full Day" ? 8 : 4,
             nightsOut: !!day.nightsOut,
             legs: (Array.isArray(day.legs) ? day.legs : []).map(function(leg) {
+                const roadType = leg.roadType || "Road";
+                const miles = Math.max(0, Number(leg.miles || 0));
+
+                let minutes = Math.max(0, Number(leg.minutes || 0));
+
+                if (roadType !== "Manual" && miles > 0) {
+                    minutes = calculateTravelMinutesFromMiles(miles, roadType);
+                }
+
                 return {
                     id: leg.id || createId(),
                     from: String(leg.from || "").trim(),
                     to: String(leg.to || "").trim(),
-                    minutes: Math.max(0, Number(leg.minutes || 0))
+                    miles: miles,
+                    roadType: roadType,
+                    minutes: minutes
                 };
             })
         };
