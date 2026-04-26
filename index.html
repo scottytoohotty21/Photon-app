@@ -10571,6 +10571,17 @@ function getPlannerMileageSummary() {
     return summary;
 }
 
+function syncPlannerMileageToCosting(sequenceId) {
+    if (!currentJob || !sequenceId) return;
+
+    const mileageSummary = getPlannerMileageSummary();
+
+    saveMileageValueToSequenceCosting(
+        sequenceId,
+        mileageSummary.costedMileage
+    );
+}
+
 function getDefaultLegMinutes(from, to) {
     const fromText = String(from || "").toLowerCase().trim();
     const toText = String(to || "").toLowerCase().trim();
@@ -11044,6 +11055,8 @@ function saveManualScheduleToActiveSequence() {
             })
         };
     });
+
+       syncPlannerMileageToCosting(seq.id);
 
     saveToDevice();
 }
