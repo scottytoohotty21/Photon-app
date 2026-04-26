@@ -2034,7 +2034,7 @@ button {
 
 .schedule-leg-row{
     display:grid;
-    grid-template-columns:1fr 1fr 90px 140px 100px 72px;
+    grid-template-columns:1fr 1fr 90px 140px 100px 92px 72px;
     gap:10px;
     align-items:end;
 }
@@ -5395,6 +5395,67 @@ function fallbackCopyMileageRoute(routeText) {
     }
 
     document.body.removeChild(temp);
+}
+
+function buildGoogleMapsLegUrl(fromAddress, toAddress) {
+    const from = String(fromAddress || "").trim();
+    const to = String(toAddress || "").trim();
+
+    if (!from || !to) {
+        return "";
+    }
+
+    let url = "https://www.google.com/maps/dir/?api=1";
+    url += "&travelmode=driving";
+    url += "&origin=" + encodeURIComponent(from);
+    url += "&destination=" + encodeURIComponent(to);
+
+    return url;
+}
+
+function openScheduleLegInGoogleMaps(dayId, legId) {
+    const day = manualSchedule.find(function(row) {
+        return String(row.id) === String(dayId);
+    });
+
+    if (!day) {
+        alert("Could not find this schedule row.");
+        return;
+    }
+
+    ensureScheduleRowShape(day);
+
+    const leg = day.legs.find(function(item) {
+        return String(item.id) === String(legId);
+    });
+
+    if (!leg) {
+        alert("Could not find this travel leg.");
+        return;
+    }
+
+    const seq = getActiveSequenceRecord();
+    const schedule = seq ? ensureSequenceScheduleShape(seq) : null;
+    const branch = schedule && schedule.operatingBranch
+        ? schedule.operatingBranch
+        : "London";
+
+    const fromAddress = getScheduleLocationAddress(leg.from, branch);
+    const toAddress = getScheduleLocationAddress(leg.to, branch);
+
+    if (!fromAddress || !toAddress) {
+        alert("Add both From and To addresses before opening Google Maps.");
+        return;
+    }
+
+    const url = buildGoogleMapsLegUrl(fromAddress, toAddress);
+
+    if (!url) {
+        alert("Could not build Google Maps route.");
+        return;
+    }
+
+    window.open(url, "_blank");
 }
 
 function buildGoogleMapsRouteUrl(routeData) {
@@ -10921,27 +10982,39 @@ function renderScheduleLegs(day) {
                                     </div>
 
                                     <div>
-                                        <label class="mini-label">Minutes</label>
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            class="field"
-                                            value="${Number(leg.minutes || 0)}"
-                                            onchange="updateScheduleLeg('${day.id}','${leg.id}','minutes',this.value)"
-                                            placeholder="0"
-                                        >
-                                    </div>
+    <label class="mini-label">Minutes</label>
+    <input
+        type="number"
+        min="0"
+        class="field"
+        value="${Number(leg.minutes || 0)}"
+        onchange="updateScheduleLeg('${day.id}','${leg.id}','minutes',this.value)"
+        placeholder="0"
+    >
+</div>
 
-                                    <div>
-                                        <label class="mini-label">Remove</label>
-                                        <button
-                                            type="button"
-                                            class="schedule-remove"
-                                            onclick="removeScheduleLeg('${day.id}','${leg.id}')"
-                                        >
-                                            Del
-                                        </button>
-                                    </div>
+<div>
+    <label class="mini-label">Route</label>
+    <button
+        type="button"
+        class="schedule-btn"
+        style="width:100%;padding:0 8px;"
+        onclick="openScheduleLegInGoogleMaps('${day.id}','${leg.id}')"
+    >
+        Get
+    </button>
+</div>
+
+<div>
+    <label class="mini-label">Remove</label>
+    <button
+        type="button"
+        class="schedule-remove"
+        onclick="removeScheduleLeg('${day.id}','${leg.id}')"
+    >
+        Del
+    </button>
+</div>
                                 </div>
                             `;
                         }).join("")
