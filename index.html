@@ -10550,7 +10550,26 @@ function getPlannerMileageSummary() {
         return summary;
     }
 
-    
+    manualSchedule.forEach(function(day) {
+        ensureScheduleRowShape(day);
+
+        const routeMiles = getScheduleLegMiles(day);
+        const vans = Math.max(1, Number(day.vans || 1));
+        const costedMiles = routeMiles * vans;
+
+        if (routeMiles > 0) {
+            summary.rowsWithMileage += 1;
+        }
+
+        if (vans > 1) {
+            summary.extraVanRows += 1;
+        }
+
+        summary.costedMileage += costedMiles;
+    });
+
+    return summary;
+}
 
 function getDefaultLegMinutes(from, to) {
     const fromText = String(from || "").toLowerCase().trim();
