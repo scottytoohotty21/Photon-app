@@ -1952,6 +1952,30 @@ button {
     color:var(--slate-400);
     line-height:1.45;
 }
+
+.schedule-time-breakdown{
+    margin-top:8px;
+    padding-top:8px;
+    border-top:1px dashed var(--slate-200);
+    display:grid;
+    gap:4px;
+}
+
+.schedule-time-line{
+    font-size:10px;
+    font-weight:800;
+    color:var(--slate-500);
+    line-height:1.45;
+    text-transform:none;
+}
+
+.schedule-time-line.status-ok{
+    color:var(--green-800);
+}
+
+.schedule-time-line.status-bad{
+    color:var(--red-800);
+}
 .schedule-toggle-wrap{
     display:flex;
     align-items:center;
@@ -11248,9 +11272,257 @@ if (value === "AM"){
     renderScheduleCalculator();
 }
 
+function minutesToClock(totalMinutes) {
+    const mins = Math.max(0, Math.round(Number(totalMinutes || 0)));
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    return String(h).padStart(2, "0") + ":" + String(m).padStart(2, "0");
+}
+
+function getRowWindowBounds(dayPart) {
+    if (dayPart === "AM") {
+        return { start: 8 * 60, end: 13 * 60 };       // 08:00–13:00
+    }
+
+    if (dayPart === "PM") {
+        return { start: 13 * 60, end: 17 * 60 + 30 }; // 13:00–17:30
+    }
+
+    return { start: 8 * 60, end: 17 * 60 + 30 };      // Full Day 08:00–17:30
+}
+
+function getScheduleLocationLabel(value) {
+    const raw = String(value || "").trim();
+
+    if (!raw) return "—";
+    if (raw === "Depot") return "Depot";
+
+    // current row legs usually store property ids
+    if (currentJob && Array.isArray(currentJob.properties)) {
+        const prop = currentJob.properties.find(function(p) {
+            return String(p.id) === raw;
+        });
+
+        if (prop) {
+            const text = getPropertyDisplayText(prop.id);
+            const label = String(prop.label || "").toLowerCase();
+
+            if (label.includes("collection")) return "Collection";
+            if (label.includes("delivery")) return "Delivery";
+            if (label.includes("store")) return "Store";
+
+            return text || raw;
+        }
+    }
+
+    // fallback for older saved text values
+    if (raw.toLowerCase().includes("collection")) return "Collection";
+    if (raw.toLowerCase().includes("delivery")) return "Delivery";
+    if (raw.toLowerCase().includes("store")) return "Store";
+
+    return raw;
+}
+
+function getPlannerTaskBlocks(day, state, totals) {
+    const mode = getPlannerTaskMode(day);
+    const totalTaskHours = getNetTaskHoursForPlannerRow(day, state);
+    let totalTaskMinutes = Math.max(0, Math.round(totalTaskHours * 60));
+
+    if (totalTaskMinutes <= 0) return [];
+
+    if (mode === "pack") {
+        return [{ label: "Task: Pack", minutes: totalTaskMinutes }];
+    }
+
+    if (mode === "load") {
+        return [{ label: "Task: Load", minutes: totalTaskMinutes }];
+    }
+
+    if (mode === "unload") {
+        return [{ label: "Task: Unload", minutes: totalTaskMinutes }];
+    }
+
+    if (mode === "travel") {
+        return [];
+    }
+
+    if (mode === "pack_load") {
+        const packWeight = Math.max(0, Number(totals.packingHours || 0));
+        const loadWeight = Math.max(0, Number(totals.loadingHours || 0));
+        const weightTotal = packWeight + loadWeight || 1;
+
+        const packMinutes = Math.round(totalTaskMinutes * (packWeight / weightTotal));
+        const loadMinutes = totalTaskMinutes - packMinutes;
+
+        const blocks = [];
+        if (packMinutes > 0) blocks.push({ label: "Task: Pack", minutes: packMinutes });
+        if (loadMinutes > 0) blocks.push({ label: "Task: Load", minutes: loadMinutes });
+        return blocks;
+    }
+
+    if (mode === "load_unload") {
+        const loadWeight = Math.max(0, Number(totals.loadingHours || 0));
+        const unloadWeight = Math.max(0, Number(totals.unloadingHours || 0));
+        const weightTotal = loadWeight + unloadWeight || 1;
+
+        const loadMinutes = Math.round(totalTaskMinutes * (loadWeight / weightTotal));
+        const unloadMinutes = totalTaskMinutes - loadMinutes;
+
+        const blocks = [];
+        if (loadMinutes > 0) blocks.push({ label: "Task: Load", minutes: loadMinutes });
+        if (unloadMinutes > 0) blocks.push({ label: "Task: Unload", minutes: unloadMinutes });
+        return blocks;
+    }
+
+    return [{ label: "Task", minutes: totalTaskMinutes }];
+}
+
+function buildScheduleRowTimeBreakdown(day, state, totals) {
+    ensureScheduleRowShape(day);
+
+    const bounds = getRowWindowBounds(day.dayPart);
+    const windowStart = bounds.start;
+    const windowEnd = bounds.end;
+    const completionCutoff = 13 * 60; // 13:00
+    const isCompletionDay = String(day.completionWindow || "None") === "Completion Day";
+
+    const legs = Array.isArray(day.legs) ? day.legs : [];
+    const taskBlocks = getPlannerTaskBlocks(day, state, totals);
+
+    const lines = [];
+    let cursor = windowStart;
+
+    lines.push({
+        text: "Window: " + minutesToClock(windowStart) + "–" + minutesToClock(windowEnd),
+        className: ""
+    });
+
+    const maxSteps = Math.max(legs.length, taskBlocks.length);
+
+    for (let i = 0; i < maxSteps; i++) {
+        const leg = legs[i];
+
+        if (leg) {
+            const legStart = cursor;
+            const legEnd = cursor + Math.max(0, Number(leg.minutes || 0));
+
+            lines.push({
+                text:
+                    "Leg " + (i + 1) + ": " +
+                    getScheduleLocationLabel(leg.from) + " → " +
+                    getScheduleLocationLabel(leg.to) + ", " +
+                    minutesToClock(legStart) + "–" + minutesToClock(legEnd),
+                className: ""
+            });
+
+            cursor = legEnd;
+        }
+
+        const taskBlock = taskBlocks[i];
+        if (taskBlock && taskBlock.minutes > 0) {
+            const isUnloadBlock = String(taskBlock.label || "").toLowerCase().includes("unload");
+
+            if (isCompletionDay && isUnloadBlock && cursor < completionCutoff) {
+                lines.push({
+                    text:
+                        "Wait: " +
+                        minutesToClock(cursor) + "–" + minutesToClock(completionCutoff),
+                    className: ""
+                });
+
+                cursor = completionCutoff;
+            }
+
+            const taskStart = cursor;
+            const taskEnd = cursor + taskBlock.minutes;
+
+            lines.push({
+                text:
+                    taskBlock.label + ", " +
+                    minutesToClock(taskStart) + "–" + minutesToClock(taskEnd),
+                className: ""
+            });
+
+            cursor = taskEnd;
+        }
+    }
+
+    if (taskBlocks.length > legs.length) {
+        for (let i = legs.length; i < taskBlocks.length; i++) {
+            const taskBlock = taskBlocks[i];
+            if (!taskBlock || taskBlock.minutes <= 0) continue;
+
+            const isUnloadBlock = String(taskBlock.label || "").toLowerCase().includes("unload");
+
+            if (isCompletionDay && isUnloadBlock && cursor < completionCutoff) {
+                lines.push({
+                    text:
+                        "Wait: " +
+                        minutesToClock(cursor) + "–" + minutesToClock(completionCutoff),
+                    className: ""
+                });
+
+                cursor = completionCutoff;
+            }
+
+            const taskStart = cursor;
+            const taskEnd = cursor + taskBlock.minutes;
+
+            lines.push({
+                text:
+                    taskBlock.label + ", " +
+                    minutesToClock(taskStart) + "–" + minutesToClock(taskEnd),
+                className: ""
+            });
+
+            cursor = taskEnd;
+        }
+    }
+
+    lines.push({
+        text: "Finish: " + minutesToClock(cursor),
+        className: ""
+    });
+
+    const overrun = cursor - windowEnd;
+
+    if (overrun > 0) {
+        lines.push({
+            text: "Status: Overruns by " + overrun + " mins",
+            className: "status-bad"
+        });
+    } else {
+        lines.push({
+            text: "Status: Fits within row window",
+            className: "status-ok"
+        });
+    }
+
+    return `
+        <div class="schedule-time-breakdown">
+            ${lines.map(function(line) {
+                return `<div class="schedule-time-line ${line.className || ""}">${escapeHtml(line.text)}</div>`;
+            }).join("")}
+        </div>
+    `;
+}
 function renderSchedulePlanner(){
     const list = document.getElementById("scheduleList");
     if (!list) return;
+
+    const state = getState();
+    const packing = calcPacking(state);
+    const boxVolume = round2(calcBoxVolume(state));
+    const totalVolume = round2(state.furnitureVol + boxVolume);
+    const special = calcSpecialLabour(state);
+    const loading = calcLoading(totalVolume, state.loadRate, special.loadSideHours, state.loadingScenario);
+    const unloading = calcUnloading(totalVolume, state.unloadRate, special.unloadSideHours);
+
+    const plannerTotals = {
+        packingHours: packing.packHours,
+        loadingHours: loading.hours,
+        unloadingHours: unloading.hours
+    };
 
     const groups = [];
     const seen = new Set();
@@ -11267,81 +11539,83 @@ function renderSchedulePlanner(){
             return order[a.dayPart] - order[b.dayPart];
         });
 
-       return rows.map((day, rowIndex) => `
-    <div class="schedule-row">
-        <div class="schedule-row-head">
-            <div class="schedule-row-title">Day ${groupIndex + 1}${rows.length > 1 ? ` · ${day.dayPart}` : ""}</div>
-            ${rowIndex === 0 && manualSchedule.length > 1 ? `<button class="schedule-remove" onclick="removeScheduleDay('${day.id}')">Delete</button>` : ""}
-        </div>
-
-        <div class="schedule-grid">
-            <div>
-                <label class="mini-label">Task</label>
-                <select class="field" onchange="updateScheduleDay('${day.id}','task',this.value)">
-                    ${optionHtml(TASK_OPTIONS, day.task)}
-                </select>
-            </div>
-
-            <div>
-                <label class="mini-label">Day Part</label>
-                <select class="field" onchange="updateScheduleDay('${day.id}','dayPart',this.value)">
-                    ${optionHtml(DAY_PARTS, day.dayPart)}
-                </select>
-            </div>
-
-            <div>
-                <label class="mini-label">Completion Day</label>
-                <select class="field" onchange="updateScheduleDay('${day.id}','completionWindow',this.value)">
-                    ${optionHtml(COMPLETION_WINDOWS, day.completionWindow || "None")}
-                </select>
-            </div>
-
-            <div>
-    <label class="mini-label">Vans</label>
-    <button
-        type="button"
-        class="schedule-value-btn"
-        onclick="openScheduleNumberModal('${day.id}','vans',${Number(day.vans || 0)})"
-    >
-        ${Number(day.vans || 0)}
-    </button>
-</div>
-
-<div>
-    <label class="mini-label">Men</label>
-    <button
-        type="button"
-        class="schedule-value-btn"
-        onclick="openScheduleNumberModal('${day.id}','men',${Number(day.men || 0)})"
-    >
-        ${Number(day.men || 0)}
-    </button>
-</div>
-
-            <div>
-                <label class="mini-label">Night Out</label>
-                <div class="schedule-toggle-wrap">
-                    <label class="schedule-toggle-switch">
-                        <input
-                            type="checkbox"
-                            ${day.nightsOut ? 'checked' : ''}
-                            onchange="updateScheduleDay('${day.id}','nightsOut', this.checked)"
-                        />
-                        <span class="schedule-toggle-slider"></span>
-                    </label>
+        return rows.map((day, rowIndex) => `
+            <div class="schedule-row">
+                <div class="schedule-row-head">
+                    <div class="schedule-row-title">Day ${groupIndex + 1}${rows.length > 1 ? ` · ${day.dayPart}` : ""}</div>
+                    ${rowIndex === 0 && manualSchedule.length > 1 ? `<button class="schedule-remove" onclick="removeScheduleDay('${day.id}')">Delete</button>` : ""}
                 </div>
+
+                <div class="schedule-grid">
+                    <div>
+                        <label class="mini-label">Task</label>
+                        <select class="field" onchange="updateScheduleDay('${day.id}','task',this.value)">
+                            ${optionHtml(TASK_OPTIONS, day.task)}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="mini-label">Day Part</label>
+                        <select class="field" onchange="updateScheduleDay('${day.id}','dayPart',this.value)">
+                            ${optionHtml(DAY_PARTS, day.dayPart)}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="mini-label">Completion Day</label>
+                        <select class="field" onchange="updateScheduleDay('${day.id}','completionWindow',this.value)">
+                            ${optionHtml(COMPLETION_WINDOWS, day.completionWindow || "None")}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="mini-label">Vans</label>
+                        <button
+                            type="button"
+                            class="schedule-value-btn"
+                            onclick="openScheduleNumberModal('${day.id}','vans',${Number(day.vans || 0)})"
+                        >
+                            ${Number(day.vans || 0)}
+                        </button>
+                    </div>
+
+                    <div>
+                        <label class="mini-label">Men</label>
+                        <button
+                            type="button"
+                            class="schedule-value-btn"
+                            onclick="openScheduleNumberModal('${day.id}','men',${Number(day.men || 0)})"
+                        >
+                            ${Number(day.men || 0)}
+                        </button>
+                    </div>
+
+                    <div>
+                        <label class="mini-label">Night Out</label>
+                        <div class="schedule-toggle-wrap">
+                            <label class="schedule-toggle-switch">
+                                <input
+                                    type="checkbox"
+                                    ${day.nightsOut ? 'checked' : ''}
+                                    onchange="updateScheduleDay('${day.id}','nightsOut', this.checked)"
+                                />
+                                <span class="schedule-toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                ${renderScheduleLegs(day)}
+
+                <div class="schedule-debug-line">
+                    Travel applied: ${getRowLegHours(day).toFixed(2)} hrs ·
+                    Net task time: ${getNetTaskHoursForPlannerRow(day, state).toFixed(2)} hrs ·
+                    Net man-hours: ${(Number(day.men || 0) * getNetTaskHoursForPlannerRow(day, state)).toFixed(2)}
+                </div>
+
+                ${buildScheduleRowTimeBreakdown(day, state, plannerTotals)}
             </div>
-        </div>
-
-        ${renderScheduleLegs(day)}
-
-        <div class="schedule-debug-line">
-            Travel applied: ${getRowLegHours(day).toFixed(2)} hrs ·
-            Net task time: ${getNetTaskHoursForPlannerRow(day, getState()).toFixed(2)} hrs ·
-            Net man-hours: ${(Number(day.men || 0) * getNetTaskHoursForPlannerRow(day, getState())).toFixed(2)}
-        </div>
-    </div>
-`).join("");
+        `).join("");
     }).join("");
 }
 
