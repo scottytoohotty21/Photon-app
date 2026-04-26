@@ -2701,10 +2701,11 @@ Enter as: Surname, First Name
         <div class="schedule-toolbar">
             <div class="schedule-title">Manual Schedule Planner</div>
             <div class="flex gap-2">
-                <button class="schedule-btn" onclick="autoBuildScheduleDays()">Auto Build</button>
-                <button class="schedule-btn" onclick="addScheduleDay()">Add Day</button>
-                <button class="schedule-btn" onclick="openMileageModal()">Add Mileage to Costing</button>
-            </div>
+    <button class="schedule-btn" onclick="autoBuildScheduleDays()">Auto Build</button>
+    <button class="schedule-btn" onclick="addScheduleDay()">Add Day</button>
+    <button class="schedule-btn" onclick="openMileageModal()">Add Mileage to Costing</button>
+    <button class="schedule-btn" onclick="fetchMileageFromRoute()">Fetch Mileage</button>
+</div>
         </div>
         <div class="schedule-list" id="scheduleList"></div>
         <div class="validation-list" id="validationList"></div>
@@ -2903,6 +2904,17 @@ Enter as: Surname, First Name
     "Solent",
     "York"
 ];
+const BRANCH_DEPOTS = {
+    Aylesbury: "",
+    Crawley: "",
+    Edinburgh: "",
+    Ely: "",
+    Exeter: "",
+    Guildford: "",
+    London: "",
+    Solent: "",
+    York: ""
+};
         const PACK_OPTIONS = ["Owner Pack", "Fragile (china & Glassware) pack", "Full Packing", "Full Export Pack and Wrap", "Fragile & Kitchenware Pack"];
         const SALUTATIONS = ["Mr", "Miss", "Mrs", "Ms", "Other"];
         const DEFAULT_ROOMS = [
@@ -6759,6 +6771,136 @@ function getPropertyDisplayText(propertyId) {
     return prop ? getPropertyDisplayText(prop.id) : "Unknown Address";
 }
 
+function getPropertyById(propertyId) {
+    if (!currentJob || !Array.isArray(currentJob.properties)) return null;
+
+    return currentJob.properties.find(function(prop) {
+        return String(prop.id) === String(propertyId);
+    }) || null;
+}
+
+function getFullAddressText(propertyId) {
+    const prop = getPropertyById(propertyId);
+    if (!prop) return "";
+
+    return [
+        prop.line1 || "",
+        prop.road || "",
+        prop.city || "",
+        prop.county || "",
+        prop.postcode || "",
+        prop.country || ""
+    ]
+    .map(function(part) { return String(part || "").trim(); })
+    .filter(Boolean)
+    .join(", ");
+}
+
+function getStoreProperty() {
+    if (!currentJob || !Array.isArray(currentJob.properties)) return null;
+
+    return currentJob.properties.find(function(prop) {
+        return String(prop.label || "").toLowerCase().includes("store");
+    }) || null;
+}
+
+function getMileageRouteData() {
+    const seq = getActiveSequenceRecord();
+    if (!seq) return null;
+
+    const schedule = ensureSequenceScheduleShape(seq);
+    const branch = schedule.operatingBranch || "London";
+
+    const firstCollectionId = Array.isArray(seq.collections) && seq.collections.length
+        ? seq.collections[0]
+        : null;
+
+    const firstDeliveryId = Array.isArray(seq.deliveries) && seq.deliveries.length
+        ? seq.deliveries[0]
+        : null;
+
+    const collectionAddress = firstCollectionId ? getFullAddressText(firstCollectionId) : "";
+    const deliveryAddress = firstDeliveryId ? getFullAddressText(firstDeliveryId) : "";
+    const storeProp = getStoreProperty();
+    const storeAddress = storeProp ? getFullAddressText(storeProp.id) : "";
+
+    const moveType = String(seq.moveType || "").toLowerCase();
+
+    let routeStops = [];
+
+    if (moveType.includes("to store")) {
+        routeStops = [
+            { type: "branch", label: branch, address: BRANCH_DEPOTS[branch] || "" },
+            { type: "collection", label: "Collection", address: collectionAddress },
+            { type: "store", label: "Store", address: storeAddress },
+            { type: "branch", label: branch, address: BRANCH_DEPOTS[branch] || "" }
+        ];
+    } else if (moveType.includes("ex store")) {
+        routeStops = [
+            { type: "branch", label: branch, address: BRANCH_DEPOTS[branch] || "" },
+            { type: "store", label: "Store", address: storeAddress },
+            { type: "delivery", label: "Delivery", address: deliveryAddress },
+            { type: "branch", label: branch, address: BRANCH_DEPOTS[branch] || "" }
+        ];
+    } else {
+        routeStops = [
+            { type: "branch", label: branch, address: BRANCH_DEPOTS[branch] || "" },
+            { type: "collection", label: "Collection", address: collectionAddress },
+            { type: "delivery", label: "Delivery", address: deliveryAddress },
+            { type: "branch", label: branch, address: BRANCH_DEPOTS[branch] || "" }
+        ];
+    }
+
+    return {
+        branch: branch,
+        moveType: seq.moveType || "",
+        sequenceId: seq.id,
+        stops: routeStops
+    };
+}
+
+function fetchMileageFromRoute() {
+    const routeData = getMileageRouteData();
+
+    if (!routeData) {
+        alert("No active sequence found.");
+        return;
+    }
+
+    const missingStops = routeData.stops.filter(function(stop) {
+        return !String(stop.address || "").trim();
+    });
+
+    if (missingStops.length) {
+        alert(
+            "Cannot fetch mileage yet.\n\nMissing address for:\n" +
+            missingStops.map(function(stop) {
+                return "- " + stop.label;
+            }).join("\n")
+        );
+        console.log("Mileage route data:", routeData);
+        return;
+    }
+
+    const routeSummary = routeData.stops.map(function(stop, index) {
+        return (index + 1) + ". " + stop.label + ": " + stop.address;
+    }).join("\n");
+
+    alert(
+        "Fetch Mileage wiring is working.\n\n" +
+        "Branch: " + routeData.branch + "\n" +
+        "Move Type: " + routeData.moveType + "\n\n" +
+        routeSummary
+    );
+
+    console.log("Mileage route data:", routeData);
+
+    /*
+    LATER:
+    This is where we will call Google Maps Distance Matrix or Directions API,
+    then total the mileage and push it into the mileage modal / costing row.
+    */
+}
 function getScheduleLegLocationOptions() {
     const options = [
         { value: "Depot", label: "Depot" }
