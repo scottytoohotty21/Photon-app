@@ -10952,6 +10952,47 @@ function autoBuildScheduleDays() {
     renderScheduleCalculator();
 }
 
+function addScheduleDay() {
+    const newGroupId = createId();
+
+    manualSchedule.push({
+        id: createId(),
+        groupId: newGroupId,
+        dayPart: "Full Day",
+        task: "Load and Deliver",
+        completionWindow: "None",
+        men: 2,
+        vans: 1,
+        hours: 8,
+        nightsOut: false,
+        legs: [
+            createEmptyScheduleLeg("Depot", "", 0)
+        ]
+    });
+
+    saveManualScheduleToActiveSequence();
+    renderScheduleCalculator();
+}
+
+function removeScheduleDay(dayId) {
+    const rowToRemove = manualSchedule.find(function(day) {
+        return day.id === dayId;
+    });
+
+    if (!rowToRemove) return;
+
+    manualSchedule = manualSchedule.filter(function(day) {
+        return day.groupId !== rowToRemove.groupId;
+    });
+
+    if (!manualSchedule.length) {
+        manualSchedule = getDefaultManualScheduleRows();
+    }
+
+    saveManualScheduleToActiveSequence();
+    renderScheduleCalculator();
+}
+
 function ensurePmPair(row){
     const pairExists = manualSchedule.some(day => day.groupId === row.groupId && day.dayPart === "PM");
     if (!pairExists){
