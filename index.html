@@ -10101,10 +10101,10 @@ const TRAVEL_PATTERN_OPTIONS = [
 ];
 
 const TRAVEL_SPEED_OPTIONS = [
-    { value: "London", label: "London / Urban - 16mph", mph: 16 },
-    { value: "Road", label: "Road / Mixed - 30mph", mph: 30 },
-    { value: "Motorway", label: "Motorway / Clear Run - 42mph", mph: 42 },
-    { value: "Manual", label: "Manual Minutes", mph: 0 }
+    { value: "London", label: "London 16mph", mph: 16 },
+    { value: "Road", label: "Road 30mph", mph: 30 },
+    { value: "Motorway", label: "Motorway 42mph", mph: 42 },
+    { value: "Manual", label: "Manual", mph: 0 }
 ];
 
 const COMPLETION_WINDOWS = [
@@ -10538,6 +10538,35 @@ function getScheduleLegVanMiles(day) {
     const vans = Math.max(1, Number(day && day.vans ? day.vans : 1));
 
     return routeMiles * vans;
+}
+
+function getPlannerMileageSummary() {
+    const summary = {
+        costedMileage: 0,
+        rowsWithMileage: 0,
+        extraVanRows: 0
+    };
+
+    if (!Array.isArray(manualSchedule)) {
+        return summary;
+    }
+
+    manualSchedule.forEach(function(day) {
+        const rowMiles = getScheduleLegMiles(day);
+        const vans = Math.max(1, Number(day && day.vans ? day.vans : 1));
+
+        summary.costedMileage += rowMiles * vans;
+
+        if (rowMiles > 0) {
+            summary.rowsWithMileage += 1;
+        }
+
+        if (vans > 1) {
+            summary.extraVanRows += 1;
+        }
+    });
+
+    return summary;
 }
 
 function getDefaultLegMinutes(from, to) {
@@ -12245,6 +12274,7 @@ function renderSchedulePlanner(){
         loadingHours: loading.hours,
         unloadingHours: unloading.hours
     };
+    const mileageSummary = getPlannerMileageSummary();
 
     const groups = [];
     const seen = new Set();
@@ -12255,7 +12285,32 @@ function renderSchedulePlanner(){
         }
     });
 
-    list.innerHTML = groups.map((groupId, groupIndex) => {
+    list.innerHTML = `
+    <div class="listed-stat-card">
+        <div class="listed-stat-label">Planner Mileage Summary</div>
+
+        <div class="grid grid-cols-3 gap-3">
+            <div>
+                <div class="listed-stat-sub">Costed Mileage</div>
+                <div class="listed-stat-value">${mileageSummary.costedMileage.toFixed(1)}</div>
+            </div>
+
+            <div>
+                <div class="listed-stat-sub">Rows with Mileage</div>
+                <div class="listed-stat-value">${mileageSummary.rowsWithMileage}</div>
+            </div>
+
+            <div>
+                <div class="listed-stat-sub">Extra Van Rows</div>
+                <div class="listed-stat-value">${mileageSummary.extraVanRows}</div>
+            </div>
+        </div>
+
+        <div class="footer-note">
+            Costed mileage includes the van count on each planner row.
+        </div>
+    </div>
+` + groups.map((groupId, groupIndex) => {
         const rows = manualSchedule.filter(day => day.groupId === groupId).sort((a,b) => {
             const order = { "Full Day": 0, "AM": 1, "PM": 2 };
             return order[a.dayPart] - order[b.dayPart];
