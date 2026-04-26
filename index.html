@@ -536,12 +536,6 @@ button {
 #tool-disconnect,
 #tool-handyman {
     min-width: 88px;
-    height: 44px;
-}
-
-#tool-disconnect,
-#tool-handyman {
-    min-width: 88px;
     height: 50px;
 }
         .inv-tool-btn.active {
@@ -2702,9 +2696,9 @@ Enter as: Surname, First Name
             <div class="schedule-title">Manual Schedule Planner</div>
             <div class="flex gap-2">
     <button class="schedule-btn" onclick="autoBuildScheduleDays()">Auto Build</button>
-    <button class="schedule-btn" onclick="addScheduleDay()">Add Day</button>
-    <button class="schedule-btn" onclick="openMileageModal()">Add Mileage to Costing</button>
-    <button class="schedule-btn" onclick="fetchMileageFromRoute()">Fetch Mileage</button>
+<button class="schedule-btn" onclick="addScheduleDay()">Add Day</button>
+<button class="schedule-btn" onclick="openMileageModal()">Add Mileage to Costing</button>
+<button class="schedule-btn" onclick="fetchMileageFromRoute()">Build Route</button>
 </div>
         </div>
         <div class="schedule-list" id="scheduleList"></div>
@@ -3291,6 +3285,8 @@ let signatureLastX = 0;
 let signatureLastY = 0;
 let signatureLocked = false;
 let inventoryReturnContext = null;
+let mileageTargetSequenceId = "";
+let currentMileageRouteData = null;
 
 function getDefaultSequenceId() {
     if (!currentJob || !Array.isArray(currentJob.sequences) || currentJob.sequences.length === 0) {
@@ -4998,13 +4994,146 @@ return;
     }
 }
 
-function openMileageModal() {
+function getMileageRouteMissingStops(routeData) {
+    if (!routeData || !Array.isArray(routeData.stops)) return [];
+
+    return routeData.stops.filter(function(stop) {
+        return !String(stop.address || "").trim();
+    });
+}
+
+function buildMileageRouteText(routeData) {
+    if (!routeData || !Array.isArray(routeData.stops)) {
+        return "";
+    }
+
+    const lines = [];
+
+    lines.push("Branch: " + (routeData.branch || "-"));
+    lines.push("Move Type: " + (routeData.moveType || "-"));
+    lines.push("");
+    lines.push("Route:");
+
+    routeData.stops.forEach(function(stop, index) {
+        lines.push(
+            (index + 1) + ". " +
+            (stop.label || "-") +
+            " — " +
+            (stop.address || "MISSING ADDRESS")
+        );
+    });
+
+    return lines.join("\n");
+}
+
+function renderMileageRoutePreview(routeData) {
+    const preview = document.getElementById("mileage-route-preview");
+    const sourceText = document.getElementById("mileage-source-text");
+
+    if (!preview) return;
+
+    if (!routeData || !Array.isArray(routeData.stops)) {
+        currentMileageRouteData = null;
+
+        preview.innerHTML = `
+            <div class="listed-stat-card" style="margin-bottom:12px;">
+                <div class="listed-stat-label">Manual Mileage Entry</div>
+                <div class="listed-stat-sub">
+                    Use this when offline, or when mileage has already been checked elsewhere.
+                </div>
+            </div>
+        `;
+
+        if (sourceText) {
+            sourceText.innerText = "Manual offline entry";
+        }
+
+        return;
+    }
+
+    currentMileageRouteData = routeData;
+
+    if (sourceText) {
+        sourceText.innerText = "Route built from Schedule sequence";
+    }
+
+    const missingStops = getMileageRouteMissingStops(routeData);
+
+    const warningHtml = missingStops.length
+        ? `
+            <div class="validation-item validation-warn" style="margin-bottom:12px;">
+                Missing address for:
+                ${missingStops.map(function(stop) {
+                    return escapeHtml(stop.label || "-");
+                }).join(", ")}
+                <br>
+                Fill these before relying on the route.
+            </div>
+        `
+        : `
+            <div class="validation-item validation-ok" style="margin-bottom:12px;">
+                Route has all addresses needed for checking.
+            </div>
+        `;
+
+    preview.innerHTML = `
+        <div class="listed-stat-card" style="margin-bottom:12px;">
+            <div class="listed-stat-label">Route Preview</div>
+            <div class="listed-stat-sub">Branch: ${escapeHtml(routeData.branch || "-")}</div>
+            <div class="listed-stat-sub">Move Type: ${escapeHtml(routeData.moveType || "-")}</div>
+        </div>
+
+        ${warningHtml}
+
+        <div class="space-y-3">
+            ${
+                routeData.stops.map(function(stop, index) {
+                    const missing = !String(stop.address || "").trim();
+
+                    return `
+                        <div class="document-block" style="${missing ? 'border-color:#fed7aa;background:#fff7ed;' : ''}">
+                            <div class="document-heading">
+                                Stop ${index + 1}: ${escapeHtml(stop.label || "-")}
+                            </div>
+                            <div class="document-line">
+                                ${escapeHtml(stop.address || "Missing address")}
+                            </div>
+                        </div>
+                    `;
+                }).join("")
+            }
+        </div>
+
+        <div class="simple-input-actions" style="margin-top:14px;">
+            <button type="button" class="simple-input-cancel-btn" onclick="copyMileageRouteToClipboard()">
+                Copy Route
+            </button>
+            <button type="button" class="simple-input-save-btn" onclick="openMileageRouteInGoogleMaps()">
+                Open Google Maps
+            </button>
+        </div>
+
+        <div class="footer-note">
+            Google Maps is for route preview and mileage guidance only. For truck-safe routing, check low bridges, width / weight limits and access restrictions separately.
+        </div>
+    `;
+}
+
+function openMileageModal(routeData = null, mileageValue = "") {
     const overlay = document.getElementById("mileage-overlay");
     const input = document.getElementById("mileage-input-field");
 
     if (!overlay || !input) return;
 
-    input.value = "";
+    const activeSeq = getActiveSequenceRecord();
+
+    mileageTargetSequenceId = routeData && routeData.sequenceId
+        ? String(routeData.sequenceId)
+        : String(activeSeq ? activeSeq.id : (activeSeqId || ""));
+
+    input.value = mileageValue === null || mileageValue === undefined ? "" : String(mileageValue);
+
+    renderMileageRoutePreview(routeData);
     setModalErrorText("mileage-error-text", "");
     overlay.style.display = "flex";
 
@@ -5017,17 +5146,57 @@ function openMileageModal() {
 function closeMileageModal() {
     const overlay = document.getElementById("mileage-overlay");
     const input = document.getElementById("mileage-input-field");
+    const preview = document.getElementById("mileage-route-preview");
+    const sourceText = document.getElementById("mileage-source-text");
 
     if (overlay) overlay.style.display = "none";
     if (input) input.value = "";
+    if (preview) preview.innerHTML = "";
+    if (sourceText) sourceText.innerText = "Manual offline entry";
 
+    mileageTargetSequenceId = "";
+    currentMileageRouteData = null;
     setModalErrorText("mileage-error-text", "");
 }
 
-function saveMileageToCosting() {
-    const seq = getQuoteSelectedSequence();
-    if (!seq) return;
+function saveMileageValueToSequenceCosting(sequenceId, mileageValue) {
+    if (!currentJob || !sequenceId) return false;
 
+    ensureCostingStore();
+
+    const state = ensureQuoteSequenceState(sequenceId);
+    if (!state) return false;
+
+    if (!Array.isArray(state.pricingLines) || state.pricingLines.length === 0) {
+        state.pricingLines = buildDefaultQuotePricingLines(sequenceId);
+    }
+
+    let mileageLine = state.pricingLines.find(function(line) {
+        return line.label === "Mileage";
+    });
+
+    if (!mileageLine) {
+        mileageLine = {
+            id: createQuoteLineId(),
+            label: "Mileage",
+            customLabel: "",
+            qty: 0,
+            unitCost: 0.45
+        };
+
+        state.pricingLines.push(mileageLine);
+    }
+
+    mileageLine.qty = mileageValue;
+
+    currentJob.costingQuote.selectedSequenceId = String(sequenceId);
+    quotePricingSaved = false;
+
+    saveToDevice();
+    return true;
+}
+
+function saveMileageToCosting() {
     const input = document.getElementById("mileage-input-field");
     if (!input) return;
 
@@ -5038,29 +5207,127 @@ function saveMileageToCosting() {
         return;
     }
 
-    const state = ensureQuoteSequenceState(seq.id);
-    if (!state) return;
+    const sequenceId = mileageTargetSequenceId || String(activeSeqId || getQuoteSelectedSequenceId() || "");
 
-    const mileageLine = state.pricingLines.find(function(line) {
-        return line.label === "Mileage";
-    });
-
-    if (!mileageLine) {
-        setModalErrorText("mileage-error-text", "Mileage row not found in costing");
+    if (!sequenceId) {
+        setModalErrorText("mileage-error-text", "No sequence selected");
         return;
     }
 
-    mileageLine.qty = mileageValue;
+    const saved = saveMileageValueToSequenceCosting(sequenceId, mileageValue);
 
-    quotePricingSaved = false;
-    saveToDevice();
+    if (!saved) {
+        setModalErrorText("mileage-error-text", "Could not save mileage to costing");
+        return;
+    }
+
     closeMileageModal();
 
-    if (!document.getElementById("content-quote").classList.contains("hidden")) {
+    const quoteTab = document.getElementById("content-quote");
+    if (quoteTab && !quoteTab.classList.contains("hidden")) {
         renderQuoteTab();
     }
 
     updateInventoryDisplay("MILEAGE SENT TO COSTING");
+}
+
+function copyMileageRouteToClipboard() {
+    const routeText = buildMileageRouteText(currentMileageRouteData);
+
+    if (!routeText) {
+        setModalErrorText("mileage-error-text", "No route to copy");
+        return;
+    }
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(routeText).then(function() {
+            setModalErrorText("mileage-error-text", "");
+            updateInventoryDisplay("ROUTE COPIED");
+        }).catch(function() {
+            fallbackCopyMileageRoute(routeText);
+        });
+
+        return;
+    }
+
+    fallbackCopyMileageRoute(routeText);
+}
+
+function fallbackCopyMileageRoute(routeText) {
+    const temp = document.createElement("textarea");
+    temp.value = routeText;
+    temp.style.position = "fixed";
+    temp.style.left = "-9999px";
+    temp.style.top = "0";
+
+    document.body.appendChild(temp);
+    temp.focus();
+    temp.select();
+
+    try {
+        document.execCommand("copy");
+        updateInventoryDisplay("ROUTE COPIED");
+        setModalErrorText("mileage-error-text", "");
+    } catch (err) {
+        setModalErrorText("mileage-error-text", "Could not copy route");
+    }
+
+    document.body.removeChild(temp);
+}
+
+function buildGoogleMapsRouteUrl(routeData) {
+    if (!routeData || !Array.isArray(routeData.stops)) return "";
+
+    const usableStops = routeData.stops.filter(function(stop) {
+        return String(stop.address || "").trim();
+    });
+
+    if (usableStops.length < 2) return "";
+
+    const origin = usableStops[0].address;
+    const destination = usableStops[usableStops.length - 1].address;
+    const waypoints = usableStops.slice(1, -1).map(function(stop) {
+        return stop.address;
+    });
+
+    let url = "https://www.google.com/maps/dir/?api=1";
+    url += "&travelmode=driving";
+    url += "&origin=" + encodeURIComponent(origin);
+    url += "&destination=" + encodeURIComponent(destination);
+
+    if (waypoints.length) {
+        url += "&waypoints=" + encodeURIComponent(waypoints.join("|"));
+    }
+
+    return url;
+}
+
+function openMileageRouteInGoogleMaps() {
+    const routeData = currentMileageRouteData;
+
+    if (!routeData) {
+        setModalErrorText("mileage-error-text", "No route built yet");
+        return;
+    }
+
+    const missingStops = getMileageRouteMissingStops(routeData);
+
+    if (missingStops.length) {
+        setModalErrorText(
+            "mileage-error-text",
+            "Add missing addresses before opening Google Maps"
+        );
+        return;
+    }
+
+    const url = buildGoogleMapsRouteUrl(routeData);
+
+    if (!url) {
+        setModalErrorText("mileage-error-text", "Could not build Google Maps route");
+        return;
+    }
+
+    window.open(url, "_blank");
 }
         function renderSequenceUI() {
     const seq = currentJob.sequences.find(s => s.id == activeSeqId); 
@@ -6867,39 +7134,9 @@ function fetchMileageFromRoute() {
         return;
     }
 
-    const missingStops = routeData.stops.filter(function(stop) {
-        return !String(stop.address || "").trim();
-    });
+    console.log("Mileage route preview:", routeData);
 
-    if (missingStops.length) {
-        alert(
-            "Cannot fetch mileage yet.\n\nMissing address for:\n" +
-            missingStops.map(function(stop) {
-                return "- " + stop.label;
-            }).join("\n")
-        );
-        console.log("Mileage route data:", routeData);
-        return;
-    }
-
-    const routeSummary = routeData.stops.map(function(stop, index) {
-        return (index + 1) + ". " + stop.label + ": " + stop.address;
-    }).join("\n");
-
-    alert(
-        "Fetch Mileage wiring is working.\n\n" +
-        "Branch: " + routeData.branch + "\n" +
-        "Move Type: " + routeData.moveType + "\n\n" +
-        routeSummary
-    );
-
-    console.log("Mileage route data:", routeData);
-
-    /*
-    LATER:
-    This is where we will call Google Maps Distance Matrix or Directions API,
-    then total the mileage and push it into the mileage modal / costing row.
-    */
+    openMileageModal(routeData, "");
 }
 function getScheduleLegLocationOptions() {
     const options = [
@@ -12235,14 +12472,16 @@ document.addEventListener('DOMContentLoaded', function () {
         </div>
     </div>
 </div>
-        <!-- MILEAGE MODAL -->
+       <!-- MILEAGE MODAL -->
 <div id="mileage-overlay" class="simple-input-overlay" onclick="closeMileageModal()">
-    <div class="simple-input-panel" onclick="event.stopPropagation()">
-        <div class="simple-input-title">Add Mileage</div>
-        <div class="simple-input-subtitle">Enter total estimated mileage for this sequence</div>
+    <div class="simple-input-panel" style="max-width:620px;" onclick="event.stopPropagation()">
+        <div class="simple-input-title">Mileage / Route Check</div>
+        <div id="mileage-source-text" class="simple-input-subtitle">Manual offline entry</div>
+
+        <div id="mileage-route-preview" style="margin-bottom:14px;"></div>
 
         <div>
-            <label class="simple-input-label" for="mileage-input-field">Mileage</label>
+            <label class="simple-input-label" for="mileage-input-field">Mileage to send to costing</label>
             <input
                 type="number"
                 id="mileage-input-field"
