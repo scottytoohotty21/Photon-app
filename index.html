@@ -12696,8 +12696,7 @@ function renderScheduleCalculator(){
 `Delivery to depot: ${special.deliveryToDepotHours.toFixed(2)} hrs · ` +
 `Load side specials: ${special.loadSideHours.toFixed(2)} hrs · Unload side specials: ${special.unloadSideHours.toFixed(2)} hrs.`;
 
-    syncCostedMileageToActiveSequenceCosting();
-renderSchedulePlanner();
+    renderSchedulePlanner();
 renderValidation(packing, loading, unloading, special, state);
 }
 function normalizeJobsShape() {
