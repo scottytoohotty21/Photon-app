@@ -2578,11 +2578,22 @@ Enter as: Surname, First Name
 </div>
 
                 <div class="section-block">
-    <div class="section-title">Loading Variant</div>
-    <select id="loadingVariant" class="field" onchange="handleScheduleInputChange()">
-        <option value="Standard">Standard</option>
-        <option value="Slow">Slow</option>
-    </select>
+    <div class="section-title">Operating Branch & Loading Variant</div>
+
+    <div class="grid-2">
+        <div>
+            <label class="mini-label">Operating Branch</label>
+            <select id="operatingBranch" class="field" onchange="handleScheduleInputChange()"></select>
+        </div>
+
+        <div>
+            <label class="mini-label">Loading Variant</label>
+            <select id="loadingVariant" class="field" onchange="handleScheduleInputChange()">
+                <option value="Standard">Standard</option>
+                <option value="Slow">Slow</option>
+            </select>
+        </div>
+    </div>
 </div>
   
 <div class="section-block">
@@ -2881,6 +2892,17 @@ Enter as: Surname, First Name
         const PROPERTY_TYPES = ["House", "Apartment", "Bungalow", "Office", "Shop"];
         const VEHICLE_TYPES = ["Shuttle van", "Transit van", "Luton / Low Loader", "7.5 tonne", "12 tonne", "15 tonne", "18 tonne", "20ft container", "40ft container"];
         const MOVE_TYPES = ["Dom-local", "Dom-Distance", "Dom-To Store", "Dom-Ex Store", "Dom-Direct/Store", "GPG", "LCL", "FCL"];
+        const OPERATING_BRANCHES = [
+    "Aylesbury",
+    "Crawley",
+    "Edinburgh",
+    "Ely",
+    "Exeter",
+    "Guildford",
+    "London",
+    "Solent",
+    "York"
+];
         const PACK_OPTIONS = ["Owner Pack", "Fragile (china & Glassware) pack", "Full Packing", "Full Export Pack and Wrap", "Fragile & Kitchenware Pack"];
         const SALUTATIONS = ["Mr", "Miss", "Mrs", "Ms", "Other"];
         const DEFAULT_ROOMS = [
@@ -3074,6 +3096,7 @@ function createEmptySequenceSchedule() {
         loadRate: 125,
         unloadRate: 132,
         loadingVariant: "Standard",
+        operatingBranch: "London",
         exportWrapVol: 0,
         manualDays: [],
         special: {
@@ -3308,6 +3331,7 @@ delete seq.schedule.deliveryToDepotHours;
             if (seq.schedule.loadRate === undefined) seq.schedule.loadRate = defaults.loadRate;
             if (seq.schedule.unloadRate === undefined) seq.schedule.unloadRate = defaults.unloadRate;
             if (seq.schedule.loadingVariant === undefined) seq.schedule.loadingVariant = defaults.loadingVariant;
+            if (seq.schedule.operatingBranch === undefined) seq.schedule.operatingBranch = defaults.operatingBranch;
             if (seq.schedule.exportWrapVol === undefined) seq.schedule.exportWrapVol = defaults.exportWrapVol;
 
             if (!Array.isArray(seq.schedule.manualDays)) {
@@ -10274,9 +10298,10 @@ function loadScheduleInputsFromActiveSequence() {
     const photonFeed = getPhotonFeed();
 
     const loftVolEl = document.getElementById("loftVol");
-    const loadRateEl = document.getElementById("loadRate");
-    const unloadRateEl = document.getElementById("unloadRate");
-    const loadingVariantEl = document.getElementById("loadingVariant");
+const loadRateEl = document.getElementById("loadRate");
+const unloadRateEl = document.getElementById("unloadRate");
+const loadingVariantEl = document.getElementById("loadingVariant");
+const operatingBranchEl = document.getElementById("operatingBranch");
 
     const svcFrameEl = document.getElementById("svc_frame");
     const svcOttomanEl = document.getElementById("svc_ottoman");
@@ -10296,9 +10321,17 @@ function loadScheduleInputsFromActiveSequence() {
     const exportWrapVolEl = document.getElementById("exportWrapVol");
 
     if (loftVolEl) loftVolEl.value = schedule.loftVol;
-    if (loadRateEl) loadRateEl.value = schedule.loadRate;
-    if (unloadRateEl) unloadRateEl.value = schedule.unloadRate;
-    if (loadingVariantEl) loadingVariantEl.value = schedule.loadingVariant || "Standard";
+if (loadRateEl) loadRateEl.value = schedule.loadRate;
+if (unloadRateEl) unloadRateEl.value = schedule.unloadRate;
+
+if (operatingBranchEl) {
+    operatingBranchEl.innerHTML = OPERATING_BRANCHES.map(function(branch) {
+        const selected = (schedule.operatingBranch || "London") === branch ? "selected" : "";
+        return '<option value="' + branch + '" ' + selected + '>' + branch + '</option>';
+    }).join("");
+}
+
+if (loadingVariantEl) loadingVariantEl.value = schedule.loadingVariant || "Standard";
 
     if (svcFrameEl) svcFrameEl.value = photonFeed.special?.frameBeds || 0;
     if (svcOttomanEl) svcOttomanEl.value = photonFeed.special?.ottomanBeds || 0;
@@ -10341,6 +10374,7 @@ function saveScheduleInputsToActiveSequence() {
     schedule.loadRate = getNum("loadRate", 125);
     schedule.unloadRate = getNum("unloadRate", 132);
     schedule.loadingVariant = getText("loadingVariant", "Standard");
+    schedule.operatingBranch = getText("operatingBranch", "London");
 
     schedule.special.customItemMinutes = getNum("svc_custom_minutes", 0);
     schedule.special.customItemNote = getText("svc_custom_note", "");
