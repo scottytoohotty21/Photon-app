@@ -10550,44 +10550,7 @@ function getPlannerMileageSummary() {
         return summary;
     }
 
-    function syncCostedMileageToActiveSequenceCosting() {
-    if (!currentJob || !activeSeqId) return;
-    if (typeof ensureCostingStore !== "function") return;
-    if (typeof ensureQuoteSequenceState !== "function") return;
-    if (typeof getPlannerMileageSummary !== "function") return;
-
-    ensureCostingStore();
-
-    const state = ensureQuoteSequenceState(activeSeqId);
-    if (!state) return;
-
-    if (!Array.isArray(state.pricingLines)) {
-        state.pricingLines = [];
-    }
-
-    let mileageLine = state.pricingLines.find(function(line) {
-        return line.label === "Mileage";
-    });
-
-    if (!mileageLine) {
-        mileageLine = {
-            id: typeof createQuoteLineId === "function"
-                ? createQuoteLineId()
-                : "mileage_" + Date.now(),
-            label: "Mileage",
-            customLabel: "",
-            qty: 0,
-            unitCost: 0.45
-        };
-
-        state.pricingLines.push(mileageLine);
-    }
-
-    const mileageSummary = getPlannerMileageSummary();
-    const newMileageQty = Math.round(Number(mileageSummary.costedMileage || 0) * 10) / 10;
-
-    mileageLine.qty = newMileageQty;
-}
+    
 
 function getDefaultLegMinutes(from, to) {
     const fromText = String(from || "").toLowerCase().trim();
@@ -12680,8 +12643,6 @@ function renderScheduleCalculator(){
 `Load side specials: ${special.loadSideHours.toFixed(2)} hrs · Unload side specials: ${special.unloadSideHours.toFixed(2)} hrs.`;
 
     renderSchedulePlanner();
-syncCostedMileageToActiveSequenceCosting();
-saveToDevice();
 renderValidation(packing, loading, unloading, special, state);
 }
 function normalizeJobsShape() {
