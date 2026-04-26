@@ -10552,14 +10552,17 @@ function getPlannerMileageSummary() {
 
     function syncCostedMileageToActiveSequenceCosting() {
     if (!currentJob || !activeSeqId) return;
+    if (typeof ensureCostingStore !== "function") return;
+    if (typeof ensureQuoteSequenceState !== "function") return;
+    if (typeof getPlannerMileageSummary !== "function") return;
 
     ensureCostingStore();
 
     const state = ensureQuoteSequenceState(activeSeqId);
     if (!state) return;
 
-    if (!Array.isArray(state.pricingLines) || state.pricingLines.length === 0) {
-        state.pricingLines = buildDefaultQuotePricingLines(activeSeqId);
+    if (!Array.isArray(state.pricingLines)) {
+        state.pricingLines = [];
     }
 
     let mileageLine = state.pricingLines.find(function(line) {
@@ -10568,7 +10571,9 @@ function getPlannerMileageSummary() {
 
     if (!mileageLine) {
         mileageLine = {
-            id: createQuoteLineId(),
+            id: typeof createQuoteLineId === "function"
+                ? createQuoteLineId()
+                : "mileage_" + Date.now(),
             label: "Mileage",
             customLabel: "",
             qty: 0,
@@ -10581,29 +10586,7 @@ function getPlannerMileageSummary() {
     const mileageSummary = getPlannerMileageSummary();
     const newMileageQty = Math.round(Number(mileageSummary.costedMileage || 0) * 10) / 10;
 
-    if (Number(mileageLine.qty || 0) !== newMileageQty) {
-        mileageLine.qty = newMileageQty;
-        quotePricingSaved = false;
-        saveToDevice();
-    }
-}
-
-    manualSchedule.forEach(function(day) {
-        const rowMiles = getScheduleLegMiles(day);
-        const vans = Math.max(1, Number(day && day.vans ? day.vans : 1));
-
-        summary.costedMileage += rowMiles * vans;
-
-        if (rowMiles > 0) {
-            summary.rowsWithMileage += 1;
-        }
-
-        if (vans > 1) {
-            summary.extraVanRows += 1;
-        }
-    });
-
-    return summary;
+    mileageLine.qty = newMileageQty;
 }
 
 function getDefaultLegMinutes(from, to) {
@@ -12697,6 +12680,8 @@ function renderScheduleCalculator(){
 `Load side specials: ${special.loadSideHours.toFixed(2)} hrs · Unload side specials: ${special.unloadSideHours.toFixed(2)} hrs.`;
 
     renderSchedulePlanner();
+syncCostedMileageToActiveSequenceCosting();
+saveToDevice();
 renderValidation(packing, loading, unloading, special, state);
 }
 function normalizeJobsShape() {
