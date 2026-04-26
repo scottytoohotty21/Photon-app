@@ -2899,12 +2899,12 @@ Enter as: Surname, First Name
     "York"
 ];
 const BRANCH_DEPOTS = {
-    Aylesbury: "",
+    Aylesbury: "Smeaton Cl, Aylesbury HP19 8UN",
     Crawley: "",
-    Edinburgh: "",
+    Edinburgh: "4 Eastfield Farm Rd, Penicuik EH26 8EZ",
     Ely: "",
     Exeter: "",
-    Guildford: "",
+    Guildford: "Slyfield Industrial Estate, Unit 4b, Opus Park, Moorfield Rd, Guildford GU1 1SZ",
     London: "",
     Solent: "",
     York: ""
@@ -5010,9 +5010,10 @@ function buildMileageRouteText(routeData) {
     const lines = [];
 
     lines.push("Branch: " + (routeData.branch || "-"));
+    lines.push("Depot: " + (routeData.depotAddress || "MISSING DEPOT ADDRESS"));
     lines.push("Move Type: " + (routeData.moveType || "-"));
     lines.push("");
-    lines.push("Route:");
+    lines.push("Primary Route:");
 
     routeData.stops.forEach(function(stop, index) {
         lines.push(
@@ -5022,6 +5023,39 @@ function buildMileageRouteText(routeData) {
             (stop.address || "MISSING ADDRESS")
         );
     });
+
+    lines.push("");
+    lines.push("Planner Travel Legs:");
+
+    if (Array.isArray(routeData.plannerRows) && routeData.plannerRows.length) {
+        routeData.plannerRows.forEach(function(row) {
+            lines.push("");
+            lines.push(
+                "Row " + row.rowNumber +
+                " · " + row.dayPart +
+                " · " + row.task +
+                " · Vans: " + row.vans
+            );
+
+            if (!row.legs.length) {
+                lines.push("No travel legs added.");
+                return;
+            }
+
+            row.legs.forEach(function(leg, index) {
+                lines.push(
+                    "  Leg " + (index + 1) + ": " +
+                    leg.fromLabel + " → " + leg.toLabel +
+                    " · " +
+                    (leg.fromAddress || "MISSING FROM ADDRESS") +
+                    " → " +
+                    (leg.toAddress || "MISSING TO ADDRESS")
+                );
+            });
+        });
+    } else {
+        lines.push("No planner travel legs found.");
+    }
 
     return lines.join("\n");
 }
@@ -5054,36 +5088,114 @@ function renderMileageRoutePreview(routeData) {
     currentMileageRouteData = routeData;
 
     if (sourceText) {
-        sourceText.innerText = "Route built from Schedule sequence";
+        sourceText.innerText = "Route built from Schedule sequence and planner rows";
     }
 
     const missingStops = getMileageRouteMissingStops(routeData);
 
-    const warningHtml = missingStops.length
+    let plannerMissingCount = 0;
+    let extraVanRows = [];
+
+    if (Array.isArray(routeData.plannerRows)) {
+        routeData.plannerRows.forEach(function(row) {
+            if (Number(row.vans || 0) > 1) {
+                extraVanRows.push(row);
+            }
+
+            row.legs.forEach(function(leg) {
+                if (!String(leg.fromAddress || "").trim()) plannerMissingCount++;
+                if (!String(leg.toAddress || "").trim()) plannerMissingCount++;
+            });
+        });
+    }
+
+    const warningHtml = missingStops.length || plannerMissingCount
         ? `
             <div class="validation-item validation-warn" style="margin-bottom:12px;">
-                Missing address for:
-                ${missingStops.map(function(stop) {
-                    return escapeHtml(stop.label || "-");
-                }).join(", ")}
+                Missing address information found.
                 <br>
-                Fill these before relying on the route.
+                Primary route missing: ${missingStops.length}
+                <br>
+                Planner leg missing address points: ${plannerMissingCount}
             </div>
         `
         : `
             <div class="validation-item validation-ok" style="margin-bottom:12px;">
-                Route has all addresses needed for checking.
+                Route and planner legs have address information.
+            </div>
+        `;
+
+    const extraVanHtml = extraVanRows.length
+        ? `
+            <div class="validation-item validation-warn" style="margin-bottom:12px;">
+                Extra van check:
+                ${
+                    extraVanRows.map(function(row) {
+                        return `
+                            <br>
+                            Row ${row.rowNumber} · ${escapeHtml(row.task)} · Vans: ${row.vans}
+                        `;
+                    }).join("")
+                }
+                <br>
+                Check whether mileage should be multiplied for these vans before saving total mileage to costing.
+            </div>
+        `
+        : `
+            <div class="validation-item validation-ok" style="margin-bottom:12px;">
+                No planner rows currently show 2nd / 3rd vans.
+            </div>
+        `;
+
+    const plannerRowsHtml = Array.isArray(routeData.plannerRows) && routeData.plannerRows.length
+        ? routeData.plannerRows.map(function(row) {
+            return `
+                <div class="document-block" style="margin-top:10px;">
+                    <div class="document-heading">
+                        Planner Row ${row.rowNumber}: ${escapeHtml(row.dayPart)} · ${escapeHtml(row.task)}
+                    </div>
+                    <div class="document-line">
+                        Vans: ${row.vans} · Men: ${row.men}
+                    </div>
+                    ${
+                        row.legs.length
+                            ? row.legs.map(function(leg, index) {
+                                const missing =
+                                    !String(leg.fromAddress || "").trim() ||
+                                    !String(leg.toAddress || "").trim();
+
+                                return `
+                                    <div class="document-line" style="${missing ? 'color:#c2410c;' : ''}">
+                                        Leg ${index + 1}: ${escapeHtml(leg.fromLabel)} → ${escapeHtml(leg.toLabel)}
+                                        <br>
+                                        ${escapeHtml(leg.fromAddress || "Missing from address")}
+                                        →
+                                        ${escapeHtml(leg.toAddress || "Missing to address")}
+                                    </div>
+                                `;
+                            }).join("")
+                            : `<div class="document-line">No travel legs added to this planner row.</div>`
+                    }
+                </div>
+            `;
+        }).join("")
+        : `
+            <div class="document-block">
+                <div class="document-heading">Planner Travel Legs</div>
+                <div class="document-line">No planner rows found.</div>
             </div>
         `;
 
     preview.innerHTML = `
         <div class="listed-stat-card" style="margin-bottom:12px;">
-            <div class="listed-stat-label">Route Preview</div>
+            <div class="listed-stat-label">Primary Route Preview</div>
             <div class="listed-stat-sub">Branch: ${escapeHtml(routeData.branch || "-")}</div>
+            <div class="listed-stat-sub">Depot: ${escapeHtml(routeData.depotAddress || "Missing depot address")}</div>
             <div class="listed-stat-sub">Move Type: ${escapeHtml(routeData.moveType || "-")}</div>
         </div>
 
         ${warningHtml}
+        ${extraVanHtml}
 
         <div class="space-y-3">
             ${
@@ -5093,7 +5205,7 @@ function renderMileageRoutePreview(routeData) {
                     return `
                         <div class="document-block" style="${missing ? 'border-color:#fed7aa;background:#fff7ed;' : ''}">
                             <div class="document-heading">
-                                Stop ${index + 1}: ${escapeHtml(stop.label || "-")}
+                                Primary Stop ${index + 1}: ${escapeHtml(stop.label || "-")}
                             </div>
                             <div class="document-line">
                                 ${escapeHtml(stop.address || "Missing address")}
@@ -5103,6 +5215,17 @@ function renderMileageRoutePreview(routeData) {
                 }).join("")
             }
         </div>
+
+        <div style="height:12px"></div>
+
+        <div class="listed-stat-card">
+            <div class="listed-stat-label">Planner Day / Row Route Check</div>
+            <div class="listed-stat-sub">
+                This section checks the actual travel legs in the Manual Schedule Planner, including rows with extra vans.
+            </div>
+        </div>
+
+        ${plannerRowsHtml}
 
         <div class="simple-input-actions" style="margin-top:14px;">
             <button type="button" class="simple-input-cancel-btn" onclick="copyMileageRouteToClipboard()">
@@ -5114,7 +5237,7 @@ function renderMileageRoutePreview(routeData) {
         </div>
 
         <div class="footer-note">
-            Google Maps is for route preview and mileage guidance only. For truck-safe routing, check low bridges, width / weight limits and access restrictions separately.
+            Enter the total mileage you want costed. If multiple vans travel the same route, include the correct van-mile total based on your quoting policy.
         </div>
     `;
 }
@@ -7071,12 +7194,103 @@ function getStoreProperty() {
     }) || null;
 }
 
+function getPropertyByLabelPart(labelPart) {
+    if (!currentJob || !Array.isArray(currentJob.properties)) return null;
+
+    const search = String(labelPart || "").toLowerCase();
+
+    return currentJob.properties.find(function(prop) {
+        return String(prop.label || "").toLowerCase().includes(search);
+    }) || null;
+}
+
+function getScheduleLocationAddress(value, branch) {
+    const raw = String(value || "").trim();
+
+    if (!raw) return "";
+
+    if (raw === "Depot") {
+        return BRANCH_DEPOTS[branch] || "";
+    }
+
+    const directProp = getPropertyById(raw);
+    if (directProp) {
+        return getFullAddressText(directProp.id);
+    }
+
+    const lower = raw.toLowerCase();
+
+    if (lower.includes("collection")) {
+        const prop = getPropertyByLabelPart("collection");
+        return prop ? getFullAddressText(prop.id) : "";
+    }
+
+    if (lower.includes("delivery")) {
+        const prop = getPropertyByLabelPart("delivery");
+        return prop ? getFullAddressText(prop.id) : "";
+    }
+
+    if (lower.includes("store")) {
+        const prop = getPropertyByLabelPart("store");
+        return prop ? getFullAddressText(prop.id) : "";
+    }
+
+    return raw;
+}
+
+function getScheduleLocationPreviewLabel(value) {
+    const raw = String(value || "").trim();
+
+    if (!raw) return "Missing Location";
+    if (raw === "Depot") return "Depot";
+
+    const directProp = getPropertyById(raw);
+    if (directProp) {
+        const label = String(directProp.label || "").trim();
+        return label || getPropertyDisplayText(directProp.id);
+    }
+
+    return raw;
+}
+
+function buildMileagePlannerRows(branch) {
+    const rows = [];
+
+    manualSchedule.forEach(function(day, index) {
+        ensureScheduleRowShape(day);
+
+        const legs = Array.isArray(day.legs) ? day.legs : [];
+
+        rows.push({
+            rowNumber: index + 1,
+            dayPart: day.dayPart || "Full Day",
+            task: day.task || "-",
+            vans: Math.max(0, Number(day.vans || 0)),
+            men: Math.max(0, Number(day.men || 0)),
+            legs: legs.map(function(leg) {
+                return {
+                    from: leg.from || "",
+                    to: leg.to || "",
+                    fromLabel: getScheduleLocationPreviewLabel(leg.from),
+                    toLabel: getScheduleLocationPreviewLabel(leg.to),
+                    fromAddress: getScheduleLocationAddress(leg.from, branch),
+                    toAddress: getScheduleLocationAddress(leg.to, branch),
+                    minutes: Math.max(0, Number(leg.minutes || 0))
+                };
+            })
+        });
+    });
+
+    return rows;
+}
+
 function getMileageRouteData() {
     const seq = getActiveSequenceRecord();
     if (!seq) return null;
 
     const schedule = ensureSequenceScheduleShape(seq);
     const branch = schedule.operatingBranch || "London";
+    const depotAddress = BRANCH_DEPOTS[branch] || "";
 
     const firstCollectionId = Array.isArray(seq.collections) && seq.collections.length
         ? seq.collections[0]
@@ -7097,32 +7311,34 @@ function getMileageRouteData() {
 
     if (moveType.includes("to store")) {
         routeStops = [
-            { type: "branch", label: branch, address: BRANCH_DEPOTS[branch] || "" },
+            { type: "branch", label: branch + " Depot", address: depotAddress },
             { type: "collection", label: "Collection", address: collectionAddress },
             { type: "store", label: "Store", address: storeAddress },
-            { type: "branch", label: branch, address: BRANCH_DEPOTS[branch] || "" }
+            { type: "branch", label: branch + " Depot", address: depotAddress }
         ];
     } else if (moveType.includes("ex store")) {
         routeStops = [
-            { type: "branch", label: branch, address: BRANCH_DEPOTS[branch] || "" },
+            { type: "branch", label: branch + " Depot", address: depotAddress },
             { type: "store", label: "Store", address: storeAddress },
             { type: "delivery", label: "Delivery", address: deliveryAddress },
-            { type: "branch", label: branch, address: BRANCH_DEPOTS[branch] || "" }
+            { type: "branch", label: branch + " Depot", address: depotAddress }
         ];
     } else {
         routeStops = [
-            { type: "branch", label: branch, address: BRANCH_DEPOTS[branch] || "" },
+            { type: "branch", label: branch + " Depot", address: depotAddress },
             { type: "collection", label: "Collection", address: collectionAddress },
             { type: "delivery", label: "Delivery", address: deliveryAddress },
-            { type: "branch", label: branch, address: BRANCH_DEPOTS[branch] || "" }
+            { type: "branch", label: branch + " Depot", address: depotAddress }
         ];
     }
 
     return {
         branch: branch,
+        depotAddress: depotAddress,
         moveType: seq.moveType || "",
         sequenceId: seq.id,
-        stops: routeStops
+        stops: routeStops,
+        plannerRows: buildMileagePlannerRows(branch)
     };
 }
 
