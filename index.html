@@ -1890,7 +1890,14 @@ button {
 .info-head{font-size:10px;font-weight:900;text-transform:uppercase;color:var(--slate-400);margin-bottom:8px;}
 .info-body{font-size:12px;font-weight:700;color:var(--slate-700);line-height:1.55;}
 .footer-note{margin-top:12px;font-size:10px;font-weight:800;text-transform:uppercase;color:var(--slate-400);line-height:1.45;}
-.schedule-shell{margin-top:12px;border:1px solid var(--slate-200);border-radius:16px;padding:14px;background:var(--slate-50);}
+.schedule-shell{
+    margin-top:0;
+    border:2px solid var(--blue);
+    border-radius:18px;
+    padding:16px;
+    background:#ffffff;
+    box-shadow:0 10px 24px rgba(37,99,235,0.08);
+}
 .schedule-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap;}
 .schedule-title{font-size:10px;font-weight:900;text-transform:uppercase;color:var(--slate-400);}
 .schedule-btn{height:38px;border-radius:10px;border:1px solid var(--slate-300);background:#fff;color:var(--slate-700);padding:0 14px;font-size:11px;font-weight:900;text-transform:uppercase;cursor:pointer;}
@@ -2584,12 +2591,6 @@ Enter as: Surname, First Name
     </div>
 </div>
   
-<div class="section-block">
-    <div class="section-title">Mileage</div>
-    <div>
-        <label class="mini-label">Estimated Mileage</label>
-        <input id="schedule-mileage-input" type="number" min="0" class="field" value="0" />
-    </div>
 </div>
 <div class="section-block">
                     <div class="section-title">Volume Inputs</div>
@@ -2717,108 +2718,109 @@ Enter as: Surname, First Name
                 <div class="panel-subtitle">Three rows: packing, loading, then unloading</div>
             </div>
             <div class="panel-body">
-                <div class="summary-grid">
-                    <div class="summary-card">
-                        <div class="summary-label">Packing Mode</div>
-                        <div class="summary-value" id="summaryMode">—</div>
-                        <div class="summary-sub">No packing, CG packing, or full packing</div>
-                    </div>
-                    <div class="summary-card">
-                        <div class="summary-label">Total Volume</div>
-                        <div class="summary-value" id="summaryTotalVolume">0</div>
-                        <div class="summary-sub">Furniture + box volume</div>
-                    </div>
-                    <div class="summary-card">
-                        <div class="summary-label">Packing Man Hrs</div>
-                        <div class="summary-value" id="summaryPackHours">0.00</div>
-                        <div class="summary-sub">Cartons only</div>
-                    </div>
-                    <div class="summary-card">
-                        <div class="summary-label">Packing Man Days</div>
-                        <div class="summary-value" id="summaryPackDays">0.0</div>
-                        <div class="summary-sub">Based on 8 hours per day</div>
-                    </div>
-
-                    <div class="summary-card">
-                        <div class="summary-label">Special Labour Hrs</div>
-                        <div class="summary-value" id="summarySpecialHours">0.00</div>
-                        <div class="summary-sub">Beds, pianos, clocks, loft and wrap</div>
-                    </div>
-
-                    <div class="summary-card">
-                        <div class="summary-label">Loading Man Hrs</div>
-                        <div class="summary-value" id="summaryLoadHours">0.00</div>
-                        <div class="summary-sub">Volume loading plus load-side specials</div>
-                    </div>
-                    <div class="summary-card">
-                        <div class="summary-label">Loading Man Days</div>
-                        <div class="summary-value" id="summaryLoadDays">0.0</div>
-                        <div class="summary-sub">Based on 8 hours per day</div>
-                    </div>
-
-                    <div class="summary-card">
-                        <div class="summary-label">If Loaded By Completion</div>
-                        <div class="summary-value" id="summaryLoadCompletion">0.0</div>
-                        <div class="summary-sub">Men needed for a 4-hour loading window</div>
-                    </div>
-                    <div class="summary-card">
-                        <div class="summary-label">Loading Rate</div>
-                        <div class="summary-value" id="summaryLoadRate">125</div>
-                        <div class="summary-sub">Cuft per man-hour</div>
-                    </div>
-                    <div class="summary-card">
-                        <div class="summary-label">Unloading Man Hours</div>
-                        <div class="summary-value" id="summaryUnloadHours">0.00</div>
-                        <div class="summary-sub">Volume unloading plus unload-side specials</div>
-                    </div>
-                    <div class="summary-card">
-                        <div class="summary-label">Unloading Man Days</div>
-                        <div class="summary-value" id="summaryUnloadDays">0.0</div>
-                        <div class="summary-sub">Based on 8 hours per day</div>
-                    </div>
-
-                    <div class="summary-card">
-                        <div class="summary-label">If Delivering On Completion</div>
-                        <div class="summary-value" id="summaryUnloadCompletion">0.0</div>
-                        <div class="summary-sub">Men needed for a 4-hour unloading window</div>
-                    </div>
-                    <div class="summary-card">
-                        <div class="summary-label">Unloading Rate</div>
-                        <div class="summary-value" id="summaryUnloadRate">132</div>
-                        <div class="summary-sub">Cuft per man-hour</div>
-                    </div>
-                </div>
-
-                <div style="height:12px"></div>
-
-                <div class="info-card">
-                    <div class="info-head">Current Logic</div>
-                    <div class="info-body" id="logicText"></div>
-                </div>
-
-                <div style="height:12px"></div>
-
-                <div class="info-card">
-                    <div class="info-head">Special Labour Breakdown</div>
-                    <div class="info-body" id="specialText"></div>
-                </div>
-
-                <div class="schedule-shell">
-                    <div class="schedule-toolbar">
-    <div class="schedule-title">Manual Schedule Planner</div>
-    <div class="flex gap-2">
-        <button class="schedule-btn" onclick="autoBuildScheduleDays()">Auto Build</button>
-        <button class="schedule-btn" onclick="addScheduleDay()">Add Day</button>
-        <button class="schedule-btn" onclick="openMileageModal()">Add Mileage to Costing</button>
-    </div>
-</div>
-                    <div class="schedule-list" id="scheduleList"></div>
-                    <div class="validation-list" id="validationList"></div>
-                </div>
-
-                <div class="footer-note">Packing, loading and unloading remain separate streams in this version. The 4-hour completion figures show the crew needed to complete that activity within a half-day completion window.</div>
+    <div class="schedule-shell">
+        <div class="schedule-toolbar">
+            <div class="schedule-title">Manual Schedule Planner</div>
+            <div class="flex gap-2">
+                <button class="schedule-btn" onclick="autoBuildScheduleDays()">Auto Build</button>
+                <button class="schedule-btn" onclick="addScheduleDay()">Add Day</button>
+                <button class="schedule-btn" onclick="openMileageModal()">Add Mileage to Costing</button>
             </div>
         </div>
+        <div class="schedule-list" id="scheduleList"></div>
+        <div class="validation-list" id="validationList"></div>
+    </div>
+
+    <div style="height:12px"></div>
+
+    <div class="summary-grid">
+        <div class="summary-card">
+            <div class="summary-label">Packing Mode</div>
+            <div class="summary-value" id="summaryMode">—</div>
+            <div class="summary-sub">No packing, CG packing, or full packing</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-label">Total Volume</div>
+            <div class="summary-value" id="summaryTotalVolume">0</div>
+            <div class="summary-sub">Furniture + box volume</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-label">Packing Man Hrs</div>
+            <div class="summary-value" id="summaryPackHours">0.00</div>
+            <div class="summary-sub">Cartons only</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-label">Packing Man Days</div>
+            <div class="summary-value" id="summaryPackDays">0.0</div>
+            <div class="summary-sub">Based on 8 hours per day</div>
+        </div>
+
+        <div class="summary-card">
+            <div class="summary-label">Special Labour Hrs</div>
+            <div class="summary-value" id="summarySpecialHours">0.00</div>
+            <div class="summary-sub">Beds, pianos, clocks, loft and wrap</div>
+        </div>
+
+        <div class="summary-card">
+            <div class="summary-label">Loading Man Hrs</div>
+            <div class="summary-value" id="summaryLoadHours">0.00</div>
+            <div class="summary-sub">Volume loading plus load-side specials</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-label">Loading Man Days</div>
+            <div class="summary-value" id="summaryLoadDays">0.0</div>
+            <div class="summary-sub">Based on 8 hours per day</div>
+        </div>
+
+        <div class="summary-card">
+            <div class="summary-label">If Loaded By Completion</div>
+            <div class="summary-value" id="summaryLoadCompletion">0.0</div>
+            <div class="summary-sub">Men needed for a 4-hour loading window</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-label">Loading Rate</div>
+            <div class="summary-value" id="summaryLoadRate">125</div>
+            <div class="summary-sub">Cuft per man-hour</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-label">Unloading Man Hours</div>
+            <div class="summary-value" id="summaryUnloadHours">0.00</div>
+            <div class="summary-sub">Volume unloading plus unload-side specials</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-label">Unloading Man Days</div>
+            <div class="summary-value" id="summaryUnloadDays">0.0</div>
+            <div class="summary-sub">Based on 8 hours per day</div>
+        </div>
+
+        <div class="summary-card">
+            <div class="summary-label">If Delivering On Completion</div>
+            <div class="summary-value" id="summaryUnloadCompletion">0.0</div>
+            <div class="summary-sub">Men needed for a 4-hour unloading window</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-label">Unloading Rate</div>
+            <div class="summary-value" id="summaryUnloadRate">132</div>
+            <div class="summary-sub">Cuft per man-hour</div>
+        </div>
+    </div>
+
+    <div style="height:12px"></div>
+
+    <div class="info-card">
+        <div class="info-head">Current Logic</div>
+        <div class="info-body" id="logicText"></div>
+    </div>
+
+    <div style="height:12px"></div>
+
+    <div class="info-card">
+        <div class="info-head">Special Labour Breakdown</div>
+        <div class="info-body" id="specialText"></div>
+    </div>
+
+    <div class="footer-note">Packing, loading and unloading remain separate streams in this version. The 4-hour completion figures show the crew needed to complete that activity within a half-day completion window.</div>
+</div>
     </div>
 </section>
 <section id="content-quote" class="tab-content hidden bg-white p-5 rounded-2xl shadow-inner">
