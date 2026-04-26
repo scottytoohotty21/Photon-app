@@ -10904,12 +10904,15 @@ function renderScheduleLegs(day) {
     return `
         <div class="schedule-legs-shell">
             <div class="schedule-legs-head">
-                <div>
-                    <div class="mini-label">Travel Legs</div>
-                    <div class="text-[10px] font-bold uppercase text-slate-400">
-                        Route miles: ${routeMiles.toFixed(1)} · Vans: ${vans} · Possible van-miles: ${vanMiles.toFixed(1)} · Travel: ${travelHours.toFixed(2)} hrs
-                    </div>
-                </div>
+    <div>
+        <div class="mini-label">Travel Legs</div>
+        <div class="text-[10px] font-bold uppercase text-slate-400">
+            Route miles: ${routeMiles.toFixed(1)} · Vans: ${vans} · Costed mileage: ${vanMiles.toFixed(1)} · Travel: ${travelHours.toFixed(2)} hrs
+        </div>
+        <div class="text-[10px] font-bold text-slate-400" style="margin-top:4px; text-transform:none;">
+            Use Get Route to check Google Maps, then enter the mileage for this travel leg.
+        </div>
+    </div>
 
                 <button
                     type="button"
