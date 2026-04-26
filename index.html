@@ -2697,7 +2697,6 @@ Enter as: Surname, First Name
             <div class="flex gap-2">
     <button class="schedule-btn" onclick="autoBuildScheduleDays()">Auto Build</button>
 <button class="schedule-btn" onclick="addScheduleDay()">Add Day</button>
-<button class="schedule-btn" onclick="openMileageModal()">Add Mileage to Costing</button>
 <button class="schedule-btn" onclick="fetchMileageFromRoute()">Build Route</button>
 </div>
         </div>
@@ -10551,6 +10550,44 @@ function getPlannerMileageSummary() {
         return summary;
     }
 
+    function syncCostedMileageToActiveSequenceCosting() {
+    if (!currentJob || !activeSeqId) return;
+
+    ensureCostingStore();
+
+    const state = ensureQuoteSequenceState(activeSeqId);
+    if (!state) return;
+
+    if (!Array.isArray(state.pricingLines) || state.pricingLines.length === 0) {
+        state.pricingLines = buildDefaultQuotePricingLines(activeSeqId);
+    }
+
+    let mileageLine = state.pricingLines.find(function(line) {
+        return line.label === "Mileage";
+    });
+
+    if (!mileageLine) {
+        mileageLine = {
+            id: createQuoteLineId(),
+            label: "Mileage",
+            customLabel: "",
+            qty: 0,
+            unitCost: 0.45
+        };
+
+        state.pricingLines.push(mileageLine);
+    }
+
+    const mileageSummary = getPlannerMileageSummary();
+    const newMileageQty = Math.round(Number(mileageSummary.costedMileage || 0) * 10) / 10;
+
+    if (Number(mileageLine.qty || 0) !== newMileageQty) {
+        mileageLine.qty = newMileageQty;
+        quotePricingSaved = false;
+        saveToDevice();
+    }
+}
+
     manualSchedule.forEach(function(day) {
         const rowMiles = getScheduleLegMiles(day);
         const vans = Math.max(1, Number(day && day.vans ? day.vans : 1));
@@ -10850,7 +10887,7 @@ function renderScheduleLegs(day) {
                 vans > 1
                     ? `
                         <div class="validation-item validation-warn" style="margin-bottom:10px;">
-                            Extra van check: this row has ${vans} vans. Confirm whether costing mileage should use route miles or van-miles.
+                            Extra van check: this row has ${vans} vans. If Manual Mileage Entry: Remember to allow for additional van mileage.
                         </div>
                     `
                     : ""
@@ -12659,8 +12696,9 @@ function renderScheduleCalculator(){
 `Delivery to depot: ${special.deliveryToDepotHours.toFixed(2)} hrs · ` +
 `Load side specials: ${special.loadSideHours.toFixed(2)} hrs · Unload side specials: ${special.unloadSideHours.toFixed(2)} hrs.`;
 
-    renderSchedulePlanner();
-    renderValidation(packing, loading, unloading, special, state);
+    syncCostedMileageToActiveSequenceCosting();
+renderSchedulePlanner();
+renderValidation(packing, loading, unloading, special, state);
 }
 function normalizeJobsShape() {
     jobs = (Array.isArray(jobs) ? jobs : []).map(function(job) {
