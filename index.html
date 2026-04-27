@@ -1855,6 +1855,13 @@ button {
 }
 /* SCHEDULE CALCULATOR LAYOUT */
 .layout{display:grid;grid-template-columns:430px 1fr;gap:16px;align-items:start;}
+.schedule-left-sticky{
+    position:sticky;
+    top:12px;
+    align-self:start;
+    max-height:calc(100vh - 24px);
+    overflow-y:auto;
+}
 .panel{
     background:var(--card);border:1px solid var(--slate-200);border-radius:20px;box-shadow:var(--shadow);overflow:hidden;
 }
@@ -1891,6 +1898,12 @@ button {
 .field-readonly-soft{
     background:#f8fafc !important;
     color:#334155;
+}
+.field-fed-from-inventory{
+    background:#f0fdf4 !important;
+    border:2px solid #22c55e !important;
+    box-shadow:0 0 0 3px rgba(34,197,94,0.12);
+    color:#0f172a;
 }
 .special-labour-label{
     min-height:32px;
@@ -2193,6 +2206,12 @@ button {
 @media (max-width: 980px){
     .layout{grid-template-columns:1fr;}
     .summary-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+
+    .schedule-left-sticky{
+        position:static;
+        max-height:none;
+        overflow:visible;
+    }
 }
 @media (max-width: 760px){
     .schedule-grid{grid-template-columns:1fr 1fr;}
@@ -2608,7 +2627,7 @@ Enter as: Surname, First Name
 </section>
    <section id="content-schedule" class="tab-content hidden bg-white p-6 rounded-2xl shadow-inner">
     <div class="layout">
-        <div class="panel">
+        <div class="panel schedule-left-sticky">
             <div class="panel-head">
                 <div class="panel-title">Inputs</div>
                 <div class="panel-subtitle">Sequence, volume and special labour inputs</div>
@@ -11211,6 +11230,19 @@ function handleScheduleSequenceChange(sequenceId) {
     loadSequence(sequenceId);
     switchTab('schedule');
 }
+function setInventoryFedField(el, value) {
+    if (!el) return;
+
+    const cleanValue = Number(value || 0);
+
+    el.value = cleanValue;
+
+    if (cleanValue > 0) {
+        el.classList.add("field-fed-from-inventory");
+    } else {
+        el.classList.remove("field-fed-from-inventory");
+    }
+}
 function loadScheduleInputsFromActiveSequence() {
     const seq = getActiveSequenceRecord();
     if (!seq) return;
@@ -11254,22 +11286,22 @@ if (operatingBranchEl) {
 
 if (loadingVariantEl) loadingVariantEl.value = schedule.loadingVariant || "Standard";
 
-    if (svcFrameEl) svcFrameEl.value = photonFeed.special?.frameBeds || 0;
-    if (svcOttomanEl) svcOttomanEl.value = photonFeed.special?.ottomanBeds || 0;
-    if (svcDivanEl) svcDivanEl.value = photonFeed.special?.divanBeds || 0;
-    if (svcElectricEl) svcElectricEl.value = photonFeed.special?.electricBeds || 0;
-    if (svcBunkEl) svcBunkEl.value = photonFeed.special?.bunkBeds || 0;
-    if (svcCotEl) svcCotEl.value = photonFeed.special?.cots || 0;
-    if (svcDiningTableEl) svcDiningTableEl.value = photonFeed.special?.diningTables || 0;
+    setInventoryFedField(svcFrameEl, photonFeed.special?.frameBeds || 0);
+setInventoryFedField(svcOttomanEl, photonFeed.special?.ottomanBeds || 0);
+setInventoryFedField(svcDivanEl, photonFeed.special?.divanBeds || 0);
+setInventoryFedField(svcElectricEl, photonFeed.special?.electricBeds || 0);
+setInventoryFedField(svcBunkEl, photonFeed.special?.bunkBeds || 0);
+setInventoryFedField(svcCotEl, photonFeed.special?.cots || 0);
+setInventoryFedField(svcDiningTableEl, photonFeed.special?.diningTables || 0);
 
     if (svcCustomMinutesEl) svcCustomMinutesEl.value = schedule.special.customItemMinutes;
     if (svcCustomNoteEl) svcCustomNoteEl.value = schedule.special.customItemNote;
-    if (svcUprightEl) svcUprightEl.value = schedule.special.uprightPianos;
-    if (svcGrandEl) svcGrandEl.value = schedule.special.grandPianos;
-    if (svcClockEl) svcClockEl.value = schedule.special.grandfatherClocks;
-    if (svcApplianceEl) svcApplianceEl.value = photonFeed.disconnectApplianceCount || 0;
-    if (svcCrateEl) svcCrateEl.value = photonFeed.special?.cratingItems || 0;
-    if (exportWrapVolEl) exportWrapVolEl.value = photonFeed.special?.exportWrapVol || 0;
+    setInventoryFedField(svcUprightEl, schedule.special.uprightPianos);
+setInventoryFedField(svcGrandEl, schedule.special.grandPianos);
+setInventoryFedField(svcClockEl, schedule.special.grandfatherClocks);
+    setInventoryFedField(svcApplianceEl, photonFeed.disconnectApplianceCount || 0);
+setInventoryFedField(svcCrateEl, photonFeed.special?.cratingItems || 0);
+setInventoryFedField(exportWrapVolEl, photonFeed.special?.exportWrapVol || 0);
 }
 
 function saveScheduleInputsToActiveSequence() {
@@ -12739,15 +12771,18 @@ if (scheduleVolumeBadge) {
     const svcCrateEl = document.getElementById("svc_crate");
     const exportWrapVolEl = document.getElementById("exportWrapVol");
 
-    if (svcFrameEl) svcFrameEl.value = state.special.frameBeds;
-    if (svcOttomanEl) svcOttomanEl.value = state.special.ottomanBeds;
-    if (svcDivanEl) svcDivanEl.value = state.special.divanBeds;
-    if (svcElectricEl) svcElectricEl.value = state.special.electricBeds;
-    if (svcBunkEl) svcBunkEl.value = state.special.bunkBeds;
-    if (svcCotEl) svcCotEl.value = state.special.cots;
-    if (svcDiningTableEl) svcDiningTableEl.value = state.special.diningTables;
-    if (svcCrateEl) svcCrateEl.value = state.special.crate;
-    if (exportWrapVolEl) exportWrapVolEl.value = state.exportWrapVol;
+   setInventoryFedField(svcFrameEl, state.special.frameBeds);
+setInventoryFedField(svcOttomanEl, state.special.ottomanBeds);
+setInventoryFedField(svcDivanEl, state.special.divanBeds);
+setInventoryFedField(svcElectricEl, state.special.electricBeds);
+setInventoryFedField(svcBunkEl, state.special.bunkBeds);
+setInventoryFedField(svcCotEl, state.special.cots);
+setInventoryFedField(svcDiningTableEl, state.special.diningTables);
+setInventoryFedField(svcCrateEl, state.special.crate);
+setInventoryFedField(exportWrapVolEl, state.exportWrapVol);
+setInventoryFedField(document.getElementById("svc_upright"), schedule.special.uprightPianos);
+setInventoryFedField(document.getElementById("svc_grand"), schedule.special.grandPianos);
+setInventoryFedField(document.getElementById("svc_clock"), schedule.special.grandfatherClocks);
 
     const special = calcSpecialLabour(state);
     const loading = calcLoading(totalVolume, state.loadRate, special.loadSideHours, state.loadingScenario);
