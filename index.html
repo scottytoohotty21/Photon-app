@@ -1870,6 +1870,11 @@ button {
     font-size:14px;font-weight:700;outline:none;background:#fff;color:var(--navy);
 }
 .field:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,130,246,0.08);}
+.special-labour-label{
+    min-height:32px;
+    display:flex;
+    align-items:flex-end;
+}
 .field-editable-blue{
     background:#eff6ff !important;
     border:2px solid #60a5fa !important;
@@ -2654,15 +2659,20 @@ Enter as: Surname, First Name
     <input id="loftVol" type="number" min="0" class="field field-editable-blue" value="0" oninput="handleScheduleInputChange()" />
 </div>
 
+<div>
+    <label class="mini-label special-labour-label">Frame<br>Beds</label>
+    <input id="svc_frame" type="number" min="0" class="field field-readonly-soft" value="0" readonly />
+</div>
+
     <div>
         <label class="mini-label">Ottoman Beds</label>
         <input id="svc_ottoman" type="number" min="0" class="field field-readonly-soft" value="0" readonly />
     </div>
 
     <div>
-        <label class="mini-label">Washing Machines / Dishwashers</label>
-        <input id="svc_appliance" type="number" min="0" class="field field-readonly-soft" value="0" readonly />
-    </div>
+    <label class="mini-label special-labour-label">Washing Machines /<br>Dishwashers</label>
+    <input id="svc_appliance" type="number" min="0" class="field field-readonly-soft" value="0" readonly />
+</div>
 
     <div>
         <label class="mini-label">Divan Beds</label>
@@ -2679,11 +2689,7 @@ Enter as: Surname, First Name
         <input id="svc_electric" type="number" min="0" class="field field-readonly-soft" value="0" readonly />
     </div>
 
-    <div>
-    <label class="mini-label">Frame Beds</label>
-    <input id="svc_frame" type="number" min="0" class="field field-readonly-soft" value="0" readonly />
-</div>
-
+    
     <div>
         <label class="mini-label">Bunk Beds</label>
         <input id="svc_bunk" type="number" min="0" class="field field-readonly-soft" value="0" readonly />
