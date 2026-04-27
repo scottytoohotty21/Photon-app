@@ -2561,9 +2561,10 @@ Enter as: Surname, First Name
    <section id="content-schedule" class="tab-content hidden bg-white p-6 rounded-2xl shadow-inner">
     <div class="layout">
         <div class="panel">
-           <div class="panel-head">
-    <div class="panel-title">Inputs</div>
-</div>
+            <div class="panel-head">
+                <div class="panel-title">Inputs</div>
+                <div class="panel-subtitle">Manual for now, ready to be fed from the previous app tab later</div>
+            </div>
             <div class="panel-body">
                              <div class="section-block">
     <div class="section-title">Sequence</div>
@@ -2614,94 +2615,72 @@ Enter as: Surname, First Name
                 
                 <div class="section-block">
                     <div class="section-title">Special Labour Inputs</div>
-<div class="section-block">
-    <div class="section-title">Special Labour Inputs</div>
-
-    <div class="grid-2">
+                    <div class="grid-2">
+                        <div>
+    <label class="mini-label">Frame Beds</label>
+    <input id="svc_frame" type="number" min="0" class="field" value="0" readonly />
+</div>
 <div>
-    <label class="mini-label">Custom Item Note</label>
-<input id="svc_custom_minutes" type="number" min="0" class="field bg-blue-50" value="0" oninput="handleScheduleInputChange()" />
+    <label class="mini-label">Ottoman Beds</label>
+    <input id="svc_ottoman" type="number" min="0" class="field" value="0" readonly />
 </div>
-
 <div>
-    <label class="mini-label">Custom Item Minutes</label>
-    <input
-        id="svc_custom_minutes"
-        type="number"
-        min="0"
-        class="field bg-blue-50"
-        value="0"
-        oninput="handleScheduleInputChange()"
-    />
+    <label class="mini-label">Divan Beds</label>
+    <input id="svc_divan" type="number" min="0" class="field" value="0" readonly />
 </div>
-
-        <div>
-            <label class="mini-label">Export Wrap Volume (CUFT)</label>
-            <input id="exportWrapVol" type="number" min="0" class="field" value="0" readonly />
-        </div>
-
-        <div>
-            <label class="mini-label">Crating</label>
-            <input id="svc_crate" type="number" min="0" class="field" value="0" readonly />
-        </div>
-
-        <div>
-            <label class="mini-label">Frame Beds</label>
-            <input id="svc_frame" type="number" min="0" class="field" value="0" readonly />
-        </div>
-
-        <div>
-            <label class="mini-label">Ottoman Beds</label>
-            <input id="svc_ottoman" type="number" min="0" class="field" value="0" readonly />
-        </div>
-
-        <div>
-            <label class="mini-label">Divan Beds</label>
-            <input id="svc_divan" type="number" min="0" class="field" value="0" readonly />
-        </div>
-
-        <div>
-            <label class="mini-label">Electric / TV Beds</label>
-            <input id="svc_electric" type="number" min="0" class="field" value="0" readonly />
-        </div>
-
-        <div>
-            <label class="mini-label">Bunk Beds</label>
-            <input id="svc_bunk" type="number" min="0" class="field" value="0" readonly />
-        </div>
-
-        <div>
-            <label class="mini-label">Cots / Childs Beds</label>
-            <input id="svc_cot" type="number" min="0" class="field" value="0" readonly />
-        </div>
-
-        <div>
-            <label class="mini-label">Dining Tables</label>
-            <input id="svc_dining_table" type="number" min="0" class="field" value="0" readonly />
-        </div>
-
-        <div>
-            <label class="mini-label">Upright Pianos</label>
-            <input id="svc_upright" type="number" min="0" class="field" value="0" oninput="handleScheduleInputChange()" />
-        </div>
-
-        <div>
-            <label class="mini-label">Baby / Grand Pianos</label>
-            <input id="svc_grand" type="number" min="0" class="field" value="0" oninput="handleScheduleInputChange()" />
-        </div>
-
-        <div>
-            <label class="mini-label">Grandfather Clocks</label>
-            <input id="svc_clock" type="number" min="0" class="field" value="0" oninput="handleScheduleInputChange()" />
-        </div>
-
-        <div>
-            <label class="mini-label">Washing Machines / Dishwashers</label>
-            <input id="svc_appliance" type="number" min="0" class="field" value="0" readonly />
-        </div>
-    </div>
+<div>
+    <label class="mini-label">Electric / TV Beds</label>
+    <input id="svc_electric" type="number" min="0" class="field" value="0" readonly />
 </div>
-                    
+<div>
+    <label class="mini-label">Bunk Beds</label>
+    <input id="svc_bunk" type="number" min="0" class="field" value="0" readonly />
+</div>
+<div>
+    <label class="mini-label">Cots / Childs Beds</label>
+    <input id="svc_cot" type="number" min="0" class="field" value="0" readonly />
+</div>
+<div>
+    <label class="mini-label">Dining Tables</label>
+    <input id="svc_dining_table" type="number" min="0" class="field" value="0" readonly />
+</div>
+                        <div>
+                            <label class="mini-label">Custom Item Minutes (each side)</label>
+                            <input id="svc_custom_minutes" type="number" min="0" class="field" value="0" oninput="handleScheduleInputChange()" />
+                        </div>
+                        <div>
+                            <label class="mini-label">Custom Item Note</label>
+                            <input id="svc_custom_note" type="text" maxlength="40" class="field" value="" oninput="handleScheduleInputChange()" />
+                        </div>
+                        <div>
+                            <label class="mini-label">Upright Pianos</label>
+                            <input id="svc_upright" type="number" min="0" class="field" value="0" oninput="handleScheduleInputChange()" />
+                        </div>
+                        <div>
+                            <label class="mini-label">Baby / Grand Pianos</label>
+                            <input id="svc_grand" type="number" min="0" class="field" value="0" oninput="handleScheduleInputChange()" />
+                        </div>
+                        <div>
+                            <label class="mini-label">Grandfather Clocks</label>
+                            <input id="svc_clock" type="number" min="0" class="field" value="0" oninput="handleScheduleInputChange()" />
+                        </div>
+                        <div>
+                            <label class="mini-label">Washing Machines / Dishwashers</label>
+                            <input id="svc_appliance" type="number" min="0" class="field" value="0" readonly />
+                        </div>
+                        <div>
+                            <label class="mini-label">Crating</label>
+                            <input id="svc_crate" type="number" min="0" class="field" value="0" readonly />
+                        </div>
+                        <div>
+                            <label class="mini-label">Export Wrap Volume (CUFT)</label>
+                            <input id="exportWrapVol" type="number" min="0" class="field" value="0" readonly />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="note-card">
+                    Sequence, packing and inventory totals are now intended to be fed from Photon. Transit, labour assumptions and planner rows remain editable here.
                 </div>
             </div>
         </div>
