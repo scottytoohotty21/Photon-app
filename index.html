@@ -1920,6 +1920,27 @@ button {
     box-shadow:0 10px 24px rgba(37,99,235,0.08);
 }
 .schedule-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap;}
+.schedule-title-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.schedule-volume-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    color: #1d4ed8;
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+    line-height: 1;
+}
 .schedule-title{font-size:10px;font-weight:900;text-transform:uppercase;color:var(--slate-400);}
 .schedule-btn{height:38px;border-radius:10px;border:1px solid var(--slate-300);background:#fff;color:var(--slate-700);padding:0 14px;font-size:11px;font-weight:900;text-transform:uppercase;cursor:pointer;}
 .schedule-list{display:grid;gap:12px;}
@@ -2618,24 +2639,7 @@ Enter as: Surname, First Name
 </div>
   
 <div class="section-block">
-                    <div class="section-title">Volume Inputs</div>
-                    <div class="grid-2">
-                        <div>
-                            <label class="mini-label">Furniture Volume (CUFT)</label>
-                            <div id="furnitureVolDisplay" class="field" style="background:#f8fafc;">0</div>
-                        </div>
-                                                <div>
-                            <label class="mini-label">Loading Rate (CUFT / Man-Hour)</label>
-                            <input id="loadRate" type="number" min="1" class="field" value="125" oninput="handleScheduleInputChange()" />
-                        </div>
-                        <div>
-                            <label class="mini-label">Unloading Rate (CUFT / Man-Hour)</label>
-                            <input id="unloadRate" type="number" min="1" class="field" value="132" oninput="handleScheduleInputChange()" />
-                        </div>
-                    </div>
-                </div>
-
-                
+                                   
                 <div class="section-block">
                     <div class="section-title">Special Labour Inputs</div>
                     <div class="grid-2">
@@ -2736,13 +2740,17 @@ Enter as: Surname, First Name
             <div class="panel-body">
     <div class="schedule-shell">
         <div class="schedule-toolbar">
-            <div class="schedule-title">Manual Schedule Planner</div>
-            <div class="flex gap-2">
-    <button class="schedule-btn" onclick="autoBuildScheduleDays()">Auto Build</button>
-<button class="schedule-btn" onclick="addScheduleDay()">Add Day</button>
-<button class="schedule-btn" onclick="fetchMileageFromRoute()">Build Route</button>
+    <div class="schedule-title-row">
+        <div class="schedule-title">Manual Schedule Planner</div>
+        <div id="scheduleVolumeBadge" class="schedule-volume-badge">Volume: 0 cuft</div>
+    </div>
+
+    <div class="flex gap-2">
+        <button class="schedule-btn" onclick="autoBuildScheduleDays()">Auto Build</button>
+        <button class="schedule-btn" onclick="addScheduleDay()">Add Day</button>
+        <button class="schedule-btn" onclick="fetchMileageFromRoute()">Build Route</button>
+    </div>
 </div>
-        </div>
         <div class="schedule-list" id="scheduleList"></div>
         <div class="validation-list" id="validationList"></div>
     </div>
@@ -12699,7 +12707,12 @@ function renderScheduleCalculator(){
     const totalVolume = round2(state.furnitureVol + boxVolume);
 
     const furnitureDisplay = document.getElementById("furnitureVolDisplay");
-    if (furnitureDisplay) furnitureDisplay.textContent = state.furnitureVol;
+if (furnitureDisplay) furnitureDisplay.textContent = state.furnitureVol;
+
+const scheduleVolumeBadge = document.getElementById("scheduleVolumeBadge");
+if (scheduleVolumeBadge) {
+    scheduleVolumeBadge.textContent = "Volume: " + totalVolume + " cuft";
+}
 
     const apDisplay = document.getElementById("qty_ap_display");
     if (apDisplay) apDisplay.textContent = state.qty.ap;
