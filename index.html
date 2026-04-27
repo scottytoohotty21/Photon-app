@@ -12771,7 +12771,7 @@ if (scheduleVolumeBadge) {
     const svcCrateEl = document.getElementById("svc_crate");
     const exportWrapVolEl = document.getElementById("exportWrapVol");
 
-   setInventoryFedField(svcFrameEl, state.special.frameBeds);
+  setInventoryFedField(svcFrameEl, state.special.frameBeds);
 setInventoryFedField(svcOttomanEl, state.special.ottomanBeds);
 setInventoryFedField(svcDivanEl, state.special.divanBeds);
 setInventoryFedField(svcElectricEl, state.special.electricBeds);
@@ -12780,9 +12780,9 @@ setInventoryFedField(svcCotEl, state.special.cots);
 setInventoryFedField(svcDiningTableEl, state.special.diningTables);
 setInventoryFedField(svcCrateEl, state.special.crate);
 setInventoryFedField(exportWrapVolEl, state.exportWrapVol);
-setInventoryFedField(document.getElementById("svc_upright"), schedule.special.uprightPianos);
-setInventoryFedField(document.getElementById("svc_grand"), schedule.special.grandPianos);
-setInventoryFedField(document.getElementById("svc_clock"), schedule.special.grandfatherClocks);
+setInventoryFedField(document.getElementById("svc_upright"), state.special.upright);
+setInventoryFedField(document.getElementById("svc_grand"), state.special.grand);
+setInventoryFedField(document.getElementById("svc_clock"), state.special.clock);
 
     const special = calcSpecialLabour(state);
     const loading = calcLoading(totalVolume, state.loadRate, special.loadSideHours, state.loadingScenario);
