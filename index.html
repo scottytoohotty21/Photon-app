@@ -1887,6 +1887,11 @@ button {
     background:#f8fafc !important;
     color:#334155;
 }
+.special-labour-label{
+    min-height:32px;
+    display:flex;
+    align-items:flex-end;
+}
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 .summary-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;}
 .summary-card{background:#fff;border:1px solid var(--slate-200);border-radius:16px;padding:16px;min-height:128px;}
@@ -2630,24 +2635,24 @@ Enter as: Surname, First Name
                     <div class="section-title">Special Labour Inputs</div>
                     <div class="grid-2">
     <div>
-        <label class="mini-label">Custom Item Note</label>
-        <input id="svc_custom_note" type="text" maxlength="40" class="field field-editable-blue" value="" oninput="handleScheduleInputChange()" />
-    </div>
+    <label class="mini-label special-labour-label">Custom Item<br>Note</label>
+    <input id="svc_custom_note" type="text" maxlength="40" class="field field-editable-blue" value="" oninput="handleScheduleInputChange()" />
+</div>
 
-    <div>
-        <label class="mini-label">Custom Item Minutes Each Side</label>
-        <input id="svc_custom_minutes" type="number" min="0" class="field field-editable-blue" value="0" oninput="handleScheduleInputChange()" />
-    </div>
+<div>
+    <label class="mini-label special-labour-label">Custom Item Minutes<br>Each Side</label>
+    <input id="svc_custom_minutes" type="number" min="0" class="field field-editable-blue" value="0" oninput="handleScheduleInputChange()" />
+</div>
 
-    <div>
-        <label class="mini-label">Frame Beds</label>
-        <input id="svc_frame" type="number" min="0" class="field field-readonly-soft" value="0" readonly />
-    </div>
+<div>
+    <label class="mini-label special-labour-label">Export Wrap Volume<br>(CUFT)</label>
+    <input id="exportWrapVol" type="number" min="0" class="field field-readonly-soft" value="0" readonly />
+</div>
 
-    <div>
-        <label class="mini-label">Loft Effects Volume (CUFT)</label>
-        <input id="loftVol" type="number" min="0" class="field field-editable-blue" value="0" oninput="handleScheduleInputChange()" />
-    </div>
+<div>
+    <label class="mini-label special-labour-label">Loft Effects Volume<br>(CUFT)</label>
+    <input id="loftVol" type="number" min="0" class="field field-editable-blue" value="0" oninput="handleScheduleInputChange()" />
+</div>
 
     <div>
         <label class="mini-label">Ottoman Beds</label>
@@ -2675,9 +2680,9 @@ Enter as: Surname, First Name
     </div>
 
     <div>
-        <label class="mini-label">Export Wrap Volume (CUFT)</label>
-        <input id="exportWrapVol" type="number" min="0" class="field field-readonly-soft" value="0" readonly />
-    </div>
+    <label class="mini-label">Frame Beds</label>
+    <input id="svc_frame" type="number" min="0" class="field field-readonly-soft" value="0" readonly />
+</div>
 
     <div>
         <label class="mini-label">Bunk Beds</label>
