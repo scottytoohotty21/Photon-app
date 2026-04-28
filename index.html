@@ -13120,26 +13120,26 @@ function renderScheduleCalculator(){
         `Travel is taken from the travel legs added to each planner row, and is deducted before net working time is validated. ` +
         `Two standard beds and 50 cuft of export wrap are treated as already included before extra special time is added.`;
 
-    document.getElementById("specialText").textContent =
-        `Frame beds: ${special.breakdown.frameBeds.toFixed(2)} hrs · ` +
-        `Ottoman beds: ${special.breakdown.ottomanBeds.toFixed(2)} hrs · ` +
-        `Divan beds: ${special.breakdown.divanBeds.toFixed(2)} hrs · ` +
-        `Electric / TV beds: ${special.breakdown.electricBeds.toFixed(2)} hrs (handyman only) · ` +
-        `Bunk beds: ${special.breakdown.bunkBeds.toFixed(2)} hrs · ` +
-        `Cots / Childs beds: ${special.breakdown.cots.toFixed(2)} hrs (tracked only for now) · ` +
-        `Dining tables: ${special.breakdown.diningTables.toFixed(2)} hrs · ` +
-        `${state.special.customNote ? state.special.customNote : "Custom item"}: ${special.breakdown.custom.toFixed(2)} hrs · ` +
-        `Upright pianos: ${special.breakdown.upright.toFixed(2)} hrs · ` +
-        `Baby / grand pianos: ${special.breakdown.grand.toFixed(2)} hrs · ` +
-        `Grandfather clocks: ${special.breakdown.clock.toFixed(2)} hrs · ` +
-        `Appliances: ${special.breakdown.appliance.toFixed(2)} hrs (${state.special.manualApplianceCount} manual + ${state.special.disconnectApplianceCount} from Disconnect) · ` +
-        `Crating: ${special.breakdown.crate.toFixed(2)} hrs · ` +
-        `Loft effects: ${special.breakdown.loft.toFixed(2)} hrs · ` +
-        `Export wrapping: ${special.breakdown.exportWrap.toFixed(2)} hrs extra after first ${special.breakdown.includedExportWrapVol} cuft included · ` +
-        `Depot to collection: ${special.depotToCollectionHours.toFixed(2)} hrs · ` +
-`Collection to delivery: ${special.collectionToDeliveryHours.toFixed(2)} hrs · ` +
-`Delivery to depot: ${special.deliveryToDepotHours.toFixed(2)} hrs · ` +
-`Load side specials: ${special.loadSideHours.toFixed(2)} hrs · Unload side specials: ${special.unloadSideHours.toFixed(2)} hrs.`;
+document.getElementById("specialText").textContent =
+    `Additional handling includes any item or condition that may affect crew time. ` +
+    `Beds: frame ${special.breakdown.frameBeds.toFixed(2)} hrs, ` +
+    `ottoman ${special.breakdown.ottomanBeds.toFixed(2)} hrs, ` +
+    `divan ${special.breakdown.divanBeds.toFixed(2)} hrs, ` +
+    `electric / TV ${special.breakdown.electricBeds.toFixed(2)} hrs. ` +
+    `Other furniture: bunk beds ${special.breakdown.bunkBeds.toFixed(2)} hrs, ` +
+    `cots / child beds ${special.breakdown.cots.toFixed(2)} hrs, ` +
+    `dining tables ${special.breakdown.diningTables.toFixed(2)} hrs. ` +
+    `Specialist items: upright pianos ${special.breakdown.upright.toFixed(2)} hrs, ` +
+    `baby / grand pianos ${special.breakdown.grand.toFixed(2)} hrs, ` +
+    `grandfather clocks ${special.breakdown.clock.toFixed(2)} hrs. ` +
+    `Services: appliances ${special.breakdown.appliance.toFixed(2)} hrs ` +
+    `(${state.special.disconnectApplianceCount} marked for disconnect), ` +
+    `crating ${special.breakdown.crate.toFixed(2)} hrs, ` +
+    `loft effects ${special.breakdown.loft.toFixed(2)} hrs, ` +
+    `export wrapping ${special.breakdown.exportWrap.toFixed(2)} hrs extra after the first ${special.breakdown.includedExportWrapVol} cuft. ` +
+    `${state.special.customNote ? state.special.customNote : "Custom item"}: ${special.breakdown.custom.toFixed(2)} hrs. ` +
+    `Total additional handling: ${special.specialHours.toFixed(2)} hrs, split as ` +
+    `${special.loadSideHours.toFixed(2)} hrs load-side and ${special.unloadSideHours.toFixed(2)} hrs unload-side.`;
 
     renderSchedulePlanner();
 renderValidation(packing, loading, unloading, special, state);
