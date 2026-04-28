@@ -2018,6 +2018,78 @@ button {
 .info-card{background:#fff;border:1px solid var(--slate-200);border-radius:16px;padding:14px;}
 .info-head{font-size:10px;font-weight:900;text-transform:uppercase;color:var(--slate-400);margin-bottom:8px;}
 .info-body{font-size:12px;font-weight:700;color:var(--slate-700);line-height:1.55;}
+.special-rhs-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.special-rhs-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 14px;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+}
+
+.special-rhs-title {
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+    color: #0f172a;
+    margin-bottom: 4px;
+}
+
+.special-rhs-subtitle {
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #64748b;
+    line-height: 1.35;
+    margin-bottom: 10px;
+}
+
+.special-rhs-group-title {
+    font-size: 9px;
+    font-weight: 900;
+    text-transform: uppercase;
+    color: #2563eb;
+    margin-top: 10px;
+    margin-bottom: 4px;
+}
+
+.special-rhs-line {
+    font-size: 11px;
+    font-weight: 800;
+    color: #334155;
+    line-height: 1.45;
+    margin-top: 4px;
+}
+
+.special-rhs-empty {
+    font-size: 10px;
+    font-weight: 800;
+    color: #94a3b8;
+    text-transform: uppercase;
+    font-style: italic;
+    line-height: 1.4;
+}
+
+.special-rhs-total {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid #e2e8f0;
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+    color: #0f172a;
+}
+
+@media (max-width: 760px) {
+    .special-rhs-grid {
+        grid-template-columns: 1fr;
+    }
+}
 .footer-note{margin-top:12px;font-size:10px;font-weight:800;text-transform:uppercase;color:var(--slate-400);line-height:1.45;}
 .schedule-shell{
     margin-top:0;
@@ -3135,6 +3207,11 @@ const furnitureDB = [
     {item:"Desk", volume:20},
     {item:"Bookcase", volume:40},
 
+    {item:"Piano (Upright)", volume:45},
+    {item:"Piano (Electric)", volume:45},
+    {item:"Piano (Baby Grand)", volume:150},
+    {item:"Piano (Grand)", volume:150},
+    {item:"Clock (Grandfather)", volume:35},
     {item:"Barstool", volume:10},
     {item:"Kitchen Bin", volume:10},
     {item:"Butchers Block", volume:10},
@@ -3183,6 +3260,11 @@ const inventoryCategories = {
         "Dining Table",
         "Desk",
         "Bookcase",
+        "Piano (Upright)",
+        "Piano (Electric)",
+        "Piano (Baby Grand)",
+        "Piano (Grand)",
+        "Clock (Grandfather)",
         "Barstool",
         "Kitchen Bin",
         "Butchers Block",
@@ -3238,6 +3320,11 @@ const inventoryCategories = {
         "Dining Chair",
         "Desk",
         "Bookcase",
+        "Piano (Upright)",
+        "Piano (Electric)",
+        "Piano (Baby Grand)",
+        "Piano (Grand)",
+        "Clock (Grandfather)",
         "Dog Bed",
         "Barstool"
     ],
@@ -3286,6 +3373,8 @@ function createEmptySequenceSchedule() {
             bunkBeds: 0,
             cots: 0,
             diningTables: 0,
+            wardrobes: 0,
+            wardrobeItems: [],
             uprightPianos: 0,
             grandPianos: 0,
             grandfatherClocks: 0,
@@ -3531,6 +3620,10 @@ if (seq.schedule.special.electricBeds === undefined) seq.schedule.special.electr
 if (seq.schedule.special.bunkBeds === undefined) seq.schedule.special.bunkBeds = defaults.special.bunkBeds;
 if (seq.schedule.special.cots === undefined) seq.schedule.special.cots = defaults.special.cots;
 if (seq.schedule.special.diningTables === undefined) seq.schedule.special.diningTables = defaults.special.diningTables;
+if (seq.schedule.special.wardrobes === undefined) seq.schedule.special.wardrobes = defaults.special.wardrobes;
+if (!Array.isArray(seq.schedule.special.wardrobeItems)) {
+    seq.schedule.special.wardrobeItems = defaults.special.wardrobeItems;
+}
 if (seq.schedule.special.uprightPianos === undefined) seq.schedule.special.uprightPianos = defaults.special.uprightPianos;
 if (seq.schedule.special.grandPianos === undefined) seq.schedule.special.grandPianos = defaults.special.grandPianos;
 if (seq.schedule.special.grandfatherClocks === undefined) seq.schedule.special.grandfatherClocks = defaults.special.grandfatherClocks;
@@ -4270,6 +4363,9 @@ function buildCalculatorFeedForSequence(sequenceId) {
     let bunkBedCount = 0;
     let cotCount = 0;
     let diningTableCount = 0;
+    let uprightPianoCount = 0;
+    let grandPianoCount = 0;
+    let grandfatherClockCount = 0;
 
     const qty = {
         ap: 0,
@@ -4331,6 +4427,23 @@ function buildCalculatorFeedForSequence(sequenceId) {
             exportWrapVol += totalVolume || (unitVolume * entryQty);
         }
 
+        if (
+    itemName === "PIANO (UPRIGHT)" ||
+    itemName === "PIANO (ELECTRIC)"
+) {
+    uprightPianoCount += entryQty;
+}
+
+if (
+    itemName === "PIANO (BABY GRAND)" ||
+    itemName === "PIANO (GRAND)"
+) {
+    grandPianoCount += entryQty;
+}
+
+if (itemName === "CLOCK (GRANDFATHER)") {
+    grandfatherClockCount += entryQty;
+}
         if (entry.dismantle) {
             if (
                 itemName === "BED (SINGLE)" ||
@@ -4380,16 +4493,21 @@ function buildCalculatorFeedForSequence(sequenceId) {
         cratingItems: cratingItems,
         exportWrapVol: Math.round(exportWrapVol * 100) / 100,
         special: {
-            frameBeds: frameBedCount,
-            ottomanBeds: ottomanBedCount,
-            divanBeds: divanBedCount,
-            electricBeds: electricBedCount,
-            bunkBeds: bunkBedCount,
-            cots: cotCount,
-            diningTables: diningTableCount,
-            cratingItems: cratingItems,
-            exportWrapVol: Math.round(exportWrapVol * 100) / 100
-        },
+    frameBeds: frameBedCount,
+    ottomanBeds: ottomanBedCount,
+    divanBeds: divanBedCount,
+    electricBeds: electricBedCount,
+    bunkBeds: bunkBedCount,
+    cots: cotCount,
+    diningTables: diningTableCount,
+    wardrobes: wardrobeCount,
+    wardrobeItems: wardrobeItems,
+    uprightPianos: uprightPianoCount,
+    grandPianos: grandPianoCount,
+    grandfatherClocks: grandfatherClockCount,
+    cratingItems: cratingItems,
+    exportWrapVol: Math.round(exportWrapVol * 100) / 100
+},
         createdAt: new Date().toISOString()
     };
 }
@@ -10824,6 +10942,11 @@ delete seq.schedule.deliveryToDepotHours;
     if (seq.schedule.special.bunkBeds === undefined) seq.schedule.special.bunkBeds = defaults.special.bunkBeds;
     if (seq.schedule.special.cots === undefined) seq.schedule.special.cots = defaults.special.cots;
     if (seq.schedule.special.diningTables === undefined) seq.schedule.special.diningTables = defaults.special.diningTables;
+    if (seq.schedule.special.wardrobes === undefined) seq.schedule.special.wardrobes = defaults.special.wardrobes;
+
+    if (!Array.isArray(seq.schedule.special.wardrobeItems)) {
+    seq.schedule.special.wardrobeItems = defaults.special.wardrobeItems;
+}
     if (seq.schedule.special.uprightPianos === undefined) seq.schedule.special.uprightPianos = defaults.special.uprightPianos;
     if (seq.schedule.special.grandPianos === undefined) seq.schedule.special.grandPianos = defaults.special.grandPianos;
     if (seq.schedule.special.grandfatherClocks === undefined) seq.schedule.special.grandfatherClocks = defaults.special.grandfatherClocks;
@@ -11670,6 +11793,16 @@ function getPhotonFeed() {
     bunkBeds: Number(directFeed.special?.bunkBeds || 0),
     cots: Number(directFeed.special?.cots || 0),
     diningTables: Number(directFeed.special?.diningTables || 0),
+
+    wardrobes: Number(directFeed.special?.wardrobes || 0),
+    wardrobeItems: Array.isArray(directFeed.special?.wardrobeItems)
+        ? directFeed.special.wardrobeItems
+        : [],
+
+    uprightPianos: Number(directFeed.special?.uprightPianos || 0),
+    grandPianos: Number(directFeed.special?.grandPianos || 0),
+    grandfatherClocks: Number(directFeed.special?.grandfatherClocks || 0),
+
     cratingItems: Number(directFeed.special?.cratingItems || 0),
     exportWrapVol: Number(directFeed.special?.exportWrapVol || 0)
 }
@@ -11701,6 +11834,14 @@ special: {
     bunkBeds: 0,
     cots: 0,
     diningTables: 0,
+
+    wardrobes: 0,
+    wardrobeItems: [],
+
+    uprightPianos: 0,
+    grandPianos: 0,
+    grandfatherClocks: 0,
+
     cratingItems: 0,
     exportWrapVol: 0
 }
@@ -11731,6 +11872,16 @@ special: {
     bunkBeds: Number(parsed.special?.bunkBeds || 0),
     cots: Number(parsed.special?.cots || 0),
     diningTables: Number(parsed.special?.diningTables || 0),
+
+    wardrobes: Number(parsed.special?.wardrobes || 0),
+    wardrobeItems: Array.isArray(parsed.special?.wardrobeItems)
+        ? parsed.special.wardrobeItems
+        : [],
+
+    uprightPianos: Number(parsed.special?.uprightPianos || 0),
+    grandPianos: Number(parsed.special?.grandPianos || 0),
+    grandfatherClocks: Number(parsed.special?.grandfatherClocks || 0),
+
     cratingItems: Number(parsed.special?.cratingItems || 0),
     exportWrapVol: Number(parsed.special?.exportWrapVol || 0)
 }
@@ -11757,6 +11908,14 @@ special: {
     bunkBeds: 0,
     cots: 0,
     diningTables: 0,
+
+    wardrobes: 0,
+    wardrobeItems: [],
+
+    uprightPianos: 0,
+    grandPianos: 0,
+    grandfatherClocks: 0,
+
     cratingItems: 0,
     exportWrapVol: 0
 }
@@ -11830,14 +11989,20 @@ deliveryToDepotMinutes: num("deliveryToDepotMinutes"),
             electricBeds: num("svc_electric"),
             bunkBeds: num("svc_bunk"),
             cots: num("svc_cot"),
-            diningTables: num("svc_dining_table"),
-            customMinutes: num("svc_custom_minutes"),
+            diningTables: Number(photonFeed.special?.diningTables || 0),
+
+wardrobes: Number(photonFeed.special?.wardrobes || 0),
+wardrobeItems: Array.isArray(photonFeed.special?.wardrobeItems)
+    ? photonFeed.special.wardrobeItems
+    : [],
+
+customMinutes: num("svc_custom_minutes"),
             customNote: document.getElementById("svc_custom_note")
                 ? document.getElementById("svc_custom_note").value.trim()
                 : "",
-            upright: num("svc_upright"),
-            grand: num("svc_grand"),
-            clock: num("svc_clock"),
+            upright: Number(photonFeed.special?.uprightPianos || 0),
+grand: Number(photonFeed.special?.grandPianos || 0),
+clock: Number(photonFeed.special?.grandfatherClocks || 0),
             appliance: totalApplianceCount,
             manualApplianceCount: 0,
             disconnectApplianceCount: disconnectApplianceCount,
@@ -11880,7 +12045,8 @@ function calcSpecialLabour(state) {
         (state.special.bunkBeds * 30) +
         (state.special.cots * 15) +
         (state.special.diningTables * 15) +
-        (state.special.customMinutes > 0 ? state.special.customMinutes : 0) +
+(state.special.wardrobes * 30) +
+(state.special.customMinutes > 0 ? state.special.customMinutes : 0) +
         (state.special.upright * 25) +
         (state.special.grand * 60) +
         (state.special.clock * 30) +
@@ -11895,7 +12061,8 @@ function calcSpecialLabour(state) {
         (state.special.bunkBeds * 30) +
         (state.special.cots * 15) +
         (state.special.diningTables * 15) +
-        (state.special.customMinutes > 0 ? state.special.customMinutes : 0) +
+(state.special.wardrobes * 30) +
+(state.special.customMinutes > 0 ? state.special.customMinutes : 0) +
         (state.special.upright * 25) +
         (state.special.grand * 60) +
         (state.special.clock * 30) +
@@ -11919,7 +12086,8 @@ function calcSpecialLabour(state) {
             bunkBeds: round2((state.special.bunkBeds * 60) / 60),
             cots: round2((state.special.cots * 30) / 60),
             diningTables: round2((state.special.diningTables * 30) / 60),
-            custom: round2(((state.special.customMinutes > 0 ? state.special.customMinutes * 2 : 0)) / 60),
+wardrobes: round2((state.special.wardrobes * 60) / 60),
+custom: round2(((state.special.customMinutes > 0 ? state.special.customMinutes * 2 : 0)) / 60),
             upright: round2((state.special.upright * 50) / 60),
             grand: round2((state.special.grand * 120) / 60),
             clock: round2((state.special.clock * 60) / 60),
@@ -12959,6 +13127,193 @@ function renderValidation(packing, loading, unloading, special, state){
     el.innerHTML = items.map(item => `<div class="validation-item validation-${item.type}">${item.text}</div>`).join("");
 }
 
+function isWardrobeInventoryItem(itemName) {
+    const name = String(itemName || "").trim().toUpperCase();
+
+    return (
+        name === "WARDROBE (2-DOOR)" ||
+        name === "WARDROBE (3-DOOR)" ||
+        name === "WARDROBE (4-DOOR)"
+    );
+}
+
+function formatWardrobeTypes(entry) {
+    if (!entry) return "";
+
+    if (Array.isArray(entry.wardrobeTypes) && entry.wardrobeTypes.length) {
+        return entry.wardrobeTypes.join(", ");
+    }
+
+    if (entry.wardrobeType) {
+        return String(entry.wardrobeType);
+    }
+
+    return "Type not set";
+}
+
+function getActiveSequenceRawInventoryItems() {
+    if (!currentJob || !activeSeqId) return [];
+
+    return getRawInventoryItemsForSequence(activeSeqId).filter(function(entry) {
+        return !entry.excluded;
+    });
+}
+
+function buildScheduleSpecialRhsHtml(state, special) {
+    const rawItems = getActiveSequenceRawInventoryItems();
+
+    const bedRows = [];
+    const wardrobeRows = [];
+    const otherDismantleRows = [];
+    const serviceRows = [];
+    const specialRows = [];
+
+    rawItems.forEach(function(entry) {
+        const qty = Number(entry.qty || 0);
+        const itemName = String(entry.itemName || "").trim();
+        const itemUpper = itemName.toUpperCase();
+
+        if (!qty || !itemName) return;
+
+        if (isBedInventoryItem(itemName)) {
+            const bedType = entry.bedType ? String(entry.bedType) : "Type not set";
+
+            bedRows.push(
+                qty + " x " + itemName + " — " + bedType
+            );
+        }
+
+        if (isWardrobeInventoryItem(itemName)) {
+            wardrobeRows.push(
+                qty + " x " + itemName + " — " + formatWardrobeTypes(entry)
+            );
+        }
+
+        if (
+            entry.dismantle &&
+            !isBedInventoryItem(itemName) &&
+            !isWardrobeInventoryItem(itemName)
+        ) {
+            otherDismantleRows.push(
+                qty + " x " + itemName
+            );
+        }
+
+        if (entry.expWrap) {
+            serviceRows.push(qty + " x " + itemName + " — Export wrap");
+        }
+
+        if (entry.disconnect) {
+            serviceRows.push(qty + " x " + itemName + " — Disconnect");
+        }
+
+        if (entry.handyman) {
+            serviceRows.push(qty + " x " + itemName + " — Handyman");
+        }
+
+        if (entry.crated) {
+            serviceRows.push(qty + " x " + itemName + " — Crating");
+        }
+
+        if (
+            itemUpper === "PIANO (UPRIGHT)" ||
+            itemUpper === "PIANO (ELECTRIC)" ||
+            itemUpper === "PIANO (BABY GRAND)" ||
+            itemUpper === "PIANO (GRAND)" ||
+            itemUpper === "CLOCK (GRANDFATHER)"
+        ) {
+            specialRows.push(qty + " x " + itemName);
+        }
+    });
+
+    const hasDismantle =
+        bedRows.length ||
+        wardrobeRows.length ||
+        otherDismantleRows.length;
+
+    const hasSpecial =
+        specialRows.length ||
+        state.special.diningTables ||
+        state.special.cots ||
+        state.special.bunkBeds;
+
+    const hasServices =
+        serviceRows.length ||
+        state.exportWrapVol ||
+        state.loftVol ||
+        state.special.appliance ||
+        state.special.crate;
+
+    const renderList = function(items, emptyText) {
+        if (!items.length) {
+            return '<div class="special-rhs-empty">' + emptyText + '</div>';
+        }
+
+        return items.map(function(item) {
+            return '<div class="special-rhs-line">• ' + escapeHtml(item) + '</div>';
+        }).join("");
+    };
+
+    return `
+        <div class="special-rhs-grid">
+            <div class="special-rhs-card">
+                <div class="special-rhs-title">Dismantle & Reassemble</div>
+                <div class="special-rhs-subtitle">${special.breakdown.wardrobes.toFixed(2)} wardrobe hrs included in this section</div>
+
+                <div class="special-rhs-group-title">Beds</div>
+                ${renderList(bedRows, "No bed types recorded")}
+
+                <div class="special-rhs-group-title">Wardrobes</div>
+                ${renderList(wardrobeRows, "No wardrobe types recorded")}
+
+                <div class="special-rhs-group-title">Other dismantle items</div>
+                ${renderList(otherDismantleRows, "No other dismantle items recorded")}
+            </div>
+
+            <div class="special-rhs-card">
+                <div class="special-rhs-title">Special Items</div>
+                <div class="special-rhs-subtitle">Items needing extra handling time</div>
+
+                ${renderList(specialRows, "No piano / grandfather clock items recorded")}
+
+                <div class="special-rhs-line">Dining tables: ${state.special.diningTables}</div>
+                <div class="special-rhs-line">Bunk beds: ${state.special.bunkBeds}</div>
+                <div class="special-rhs-line">Cots / childs beds: ${state.special.cots}</div>
+            </div>
+
+            <div class="special-rhs-card">
+                <div class="special-rhs-title">Services</div>
+                <div class="special-rhs-subtitle">Wrap, disconnect, crating and specialist help</div>
+
+                ${renderList(serviceRows, "No item-level services recorded")}
+
+                <div class="special-rhs-line">Export wrap volume: ${state.exportWrapVol} cuft</div>
+                <div class="special-rhs-line">Loft effects volume: ${state.loftVol} cuft</div>
+                <div class="special-rhs-line">Disconnect appliances: ${state.special.appliance}</div>
+                <div class="special-rhs-line">Crating items: ${state.special.crate}</div>
+            </div>
+
+            <div class="special-rhs-card">
+                <div class="special-rhs-title">Time Breakdown</div>
+                <div class="special-rhs-subtitle">Calculated from inventory and manual extras</div>
+
+                <div class="special-rhs-line">Beds: ${(special.breakdown.frameBeds + special.breakdown.ottomanBeds + special.breakdown.divanBeds + special.breakdown.bunkBeds + special.breakdown.cots).toFixed(2)} hrs</div>
+                <div class="special-rhs-line">Wardrobes: ${special.breakdown.wardrobes.toFixed(2)} hrs</div>
+                <div class="special-rhs-line">Pianos: ${(special.breakdown.upright + special.breakdown.grand).toFixed(2)} hrs</div>
+                <div class="special-rhs-line">Grandfather clocks: ${special.breakdown.clock.toFixed(2)} hrs</div>
+                <div class="special-rhs-line">Appliances: ${special.breakdown.appliance.toFixed(2)} hrs</div>
+                <div class="special-rhs-line">Crating: ${special.breakdown.crate.toFixed(2)} hrs</div>
+                <div class="special-rhs-line">Loft effects: ${special.breakdown.loft.toFixed(2)} hrs</div>
+                <div class="special-rhs-line">Export wrap: ${special.breakdown.exportWrap.toFixed(2)} hrs</div>
+                <div class="special-rhs-line">Custom: ${special.breakdown.custom.toFixed(2)} hrs</div>
+
+                <div class="special-rhs-total">
+                    Total special labour: ${special.specialHours.toFixed(2)} hrs
+                </div>
+            </div>
+        </div>
+    `;
+}
 function renderScheduleCalculator(){
     const state = getState();
 
@@ -13054,26 +13409,10 @@ setInventoryFedField(document.getElementById("svc_clock"), state.special.clock);
         `Travel is taken from the travel legs added to each planner row, and is deducted before net working time is validated. ` +
         `Two standard beds and 50 cuft of export wrap are treated as already included before extra special time is added.`;
 
-    document.getElementById("specialText").textContent =
-        `Frame beds: ${special.breakdown.frameBeds.toFixed(2)} hrs · ` +
-        `Ottoman beds: ${special.breakdown.ottomanBeds.toFixed(2)} hrs · ` +
-        `Divan beds: ${special.breakdown.divanBeds.toFixed(2)} hrs · ` +
-        `Electric / TV beds: ${special.breakdown.electricBeds.toFixed(2)} hrs (handyman only) · ` +
-        `Bunk beds: ${special.breakdown.bunkBeds.toFixed(2)} hrs · ` +
-        `Cots / Childs beds: ${special.breakdown.cots.toFixed(2)} hrs (tracked only for now) · ` +
-        `Dining tables: ${special.breakdown.diningTables.toFixed(2)} hrs · ` +
-        `${state.special.customNote ? state.special.customNote : "Custom item"}: ${special.breakdown.custom.toFixed(2)} hrs · ` +
-        `Upright pianos: ${special.breakdown.upright.toFixed(2)} hrs · ` +
-        `Baby / grand pianos: ${special.breakdown.grand.toFixed(2)} hrs · ` +
-        `Grandfather clocks: ${special.breakdown.clock.toFixed(2)} hrs · ` +
-        `Appliances: ${special.breakdown.appliance.toFixed(2)} hrs (${state.special.manualApplianceCount} manual + ${state.special.disconnectApplianceCount} from Disconnect) · ` +
-        `Crating: ${special.breakdown.crate.toFixed(2)} hrs · ` +
-        `Loft effects: ${special.breakdown.loft.toFixed(2)} hrs · ` +
-        `Export wrapping: ${special.breakdown.exportWrap.toFixed(2)} hrs extra after first ${special.breakdown.includedExportWrapVol} cuft included · ` +
-        `Depot to collection: ${special.depotToCollectionHours.toFixed(2)} hrs · ` +
-`Collection to delivery: ${special.collectionToDeliveryHours.toFixed(2)} hrs · ` +
-`Delivery to depot: ${special.deliveryToDepotHours.toFixed(2)} hrs · ` +
-`Load side specials: ${special.loadSideHours.toFixed(2)} hrs · Unload side specials: ${special.unloadSideHours.toFixed(2)} hrs.`;
+    const specialTextEl = document.getElementById("specialText");
+if (specialTextEl) {
+    specialTextEl.innerHTML = buildScheduleSpecialRhsHtml(state, special);
+}
 
     renderSchedulePlanner();
 renderValidation(packing, loading, unloading, special, state);
