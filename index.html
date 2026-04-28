@@ -6941,18 +6941,21 @@ function addOrEditDamage() {
     setModalErrorText("damage-error-text", "");
     const currentDamage = (rawEntry.damage || "").trim();
 
-    if (
-        currentDamage === "Dented" ||
-        currentDamage === "Scratched" ||
-        currentDamage === "Marked" ||
-        currentDamage === "Cracked"
-    ) {
-        selectedDamageOption = currentDamage;
-        highlightDamageOption(currentDamage);
-        customNote.value = "";
-    } else {
-        customNote.value = currentDamage;
-    }
+if (
+    currentDamage === "Dented" ||
+    currentDamage === "Scratched" ||
+    currentDamage === "Marked" ||
+    currentDamage === "Cracked" ||
+    currentDamage === "Soiled" ||
+    currentDamage === "Used" ||
+    currentDamage === "Electrical Condition Unknown"
+) {
+    selectedDamageOption = currentDamage;
+    highlightDamageOption(currentDamage);
+    customNote.value = "";
+} else {
+    customNote.value = currentDamage;
+}
 
     overlay.style.display = "flex";
 }
@@ -6991,7 +6994,10 @@ function clearDamageOptionButtons() {
         "damage-option-dented",
         "damage-option-scratched",
         "damage-option-marked",
-        "damage-option-cracked"
+        "damage-option-cracked",
+        "damage-option-soiled",
+        "damage-option-used",
+        "damage-option-electrical-unknown"
     ].forEach(function(id) {
         const btn = document.getElementById(id);
         if (btn) btn.classList.remove("active");
@@ -7001,12 +7007,15 @@ function clearDamageOptionButtons() {
 function highlightDamageOption(option) {
     clearDamageOptionButtons();
 
-    const map = {
-        "Dented": "damage-option-dented",
-        "Scratched": "damage-option-scratched",
-        "Marked": "damage-option-marked",
-        "Cracked": "damage-option-cracked"
-    };
+const map = {
+    "Dented": "damage-option-dented",
+    "Scratched": "damage-option-scratched",
+    "Marked": "damage-option-marked",
+    "Cracked": "damage-option-cracked",
+    "Soiled": "damage-option-soiled",
+    "Used": "damage-option-used",
+    "Electrical Condition Unknown": "damage-option-electrical-unknown"
+};
 
     const btnId = map[option];
     if (!btnId) return;
@@ -13109,12 +13118,15 @@ document.addEventListener('DOMContentLoaded', function () {
         <div class="damage-title">Damage</div>
         <div class="damage-subtitle">Select type or add your own note</div>
 
-        <div class="damage-grid">
-            <button type="button" id="damage-option-dented" class="damage-option-btn" onclick="selectDamageOption('Dented')">Dented</button>
-            <button type="button" id="damage-option-scratched" class="damage-option-btn" onclick="selectDamageOption('Scratched')">Scratched</button>
-            <button type="button" id="damage-option-marked" class="damage-option-btn" onclick="selectDamageOption('Marked')">Marked</button>
-            <button type="button" id="damage-option-cracked" class="damage-option-btn" onclick="selectDamageOption('Cracked')">Cracked</button>
-        </div>
+<div class="damage-grid">
+    <button type="button" id="damage-option-dented" class="damage-option-btn" onclick="selectDamageOption('Dented')">Dented</button>
+    <button type="button" id="damage-option-scratched" class="damage-option-btn" onclick="selectDamageOption('Scratched')">Scratched</button>
+    <button type="button" id="damage-option-marked" class="damage-option-btn" onclick="selectDamageOption('Marked')">Marked</button>
+    <button type="button" id="damage-option-cracked" class="damage-option-btn" onclick="selectDamageOption('Cracked')">Cracked</button>
+    <button type="button" id="damage-option-soiled" class="damage-option-btn" onclick="selectDamageOption('Soiled')">Soiled</button>
+    <button type="button" id="damage-option-used" class="damage-option-btn" onclick="selectDamageOption('Used')">Used</button>
+    <button type="button" id="damage-option-electrical-unknown" class="damage-option-btn" onclick="selectDamageOption('Electrical Condition Unknown')">Electrical Condition Unknown</button>
+</div>
 
         <textarea
             id="damage-custom-note"
