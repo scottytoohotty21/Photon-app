@@ -3380,7 +3380,7 @@ let lastAddedRawEntryId = null;
 let inventoryHistory = [];
 let qtyResetTimer = null;
 let selectedCrateUnit = "IN";
-let selectedDamageOption = "";
+let selectedDamageOptions = [];
 let selectedBedOption = "";
 let selectedWardrobeOption = "";
 let listedCrateEditEntryKey = "";
@@ -6930,7 +6930,7 @@ function addOrEditDamage() {
     if (!rawEntry) return;
     if (rawEntry.kind === "note") return;
 
-    selectedDamageOption = "";
+    selectedDamageOptions = [];
 
     const overlay = document.getElementById("damage-overlay");
     const customNote = document.getElementById("damage-custom-note");
@@ -6939,24 +6939,46 @@ function addOrEditDamage() {
 
     clearDamageOptionButtons();
     setModalErrorText("damage-error-text", "");
+
     const currentDamage = (rawEntry.damage || "").trim();
 
-if (
-    currentDamage === "Dented" ||
-    currentDamage === "Scratched" ||
-    currentDamage === "Marked" ||
-    currentDamage === "Cracked" ||
-    currentDamage === "Soiled" ||
-    currentDamage === "Chipped" ||
-    currentDamage === "Broken" ||
-    currentDamage === "Electrical Condition Unknown"
-) {
-    selectedDamageOption = currentDamage;
-    highlightDamageOption(currentDamage);
-    customNote.value = "";
-} else {
-    customNote.value = currentDamage;
-}
+    const conditionOptions = [
+        "Dented",
+        "Scratched",
+        "Marked",
+        "Cracked",
+        "Soiled",
+        "Chipped",
+        "Broken",
+        "Electrical Condition Unknown"
+    ];
+
+    if (currentDamage) {
+        const savedParts = currentDamage
+            .split(",")
+            .map(function(part) {
+                return part.trim();
+            })
+            .filter(Boolean);
+
+        const recognisedOptions = savedParts.filter(function(part) {
+            return conditionOptions.includes(part);
+        });
+
+        const customParts = savedParts.filter(function(part) {
+            return !conditionOptions.includes(part);
+        });
+
+        selectedDamageOptions = recognisedOptions;
+
+        selectedDamageOptions.forEach(function(option) {
+            highlightDamageOption(option);
+        });
+
+        customNote.value = customParts.join(", ");
+    } else {
+        customNote.value = "";
+    }
 
     overlay.style.display = "flex";
 }
@@ -6968,28 +6990,30 @@ function closeDamageModal() {
     if (overlay) overlay.style.display = "none";
     if (customNote) customNote.value = "";
 
-    selectedDamageOption = "";
+    selectedDamageOptions = [];
     clearDamageOptionButtons();
     setModalErrorText("damage-error-text", "");
 }
 
 function selectDamageOption(option) {
-    const customNote = document.getElementById("damage-custom-note");
+    const existingIndex = selectedDamageOptions.indexOf(option);
 
-    if (selectedDamageOption === option) {
-        selectedDamageOption = "";
-        clearDamageOptionButtons();
-        return;
+    if (existingIndex >= 0) {
+        selectedDamageOptions.splice(existingIndex, 1);
+    } else {
+        selectedDamageOptions.push(option);
     }
 
-    selectedDamageOption = option;
-    highlightDamageOption(option);
-
-    if (customNote) {
-        customNote.value = "";
-    }
+    updateDamageOptionButtons();
+    setModalErrorText("damage-error-text", "");
 }
+function updateDamageOptionButtons() {
+    clearDamageOptionButtons();
 
+    selectedDamageOptions.forEach(function(option) {
+        highlightDamageOption(option);
+    });
+}
 function clearDamageOptionButtons() {
     [
         "damage-option-dented",
@@ -7035,16 +7059,24 @@ function saveDamageModal() {
     const customNoteEl = document.getElementById("damage-custom-note");
     const customNote = customNoteEl ? customNoteEl.value.trim() : "";
 
-    let finalDamage = "";
+    const finalDamageParts = [];
+
+    selectedDamageOptions.forEach(function(option) {
+        if (!finalDamageParts.includes(option)) {
+            finalDamageParts.push(option);
+        }
+    });
 
     if (customNote) {
-        finalDamage = customNote;
-    } else if (selectedDamageOption) {
-        finalDamage = selectedDamageOption;
-    } else {
-        setModalErrorText("damage-error-text", "Select a damage type or enter a note");
+        finalDamageParts.push(customNote);
+    }
+
+    if (!finalDamageParts.length) {
+        setModalErrorText("damage-error-text", "Select a condition type or enter a note");
         return;
     }
+
+    const finalDamage = finalDamageParts.join(", ");
 
     setModalErrorText("damage-error-text", "");
 
@@ -13119,7 +13151,7 @@ document.addEventListener('DOMContentLoaded', function () {
 <div id="damage-overlay" class="damage-overlay" onclick="closeDamageModal()">
     <div class="damage-panel" onclick="event.stopPropagation()">
         <div class="damage-title">Damage</div>
-        <div class="damage-subtitle">Select type or add your own note</div>
+<div class="damage-subtitle">Select one or more conditions, or add your own note</div>
 
 <div class="damage-grid">
     <button type="button" id="damage-option-dented" class="damage-option-btn" onclick="selectDamageOption('Dented')">Dented</button>
