@@ -1912,6 +1912,26 @@ background: #f8fafc;
     grid-template-columns: 1fr;
     gap: 12px;
 }
+.customer-responsibility-textarea {
+    width: 100%;
+    min-height: 110px;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 12px;
+    padding: 12px;
+    background: #ffffff;
+    color: #0f172a;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.45;
+    resize: vertical;
+    outline: none;
+    font-family: 'Inter', sans-serif;
+}
+
+.customer-responsibility-textarea:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.10);
+}
 /* --- INVENTORY SEARCH + SCROLL --- */
 .inventory-search-row {
     display: flex;
@@ -3426,7 +3446,8 @@ let listedFlagsState = {
     crated: false,
     disconnect: false,
     handyman: false,
-    excluded: false
+    excluded: false,
+    customerResponsibility: false
 };
 let signaturePad = null;
 let scheduleNumberEditMeta = null;
@@ -3909,8 +3930,9 @@ function buildRawInventoryEntry(entryData) {
     crated: !!entryData.crated,
     crateDims: entryData.crateDims || null,
     damage: entryData.damage || "",
-    bedType: entryData.bedType || "",
-    wardrobeType: entryData.wardrobeType || ""
+bedType: entryData.bedType || "",
+wardrobeType: entryData.wardrobeType || "",
+customerResponsibility: !!entryData.customerResponsibility
 };
 }
 
@@ -7978,6 +8000,7 @@ String(raw.note || "") === String(entry.note || "") &&
 String(raw.damage || "") === String(entry.damage || "") &&
 String(raw.bedType || "") === String(entry.bedType || "") &&
 String(raw.wardrobeType || "") === String(entry.wardrobeType || "") &&
+!!raw.customerResponsibility === !!entry.customerResponsibility &&
 !!raw.crated === !!entry.crated &&
             rawCrateText === crateText
         );
@@ -8058,14 +8081,15 @@ function openListedFlagsModal(entry) {
     const overlay = document.getElementById("listed-flags-overlay");
     if (!overlay || !entry) return;
 
-    listedFlagsState = {
-        dismantle: !!entry.dismantle,
-        expWrap: !!entry.expWrap,
-        crated: !!entry.crated,
-        disconnect: !!entry.disconnect,
-        handyman: !!entry.handyman,
-        excluded: !!entry.excluded
-    };
+listedFlagsState = {
+    dismantle: !!entry.dismantle,
+    expWrap: !!entry.expWrap,
+    crated: !!entry.crated,
+    disconnect: !!entry.disconnect,
+    handyman: !!entry.handyman,
+    excluded: !!entry.excluded,
+    customerResponsibility: !!entry.customerResponsibility
+};
 
     updateListedFlagsModalButtons();
     overlay.style.display = "flex";
@@ -8076,25 +8100,27 @@ function closeListedFlagsModal() {
     if (overlay) overlay.style.display = "none";
 
     listedFlagsEntryKey = "";
-    listedFlagsState = {
-        dismantle: false,
-        expWrap: false,
-        crated: false,
-        disconnect: false,
-        handyman: false,
-        excluded: false
-    };
+listedFlagsState = {
+    dismantle: false,
+    expWrap: false,
+    crated: false,
+    disconnect: false,
+    handyman: false,
+    excluded: false,
+    customerResponsibility: false
+};
 }
 
 function updateListedFlagsModalButtons() {
-    const map = {
-        dismantle: "listed-flag-dismantle",
-        expWrap: "listed-flag-expwrap",
-        crated: "listed-flag-crate",
-        disconnect: "listed-flag-disconnect",
-        handyman: "listed-flag-handyman",
-        excluded: "listed-flag-exclude"
-    };
+const map = {
+    dismantle: "listed-flag-dismantle",
+    expWrap: "listed-flag-expwrap",
+    crated: "listed-flag-crate",
+    disconnect: "listed-flag-disconnect",
+    handyman: "listed-flag-handyman",
+    excluded: "listed-flag-exclude",
+    customerResponsibility: "listed-flag-customer"
+};
 
     Object.keys(map).forEach(function(key) {
         const btn = document.getElementById(map[key]);
@@ -8142,6 +8168,7 @@ rawMatches.forEach(function(raw) {
     raw.disconnect = !!listedFlagsState.disconnect;
     raw.handyman = !!listedFlagsState.handyman;
     raw.excluded = !!listedFlagsState.excluded;
+    raw.customerResponsibility = !!listedFlagsState.customerResponsibility;
 
     if (!wantsCrate) {
         raw.crated = false;
@@ -8191,10 +8218,11 @@ function getListedEntryMergeKey(entry) {
         !!entry.expWrap,
         !!entry.disconnect,
         !!entry.handyman,
-       entry.note || "",
+entry.note || "",
 entry.damage || "",
 entry.bedType || "",
 entry.wardrobeType || "",
+!!entry.customerResponsibility,
 !!entry.crated,
         crateText
     ].join("||");
@@ -8284,42 +8312,65 @@ function buildListedSummary(items) {
     let excludedCount = 0;
     let lineCount = items.length;
 
-    const excludedItems = [];
-    const exclusionNotes = [];
+const excludedItems = [];
+const exclusionNotes = [];
+const customerResponsibilityItems = [];
 
-    items.forEach(function(entry) {
-        if (entry.excluded) {
-            excludedCount += Number(entry.qty || 0);
+items.forEach(function(entry) {
+    const itemLabel = `${Number(entry.qty || 0)} x ${String(entry.itemName || "-").toUpperCase()}`;
 
-            const itemLabel = `${Number(entry.qty || 0)} x ${String(entry.itemName || "-").toUpperCase()}`;
-            excludedItems.push(itemLabel);
+    if (entry.customerResponsibility) {
+        const noteText = entry.note && String(entry.note).trim()
+            ? ` — ${String(entry.note).trim()}`
+            : "";
 
-            if (entry.note && String(entry.note).trim()) {
-                exclusionNotes.push(
-                    `${String(entry.itemName || "-").toUpperCase()}: ${String(entry.note).trim()}`
-                );
-            }
-        } else {
-            includedVolume += Number(entry.totalVolume || 0);
+        customerResponsibilityItems.push(itemLabel + noteText);
+    }
+
+    if (entry.excluded) {
+        excludedCount += Number(entry.qty || 0);
+        excludedItems.push(itemLabel);
+
+        if (entry.note && String(entry.note).trim()) {
+            exclusionNotes.push(
+                `${String(entry.itemName || "-").toUpperCase()}: ${String(entry.note).trim()}`
+            );
         }
-    });
+    } else {
+        includedVolume += Number(entry.totalVolume || 0);
+    }
+});
 
-    return {
-        includedVolume: includedVolume,
-        excludedCount: excludedCount,
-        lineCount: lineCount,
-        excludedItems: excludedItems,
-        exclusionNotes: exclusionNotes
-    };
+return {
+    includedVolume: includedVolume,
+    excludedCount: excludedCount,
+    lineCount: lineCount,
+    excludedItems: excludedItems,
+    exclusionNotes: exclusionNotes,
+    customerResponsibilityItems: customerResponsibilityItems
+};
 }
 function buildResponsibilitiesSummary(summary) {
     const excludedItems = Array.isArray(summary.excludedItems) ? summary.excludedItems : [];
     const exclusionNotes = Array.isArray(summary.exclusionNotes) ? summary.exclusionNotes : [];
+    const customerResponsibilityItems = Array.isArray(summary.customerResponsibilityItems)
+        ? summary.customerResponsibilityItems
+        : [];
+
+    const additionalText = currentJob && currentJob.customerResponsibilitiesText
+        ? String(currentJob.customerResponsibilitiesText || "").trim()
+        : "";
 
     return {
-        hasContent: excludedItems.length > 0 || exclusionNotes.length > 0,
+        hasContent:
+            excludedItems.length > 0 ||
+            exclusionNotes.length > 0 ||
+            customerResponsibilityItems.length > 0 ||
+            additionalText.length > 0,
         excludedItems: excludedItems,
-        exclusionNotes: exclusionNotes
+        exclusionNotes: exclusionNotes,
+        customerResponsibilityItems: customerResponsibilityItems,
+        additionalText: additionalText
     };
 }
 function buildCrewInstructionsSummary(items) {
@@ -8387,7 +8438,12 @@ if (entry.bedType) {
 
     return summary;
 }
+function saveAdditionalCustomerResponsibilities(value) {
+    if (!currentJob) return;
 
+    currentJob.customerResponsibilitiesText = String(value || "");
+    saveToDevice();
+}
 function renderListedSummary(summary, materials, crewInstructions) {
     const footerBar = document.getElementById("listed-footer-summary");
     if (!footerBar) return;
@@ -8494,10 +8550,23 @@ function renderListedSummary(summary, materials, crewInstructions) {
 
         <div class="listed-stat-card">
             <div class="listed-stat-label">Customer Responsibilities</div>
+        <div class="listed-stat-card">
+            <div class="listed-stat-label">Customer Responsibilities</div>
             ${
                 responsibilities.hasContent
                     ? `
                     <div class="space-y-3 text-[10px] font-black text-slate-900 uppercase leading-5">
+                        <div>
+                            <div class="text-slate-400 pb-1">Item-Level Customer Responsibilities</div>
+                            ${
+                                responsibilities.customerResponsibilityItems.length
+                                    ? responsibilities.customerResponsibilityItems.map(function(item) {
+                                        return `<div>${escapeHtml(item)}</div>`;
+                                    }).join("")
+                                    : `<div class="text-slate-400 italic">None</div>`
+                            }
+                        </div>
+
                         <div>
                             <div class="text-slate-400 pb-1">Excluded Items (${summary.excludedCount})</div>
                             ${
@@ -8519,107 +8588,34 @@ function renderListedSummary(summary, materials, crewInstructions) {
                                     : `<div class="text-slate-400 italic">None recorded</div>`
                             }
                         </div>
+
+                        ${
+                            responsibilities.additionalText
+                                ? `
+                                <div>
+                                    <div class="text-slate-400 pb-1">Additional Customer Responsibilities</div>
+                                    <div>${escapeHtml(responsibilities.additionalText).replace(/\n/g, "<br>")}</div>
+                                </div>
+                                `
+                                : ""
+                        }
                     </div>
                     `
                     : `
                     <div class="text-[10px] font-black text-slate-400 uppercase italic">
-                        No exclusions or customer responsibility notes recorded
+                        No customer responsibilities recorded
                     </div>
                     `
             }
-        </div>
 
-        <div class="listed-stat-card">
-            <div class="listed-stat-label">Crew Instructions / Responsibilities</div>
+            <div style="height:12px"></div>
 
-            <div class="space-y-3 text-[10px] font-black text-slate-900 uppercase leading-5">
-                <div>
-    <div class="text-slate-400 pb-1">Beds</div>
-    ${
-        crew.beds.length
-            ? crew.beds.map(function(item) {
-                return `<div>${escapeHtml(item)}</div>`;
-            }).join("")
-            : `<div class="text-slate-400 italic">None</div>`
-    }
-</div>
-                <div>
-                    <div class="text-slate-400 pb-1">Dismantle</div>
-                    ${
-                        crew.dismantle.length
-                            ? crew.dismantle.map(function(item) {
-                                return `<div>${escapeHtml(item)}</div>`;
-                            }).join("")
-                            : `<div class="text-slate-400 italic">None</div>`
-                    }
-                </div>
-
-                <div>
-                    <div class="text-slate-400 pb-1">Export Wrap</div>
-                    ${
-                        crew.exportWrap.length
-                            ? crew.exportWrap.map(function(item) {
-                                return `<div>${escapeHtml(item)}</div>`;
-                            }).join("")
-                            : `<div class="text-slate-400 italic">None</div>`
-                    }
-                </div>
-
-                <div>
-                    <div class="text-slate-400 pb-1">Crate</div>
-                    ${
-                        crew.crate.length
-                            ? crew.crate.map(function(item) {
-                                return `<div>${escapeHtml(item)}</div>`;
-                            }).join("")
-                            : `<div class="text-slate-400 italic">None</div>`
-                    }
-                </div>
-
-                <div>
-                    <div class="text-slate-400 pb-1">Disconnect</div>
-                    ${
-                        crew.disconnect.length
-                            ? crew.disconnect.map(function(item) {
-                                return `<div>${escapeHtml(item)}</div>`;
-                            }).join("")
-                            : `<div class="text-slate-400 italic">None</div>`
-                    }
-                </div>
-
-                <div>
-                    <div class="text-slate-400 pb-1">Handyman</div>
-                    ${
-                        crew.handyman.length
-                            ? crew.handyman.map(function(item) {
-                                return `<div>${escapeHtml(item)}</div>`;
-                            }).join("")
-                            : `<div class="text-slate-400 italic">None</div>`
-                    }
-                </div>
-
-                <div>
-                    <div class="text-slate-400 pb-1">Damage</div>
-                    ${
-                        crew.damage.length
-                            ? crew.damage.map(function(item) {
-                                return `<div>${escapeHtml(item)}</div>`;
-                            }).join("")
-                            : `<div class="text-slate-400 italic">None</div>`
-                    }
-                </div>
-
-                <div>
-                    <div class="text-slate-400 pb-1">Notes</div>
-                    ${
-                        crew.notes.length
-                            ? crew.notes.map(function(item) {
-                                return `<div>${escapeHtml(item)}</div>`;
-                            }).join("")
-                            : `<div class="text-slate-400 italic">None</div>`
-                    }
-                </div>
-            </div>
+            <label class="mini-label">Additional Customer Responsibilities</label>
+            <textarea
+                class="customer-responsibility-textarea"
+                placeholder="Example: Customer to dismantle wardrobe before crew arrival. Customer to disconnect washing machine."
+                oninput="saveAdditionalCustomerResponsibilities(this.value)"
+            >${escapeHtml(currentJob && currentJob.customerResponsibilitiesText ? currentJob.customerResponsibilitiesText : "")}</textarea>
         </div>
     `;
 
@@ -8788,8 +8784,9 @@ if (entry.handyman) tags.push("HANDYMAN");
                     }
                 }
                 if (entry.damage) tags.push("DAMAGE: " + entry.damage.toUpperCase());
-                if (entry.excluded) tags.push("EXCLUDED");
-                if (entry.note) tags.push("NOTE: " + entry.note.toUpperCase());
+if (entry.excluded) tags.push("EXCLUDED");
+if (entry.customerResponsibility) tags.push("CUSTOMER RESPONSIBILITY");
+if (entry.note) tags.push("NOTE: " + entry.note.toUpperCase());
 
                 const tagText = tags.length ? ` [${tags.join("] [")}]` : "";
                 const isExcluded = !!entry.excluded;
@@ -9230,13 +9227,22 @@ function getPrintableResponsibilitiesHtml(summary) {
     const responsibilities = buildResponsibilitiesSummary(summary);
 
     if (!responsibilities.hasContent) {
-        return `<div class="pdf-small-note">No exclusions or customer responsibility notes recorded</div>`;
+        return `<div class="pdf-small-note">No customer responsibilities recorded</div>`;
     }
 
     return `
         <div class="pdf-materials-grid">
             <div>
-                <div class="pdf-mini-head">Excluded Items (${summary.excludedCount})</div>
+                <div class="pdf-mini-head">Item-Level Customer Responsibilities</div>
+                ${
+                    responsibilities.customerResponsibilityItems.length
+                        ? responsibilities.customerResponsibilityItems.map(function(item) {
+                            return `<div>${escapeHtml(item)}</div>`;
+                        }).join("")
+                        : `<div>None</div>`
+                }
+
+                <div class="pdf-mini-head space-top">Excluded Items (${summary.excludedCount})</div>
                 ${
                     responsibilities.excludedItems.length
                         ? responsibilities.excludedItems.map(function(item) {
@@ -9255,11 +9261,17 @@ function getPrintableResponsibilitiesHtml(summary) {
                         }).join("")
                         : `<div>None recorded</div>`
                 }
+
+                <div class="pdf-mini-head space-top">Additional Responsibilities</div>
+                ${
+                    responsibilities.additionalText
+                        ? `<div>${escapeHtml(responsibilities.additionalText).replace(/\n/g, "<br>")}</div>`
+                        : `<div>None recorded</div>`
+                }
             </div>
         </div>
     `;
 }
-
 function getPrintableCrewInstructionsHtml(items) {
     const crew = buildCrewInstructionsSummary(items);
 
@@ -13143,7 +13155,9 @@ function normalizeJobsShape() {
             signedAt: "",
             ...(job && job.signature ? job.signature : {})
         };
-
+safeJob.customerResponsibilitiesText = job && job.customerResponsibilitiesText
+    ? String(job.customerResponsibilitiesText)
+    : "";
         return safeJob;
     });
 }
@@ -13382,13 +13396,13 @@ document.addEventListener('DOMContentLoaded', function () {
         <div class="listed-flags-title">Edit Flags</div>
         <div class="listed-flags-subtitle">Apply proper operational flags to this listed line</div>
 
-        <div class="listed-flags-grid">
-            <button type="button" id="listed-flag-dismantle" class="listed-flag-btn" onclick="toggleListedFlag('dismantle')">Dismantle</button>
-            <button type="button" id="listed-flag-expwrap" class="listed-flag-btn" onclick="toggleListedFlag('expWrap')">Export Wrap</button>
-            <button type="button" id="listed-flag-crate" class="listed-flag-btn" onclick="toggleListedFlag('crated')">Crate</button>
-            <button type="button" id="listed-flag-disconnect" class="listed-flag-btn" onclick="toggleListedFlag('disconnect')">Disconnect</button>
-            <button type="button" id="listed-flag-handyman" class="listed-flag-btn" onclick="toggleListedFlag('handyman')">Handyman</button>
-            <button type="button" id="listed-flag-exclude" class="listed-flag-btn" onclick="toggleListedFlag('excluded')">Exclude</button>
+<button type="button" id="listed-flag-dismantle" class="listed-flag-btn" onclick="toggleListedFlag('dismantle')">Dismantle</button>
+<button type="button" id="listed-flag-expwrap" class="listed-flag-btn" onclick="toggleListedFlag('expWrap')">Export Wrap</button>
+<button type="button" id="listed-flag-crate" class="listed-flag-btn" onclick="toggleListedFlag('crated')">Crate</button>
+<button type="button" id="listed-flag-disconnect" class="listed-flag-btn" onclick="toggleListedFlag('disconnect')">Disconnect</button>
+<button type="button" id="listed-flag-handyman" class="listed-flag-btn" onclick="toggleListedFlag('handyman')">Handyman</button>
+<button type="button" id="listed-flag-exclude" class="listed-flag-btn" onclick="toggleListedFlag('excluded')">Exclude</button>
+<button type="button" id="listed-flag-customer" class="listed-flag-btn" onclick="toggleListedFlag('customerResponsibility')">Customer Responsibility</button>
         </div>
 
         <div class="listed-flags-actions">
@@ -13400,3 +13414,4 @@ document.addEventListener('DOMContentLoaded', function () {
 </body>
 </html>
 >
+print("Archie is so cool he is cooler than the rest")
