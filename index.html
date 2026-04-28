@@ -8196,6 +8196,42 @@ saveCalculatorFeedForActiveSequence();
 updateInventoryDisplay("LISTED FLAGS UPDATED");
 closeListedFlagsModal();;
 }
+function getInventoryActionNeededReason(entry) {
+    const itemName = String(entry.itemName || "").toUpperCase().trim();
+
+    if (
+        itemName === "WARDROBE 2 DOOR" ||
+        itemName === "WARDROBE 3 DOOR" ||
+        itemName === "WARDROBE 4 DOOR"
+    ) {
+        if (!entry.wardrobeType) {
+            return "Wardrobe Type Needed";
+        }
+    }
+
+    if (
+        itemName === "BED (SINGLE)" ||
+        itemName === "BED (DOUBLE)" ||
+        itemName === "BED (QUEENSIZE)" ||
+        itemName === "BED (KINGSIZE)" ||
+        itemName === "BED (SUPERKING)"
+    ) {
+        if (!entry.bedType) {
+            return "Bed Type Needed";
+        }
+    }
+
+    if (
+        itemName === "WASHING MACHINE" ||
+        itemName === "DISHWASHER"
+    ) {
+        if (!entry.disconnect && !entry.customerResponsibility && !entry.note) {
+            return "Disconnect Check Needed";
+        }
+    }
+
+    return "";
+}
 function getListedEntryMergeKey(entry) {
     const crateText = entry.crated && entry.crateDims
         ? [
@@ -8763,6 +8799,9 @@ renderListedSummary(listedSummary, materialsSummary, filteredItems);
                 window.__listedEntryMap[entryKey] = entry;
 
                 const tags = [];
+
+const actionNeededReason = getInventoryActionNeededReason(entry);
+if (actionNeededReason) tags.push("ACTION NEEDED: " + actionNeededReason);
 
 if (entry.bedType) tags.push("BED: " + String(entry.bedType).toUpperCase());
 if (entry.wardrobeType) tags.push("WARDROBE: " + String(entry.wardrobeType).toUpperCase());
