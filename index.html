@@ -949,7 +949,102 @@ button {
             font-weight: 900;
             text-transform: uppercase;
         }
+/* --- WARDROBE MODAL --- */
+.wardrobe-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(2px);
+    align-items: center;
+    justify-content: center;
+    z-index: 2140;
+}
 
+.wardrobe-panel {
+    width: 92%;
+    max-width: 420px;
+    background: white;
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
+}
+
+.wardrobe-title {
+    font-size: 16px;
+    font-weight: 900;
+    text-transform: uppercase;
+    color: #0f172a;
+    text-align: center;
+    letter-spacing: 0.02em;
+}
+
+.wardrobe-subtitle {
+    font-size: 12px;
+    font-weight: 700;
+    color: #64748b;
+    text-align: center;
+    margin-top: 6px;
+    margin-bottom: 18px;
+    line-height: 1.45;
+    text-transform: none;
+}
+
+.wardrobe-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+.wardrobe-option-btn {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    min-height: 52px;
+    padding: 10px 8px;
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+    color: #475569;
+    text-align: center;
+}
+
+.wardrobe-option-btn.active {
+    background: #3b82f6;
+    color: white;
+    border-color: #2563eb;
+}
+
+.wardrobe-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.wardrobe-cancel-btn {
+    flex: 1;
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 12px;
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.wardrobe-save-btn {
+    flex: 1;
+    background: #3b82f6;
+    color: white;
+    border: 1px solid #2563eb;
+    border-radius: 12px;
+    padding: 12px;
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
                 /* --- BED MODAL --- */
         .bed-overlay {
             display: none;
@@ -3270,6 +3365,7 @@ let qtyResetTimer = null;
 let selectedCrateUnit = "IN";
 let selectedDamageOption = "";
 let selectedBedOption = "";
+let selectedWardrobeOption = "";
 let listedCrateEditEntryKey = "";
 let listedSequenceFilter = "__all__";
 let listedDeliveryFilter = "__all__";
@@ -3766,7 +3862,8 @@ function buildRawInventoryEntry(entryData) {
     crated: !!entryData.crated,
     crateDims: entryData.crateDims || null,
     damage: entryData.damage || "",
-    bedType: entryData.bedType || ""
+    bedType: entryData.bedType || "",
+    wardrobeType: entryData.wardrobeType || ""
 };
 }
 
@@ -4002,6 +4099,7 @@ function syncInventoryDisplayFromSequence(sequenceId) {
 
     const tags = [];
 if (lastRaw.bedType) tags.push("[BED: " + String(lastRaw.bedType).toUpperCase() + "]");
+if (lastRaw.wardrobeType) tags.push("[WARDROBE: " + String(lastRaw.wardrobeType).toUpperCase() + "]");
 if (lastRaw.dismantle) tags.push("[DISMANTLE]");
 if (lastRaw.expWrap) tags.push("[EXP WRAP]");
 if (lastRaw.disconnect) tags.push("[DISCONNECT]");
@@ -4284,6 +4382,7 @@ function getLiveInventoryGroupKey(entry) {
         String(entry.note || ""),
 String(entry.damage || ""),
 String(entry.bedType || ""),
+String(entry.wardrobeType || ""),
 !!entry.crated,
         entry.crateDims
             ? [
@@ -4341,9 +4440,10 @@ function rebuildLiveInventoryFromSequence(sequenceId) {
     deliveryId: entry.deliveryId || "",
     note: entry.note || "",
     damage: entry.damage || "",
-    bedType: entry.bedType || "",
-    crated: !!entry.crated,
-    crateDims: entry.crateDims || null
+bedType: entry.bedType || "",
+wardrobeType: entry.wardrobeType || "",
+crated: !!entry.crated,
+crateDims: entry.crateDims || null
 });
         }
     });
@@ -6126,6 +6226,113 @@ function isBedRawEntry(rawEntry) {
 function isElectricBedType(bedType) {
     return String(bedType || "").trim() === "Electric Motor / TV";
 }
+function isWardrobeInventoryItem(itemName) {
+    const name = String(itemName || "").trim();
+    return [
+        "Wardrobe 2 Door",
+        "Wardrobe 3 Door",
+        "Wardrobe 4 Door"
+    ].includes(name);
+}
+
+function isWardrobeRawEntry(rawEntry) {
+    if (!rawEntry) return false;
+    return isWardrobeInventoryItem(rawEntry.itemName);
+}
+
+function addOrEditWardrobeType() {
+    const rawEntry = getLastRawInventoryEntry();
+    if (!rawEntry) return;
+    if (!isWardrobeRawEntry(rawEntry)) return;
+
+    selectedWardrobeOption = "";
+
+    const overlay = document.getElementById("wardrobe-overlay");
+    if (!overlay) return;
+
+    clearWardrobeOptionButtons();
+
+    const currentWardrobeType = String(rawEntry.wardrobeType || "").trim();
+    if (currentWardrobeType) {
+        selectedWardrobeOption = currentWardrobeType;
+        highlightWardrobeOption(currentWardrobeType);
+    }
+
+    setModalErrorText("wardrobe-error-text", "");
+    overlay.style.display = "flex";
+}
+
+function closeWardrobeModal() {
+    const overlay = document.getElementById("wardrobe-overlay");
+    if (overlay) overlay.style.display = "none";
+
+    selectedWardrobeOption = "";
+    clearWardrobeOptionButtons();
+    setModalErrorText("wardrobe-error-text", "");
+}
+
+function selectWardrobeOption(option) {
+    if (selectedWardrobeOption === option) {
+        selectedWardrobeOption = "";
+        clearWardrobeOptionButtons();
+        return;
+    }
+
+    selectedWardrobeOption = option;
+    highlightWardrobeOption(option);
+    setModalErrorText("wardrobe-error-text", "");
+}
+
+function clearWardrobeOptionButtons() {
+    [
+        "wardrobe-option-hinged",
+        "wardrobe-option-sliding",
+        "wardrobe-option-mirrored",
+        "wardrobe-option-drawer-combi"
+    ].forEach(function(id) {
+        const btn = document.getElementById(id);
+        if (btn) btn.classList.remove("active");
+    });
+}
+
+function highlightWardrobeOption(option) {
+    clearWardrobeOptionButtons();
+
+    const map = {
+        "Hinged": "wardrobe-option-hinged",
+        "Sliding": "wardrobe-option-sliding",
+        "Mirrored": "wardrobe-option-mirrored",
+        "Drawer-Combi": "wardrobe-option-drawer-combi"
+    };
+
+    const btnId = map[option];
+    if (!btnId) return;
+
+    const btn = document.getElementById(btnId);
+    if (btn) btn.classList.add("active");
+}
+
+function saveWardrobeModal() {
+    const rawEntry = getLastRawInventoryEntry();
+    if (!rawEntry) return;
+    if (!isWardrobeRawEntry(rawEntry)) return;
+
+    if (!selectedWardrobeOption) {
+        setModalErrorText("wardrobe-error-text", "Select a wardrobe type");
+        return;
+    }
+
+    rawEntry.wardrobeType = selectedWardrobeOption;
+
+    saveToDevice();
+    syncLiveInventoryFromRawForActiveSequence();
+    recalculateTotalVolume();
+    refreshCurrentInventorySelectionDisplay();
+    renderActionButtonStates();
+    saveCalculatorFeedForActiveSequence();
+
+    closeWardrobeModal();
+}
 function addInventoryItem(itemName) {
     let item = furnitureDB.find(function(i) {
         return i.item === itemName;
@@ -6220,6 +6427,10 @@ saveCalculatorFeedForActiveSequence();
 
 if (isBedInventoryItem(item.item)) {
     addOrEditBedType();
+}
+
+if (isWardrobeInventoryItem(item.item)) {
+    addOrEditWardrobeType();
 }
 }
 function addMiscItem() {
@@ -7656,6 +7867,7 @@ function getRawEntriesForListedEntry(entry) {
 String(raw.note || "") === String(entry.note || "") &&
 String(raw.damage || "") === String(entry.damage || "") &&
 String(raw.bedType || "") === String(entry.bedType || "") &&
+String(raw.wardrobeType || "") === String(entry.wardrobeType || "") &&
 !!raw.crated === !!entry.crated &&
             rawCrateText === crateText
         );
@@ -7872,6 +8084,7 @@ function getListedEntryMergeKey(entry) {
        entry.note || "",
 entry.damage || "",
 entry.bedType || "",
+entry.wardrobeType || "",
 !!entry.crated,
         crateText
     ].join("||");
@@ -8446,6 +8659,7 @@ renderListedSummary(listedSummary, materialsSummary, filteredItems);
                 const tags = [];
 
 if (entry.bedType) tags.push("BED: " + String(entry.bedType).toUpperCase());
+if (entry.wardrobeType) tags.push("WARDROBE: " + String(entry.wardrobeType).toUpperCase());
 if (entry.dismantle) tags.push("DISMANTLE");
 if (entry.expWrap) tags.push("EXP WRAP");
 if (entry.disconnect) tags.push("DISCONNECT");
@@ -8587,6 +8801,7 @@ function refreshCurrentInventorySelectionDisplay() {
 
     const tags = [];
 if (rawEntry.bedType) tags.push("[BED: " + String(rawEntry.bedType).toUpperCase() + "]");
+if (rawEntry.wardrobeType) tags.push("[WARDROBE: " + String(rawEntry.wardrobeType).toUpperCase() + "]");
 if (rawEntry.dismantle) tags.push("[DISMANTLE]");
 if (rawEntry.expWrap) tags.push("[EXP WRAP]");
 if (rawEntry.disconnect) tags.push("[DISCONNECT]");
@@ -12829,6 +13044,27 @@ document.addEventListener('DOMContentLoaded', function () {
     renderDashboard();
 });
 </script>
+<!-- WARDROBE MODAL -->
+<div id="wardrobe-overlay" class="wardrobe-overlay" onclick="closeWardrobeModal()">
+    <div class="wardrobe-panel" onclick="event.stopPropagation()">
+        <div class="wardrobe-title">Wardrobe Type</div>
+        <div class="wardrobe-subtitle">Select wardrobe construction type for notes and crew visibility</div>
+
+        <div class="wardrobe-grid">
+            <button type="button" id="wardrobe-option-hinged" class="wardrobe-option-btn" onclick="selectWardrobeOption('Hinged')">Hinged</button>
+            <button type="button" id="wardrobe-option-sliding" class="wardrobe-option-btn" onclick="selectWardrobeOption('Sliding')">Sliding</button>
+            <button type="button" id="wardrobe-option-mirrored" class="wardrobe-option-btn" onclick="selectWardrobeOption('Mirrored')">Mirrored</button>
+            <button type="button" id="wardrobe-option-drawer-combi" class="wardrobe-option-btn" onclick="selectWardrobeOption('Drawer-Combi')">Drawer-Combi</button>
+        </div>
+
+        <div id="wardrobe-error-text" class="modal-error-text"></div>
+
+        <div class="wardrobe-actions">
+            <button type="button" class="wardrobe-cancel-btn" onclick="closeWardrobeModal()">Cancel</button>
+            <button type="button" class="wardrobe-save-btn" onclick="saveWardrobeModal()">Save Wardrobe Type</button>
+        </div>
+    </div>
+</div>
 <!-- BED MODAL -->
 <div id="bed-overlay" class="bed-overlay" onclick="closeBedModal()">
     <div class="bed-panel" onclick="event.stopPropagation()">
