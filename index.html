@@ -924,12 +924,42 @@ background: #f8fafc;
             text-align: center;
         }
 
-        .damage-option-btn.active {
-            background: #3b82f6;
-            color: white;
-            border-color: #2563eb;
-        }
+.damage-option-btn.active {
+    background: #3b82f6;
+    color: white;
+    border-color: #1d4ed8;
+    box-shadow: inset 0 0 0 2px rgba(255,255,255,0.35), 0 0 0 3px rgba(59,130,246,0.18);
+    transform: scale(0.98);
+}
+.damage-selected-summary {
+    display: none;
+    margin-bottom: 14px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: #eff6ff;
+    border: 1px solid #93c5fd;
+    color: #1e3a8a;
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+    line-height: 1.4;
+}
 
+.damage-selected-summary.active {
+    display: block;
+}
+
+.damage-selected-count {
+    color: #2563eb;
+}
+
+.damage-selected-list {
+    margin-top: 4px;
+    color: #0f172a;
+    text-transform: none;
+    font-size: 11px;
+    font-weight: 800;
+}
         
         .damage-note-input:focus {
             border-color: #3b82f6;
@@ -6937,8 +6967,9 @@ function addOrEditDamage() {
 
     if (!overlay || !customNote) return;
 
-    clearDamageOptionButtons();
-    setModalErrorText("damage-error-text", "");
+clearDamageOptionButtons();
+updateDamageSelectedSummary();
+setModalErrorText("damage-error-text", "");
 
     const currentDamage = (rawEntry.damage || "").trim();
 
@@ -6974,7 +7005,7 @@ function addOrEditDamage() {
         selectedDamageOptions.forEach(function(option) {
             highlightDamageOption(option);
         });
-
+updateDamageSelectedSummary();
         customNote.value = customParts.join(", ");
     } else {
         customNote.value = "";
@@ -6990,9 +7021,10 @@ function closeDamageModal() {
     if (overlay) overlay.style.display = "none";
     if (customNote) customNote.value = "";
 
-    selectedDamageOptions = [];
-    clearDamageOptionButtons();
-    setModalErrorText("damage-error-text", "");
+selectedDamageOptions = [];
+clearDamageOptionButtons();
+updateDamageSelectedSummary();
+setModalErrorText("damage-error-text", "");
 }
 
 function selectDamageOption(option) {
@@ -7013,6 +7045,23 @@ function updateDamageOptionButtons() {
     selectedDamageOptions.forEach(function(option) {
         highlightDamageOption(option);
     });
+
+    updateDamageSelectedSummary();
+}
+
+function updateDamageSelectedSummary() {
+    const summary = document.getElementById("damage-selected-summary");
+    const count = document.getElementById("damage-selected-count");
+    const list = document.getElementById("damage-selected-list");
+
+    if (!summary || !count || !list) return;
+
+    const selectedCount = selectedDamageOptions.length;
+
+    count.innerText = selectedCount;
+    list.innerText = selectedDamageOptions.join(", ");
+
+    summary.classList.toggle("active", selectedCount > 0);
 }
 function clearDamageOptionButtons() {
     [
@@ -13169,7 +13218,10 @@ document.addEventListener('DOMContentLoaded', function () {
             class="damage-note-input"
             placeholder="If none apply, enter damage note here..."
         ></textarea>
-
+<div id="damage-selected-summary" class="damage-selected-summary">
+    <div>Selected: <span id="damage-selected-count" class="damage-selected-count">0</span></div>
+    <div id="damage-selected-list" class="damage-selected-list"></div>
+</div>
         <div id="damage-error-text" class="modal-error-text"></div>
 
         <div class="damage-actions">
