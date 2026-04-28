@@ -6947,7 +6947,8 @@ if (
     currentDamage === "Marked" ||
     currentDamage === "Cracked" ||
     currentDamage === "Soiled" ||
-    currentDamage === "Used" ||
+    currentDamage === "Chipped" ||
+    currentDamage === "Broken" ||
     currentDamage === "Electrical Condition Unknown"
 ) {
     selectedDamageOption = currentDamage;
@@ -6996,7 +6997,8 @@ function clearDamageOptionButtons() {
         "damage-option-marked",
         "damage-option-cracked",
         "damage-option-soiled",
-        "damage-option-used",
+        "damage-option-chipped",
+        "damage-option-broken",
         "damage-option-electrical-unknown"
     ].forEach(function(id) {
         const btn = document.getElementById(id);
@@ -7013,7 +7015,8 @@ const map = {
     "Marked": "damage-option-marked",
     "Cracked": "damage-option-cracked",
     "Soiled": "damage-option-soiled",
-    "Used": "damage-option-used",
+    "Chipped": "damage-option-chipped",
+    "Broken": "damage-option-broken",
     "Electrical Condition Unknown": "damage-option-electrical-unknown"
 };
 
@@ -13124,7 +13127,8 @@ document.addEventListener('DOMContentLoaded', function () {
     <button type="button" id="damage-option-marked" class="damage-option-btn" onclick="selectDamageOption('Marked')">Marked</button>
     <button type="button" id="damage-option-cracked" class="damage-option-btn" onclick="selectDamageOption('Cracked')">Cracked</button>
     <button type="button" id="damage-option-soiled" class="damage-option-btn" onclick="selectDamageOption('Soiled')">Soiled</button>
-    <button type="button" id="damage-option-used" class="damage-option-btn" onclick="selectDamageOption('Used')">Used</button>
+    <button type="button" id="damage-option-chipped" class="damage-option-btn" onclick="selectDamageOption('Chipped')">Chipped</button>
+    <button type="button" id="damage-option-broken" class="damage-option-btn" onclick="selectDamageOption('Broken')">Broken</button>
     <button type="button" id="damage-option-electrical-unknown" class="damage-option-btn" onclick="selectDamageOption('Electrical Condition Unknown')">Electrical Condition Unknown</button>
 </div>
 
