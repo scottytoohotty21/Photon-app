@@ -2849,71 +2849,12 @@ Enter as: Surname, First Name
     <input id="loftVol" type="number" min="0" class="field field-editable-blue" value="0" oninput="handleScheduleInputChange()" />
 </div>
 
-<div>
-    <label class="mini-label special-labour-label">Frame<br>Beds</label>
-    <input id="svc_frame" type="number" min="0" class="field field-readonly-soft" value="0" readonly />
-</div>
-
-<div>
-    <label class="mini-label special-labour-label">Washing Machines /<br>Dishwashers</label>
-    <input id="svc_appliance" type="number" min="0" class="field field-readonly-soft" value="0" readonly />
-</div>
-
-    <div>
-        <label class="mini-label">Ottoman Beds</label>
-        <input id="svc_ottoman" type="number" min="0" class="field field-readonly-soft" value="0" readonly />
+  
     </div>
-
-    <div>
-        <label class="mini-label">Dining Tables</label>
-        <input id="svc_dining_table" type="number" min="0" class="field field-readonly-soft" value="0" readonly />
-    </div>
-    
-    <div>
-        <label class="mini-label">Divan Beds</label>
-        <input id="svc_divan" type="number" min="0" class="field field-readonly-soft" value="0" readonly />
-    </div>
-
-    <div>
-        <label class="mini-label">Crating</label>
-        <input id="svc_crate" type="number" min="0" class="field field-readonly-soft" value="0" readonly />
-    </div>
-
-    <div>
-        <label class="mini-label">Electric / TV Beds</label>
-        <input id="svc_electric" type="number" min="0" class="field field-readonly-soft" value="0" readonly />
-    </div>
-
-     <div>
-        <label class="mini-label">Upright Pianos</label>
-        <input id="svc_upright" type="number" min="0" class="field field-readonly-soft" value="0" readonly />
-    </div>
-    
-    <div>
-        <label class="mini-label">Bunk Beds</label>
-        <input id="svc_bunk" type="number" min="0" class="field field-readonly-soft" value="0" readonly />
-    </div>
-
-    <div>
-        <label class="mini-label">Baby / Grand Pianos</label>
-        <input id="svc_grand" type="number" min="0" class="field field-readonly-soft" value="0" readonly />
-    </div>
-   
-    <div>
-        <label class="mini-label">Cots / Childs Beds</label>
-        <input id="svc_cot" type="number" min="0" class="field field-readonly-soft" value="0" readonly />
-    </div>
-
-        
-    <div>
-        <label class="mini-label">Grandfather Clocks</label>
-        <input id="svc_clock" type="number" min="0" class="field field-readonly-soft" value="0" readonly />
-    </div>
-</div>
                 </div>
 
                 <div class="note-card">
-                    Add custom item labour in minutes per side, plus any manual specialist labour adjustments.
+                    Add custom item labour in minutes per side. Other specialist labour is now fed from inventory and shown in the breakdown..
                 </div>
             </div>
         </div>
@@ -4363,9 +4304,12 @@ function buildCalculatorFeedForSequence(sequenceId) {
     let bunkBedCount = 0;
     let cotCount = 0;
     let diningTableCount = 0;
-    let uprightPianoCount = 0;
-    let grandPianoCount = 0;
-    let grandfatherClockCount = 0;
+let wardrobeCount = 0;
+let uprightPianoCount = 0;
+let grandPianoCount = 0;
+let grandfatherClockCount = 0;
+
+const wardrobeItems = [];
 
     const qty = {
         ap: 0,
@@ -4473,6 +4417,19 @@ if (itemName === "CLOCK (GRANDFATHER)") {
             if (itemName === "DINING TABLE") {
                 diningTableCount += entryQty;
             }
+            if (
+    itemName === "WARDROBE (2-DOOR)" ||
+    itemName === "WARDROBE (3-DOOR)" ||
+    itemName === "WARDROBE (4-DOOR)"
+) {
+    wardrobeCount += entryQty;
+
+    wardrobeItems.push({
+        itemName: entry.itemName || "",
+        qty: entryQty,
+        wardrobeTypes: Array.isArray(entry.wardrobeTypes) ? entry.wardrobeTypes : []
+    });
+}
         }
 
         furnitureVol += totalVolume || (unitVolume * entryQty);
@@ -6398,15 +6355,6 @@ function addVolume(amount) {
     renderActionButtonStates();
     updateUndoButtonState();
     saveCalculatorFeedForActiveSequence();
-}
-function isWardrobeInventoryItem(itemName) {
-    const name = String(itemName || "").trim();
-
-    return [
-        "Wardrobe (2-door)",
-        "Wardrobe (3-door)",
-        "Wardrobe (4-door)"
-    ].includes(name);
 }
 
 function isWardrobeRawEntry(rawEntry) {
@@ -11610,22 +11558,9 @@ const unloadRateEl = document.getElementById("unloadRate");
 const loadingVariantEl = document.getElementById("loadingVariant");
 const operatingBranchEl = document.getElementById("operatingBranch");
 
-    const svcFrameEl = document.getElementById("svc_frame");
-    const svcOttomanEl = document.getElementById("svc_ottoman");
-    const svcDivanEl = document.getElementById("svc_divan");
-    const svcElectricEl = document.getElementById("svc_electric");
-    const svcBunkEl = document.getElementById("svc_bunk");
-    const svcCotEl = document.getElementById("svc_cot");
-    const svcDiningTableEl = document.getElementById("svc_dining_table");
-
-    const svcCustomMinutesEl = document.getElementById("svc_custom_minutes");
-    const svcCustomNoteEl = document.getElementById("svc_custom_note");
-    const svcUprightEl = document.getElementById("svc_upright");
-    const svcGrandEl = document.getElementById("svc_grand");
-    const svcClockEl = document.getElementById("svc_clock");
-    const svcApplianceEl = document.getElementById("svc_appliance");
-    const svcCrateEl = document.getElementById("svc_crate");
-    const exportWrapVolEl = document.getElementById("exportWrapVol");
+const svcCustomMinutesEl = document.getElementById("svc_custom_minutes");
+const svcCustomNoteEl = document.getElementById("svc_custom_note");
+const exportWrapVolEl = document.getElementById("exportWrapVol");
 
     if (loftVolEl) loftVolEl.value = schedule.loftVol;
 if (loadRateEl) loadRateEl.value = schedule.loadRate;
@@ -11640,21 +11575,9 @@ if (operatingBranchEl) {
 
 if (loadingVariantEl) loadingVariantEl.value = schedule.loadingVariant || "Standard";
 
-    setInventoryFedField(svcFrameEl, photonFeed.special?.frameBeds || 0);
-setInventoryFedField(svcOttomanEl, photonFeed.special?.ottomanBeds || 0);
-setInventoryFedField(svcDivanEl, photonFeed.special?.divanBeds || 0);
-setInventoryFedField(svcElectricEl, photonFeed.special?.electricBeds || 0);
-setInventoryFedField(svcBunkEl, photonFeed.special?.bunkBeds || 0);
-setInventoryFedField(svcCotEl, photonFeed.special?.cots || 0);
-setInventoryFedField(svcDiningTableEl, photonFeed.special?.diningTables || 0);
+if (svcCustomMinutesEl) svcCustomMinutesEl.value = schedule.special.customItemMinutes;
+if (svcCustomNoteEl) svcCustomNoteEl.value = schedule.special.customItemNote;
 
-    if (svcCustomMinutesEl) svcCustomMinutesEl.value = schedule.special.customItemMinutes;
-    if (svcCustomNoteEl) svcCustomNoteEl.value = schedule.special.customItemNote;
-    setInventoryFedField(svcUprightEl, schedule.special.uprightPianos);
-setInventoryFedField(svcGrandEl, schedule.special.grandPianos);
-setInventoryFedField(svcClockEl, schedule.special.grandfatherClocks);
-    setInventoryFedField(svcApplianceEl, photonFeed.disconnectApplianceCount || 0);
-setInventoryFedField(svcCrateEl, photonFeed.special?.cratingItems || 0);
 setInventoryFedField(exportWrapVolEl, photonFeed.special?.exportWrapVol || 0);
 }
 
@@ -11983,31 +11906,33 @@ deliveryToDepotMinutes: num("deliveryToDepotMinutes"),
         boxVolumes: BOX_VOLUMES,
 
         special: {
-            frameBeds: num("svc_frame"),
-            ottomanBeds: num("svc_ottoman"),
-            divanBeds: num("svc_divan"),
-            electricBeds: num("svc_electric"),
-            bunkBeds: num("svc_bunk"),
-            cots: num("svc_cot"),
-            diningTables: Number(photonFeed.special?.diningTables || 0),
+    frameBeds: Number(photonFeed.special?.frameBeds || 0),
+    ottomanBeds: Number(photonFeed.special?.ottomanBeds || 0),
+    divanBeds: Number(photonFeed.special?.divanBeds || 0),
+    electricBeds: Number(photonFeed.special?.electricBeds || 0),
+    bunkBeds: Number(photonFeed.special?.bunkBeds || 0),
+    cots: Number(photonFeed.special?.cots || 0),
+    diningTables: Number(photonFeed.special?.diningTables || 0),
 
-wardrobes: Number(photonFeed.special?.wardrobes || 0),
-wardrobeItems: Array.isArray(photonFeed.special?.wardrobeItems)
-    ? photonFeed.special.wardrobeItems
-    : [],
+    wardrobes: Number(photonFeed.special?.wardrobes || 0),
+    wardrobeItems: Array.isArray(photonFeed.special?.wardrobeItems)
+        ? photonFeed.special.wardrobeItems
+        : [],
 
-customMinutes: num("svc_custom_minutes"),
-            customNote: document.getElementById("svc_custom_note")
-                ? document.getElementById("svc_custom_note").value.trim()
-                : "",
-            upright: Number(photonFeed.special?.uprightPianos || 0),
-grand: Number(photonFeed.special?.grandPianos || 0),
-clock: Number(photonFeed.special?.grandfatherClocks || 0),
-            appliance: totalApplianceCount,
-            manualApplianceCount: 0,
-            disconnectApplianceCount: disconnectApplianceCount,
-            crate: num("svc_crate")
-        },
+    customMinutes: num("svc_custom_minutes"),
+    customNote: document.getElementById("svc_custom_note")
+        ? document.getElementById("svc_custom_note").value.trim()
+        : "",
+
+    upright: Number(photonFeed.special?.uprightPianos || 0),
+    grand: Number(photonFeed.special?.grandPianos || 0),
+    clock: Number(photonFeed.special?.grandfatherClocks || 0),
+
+    appliance: totalApplianceCount,
+    manualApplianceCount: 0,
+    disconnectApplianceCount: disconnectApplianceCount,
+    crate: Number(photonFeed.special?.cratingItems || 0)
+},
 
         exportWrapVol: num("exportWrapVol")
     };
@@ -13175,19 +13100,19 @@ function buildScheduleSpecialRhsHtml(state, special) {
 
         if (!qty || !itemName) return;
 
-        if (isBedInventoryItem(itemName)) {
-            const bedType = entry.bedType ? String(entry.bedType) : "Type not set";
+       if (entry.dismantle && isBedInventoryItem(itemName)) {
+    const bedType = entry.bedType ? String(entry.bedType) : "Type not set";
 
-            bedRows.push(
-                qty + " x " + itemName + " — " + bedType
-            );
-        }
+    bedRows.push(
+        qty + " x " + itemName + " — " + bedType
+    );
+}
 
-        if (isWardrobeInventoryItem(itemName)) {
-            wardrobeRows.push(
-                qty + " x " + itemName + " — " + formatWardrobeTypes(entry)
-            );
-        }
+if (entry.dismantle && isWardrobeInventoryItem(itemName)) {
+    wardrobeRows.push(
+        qty + " x " + itemName + " — " + formatWardrobeTypes(entry)
+    );
+}
 
         if (
             entry.dismantle &&
@@ -13347,28 +13272,8 @@ if (scheduleVolumeBadge) {
     const wrDisplay = document.getElementById("qty_wr_display");
     if (wrDisplay) wrDisplay.textContent = state.qty.wr;
 
-    const svcFrameEl = document.getElementById("svc_frame");
-    const svcOttomanEl = document.getElementById("svc_ottoman");
-    const svcDivanEl = document.getElementById("svc_divan");
-    const svcElectricEl = document.getElementById("svc_electric");
-    const svcBunkEl = document.getElementById("svc_bunk");
-    const svcCotEl = document.getElementById("svc_cot");
-    const svcDiningTableEl = document.getElementById("svc_dining_table");
-    const svcCrateEl = document.getElementById("svc_crate");
     const exportWrapVolEl = document.getElementById("exportWrapVol");
-
-  setInventoryFedField(svcFrameEl, state.special.frameBeds);
-setInventoryFedField(svcOttomanEl, state.special.ottomanBeds);
-setInventoryFedField(svcDivanEl, state.special.divanBeds);
-setInventoryFedField(svcElectricEl, state.special.electricBeds);
-setInventoryFedField(svcBunkEl, state.special.bunkBeds);
-setInventoryFedField(svcCotEl, state.special.cots);
-setInventoryFedField(svcDiningTableEl, state.special.diningTables);
-setInventoryFedField(svcCrateEl, state.special.crate);
 setInventoryFedField(exportWrapVolEl, state.exportWrapVol);
-setInventoryFedField(document.getElementById("svc_upright"), state.special.upright);
-setInventoryFedField(document.getElementById("svc_grand"), state.special.grand);
-setInventoryFedField(document.getElementById("svc_clock"), state.special.clock);
 
     const special = calcSpecialLabour(state);
     const loading = calcLoading(totalVolume, state.loadRate, special.loadSideHours, state.loadingScenario);
