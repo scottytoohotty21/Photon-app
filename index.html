@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -490,19 +490,19 @@ button {
 
 @keyframes itemClickFlash {
     0% {
-        transform: translateY(0) scale(1);
-        box-shadow: 0 3px 8px rgba(15, 23, 42, 0.12);
+        transform: scale(1);
+        background: #ffffff;
+        box-shadow: 0 0 0 0 rgba(96, 165, 250, 0);
     }
-
     35% {
-        transform: translateY(2px) scale(0.98);
+        transform: scale(1.03);
         background: #dbeafe;
         box-shadow: 0 0 0 8px rgba(96, 165, 250, 0.18);
     }
-
     100% {
-        transform: translateY(0) scale(1);
-        box-shadow: 0 3px 8px rgba(15, 23, 42, 0.12);
+        transform: scale(1);
+        background: inherit;
+        box-shadow: 0 0 0 0 rgba(96, 165, 250, 0);
     }
 }
 
@@ -564,44 +564,23 @@ button {
 }
         .inv-room-btn.active { background: #3b82f6; color: white; border-color: #2563eb; }
 
-.item-btn {
-    background: #eff6ff;
-    border: 2px solid #93c5fd;
-    border-bottom: 5px solid #2563eb;
-    border-radius: 12px;
+        .item-btn {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
     height: 74px;
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
     font-size: 11px;
-    font-weight: 900;
+    font-weight: 800;
     text-transform: uppercase;
     color: #0f172a;
     padding: 8px;
     line-height: 1.25;
-    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.18);
-    transition: transform 0.08s ease, box-shadow 0.08s ease, border-bottom-width 0.08s ease;
 }
-
-.item-btn:active {
-    transform: translateY(2px);
-    border-bottom-width: 3px;
-    box-shadow: 0 2px 5px rgba(37, 99, 235, 0.18);
-}
-
-.item-btn:active {
-    transform: translateY(2px);
-    border-bottom-width: 3px;
-    box-shadow: 0 2px 5px rgba(15, 23, 42, 0.18);
-}
-.item-btn-blue {
-    background: #dbeafe;
-    color: #0f172a;
-    border: 2px solid #60a5fa;
-    border-bottom: 5px solid #1d4ed8;
-    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.22);
-}
+        .item-btn-blue { background: #f0f9ff; color: #0f172a; border: 1px solid #e0f2fe; }
         .log-bar {
     background: #e2e8f0;
     border: 1.5px solid #94a3b8;
@@ -930,42 +909,12 @@ button {
             text-align: center;
         }
 
-.damage-option-btn.active {
-    background: #3b82f6;
-    color: white;
-    border-color: #1d4ed8;
-    box-shadow: inset 0 0 0 2px rgba(255,255,255,0.35), 0 0 0 3px rgba(59,130,246,0.18);
-    transform: scale(0.98);
-}
-.damage-selected-summary {
-    display: none;
-    margin-bottom: 14px;
-    padding: 10px 12px;
-    border-radius: 12px;
-    background: #eff6ff;
-    border: 1px solid #93c5fd;
-    color: #1e3a8a;
-    font-size: 10px;
-    font-weight: 900;
-    text-transform: uppercase;
-    line-height: 1.4;
-}
+        .damage-option-btn.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #2563eb;
+        }
 
-.damage-selected-summary.active {
-    display: block;
-}
-
-.damage-selected-count {
-    color: #2563eb;
-}
-
-.damage-selected-list {
-    margin-top: 4px;
-    color: #0f172a;
-    text-transform: none;
-    font-size: 11px;
-    font-weight: 800;
-}
         
         .damage-note-input:focus {
             border-color: #3b82f6;
@@ -1000,102 +949,7 @@ button {
             font-weight: 900;
             text-transform: uppercase;
         }
-/* --- WARDROBE MODAL --- */
-.wardrobe-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(15, 23, 42, 0.45);
-    backdrop-filter: blur(2px);
-    align-items: center;
-    justify-content: center;
-    z-index: 2140;
-}
 
-.wardrobe-panel {
-    width: 92%;
-    max-width: 420px;
-    background: white;
-    border-radius: 20px;
-    padding: 24px;
-    box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
-}
-
-.wardrobe-title {
-    font-size: 16px;
-    font-weight: 900;
-    text-transform: uppercase;
-    color: #0f172a;
-    text-align: center;
-    letter-spacing: 0.02em;
-}
-
-.wardrobe-subtitle {
-    font-size: 12px;
-    font-weight: 700;
-    color: #64748b;
-    text-align: center;
-    margin-top: 6px;
-    margin-bottom: 18px;
-    line-height: 1.45;
-    text-transform: none;
-}
-
-.wardrobe-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-    margin-bottom: 14px;
-}
-
-.wardrobe-option-btn {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
-    min-height: 52px;
-    padding: 10px 8px;
-    font-size: 10px;
-    font-weight: 900;
-    text-transform: uppercase;
-    color: #475569;
-    text-align: center;
-}
-
-.wardrobe-option-btn.active {
-    background: #3b82f6;
-    color: white;
-    border-color: #2563eb;
-}
-
-.wardrobe-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 14px;
-}
-
-.wardrobe-cancel-btn {
-    flex: 1;
-    background: #f1f5f9;
-    color: #475569;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 12px;
-    font-size: 10px;
-    font-weight: 900;
-    text-transform: uppercase;
-}
-
-.wardrobe-save-btn {
-    flex: 1;
-    background: #3b82f6;
-    color: white;
-    border: 1px solid #2563eb;
-    border-radius: 12px;
-    padding: 12px;
-    font-size: 10px;
-    font-weight: 900;
-    text-transform: uppercase;
-}
                 /* --- BED MODAL --- */
         .bed-overlay {
             display: none;
@@ -1918,26 +1772,6 @@ button {
     grid-template-columns: 1fr;
     gap: 12px;
 }
-.customer-responsibility-textarea {
-    width: 100%;
-    min-height: 110px;
-    border: 1.5px solid #cbd5e1;
-    border-radius: 12px;
-    padding: 12px;
-    background: #ffffff;
-    color: #0f172a;
-    font-size: 12px;
-    font-weight: 700;
-    line-height: 1.45;
-    resize: vertical;
-    outline: none;
-    font-family: 'Inter', sans-serif;
-}
-
-.customer-responsibility-textarea:focus {
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59,130,246,0.10);
-}
 /* --- INVENTORY SEARCH + SCROLL --- */
 .inventory-search-row {
     display: flex;
@@ -1990,8 +1824,8 @@ button {
 }
 
 .inventory-picker-shell {
-    background: #e2e8f0;
-    border: 1px solid #94a3b8;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
     border-radius: 14px;
     padding: 8px;
 }
@@ -2017,12 +1851,17 @@ button {
     position: sticky;
     top: 0;
     align-self: start;
-    background: #e2e8f0;
-    border-radius: 14px;
-    padding: 8px;
+    background: #ffffff;
 }
 /* SCHEDULE CALCULATOR LAYOUT */
 .layout{display:grid;grid-template-columns:430px 1fr;gap:16px;align-items:start;}
+.schedule-left-sticky{
+    position:sticky;
+    top:12px;
+    align-self:start;
+    max-height:calc(100vh - 24px);
+    overflow-y:auto;
+}
 .panel{
     background:var(--card);border:1px solid var(--slate-200);border-radius:20px;box-shadow:var(--shadow);overflow:hidden;
 }
@@ -2038,6 +1877,39 @@ button {
     font-size:14px;font-weight:700;outline:none;background:#fff;color:var(--navy);
 }
 .field:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,130,246,0.08);}
+.special-labour-label{
+    min-height:32px;
+    display:flex;
+    align-items:flex-end;
+}
+.field-editable-blue{
+    background:#eff6ff !important;
+    border:2px solid #60a5fa !important;
+    box-shadow:inset 0 0 0 1px rgba(59,130,246,0.12);
+    color:#0f172a;
+}
+
+.field-editable-blue:focus{
+    background:#ffffff !important;
+    border-color:#2563eb !important;
+    box-shadow:0 0 0 3px rgba(37,99,235,0.12), inset 0 0 0 1px rgba(37,99,235,0.18);
+}
+
+.field-readonly-soft{
+    background:#f8fafc !important;
+    color:#334155;
+}
+.field-fed-from-inventory{
+    background:#f0fdf4 !important;
+    border:2px solid #22c55e !important;
+    box-shadow:0 0 0 3px rgba(34,197,94,0.12);
+    color:#0f172a;
+}
+.special-labour-label{
+    min-height:32px;
+    display:flex;
+    align-items:flex-end;
+}
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 .summary-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;}
 .summary-card{background:#fff;border:1px solid var(--slate-200);border-radius:16px;padding:16px;min-height:128px;}
@@ -2061,6 +1933,27 @@ button {
     box-shadow:0 10px 24px rgba(37,99,235,0.08);
 }
 .schedule-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap;}
+.schedule-title-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.schedule-volume-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    color: #1d4ed8;
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+    line-height: 1;
+}
 .schedule-title{font-size:10px;font-weight:900;text-transform:uppercase;color:var(--slate-400);}
 .schedule-btn{height:38px;border-radius:10px;border:1px solid var(--slate-300);background:#fff;color:var(--slate-700);padding:0 14px;font-size:11px;font-weight:900;text-transform:uppercase;cursor:pointer;}
 .schedule-list{display:grid;gap:12px;}
@@ -2313,6 +2206,12 @@ button {
 @media (max-width: 980px){
     .layout{grid-template-columns:1fr;}
     .summary-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+
+    .schedule-left-sticky{
+        position:static;
+        max-height:none;
+        overflow:visible;
+    }
 }
 @media (max-width: 760px){
     .schedule-grid{grid-template-columns:1fr 1fr;}
@@ -2593,7 +2492,7 @@ Enter as: Surname, First Name
     <button id="tool-dismantle" class="inv-tool-btn" onclick="toggleItemAction('dismantle')">Dismantle</button>
     <button id="tool-expwrap" class="inv-tool-btn" onclick="toggleItemAction('expWrap')">Exp Wrap</button>
     <button id="tool-crate" class="inv-tool-btn" onclick="addOrEditCrate()">Crate</button>
-<button id="tool-damage" class="inv-tool-btn" onclick="addOrEditDamage()">Condition</button>
+    <button id="tool-damage" class="inv-tool-btn" onclick="addOrEditDamage()">Damage</button>
     <button id="tool-exclude" class="inv-tool-btn" onclick="toggleItemAction('excluded')">Exclude</button>
     <button class="inv-tool-btn" onclick="addInventoryNote()">Note</button>
     <button class="inv-tool-btn" onclick="addMiscItem()">Misc</button>
@@ -2728,10 +2627,10 @@ Enter as: Surname, First Name
 </section>
    <section id="content-schedule" class="tab-content hidden bg-white p-6 rounded-2xl shadow-inner">
     <div class="layout">
-        <div class="panel">
+        <div class="panel schedule-left-sticky">
             <div class="panel-head">
                 <div class="panel-title">Inputs</div>
-                <div class="panel-subtitle">Manual for now, ready to be fed from the previous app tab later</div>
+                <div class="panel-subtitle">Sequence, volume and special labour inputs</div>
             </div>
             <div class="panel-body">
                              <div class="section-block">
@@ -2758,97 +2657,96 @@ Enter as: Surname, First Name
     </div>
 </div>
   
-<div class="section-block">
-                    <div class="section-title">Volume Inputs</div>
-                    <div class="grid-2">
-                        <div>
-                            <label class="mini-label">Furniture Volume (CUFT)</label>
-                            <div id="furnitureVolDisplay" class="field" style="background:#f8fafc;">0</div>
-                        </div>
-                        <div>
-                            <label class="mini-label">Loft Effects Volume (CUFT)</label>
-                            <input id="loftVol" type="number" min="0" class="field" value="0" oninput="handleScheduleInputChange()" />
-                        </div>
-                        <div>
-                            <label class="mini-label">Loading Rate (CUFT / Man-Hour)</label>
-                            <input id="loadRate" type="number" min="1" class="field" value="125" oninput="handleScheduleInputChange()" />
-                        </div>
-                        <div>
-                            <label class="mini-label">Unloading Rate (CUFT / Man-Hour)</label>
-                            <input id="unloadRate" type="number" min="1" class="field" value="132" oninput="handleScheduleInputChange()" />
-                        </div>
-                    </div>
-                </div>
-
+                                  
                 
-                <div class="section-block">
+    <div class="section-block">
                     <div class="section-title">Special Labour Inputs</div>
                     <div class="grid-2">
-                        <div>
-    <label class="mini-label">Frame Beds</label>
-    <input id="svc_frame" type="number" min="0" class="field" value="0" readonly />
+    <div>
+    <label class="mini-label special-labour-label">Custom Item<br>Note</label>
+    <input id="svc_custom_note" type="text" maxlength="40" class="field field-editable-blue" value="" oninput="handleScheduleInputChange()" />
 </div>
+
 <div>
-    <label class="mini-label">Ottoman Beds</label>
-    <input id="svc_ottoman" type="number" min="0" class="field" value="0" readonly />
+    <label class="mini-label special-labour-label">Custom Item Minutes<br>Each Side</label>
+    <input id="svc_custom_minutes" type="number" min="0" class="field field-editable-blue" value="0" oninput="handleScheduleInputChange()" />
 </div>
+
 <div>
-    <label class="mini-label">Divan Beds</label>
-    <input id="svc_divan" type="number" min="0" class="field" value="0" readonly />
+    <label class="mini-label special-labour-label">Export Wrap Volume<br>(CUFT)</label>
+    <input id="exportWrapVol" type="number" min="0" class="field field-readonly-soft" value="0" readonly />
 </div>
+
 <div>
-    <label class="mini-label">Electric / TV Beds</label>
-    <input id="svc_electric" type="number" min="0" class="field" value="0" readonly />
+    <label class="mini-label special-labour-label">Loft Effects Volume<br>(CUFT)</label>
+    <input id="loftVol" type="number" min="0" class="field field-editable-blue" value="0" oninput="handleScheduleInputChange()" />
 </div>
+
 <div>
-    <label class="mini-label">Bunk Beds</label>
-    <input id="svc_bunk" type="number" min="0" class="field" value="0" readonly />
+    <label class="mini-label special-labour-label">Frame<br>Beds</label>
+    <input id="svc_frame" type="number" min="0" class="field field-readonly-soft" value="0" readonly />
 </div>
+
 <div>
-    <label class="mini-label">Cots / Childs Beds</label>
-    <input id="svc_cot" type="number" min="0" class="field" value="0" readonly />
+    <label class="mini-label special-labour-label">Washing Machines /<br>Dishwashers</label>
+    <input id="svc_appliance" type="number" min="0" class="field field-readonly-soft" value="0" readonly />
 </div>
-<div>
-    <label class="mini-label">Dining Tables</label>
-    <input id="svc_dining_table" type="number" min="0" class="field" value="0" readonly />
+
+    <div>
+        <label class="mini-label">Ottoman Beds</label>
+        <input id="svc_ottoman" type="number" min="0" class="field field-readonly-soft" value="0" readonly />
+    </div>
+
+    <div>
+        <label class="mini-label">Dining Tables</label>
+        <input id="svc_dining_table" type="number" min="0" class="field field-readonly-soft" value="0" readonly />
+    </div>
+    
+    <div>
+        <label class="mini-label">Divan Beds</label>
+        <input id="svc_divan" type="number" min="0" class="field field-readonly-soft" value="0" readonly />
+    </div>
+
+    <div>
+        <label class="mini-label">Crating</label>
+        <input id="svc_crate" type="number" min="0" class="field field-readonly-soft" value="0" readonly />
+    </div>
+
+    <div>
+        <label class="mini-label">Electric / TV Beds</label>
+        <input id="svc_electric" type="number" min="0" class="field field-readonly-soft" value="0" readonly />
+    </div>
+
+     <div>
+        <label class="mini-label">Upright Pianos</label>
+        <input id="svc_upright" type="number" min="0" class="field field-readonly-soft" value="0" readonly />
+    </div>
+    
+    <div>
+        <label class="mini-label">Bunk Beds</label>
+        <input id="svc_bunk" type="number" min="0" class="field field-readonly-soft" value="0" readonly />
+    </div>
+
+    <div>
+        <label class="mini-label">Baby / Grand Pianos</label>
+        <input id="svc_grand" type="number" min="0" class="field field-readonly-soft" value="0" readonly />
+    </div>
+   
+    <div>
+        <label class="mini-label">Cots / Childs Beds</label>
+        <input id="svc_cot" type="number" min="0" class="field field-readonly-soft" value="0" readonly />
+    </div>
+
+        
+    <div>
+        <label class="mini-label">Grandfather Clocks</label>
+        <input id="svc_clock" type="number" min="0" class="field field-readonly-soft" value="0" readonly />
+    </div>
 </div>
-                        <div>
-                            <label class="mini-label">Custom Item Minutes (each side)</label>
-                            <input id="svc_custom_minutes" type="number" min="0" class="field" value="0" oninput="handleScheduleInputChange()" />
-                        </div>
-                        <div>
-                            <label class="mini-label">Custom Item Note</label>
-                            <input id="svc_custom_note" type="text" maxlength="40" class="field" value="" oninput="handleScheduleInputChange()" />
-                        </div>
-                        <div>
-                            <label class="mini-label">Upright Pianos</label>
-                            <input id="svc_upright" type="number" min="0" class="field" value="0" oninput="handleScheduleInputChange()" />
-                        </div>
-                        <div>
-                            <label class="mini-label">Baby / Grand Pianos</label>
-                            <input id="svc_grand" type="number" min="0" class="field" value="0" oninput="handleScheduleInputChange()" />
-                        </div>
-                        <div>
-                            <label class="mini-label">Grandfather Clocks</label>
-                            <input id="svc_clock" type="number" min="0" class="field" value="0" oninput="handleScheduleInputChange()" />
-                        </div>
-                        <div>
-                            <label class="mini-label">Washing Machines / Dishwashers</label>
-                            <input id="svc_appliance" type="number" min="0" class="field" value="0" readonly />
-                        </div>
-                        <div>
-                            <label class="mini-label">Crating</label>
-                            <input id="svc_crate" type="number" min="0" class="field" value="0" readonly />
-                        </div>
-                        <div>
-                            <label class="mini-label">Export Wrap Volume (CUFT)</label>
-                            <input id="exportWrapVol" type="number" min="0" class="field" value="0" readonly />
-                        </div>
-                    </div>
                 </div>
 
                 <div class="note-card">
-                    Sequence, packing and inventory totals are now intended to be fed from Photon. Transit, labour assumptions and planner rows remain editable here.
+                    Add custom item labour in minutes per side, plus any manual specialist labour adjustments.
                 </div>
             </div>
         </div>
@@ -2861,13 +2759,17 @@ Enter as: Surname, First Name
             <div class="panel-body">
     <div class="schedule-shell">
         <div class="schedule-toolbar">
-            <div class="schedule-title">Manual Schedule Planner</div>
-            <div class="flex gap-2">
-    <button class="schedule-btn" onclick="autoBuildScheduleDays()">Auto Build</button>
-<button class="schedule-btn" onclick="addScheduleDay()">Add Day</button>
-<button class="schedule-btn" onclick="fetchMileageFromRoute()">Build Route</button>
+    <div class="schedule-title-row">
+        <div class="schedule-title">Manual Schedule Planner</div>
+        <div id="scheduleVolumeBadge" class="schedule-volume-badge">Volume: 0 cuft</div>
+    </div>
+
+    <div class="flex gap-2">
+        <button class="schedule-btn" onclick="autoBuildScheduleDays()">Auto Build</button>
+        <button class="schedule-btn" onclick="addScheduleDay()">Add Day</button>
+        <button class="schedule-btn" onclick="fetchMileageFromRoute()">Build Route</button>
+    </div>
 </div>
-        </div>
         <div class="schedule-list" id="scheduleList"></div>
         <div class="validation-list" id="validationList"></div>
     </div>
@@ -3134,9 +3036,6 @@ const furnitureDB = [
     {item:"Dining Table", volume:40},
     {item:"Desk", volume:20},
     {item:"Bookcase", volume:40},
-    {item:"Wardrobe 2 Door", volume:45},
-    {item:"Wardrobe 3 Door", volume:60},
-    {item:"Wardrobe 4 Door", volume:90},
 
     {item:"Barstool", volume:10},
     {item:"Kitchen Bin", volume:10},
@@ -3183,9 +3082,6 @@ const inventoryCategories = {
         "Dining Table",
         "Desk",
         "Bookcase",
-        "Wardrobe 2 Door",
-        "Wardrobe 3 Door",
-        "Wardrobe 4 Door",
         "Barstool",
         "Kitchen Bin",
         "Butchers Block",
@@ -3222,9 +3118,6 @@ const inventoryCategories = {
         "Chest Drawers",
         "Desk",
         "Bookcase",
-        "Wardrobe 2 Door",
-        "Wardrobe 3 Door",
-        "Wardrobe 4 Door",
         "Clothes Rail",
         "Clothes Rack (Dryer)",
         "Ironing Board",
@@ -3436,9 +3329,8 @@ let lastAddedRawEntryId = null;
 let inventoryHistory = [];
 let qtyResetTimer = null;
 let selectedCrateUnit = "IN";
-let selectedDamageOptions = [];
+let selectedDamageOption = "";
 let selectedBedOption = "";
-let selectedWardrobeOption = "";
 let listedCrateEditEntryKey = "";
 let listedSequenceFilter = "__all__";
 let listedDeliveryFilter = "__all__";
@@ -3452,8 +3344,7 @@ let listedFlagsState = {
     crated: false,
     disconnect: false,
     handyman: false,
-    excluded: false,
-    customerResponsibility: false
+    excluded: false
 };
 let signaturePad = null;
 let scheduleNumberEditMeta = null;
@@ -3936,9 +3827,7 @@ function buildRawInventoryEntry(entryData) {
     crated: !!entryData.crated,
     crateDims: entryData.crateDims || null,
     damage: entryData.damage || "",
-bedType: entryData.bedType || "",
-wardrobeType: entryData.wardrobeType || "",
-customerResponsibility: !!entryData.customerResponsibility
+    bedType: entryData.bedType || ""
 };
 }
 
@@ -4174,7 +4063,6 @@ function syncInventoryDisplayFromSequence(sequenceId) {
 
     const tags = [];
 if (lastRaw.bedType) tags.push("[BED: " + String(lastRaw.bedType).toUpperCase() + "]");
-if (lastRaw.wardrobeType) tags.push("[WARDROBE: " + String(lastRaw.wardrobeType).toUpperCase() + "]");
 if (lastRaw.dismantle) tags.push("[DISMANTLE]");
 if (lastRaw.expWrap) tags.push("[EXP WRAP]");
 if (lastRaw.disconnect) tags.push("[DISCONNECT]");
@@ -4457,7 +4345,6 @@ function getLiveInventoryGroupKey(entry) {
         String(entry.note || ""),
 String(entry.damage || ""),
 String(entry.bedType || ""),
-String(entry.wardrobeType || ""),
 !!entry.crated,
         entry.crateDims
             ? [
@@ -4515,10 +4402,9 @@ function rebuildLiveInventoryFromSequence(sequenceId) {
     deliveryId: entry.deliveryId || "",
     note: entry.note || "",
     damage: entry.damage || "",
-bedType: entry.bedType || "",
-wardrobeType: entry.wardrobeType || "",
-crated: !!entry.crated,
-crateDims: entry.crateDims || null
+    bedType: entry.bedType || "",
+    crated: !!entry.crated,
+    crateDims: entry.crateDims || null
 });
         }
     });
@@ -6301,113 +6187,6 @@ function isBedRawEntry(rawEntry) {
 function isElectricBedType(bedType) {
     return String(bedType || "").trim() === "Electric Motor / TV";
 }
-function isWardrobeInventoryItem(itemName) {
-    const name = String(itemName || "").trim();
-    return [
-        "Wardrobe 2 Door",
-        "Wardrobe 3 Door",
-        "Wardrobe 4 Door"
-    ].includes(name);
-}
-
-function isWardrobeRawEntry(rawEntry) {
-    if (!rawEntry) return false;
-    return isWardrobeInventoryItem(rawEntry.itemName);
-}
-
-function addOrEditWardrobeType() {
-    const rawEntry = getLastRawInventoryEntry();
-    if (!rawEntry) return;
-    if (!isWardrobeRawEntry(rawEntry)) return;
-
-    selectedWardrobeOption = "";
-
-    const overlay = document.getElementById("wardrobe-overlay");
-    if (!overlay) return;
-
-    clearWardrobeOptionButtons();
-
-    const currentWardrobeType = String(rawEntry.wardrobeType || "").trim();
-    if (currentWardrobeType) {
-        selectedWardrobeOption = currentWardrobeType;
-        highlightWardrobeOption(currentWardrobeType);
-    }
-
-    setModalErrorText("wardrobe-error-text", "");
-    overlay.style.display = "flex";
-}
-
-function closeWardrobeModal() {
-    const overlay = document.getElementById("wardrobe-overlay");
-    if (overlay) overlay.style.display = "none";
-
-    selectedWardrobeOption = "";
-    clearWardrobeOptionButtons();
-    setModalErrorText("wardrobe-error-text", "");
-}
-
-function selectWardrobeOption(option) {
-    if (selectedWardrobeOption === option) {
-        selectedWardrobeOption = "";
-        clearWardrobeOptionButtons();
-        return;
-    }
-
-    selectedWardrobeOption = option;
-    highlightWardrobeOption(option);
-    setModalErrorText("wardrobe-error-text", "");
-}
-
-function clearWardrobeOptionButtons() {
-    [
-        "wardrobe-option-hinged",
-        "wardrobe-option-sliding",
-        "wardrobe-option-mirrored",
-        "wardrobe-option-drawer-combi"
-    ].forEach(function(id) {
-        const btn = document.getElementById(id);
-        if (btn) btn.classList.remove("active");
-    });
-}
-
-function highlightWardrobeOption(option) {
-    clearWardrobeOptionButtons();
-
-    const map = {
-        "Hinged": "wardrobe-option-hinged",
-        "Sliding": "wardrobe-option-sliding",
-        "Mirrored": "wardrobe-option-mirrored",
-        "Drawer-Combi": "wardrobe-option-drawer-combi"
-    };
-
-    const btnId = map[option];
-    if (!btnId) return;
-
-    const btn = document.getElementById(btnId);
-    if (btn) btn.classList.add("active");
-}
-
-function saveWardrobeModal() {
-    const rawEntry = getLastRawInventoryEntry();
-    if (!rawEntry) return;
-    if (!isWardrobeRawEntry(rawEntry)) return;
-
-    if (!selectedWardrobeOption) {
-        setModalErrorText("wardrobe-error-text", "Select a wardrobe type");
-        return;
-    }
-
-    rawEntry.wardrobeType = selectedWardrobeOption;
-
-    saveToDevice();
-    syncLiveInventoryFromRawForActiveSequence();
-    recalculateTotalVolume();
-    refreshCurrentInventorySelectionDisplay();
-    renderActionButtonStates();
-    saveCalculatorFeedForActiveSequence();
-
-    closeWardrobeModal();
-}
 function addInventoryItem(itemName) {
     let item = furnitureDB.find(function(i) {
         return i.item === itemName;
@@ -6502,10 +6281,6 @@ saveCalculatorFeedForActiveSequence();
 
 if (isBedInventoryItem(item.item)) {
     addOrEditBedType();
-}
-
-if (isWardrobeInventoryItem(item.item)) {
-    addOrEditWardrobeType();
 }
 }
 function addMiscItem() {
@@ -6988,55 +6763,28 @@ function addOrEditDamage() {
     if (!rawEntry) return;
     if (rawEntry.kind === "note") return;
 
-    selectedDamageOptions = [];
+    selectedDamageOption = "";
 
     const overlay = document.getElementById("damage-overlay");
     const customNote = document.getElementById("damage-custom-note");
 
     if (!overlay || !customNote) return;
 
-clearDamageOptionButtons();
-updateDamageSelectedSummary();
-setModalErrorText("damage-error-text", "");
-
+    clearDamageOptionButtons();
+    setModalErrorText("damage-error-text", "");
     const currentDamage = (rawEntry.damage || "").trim();
 
-    const conditionOptions = [
-        "Dented",
-        "Scratched",
-        "Marked",
-        "Cracked",
-        "Soiled",
-        "Chipped",
-        "Broken",
-        "Electrical Condition Unknown"
-    ];
-
-    if (currentDamage) {
-        const savedParts = currentDamage
-            .split(",")
-            .map(function(part) {
-                return part.trim();
-            })
-            .filter(Boolean);
-
-        const recognisedOptions = savedParts.filter(function(part) {
-            return conditionOptions.includes(part);
-        });
-
-        const customParts = savedParts.filter(function(part) {
-            return !conditionOptions.includes(part);
-        });
-
-        selectedDamageOptions = recognisedOptions;
-
-        selectedDamageOptions.forEach(function(option) {
-            highlightDamageOption(option);
-        });
-updateDamageSelectedSummary();
-        customNote.value = customParts.join(", ");
-    } else {
+    if (
+        currentDamage === "Dented" ||
+        currentDamage === "Scratched" ||
+        currentDamage === "Marked" ||
+        currentDamage === "Cracked"
+    ) {
+        selectedDamageOption = currentDamage;
+        highlightDamageOption(currentDamage);
         customNote.value = "";
+    } else {
+        customNote.value = currentDamage;
     }
 
     overlay.style.display = "flex";
@@ -7049,58 +6797,34 @@ function closeDamageModal() {
     if (overlay) overlay.style.display = "none";
     if (customNote) customNote.value = "";
 
-selectedDamageOptions = [];
-clearDamageOptionButtons();
-updateDamageSelectedSummary();
-setModalErrorText("damage-error-text", "");
+    selectedDamageOption = "";
+    clearDamageOptionButtons();
+    setModalErrorText("damage-error-text", "");
 }
 
 function selectDamageOption(option) {
-    const existingIndex = selectedDamageOptions.indexOf(option);
+    const customNote = document.getElementById("damage-custom-note");
 
-    if (existingIndex >= 0) {
-        selectedDamageOptions.splice(existingIndex, 1);
-    } else {
-        selectedDamageOptions.push(option);
+    if (selectedDamageOption === option) {
+        selectedDamageOption = "";
+        clearDamageOptionButtons();
+        return;
     }
 
-    updateDamageOptionButtons();
-    setModalErrorText("damage-error-text", "");
-}
-function updateDamageOptionButtons() {
-    clearDamageOptionButtons();
+    selectedDamageOption = option;
+    highlightDamageOption(option);
 
-    selectedDamageOptions.forEach(function(option) {
-        highlightDamageOption(option);
-    });
-
-    updateDamageSelectedSummary();
+    if (customNote) {
+        customNote.value = "";
+    }
 }
 
-function updateDamageSelectedSummary() {
-    const summary = document.getElementById("damage-selected-summary");
-    const count = document.getElementById("damage-selected-count");
-    const list = document.getElementById("damage-selected-list");
-
-    if (!summary || !count || !list) return;
-
-    const selectedCount = selectedDamageOptions.length;
-
-    count.innerText = selectedCount;
-    list.innerText = selectedDamageOptions.join(", ");
-
-    summary.classList.toggle("active", selectedCount > 0);
-}
 function clearDamageOptionButtons() {
     [
         "damage-option-dented",
         "damage-option-scratched",
         "damage-option-marked",
-        "damage-option-cracked",
-        "damage-option-soiled",
-        "damage-option-chipped",
-        "damage-option-broken",
-        "damage-option-electrical-unknown"
+        "damage-option-cracked"
     ].forEach(function(id) {
         const btn = document.getElementById(id);
         if (btn) btn.classList.remove("active");
@@ -7110,16 +6834,12 @@ function clearDamageOptionButtons() {
 function highlightDamageOption(option) {
     clearDamageOptionButtons();
 
-const map = {
-    "Dented": "damage-option-dented",
-    "Scratched": "damage-option-scratched",
-    "Marked": "damage-option-marked",
-    "Cracked": "damage-option-cracked",
-    "Soiled": "damage-option-soiled",
-    "Chipped": "damage-option-chipped",
-    "Broken": "damage-option-broken",
-    "Electrical Condition Unknown": "damage-option-electrical-unknown"
-};
+    const map = {
+        "Dented": "damage-option-dented",
+        "Scratched": "damage-option-scratched",
+        "Marked": "damage-option-marked",
+        "Cracked": "damage-option-cracked"
+    };
 
     const btnId = map[option];
     if (!btnId) return;
@@ -7136,24 +6856,16 @@ function saveDamageModal() {
     const customNoteEl = document.getElementById("damage-custom-note");
     const customNote = customNoteEl ? customNoteEl.value.trim() : "";
 
-    const finalDamageParts = [];
-
-    selectedDamageOptions.forEach(function(option) {
-        if (!finalDamageParts.includes(option)) {
-            finalDamageParts.push(option);
-        }
-    });
+    let finalDamage = "";
 
     if (customNote) {
-        finalDamageParts.push(customNote);
-    }
-
-    if (!finalDamageParts.length) {
-        setModalErrorText("damage-error-text", "Select a condition type or enter a note");
+        finalDamage = customNote;
+    } else if (selectedDamageOption) {
+        finalDamage = selectedDamageOption;
+    } else {
+        setModalErrorText("damage-error-text", "Select a damage type or enter a note");
         return;
     }
-
-    const finalDamage = finalDamageParts.join(", ");
 
     setModalErrorText("damage-error-text", "");
 
@@ -8005,8 +7717,6 @@ function getRawEntriesForListedEntry(entry) {
 String(raw.note || "") === String(entry.note || "") &&
 String(raw.damage || "") === String(entry.damage || "") &&
 String(raw.bedType || "") === String(entry.bedType || "") &&
-String(raw.wardrobeType || "") === String(entry.wardrobeType || "") &&
-!!raw.customerResponsibility === !!entry.customerResponsibility &&
 !!raw.crated === !!entry.crated &&
             rawCrateText === crateText
         );
@@ -8087,15 +7797,14 @@ function openListedFlagsModal(entry) {
     const overlay = document.getElementById("listed-flags-overlay");
     if (!overlay || !entry) return;
 
-listedFlagsState = {
-    dismantle: !!entry.dismantle,
-    expWrap: !!entry.expWrap,
-    crated: !!entry.crated,
-    disconnect: !!entry.disconnect,
-    handyman: !!entry.handyman,
-    excluded: !!entry.excluded,
-    customerResponsibility: !!entry.customerResponsibility
-};
+    listedFlagsState = {
+        dismantle: !!entry.dismantle,
+        expWrap: !!entry.expWrap,
+        crated: !!entry.crated,
+        disconnect: !!entry.disconnect,
+        handyman: !!entry.handyman,
+        excluded: !!entry.excluded
+    };
 
     updateListedFlagsModalButtons();
     overlay.style.display = "flex";
@@ -8106,27 +7815,25 @@ function closeListedFlagsModal() {
     if (overlay) overlay.style.display = "none";
 
     listedFlagsEntryKey = "";
-listedFlagsState = {
-    dismantle: false,
-    expWrap: false,
-    crated: false,
-    disconnect: false,
-    handyman: false,
-    excluded: false,
-    customerResponsibility: false
-};
+    listedFlagsState = {
+        dismantle: false,
+        expWrap: false,
+        crated: false,
+        disconnect: false,
+        handyman: false,
+        excluded: false
+    };
 }
 
 function updateListedFlagsModalButtons() {
-const map = {
-    dismantle: "listed-flag-dismantle",
-    expWrap: "listed-flag-expwrap",
-    crated: "listed-flag-crate",
-    disconnect: "listed-flag-disconnect",
-    handyman: "listed-flag-handyman",
-    excluded: "listed-flag-exclude",
-    customerResponsibility: "listed-flag-customer"
-};
+    const map = {
+        dismantle: "listed-flag-dismantle",
+        expWrap: "listed-flag-expwrap",
+        crated: "listed-flag-crate",
+        disconnect: "listed-flag-disconnect",
+        handyman: "listed-flag-handyman",
+        excluded: "listed-flag-exclude"
+    };
 
     Object.keys(map).forEach(function(key) {
         const btn = document.getElementById(map[key]);
@@ -8174,7 +7881,6 @@ rawMatches.forEach(function(raw) {
     raw.disconnect = !!listedFlagsState.disconnect;
     raw.handyman = !!listedFlagsState.handyman;
     raw.excluded = !!listedFlagsState.excluded;
-    raw.customerResponsibility = !!listedFlagsState.customerResponsibility;
 
     if (!wantsCrate) {
         raw.crated = false;
@@ -8202,42 +7908,6 @@ saveCalculatorFeedForActiveSequence();
 updateInventoryDisplay("LISTED FLAGS UPDATED");
 closeListedFlagsModal();;
 }
-function getInventoryActionNeededReason(entry) {
-    const itemName = String(entry.itemName || "").toUpperCase().trim();
-
-    if (
-        itemName === "WARDROBE 2 DOOR" ||
-        itemName === "WARDROBE 3 DOOR" ||
-        itemName === "WARDROBE 4 DOOR"
-    ) {
-        if (!entry.wardrobeType) {
-            return "Wardrobe Type Needed";
-        }
-    }
-
-    if (
-        itemName === "BED (SINGLE)" ||
-        itemName === "BED (DOUBLE)" ||
-        itemName === "BED (QUEENSIZE)" ||
-        itemName === "BED (KINGSIZE)" ||
-        itemName === "BED (SUPERKING)"
-    ) {
-        if (!entry.bedType) {
-            return "Bed Type Needed";
-        }
-    }
-
-    if (
-        itemName === "WASHING MACHINE" ||
-        itemName === "DISHWASHER"
-    ) {
-        if (!entry.disconnect && !entry.customerResponsibility && !entry.note) {
-            return "Disconnect Check Needed";
-        }
-    }
-
-    return "";
-}
 function getListedEntryMergeKey(entry) {
     const crateText = entry.crated && entry.crateDims
         ? [
@@ -8260,11 +7930,9 @@ function getListedEntryMergeKey(entry) {
         !!entry.expWrap,
         !!entry.disconnect,
         !!entry.handyman,
-entry.note || "",
+       entry.note || "",
 entry.damage || "",
 entry.bedType || "",
-entry.wardrobeType || "",
-!!entry.customerResponsibility,
 !!entry.crated,
         crateText
     ].join("||");
@@ -8354,65 +8022,42 @@ function buildListedSummary(items) {
     let excludedCount = 0;
     let lineCount = items.length;
 
-const excludedItems = [];
-const exclusionNotes = [];
-const customerResponsibilityItems = [];
+    const excludedItems = [];
+    const exclusionNotes = [];
 
-items.forEach(function(entry) {
-    const itemLabel = `${Number(entry.qty || 0)} x ${String(entry.itemName || "-").toUpperCase()}`;
+    items.forEach(function(entry) {
+        if (entry.excluded) {
+            excludedCount += Number(entry.qty || 0);
 
-    if (entry.customerResponsibility) {
-        const noteText = entry.note && String(entry.note).trim()
-            ? ` — ${String(entry.note).trim()}`
-            : "";
+            const itemLabel = `${Number(entry.qty || 0)} x ${String(entry.itemName || "-").toUpperCase()}`;
+            excludedItems.push(itemLabel);
 
-        customerResponsibilityItems.push(itemLabel + noteText);
-    }
-
-    if (entry.excluded) {
-        excludedCount += Number(entry.qty || 0);
-        excludedItems.push(itemLabel);
-
-        if (entry.note && String(entry.note).trim()) {
-            exclusionNotes.push(
-                `${String(entry.itemName || "-").toUpperCase()}: ${String(entry.note).trim()}`
-            );
+            if (entry.note && String(entry.note).trim()) {
+                exclusionNotes.push(
+                    `${String(entry.itemName || "-").toUpperCase()}: ${String(entry.note).trim()}`
+                );
+            }
+        } else {
+            includedVolume += Number(entry.totalVolume || 0);
         }
-    } else {
-        includedVolume += Number(entry.totalVolume || 0);
-    }
-});
+    });
 
-return {
-    includedVolume: includedVolume,
-    excludedCount: excludedCount,
-    lineCount: lineCount,
-    excludedItems: excludedItems,
-    exclusionNotes: exclusionNotes,
-    customerResponsibilityItems: customerResponsibilityItems
-};
+    return {
+        includedVolume: includedVolume,
+        excludedCount: excludedCount,
+        lineCount: lineCount,
+        excludedItems: excludedItems,
+        exclusionNotes: exclusionNotes
+    };
 }
 function buildResponsibilitiesSummary(summary) {
     const excludedItems = Array.isArray(summary.excludedItems) ? summary.excludedItems : [];
     const exclusionNotes = Array.isArray(summary.exclusionNotes) ? summary.exclusionNotes : [];
-    const customerResponsibilityItems = Array.isArray(summary.customerResponsibilityItems)
-        ? summary.customerResponsibilityItems
-        : [];
-
-    const additionalText = currentJob && currentJob.customerResponsibilitiesText
-        ? String(currentJob.customerResponsibilitiesText || "").trim()
-        : "";
 
     return {
-        hasContent:
-            excludedItems.length > 0 ||
-            exclusionNotes.length > 0 ||
-            customerResponsibilityItems.length > 0 ||
-            additionalText.length > 0,
+        hasContent: excludedItems.length > 0 || exclusionNotes.length > 0,
         excludedItems: excludedItems,
-        exclusionNotes: exclusionNotes,
-        customerResponsibilityItems: customerResponsibilityItems,
-        additionalText: additionalText
+        exclusionNotes: exclusionNotes
     };
 }
 function buildCrewInstructionsSummary(items) {
@@ -8480,12 +8125,7 @@ if (entry.bedType) {
 
     return summary;
 }
-function saveAdditionalCustomerResponsibilities(value) {
-    if (!currentJob) return;
 
-    currentJob.customerResponsibilitiesText = String(value || "");
-    saveToDevice();
-}
 function renderListedSummary(summary, materials, crewInstructions) {
     const footerBar = document.getElementById("listed-footer-summary");
     if (!footerBar) return;
@@ -8592,23 +8232,10 @@ function renderListedSummary(summary, materials, crewInstructions) {
 
         <div class="listed-stat-card">
             <div class="listed-stat-label">Customer Responsibilities</div>
-        <div class="listed-stat-card">
-            <div class="listed-stat-label">Customer Responsibilities</div>
             ${
                 responsibilities.hasContent
                     ? `
                     <div class="space-y-3 text-[10px] font-black text-slate-900 uppercase leading-5">
-                        <div>
-                            <div class="text-slate-400 pb-1">Item-Level Customer Responsibilities</div>
-                            ${
-                                responsibilities.customerResponsibilityItems.length
-                                    ? responsibilities.customerResponsibilityItems.map(function(item) {
-                                        return `<div>${escapeHtml(item)}</div>`;
-                                    }).join("")
-                                    : `<div class="text-slate-400 italic">None</div>`
-                            }
-                        </div>
-
                         <div>
                             <div class="text-slate-400 pb-1">Excluded Items (${summary.excludedCount})</div>
                             ${
@@ -8630,34 +8257,107 @@ function renderListedSummary(summary, materials, crewInstructions) {
                                     : `<div class="text-slate-400 italic">None recorded</div>`
                             }
                         </div>
-
-                        ${
-                            responsibilities.additionalText
-                                ? `
-                                <div>
-                                    <div class="text-slate-400 pb-1">Additional Customer Responsibilities</div>
-                                    <div>${escapeHtml(responsibilities.additionalText).replace(/\n/g, "<br>")}</div>
-                                </div>
-                                `
-                                : ""
-                        }
                     </div>
                     `
                     : `
                     <div class="text-[10px] font-black text-slate-400 uppercase italic">
-                        No customer responsibilities recorded
+                        No exclusions or customer responsibility notes recorded
                     </div>
                     `
             }
+        </div>
 
-            <div style="height:12px"></div>
+        <div class="listed-stat-card">
+            <div class="listed-stat-label">Crew Instructions / Responsibilities</div>
 
-            <label class="mini-label">Additional Customer Responsibilities</label>
-            <textarea
-                class="customer-responsibility-textarea"
-                placeholder="Example: Customer to dismantle wardrobe before crew arrival. Customer to disconnect washing machine."
-                oninput="saveAdditionalCustomerResponsibilities(this.value)"
-            >${escapeHtml(currentJob && currentJob.customerResponsibilitiesText ? currentJob.customerResponsibilitiesText : "")}</textarea>
+            <div class="space-y-3 text-[10px] font-black text-slate-900 uppercase leading-5">
+                <div>
+    <div class="text-slate-400 pb-1">Beds</div>
+    ${
+        crew.beds.length
+            ? crew.beds.map(function(item) {
+                return `<div>${escapeHtml(item)}</div>`;
+            }).join("")
+            : `<div class="text-slate-400 italic">None</div>`
+    }
+</div>
+                <div>
+                    <div class="text-slate-400 pb-1">Dismantle</div>
+                    ${
+                        crew.dismantle.length
+                            ? crew.dismantle.map(function(item) {
+                                return `<div>${escapeHtml(item)}</div>`;
+                            }).join("")
+                            : `<div class="text-slate-400 italic">None</div>`
+                    }
+                </div>
+
+                <div>
+                    <div class="text-slate-400 pb-1">Export Wrap</div>
+                    ${
+                        crew.exportWrap.length
+                            ? crew.exportWrap.map(function(item) {
+                                return `<div>${escapeHtml(item)}</div>`;
+                            }).join("")
+                            : `<div class="text-slate-400 italic">None</div>`
+                    }
+                </div>
+
+                <div>
+                    <div class="text-slate-400 pb-1">Crate</div>
+                    ${
+                        crew.crate.length
+                            ? crew.crate.map(function(item) {
+                                return `<div>${escapeHtml(item)}</div>`;
+                            }).join("")
+                            : `<div class="text-slate-400 italic">None</div>`
+                    }
+                </div>
+
+                <div>
+                    <div class="text-slate-400 pb-1">Disconnect</div>
+                    ${
+                        crew.disconnect.length
+                            ? crew.disconnect.map(function(item) {
+                                return `<div>${escapeHtml(item)}</div>`;
+                            }).join("")
+                            : `<div class="text-slate-400 italic">None</div>`
+                    }
+                </div>
+
+                <div>
+                    <div class="text-slate-400 pb-1">Handyman</div>
+                    ${
+                        crew.handyman.length
+                            ? crew.handyman.map(function(item) {
+                                return `<div>${escapeHtml(item)}</div>`;
+                            }).join("")
+                            : `<div class="text-slate-400 italic">None</div>`
+                    }
+                </div>
+
+                <div>
+                    <div class="text-slate-400 pb-1">Damage</div>
+                    ${
+                        crew.damage.length
+                            ? crew.damage.map(function(item) {
+                                return `<div>${escapeHtml(item)}</div>`;
+                            }).join("")
+                            : `<div class="text-slate-400 italic">None</div>`
+                    }
+                </div>
+
+                <div>
+                    <div class="text-slate-400 pb-1">Notes</div>
+                    ${
+                        crew.notes.length
+                            ? crew.notes.map(function(item) {
+                                return `<div>${escapeHtml(item)}</div>`;
+                            }).join("")
+                            : `<div class="text-slate-400 italic">None</div>`
+                    }
+                </div>
+            </div>
         </div>
     `;
 
@@ -8806,11 +8506,7 @@ renderListedSummary(listedSummary, materialsSummary, filteredItems);
 
                 const tags = [];
 
-const actionNeededReason = getInventoryActionNeededReason(entry);
-if (actionNeededReason) tags.push("ACTION NEEDED: " + actionNeededReason);
-
 if (entry.bedType) tags.push("BED: " + String(entry.bedType).toUpperCase());
-if (entry.wardrobeType) tags.push("WARDROBE: " + String(entry.wardrobeType).toUpperCase());
 if (entry.dismantle) tags.push("DISMANTLE");
 if (entry.expWrap) tags.push("EXP WRAP");
 if (entry.disconnect) tags.push("DISCONNECT");
@@ -8829,9 +8525,8 @@ if (entry.handyman) tags.push("HANDYMAN");
                     }
                 }
                 if (entry.damage) tags.push("DAMAGE: " + entry.damage.toUpperCase());
-if (entry.excluded) tags.push("EXCLUDED");
-if (entry.customerResponsibility) tags.push("CUSTOMER RESPONSIBILITY");
-if (entry.note) tags.push("NOTE: " + entry.note.toUpperCase());
+                if (entry.excluded) tags.push("EXCLUDED");
+                if (entry.note) tags.push("NOTE: " + entry.note.toUpperCase());
 
                 const tagText = tags.length ? ` [${tags.join("] [")}]` : "";
                 const isExcluded = !!entry.excluded;
@@ -8953,7 +8648,6 @@ function refreshCurrentInventorySelectionDisplay() {
 
     const tags = [];
 if (rawEntry.bedType) tags.push("[BED: " + String(rawEntry.bedType).toUpperCase() + "]");
-if (rawEntry.wardrobeType) tags.push("[WARDROBE: " + String(rawEntry.wardrobeType).toUpperCase() + "]");
 if (rawEntry.dismantle) tags.push("[DISMANTLE]");
 if (rawEntry.expWrap) tags.push("[EXP WRAP]");
 if (rawEntry.disconnect) tags.push("[DISCONNECT]");
@@ -9272,22 +8966,13 @@ function getPrintableResponsibilitiesHtml(summary) {
     const responsibilities = buildResponsibilitiesSummary(summary);
 
     if (!responsibilities.hasContent) {
-        return `<div class="pdf-small-note">No customer responsibilities recorded</div>`;
+        return `<div class="pdf-small-note">No exclusions or customer responsibility notes recorded</div>`;
     }
 
     return `
         <div class="pdf-materials-grid">
             <div>
-                <div class="pdf-mini-head">Item-Level Customer Responsibilities</div>
-                ${
-                    responsibilities.customerResponsibilityItems.length
-                        ? responsibilities.customerResponsibilityItems.map(function(item) {
-                            return `<div>${escapeHtml(item)}</div>`;
-                        }).join("")
-                        : `<div>None</div>`
-                }
-
-                <div class="pdf-mini-head space-top">Excluded Items (${summary.excludedCount})</div>
+                <div class="pdf-mini-head">Excluded Items (${summary.excludedCount})</div>
                 ${
                     responsibilities.excludedItems.length
                         ? responsibilities.excludedItems.map(function(item) {
@@ -9306,17 +8991,11 @@ function getPrintableResponsibilitiesHtml(summary) {
                         }).join("")
                         : `<div>None recorded</div>`
                 }
-
-                <div class="pdf-mini-head space-top">Additional Responsibilities</div>
-                ${
-                    responsibilities.additionalText
-                        ? `<div>${escapeHtml(responsibilities.additionalText).replace(/\n/g, "<br>")}</div>`
-                        : `<div>None recorded</div>`
-                }
             </div>
         </div>
     `;
 }
+
 function getPrintableCrewInstructionsHtml(items) {
     const crew = buildCrewInstructionsSummary(items);
 
@@ -11325,6 +11004,9 @@ function renderScheduleLegs(day) {
             }
 
             <div class="schedule-legs-list">
+                <div class="text-[10px] font-bold text-slate-400" style="text-transform:none; margin-bottom:4px;">
+    Use Get Route to check Google Maps, then enter the mileage for this travel leg.
+</div>
                 ${
                     day.legs.length
                         ? day.legs.map(function(leg) {
@@ -11548,6 +11230,19 @@ function handleScheduleSequenceChange(sequenceId) {
     loadSequence(sequenceId);
     switchTab('schedule');
 }
+function setInventoryFedField(el, value) {
+    if (!el) return;
+
+    const cleanValue = Number(value || 0);
+
+    el.value = cleanValue;
+
+    if (cleanValue > 0) {
+        el.classList.add("field-fed-from-inventory");
+    } else {
+        el.classList.remove("field-fed-from-inventory");
+    }
+}
 function loadScheduleInputsFromActiveSequence() {
     const seq = getActiveSequenceRecord();
     if (!seq) return;
@@ -11591,22 +11286,22 @@ if (operatingBranchEl) {
 
 if (loadingVariantEl) loadingVariantEl.value = schedule.loadingVariant || "Standard";
 
-    if (svcFrameEl) svcFrameEl.value = photonFeed.special?.frameBeds || 0;
-    if (svcOttomanEl) svcOttomanEl.value = photonFeed.special?.ottomanBeds || 0;
-    if (svcDivanEl) svcDivanEl.value = photonFeed.special?.divanBeds || 0;
-    if (svcElectricEl) svcElectricEl.value = photonFeed.special?.electricBeds || 0;
-    if (svcBunkEl) svcBunkEl.value = photonFeed.special?.bunkBeds || 0;
-    if (svcCotEl) svcCotEl.value = photonFeed.special?.cots || 0;
-    if (svcDiningTableEl) svcDiningTableEl.value = photonFeed.special?.diningTables || 0;
+    setInventoryFedField(svcFrameEl, photonFeed.special?.frameBeds || 0);
+setInventoryFedField(svcOttomanEl, photonFeed.special?.ottomanBeds || 0);
+setInventoryFedField(svcDivanEl, photonFeed.special?.divanBeds || 0);
+setInventoryFedField(svcElectricEl, photonFeed.special?.electricBeds || 0);
+setInventoryFedField(svcBunkEl, photonFeed.special?.bunkBeds || 0);
+setInventoryFedField(svcCotEl, photonFeed.special?.cots || 0);
+setInventoryFedField(svcDiningTableEl, photonFeed.special?.diningTables || 0);
 
     if (svcCustomMinutesEl) svcCustomMinutesEl.value = schedule.special.customItemMinutes;
     if (svcCustomNoteEl) svcCustomNoteEl.value = schedule.special.customItemNote;
-    if (svcUprightEl) svcUprightEl.value = schedule.special.uprightPianos;
-    if (svcGrandEl) svcGrandEl.value = schedule.special.grandPianos;
-    if (svcClockEl) svcClockEl.value = schedule.special.grandfatherClocks;
-    if (svcApplianceEl) svcApplianceEl.value = photonFeed.disconnectApplianceCount || 0;
-    if (svcCrateEl) svcCrateEl.value = photonFeed.special?.cratingItems || 0;
-    if (exportWrapVolEl) exportWrapVolEl.value = photonFeed.special?.exportWrapVol || 0;
+    setInventoryFedField(svcUprightEl, schedule.special.uprightPianos);
+setInventoryFedField(svcGrandEl, schedule.special.grandPianos);
+setInventoryFedField(svcClockEl, schedule.special.grandfatherClocks);
+    setInventoryFedField(svcApplianceEl, photonFeed.disconnectApplianceCount || 0);
+setInventoryFedField(svcCrateEl, photonFeed.special?.cratingItems || 0);
+setInventoryFedField(exportWrapVolEl, photonFeed.special?.exportWrapVol || 0);
 }
 
 function saveScheduleInputsToActiveSequence() {
@@ -13044,7 +12739,12 @@ function renderScheduleCalculator(){
     const totalVolume = round2(state.furnitureVol + boxVolume);
 
     const furnitureDisplay = document.getElementById("furnitureVolDisplay");
-    if (furnitureDisplay) furnitureDisplay.textContent = state.furnitureVol;
+if (furnitureDisplay) furnitureDisplay.textContent = state.furnitureVol;
+
+const scheduleVolumeBadge = document.getElementById("scheduleVolumeBadge");
+if (scheduleVolumeBadge) {
+    scheduleVolumeBadge.textContent = "Volume: " + totalVolume + " cuft";
+}
 
     const apDisplay = document.getElementById("qty_ap_display");
     if (apDisplay) apDisplay.textContent = state.qty.ap;
@@ -13071,15 +12771,18 @@ function renderScheduleCalculator(){
     const svcCrateEl = document.getElementById("svc_crate");
     const exportWrapVolEl = document.getElementById("exportWrapVol");
 
-    if (svcFrameEl) svcFrameEl.value = state.special.frameBeds;
-    if (svcOttomanEl) svcOttomanEl.value = state.special.ottomanBeds;
-    if (svcDivanEl) svcDivanEl.value = state.special.divanBeds;
-    if (svcElectricEl) svcElectricEl.value = state.special.electricBeds;
-    if (svcBunkEl) svcBunkEl.value = state.special.bunkBeds;
-    if (svcCotEl) svcCotEl.value = state.special.cots;
-    if (svcDiningTableEl) svcDiningTableEl.value = state.special.diningTables;
-    if (svcCrateEl) svcCrateEl.value = state.special.crate;
-    if (exportWrapVolEl) exportWrapVolEl.value = state.exportWrapVol;
+  setInventoryFedField(svcFrameEl, state.special.frameBeds);
+setInventoryFedField(svcOttomanEl, state.special.ottomanBeds);
+setInventoryFedField(svcDivanEl, state.special.divanBeds);
+setInventoryFedField(svcElectricEl, state.special.electricBeds);
+setInventoryFedField(svcBunkEl, state.special.bunkBeds);
+setInventoryFedField(svcCotEl, state.special.cots);
+setInventoryFedField(svcDiningTableEl, state.special.diningTables);
+setInventoryFedField(svcCrateEl, state.special.crate);
+setInventoryFedField(exportWrapVolEl, state.exportWrapVol);
+setInventoryFedField(document.getElementById("svc_upright"), state.special.upright);
+setInventoryFedField(document.getElementById("svc_grand"), state.special.grand);
+setInventoryFedField(document.getElementById("svc_clock"), state.special.clock);
 
     const special = calcSpecialLabour(state);
     const loading = calcLoading(totalVolume, state.loadRate, special.loadSideHours, state.loadingScenario);
@@ -13120,26 +12823,26 @@ function renderScheduleCalculator(){
         `Travel is taken from the travel legs added to each planner row, and is deducted before net working time is validated. ` +
         `Two standard beds and 50 cuft of export wrap are treated as already included before extra special time is added.`;
 
-document.getElementById("specialText").textContent =
-    `Additional handling includes any item or condition that may affect crew time. ` +
-    `Beds: frame ${special.breakdown.frameBeds.toFixed(2)} hrs, ` +
-    `ottoman ${special.breakdown.ottomanBeds.toFixed(2)} hrs, ` +
-    `divan ${special.breakdown.divanBeds.toFixed(2)} hrs, ` +
-    `electric / TV ${special.breakdown.electricBeds.toFixed(2)} hrs. ` +
-    `Other furniture: bunk beds ${special.breakdown.bunkBeds.toFixed(2)} hrs, ` +
-    `cots / child beds ${special.breakdown.cots.toFixed(2)} hrs, ` +
-    `dining tables ${special.breakdown.diningTables.toFixed(2)} hrs. ` +
-    `Specialist items: upright pianos ${special.breakdown.upright.toFixed(2)} hrs, ` +
-    `baby / grand pianos ${special.breakdown.grand.toFixed(2)} hrs, ` +
-    `grandfather clocks ${special.breakdown.clock.toFixed(2)} hrs. ` +
-    `Services: appliances ${special.breakdown.appliance.toFixed(2)} hrs ` +
-    `(${state.special.disconnectApplianceCount} marked for disconnect), ` +
-    `crating ${special.breakdown.crate.toFixed(2)} hrs, ` +
-    `loft effects ${special.breakdown.loft.toFixed(2)} hrs, ` +
-    `export wrapping ${special.breakdown.exportWrap.toFixed(2)} hrs extra after the first ${special.breakdown.includedExportWrapVol} cuft. ` +
-    `${state.special.customNote ? state.special.customNote : "Custom item"}: ${special.breakdown.custom.toFixed(2)} hrs. ` +
-    `Total additional handling: ${special.specialHours.toFixed(2)} hrs, split as ` +
-    `${special.loadSideHours.toFixed(2)} hrs load-side and ${special.unloadSideHours.toFixed(2)} hrs unload-side.`;
+    document.getElementById("specialText").textContent =
+        `Frame beds: ${special.breakdown.frameBeds.toFixed(2)} hrs · ` +
+        `Ottoman beds: ${special.breakdown.ottomanBeds.toFixed(2)} hrs · ` +
+        `Divan beds: ${special.breakdown.divanBeds.toFixed(2)} hrs · ` +
+        `Electric / TV beds: ${special.breakdown.electricBeds.toFixed(2)} hrs (handyman only) · ` +
+        `Bunk beds: ${special.breakdown.bunkBeds.toFixed(2)} hrs · ` +
+        `Cots / Childs beds: ${special.breakdown.cots.toFixed(2)} hrs (tracked only for now) · ` +
+        `Dining tables: ${special.breakdown.diningTables.toFixed(2)} hrs · ` +
+        `${state.special.customNote ? state.special.customNote : "Custom item"}: ${special.breakdown.custom.toFixed(2)} hrs · ` +
+        `Upright pianos: ${special.breakdown.upright.toFixed(2)} hrs · ` +
+        `Baby / grand pianos: ${special.breakdown.grand.toFixed(2)} hrs · ` +
+        `Grandfather clocks: ${special.breakdown.clock.toFixed(2)} hrs · ` +
+        `Appliances: ${special.breakdown.appliance.toFixed(2)} hrs (${state.special.manualApplianceCount} manual + ${state.special.disconnectApplianceCount} from Disconnect) · ` +
+        `Crating: ${special.breakdown.crate.toFixed(2)} hrs · ` +
+        `Loft effects: ${special.breakdown.loft.toFixed(2)} hrs · ` +
+        `Export wrapping: ${special.breakdown.exportWrap.toFixed(2)} hrs extra after first ${special.breakdown.includedExportWrapVol} cuft included · ` +
+        `Depot to collection: ${special.depotToCollectionHours.toFixed(2)} hrs · ` +
+`Collection to delivery: ${special.collectionToDeliveryHours.toFixed(2)} hrs · ` +
+`Delivery to depot: ${special.deliveryToDepotHours.toFixed(2)} hrs · ` +
+`Load side specials: ${special.loadSideHours.toFixed(2)} hrs · Unload side specials: ${special.unloadSideHours.toFixed(2)} hrs.`;
 
     renderSchedulePlanner();
 renderValidation(packing, loading, unloading, special, state);
@@ -13200,9 +12903,7 @@ function normalizeJobsShape() {
             signedAt: "",
             ...(job && job.signature ? job.signature : {})
         };
-safeJob.customerResponsibilitiesText = job && job.customerResponsibilitiesText
-    ? String(job.customerResponsibilitiesText)
-    : "";
+
         return safeJob;
     });
 }
@@ -13213,27 +12914,6 @@ document.addEventListener('DOMContentLoaded', function () {
     renderDashboard();
 });
 </script>
-<!-- WARDROBE MODAL -->
-<div id="wardrobe-overlay" class="wardrobe-overlay" onclick="closeWardrobeModal()">
-    <div class="wardrobe-panel" onclick="event.stopPropagation()">
-        <div class="wardrobe-title">Wardrobe Type</div>
-        <div class="wardrobe-subtitle">Select wardrobe construction type for notes and crew visibility</div>
-
-        <div class="wardrobe-grid">
-            <button type="button" id="wardrobe-option-hinged" class="wardrobe-option-btn" onclick="selectWardrobeOption('Hinged')">Hinged</button>
-            <button type="button" id="wardrobe-option-sliding" class="wardrobe-option-btn" onclick="selectWardrobeOption('Sliding')">Sliding</button>
-            <button type="button" id="wardrobe-option-mirrored" class="wardrobe-option-btn" onclick="selectWardrobeOption('Mirrored')">Mirrored</button>
-            <button type="button" id="wardrobe-option-drawer-combi" class="wardrobe-option-btn" onclick="selectWardrobeOption('Drawer-Combi')">Drawer-Combi</button>
-        </div>
-
-        <div id="wardrobe-error-text" class="modal-error-text"></div>
-
-        <div class="wardrobe-actions">
-            <button type="button" class="wardrobe-cancel-btn" onclick="closeWardrobeModal()">Cancel</button>
-            <button type="button" class="wardrobe-save-btn" onclick="saveWardrobeModal()">Save Wardrobe Type</button>
-        </div>
-    </div>
-</div>
 <!-- BED MODAL -->
 <div id="bed-overlay" class="bed-overlay" onclick="closeBedModal()">
     <div class="bed-panel" onclick="event.stopPropagation()">
@@ -13259,28 +12939,21 @@ document.addEventListener('DOMContentLoaded', function () {
 <div id="damage-overlay" class="damage-overlay" onclick="closeDamageModal()">
     <div class="damage-panel" onclick="event.stopPropagation()">
         <div class="damage-title">Damage</div>
-<div class="damage-subtitle">Select one or more conditions, or add your own note</div>
+        <div class="damage-subtitle">Select type or add your own note</div>
 
-<div class="damage-grid">
-    <button type="button" id="damage-option-dented" class="damage-option-btn" onclick="selectDamageOption('Dented')">Dented</button>
-    <button type="button" id="damage-option-scratched" class="damage-option-btn" onclick="selectDamageOption('Scratched')">Scratched</button>
-    <button type="button" id="damage-option-marked" class="damage-option-btn" onclick="selectDamageOption('Marked')">Marked</button>
-    <button type="button" id="damage-option-cracked" class="damage-option-btn" onclick="selectDamageOption('Cracked')">Cracked</button>
-    <button type="button" id="damage-option-soiled" class="damage-option-btn" onclick="selectDamageOption('Soiled')">Soiled</button>
-    <button type="button" id="damage-option-chipped" class="damage-option-btn" onclick="selectDamageOption('Chipped')">Chipped</button>
-    <button type="button" id="damage-option-broken" class="damage-option-btn" onclick="selectDamageOption('Broken')">Broken</button>
-    <button type="button" id="damage-option-electrical-unknown" class="damage-option-btn" onclick="selectDamageOption('Electrical Condition Unknown')">Electrical Condition Unknown</button>
-</div>
+        <div class="damage-grid">
+            <button type="button" id="damage-option-dented" class="damage-option-btn" onclick="selectDamageOption('Dented')">Dented</button>
+            <button type="button" id="damage-option-scratched" class="damage-option-btn" onclick="selectDamageOption('Scratched')">Scratched</button>
+            <button type="button" id="damage-option-marked" class="damage-option-btn" onclick="selectDamageOption('Marked')">Marked</button>
+            <button type="button" id="damage-option-cracked" class="damage-option-btn" onclick="selectDamageOption('Cracked')">Cracked</button>
+        </div>
 
         <textarea
             id="damage-custom-note"
             class="damage-note-input"
             placeholder="If none apply, enter damage note here..."
         ></textarea>
-<div id="damage-selected-summary" class="damage-selected-summary">
-    <div>Selected: <span id="damage-selected-count" class="damage-selected-count">0</span></div>
-    <div id="damage-selected-list" class="damage-selected-list"></div>
-</div>
+
         <div id="damage-error-text" class="modal-error-text"></div>
 
         <div class="damage-actions">
@@ -13441,13 +13114,13 @@ document.addEventListener('DOMContentLoaded', function () {
         <div class="listed-flags-title">Edit Flags</div>
         <div class="listed-flags-subtitle">Apply proper operational flags to this listed line</div>
 
-<button type="button" id="listed-flag-dismantle" class="listed-flag-btn" onclick="toggleListedFlag('dismantle')">Dismantle</button>
-<button type="button" id="listed-flag-expwrap" class="listed-flag-btn" onclick="toggleListedFlag('expWrap')">Export Wrap</button>
-<button type="button" id="listed-flag-crate" class="listed-flag-btn" onclick="toggleListedFlag('crated')">Crate</button>
-<button type="button" id="listed-flag-disconnect" class="listed-flag-btn" onclick="toggleListedFlag('disconnect')">Disconnect</button>
-<button type="button" id="listed-flag-handyman" class="listed-flag-btn" onclick="toggleListedFlag('handyman')">Handyman</button>
-<button type="button" id="listed-flag-exclude" class="listed-flag-btn" onclick="toggleListedFlag('excluded')">Exclude</button>
-<button type="button" id="listed-flag-customer" class="listed-flag-btn" onclick="toggleListedFlag('customerResponsibility')">Customer Responsibility</button>
+        <div class="listed-flags-grid">
+            <button type="button" id="listed-flag-dismantle" class="listed-flag-btn" onclick="toggleListedFlag('dismantle')">Dismantle</button>
+            <button type="button" id="listed-flag-expwrap" class="listed-flag-btn" onclick="toggleListedFlag('expWrap')">Export Wrap</button>
+            <button type="button" id="listed-flag-crate" class="listed-flag-btn" onclick="toggleListedFlag('crated')">Crate</button>
+            <button type="button" id="listed-flag-disconnect" class="listed-flag-btn" onclick="toggleListedFlag('disconnect')">Disconnect</button>
+            <button type="button" id="listed-flag-handyman" class="listed-flag-btn" onclick="toggleListedFlag('handyman')">Handyman</button>
+            <button type="button" id="listed-flag-exclude" class="listed-flag-btn" onclick="toggleListedFlag('excluded')">Exclude</button>
         </div>
 
         <div class="listed-flags-actions">
@@ -13458,4 +13131,4 @@ document.addEventListener('DOMContentLoaded', function () {
 </div>
 </body>
 </html>
-
+>
