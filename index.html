@@ -11648,8 +11648,14 @@ function getLoadingProfile(loadingVariant, loadingScenario) {
         return {
             label: "Ex Store",
             loadingApplies: false,
+            unloadingApplies: true,
+
+            // Loading not applicable
             morningEquivalentRate: 0,
-            pmAfterAmEquivalentRate: 0
+            pmAfterAmEquivalentRate: 0,
+
+            // Unloading rate for ex-store delivery
+            unloadRate: 115
         };
     }
 
@@ -11658,16 +11664,28 @@ function getLoadingProfile(loadingVariant, loadingScenario) {
             return {
                 label: "Slow / Into Store",
                 loadingApplies: true,
-                morningEquivalentRate: 85,
-                pmAfterAmEquivalentRate: 35
+                unloadingApplies: false,
+
+                // Into-store loading rates
+                morningEquivalentRate: 50,
+                pmAfterAmEquivalentRate: 50,
+
+                // Unloading not applicable
+                unloadRate: 0
             };
         }
 
         return {
             label: "Standard / Into Store",
             loadingApplies: true,
-            morningEquivalentRate: 100,
-            pmAfterAmEquivalentRate: 45
+            unloadingApplies: false,
+
+            // Into-store loading rates
+            morningEquivalentRate: 66,
+            pmAfterAmEquivalentRate: 66,
+
+            // Unloading not applicable
+            unloadRate: 0
         };
     }
 
@@ -11675,16 +11693,28 @@ function getLoadingProfile(loadingVariant, loadingScenario) {
         return {
             label: "Slow / Direct",
             loadingApplies: true,
+            unloadingApplies: true,
+
+            // Keep existing direct slow logic
             morningEquivalentRate: 100,
-            pmAfterAmEquivalentRate: 45
+            pmAfterAmEquivalentRate: 45,
+
+            // Keep existing direct unload rate
+            unloadRate: 132
         };
     }
 
     return {
         label: "Standard / Direct",
         loadingApplies: true,
+        unloadingApplies: true,
+
+        // Keep existing direct standard logic
         morningEquivalentRate: 125,
-        pmAfterAmEquivalentRate: 55
+        pmAfterAmEquivalentRate: 55,
+
+        // Keep existing direct unload rate
+        unloadRate: 132
     };
 }
 function getPhotonFeed() {
@@ -11876,7 +11906,13 @@ function getIncludedKeys(packOption){
 function getState() {
     const photonFeed = getPhotonFeed();
     const seq = getActiveSequenceRecord();
-const loadingScenario = getLoadingScenarioFromMoveType(seq ? seq.moveType : "");
+    const loadingScenario = getLoadingScenarioFromMoveType(seq ? seq.moveType : "");
+
+    const loadingVariant = document.getElementById("loadingVariant")
+        ? document.getElementById("loadingVariant").value
+        : "Standard";
+
+    const loadingProfile = getLoadingProfile(loadingVariant, loadingScenario);
 
     const disconnectApplianceCount = Number(photonFeed.disconnectApplianceCount || 0);
     const totalApplianceCount = disconnectApplianceCount;
@@ -11885,11 +11921,15 @@ const loadingScenario = getLoadingScenarioFromMoveType(seq ? seq.moveType : "");
     packOption: photonFeed.packOption || "none",
     furnitureVol: photonFeed.furnitureVol || 0,
     loftVol: num("loftVol"),
-    loadRate: num("loadRate") || 125,
-    unloadRate: num("unloadRate") || 132,
-    loadingVariant: document.getElementById("loadingVariant")
-        ? document.getElementById("loadingVariant").value
-        : "Standard",
+
+    // These are now driven by the loading profile rather than loose manual values
+    loadRate: loadingProfile.morningEquivalentRate,
+    unloadRate: loadingProfile.unloadRate,
+
+    // Keep the detailed loading profile available for planner logic
+    loadingProfile: loadingProfile,
+
+    loadingVariant: loadingVariant,
     loadingScenario: loadingScenario,
     depotToCollectionMinutes: num("depotToCollectionMinutes"),
 collectionToDeliveryMinutes: num("collectionToDeliveryMinutes"),
@@ -12025,8 +12065,52 @@ custom: round2(((state.special.customMinutes > 0 ? state.special.customMinutes *
         }
     };
 }
-function calcLoading(totalVolume, loadRate, loadSideSpecialHours, loadingScenario){
+function calcLoading(totalVolume, loadRate, loadSideSpecialHours, loadingScenario, loadingProfile){
     if (loadingScenario === "exStore") {
+        return {
+            hours: 0,
+            days: 0,
+            completionCrew: 0,
+            volumeHours: 0,
+            morningVolumeHours: 0,
+            pmAfterAmVolumeHours: 0
+        };
+    }
+
+    const profile = loadingProfile || {};
+    const morningRate = Number(profile.morningEquivalentRate || loadRate || 0);
+    const pmAfterAmRate = Number(profile.pmAfterAmEquivalentRate || morningRate || 0);
+
+    if (!morningRate || morningRate <= 0) {
+        return {
+            hours: 0,
+            days: 0,
+            completionCrew: 0,
+            volumeHours: 0,
+            morningVolumeHours: 0,
+            pmAfterAmVolumeHours: 0
+        };
+    }
+
+    const morningVolumeHours = totalVolume / morningRate;
+    const pmAfterAmVolumeHours = pmAfterAmRate > 0 ? totalVolume / pmAfterAmRate : morningVolumeHours;
+
+    // Main loading calculation remains based on morning-equivalent rate
+    const volumeHours = morningVolumeHours;
+    const totalHours = volumeHours + loadSideSpecialHours;
+
+    return {
+        hours: round2(totalHours),
+        days: round1(totalHours / 8),
+        completionCrew: round1(totalHours / 4),
+        volumeHours: round2(volumeHours),
+        morningVolumeHours: round2(morningVolumeHours),
+        pmAfterAmVolumeHours: round2(pmAfterAmVolumeHours)
+    };
+}
+
+function calcUnloading(totalVolume, unloadRate, unloadSideSpecialHours, loadingScenario){
+    if (loadingScenario === "intoStore") {
         return {
             hours: 0,
             days: 0,
@@ -12035,20 +12119,18 @@ function calcLoading(totalVolume, loadRate, loadSideSpecialHours, loadingScenari
         };
     }
 
-    const volumeHours = totalVolume / loadRate;
-    const totalHours = volumeHours + loadSideSpecialHours;
+    if (!unloadRate || unloadRate <= 0) {
+        return {
+            hours: 0,
+            days: 0,
+            completionCrew: 0,
+            volumeHours: 0
+        };
+    }
 
-    return {
-        hours: round2(totalHours),
-        days: round1(totalHours / 8),
-        completionCrew: round1(totalHours / 4),
-        volumeHours: round2(volumeHours)
-    };
-}
-
-function calcUnloading(totalVolume, unloadRate, unloadSideSpecialHours){
     const volumeHours = totalVolume / unloadRate;
     const totalHours = volumeHours + unloadSideSpecialHours;
+
     return {
         hours: round2(totalHours),
         days: round1(totalHours / 8),
@@ -12767,8 +12849,8 @@ function renderSchedulePlanner(){
     const boxVolume = round2(calcBoxVolume(state));
     const totalVolume = round2(state.furnitureVol + boxVolume);
     const special = calcSpecialLabour(state);
-    const loading = calcLoading(totalVolume, state.loadRate, special.loadSideHours, state.loadingScenario);
-    const unloading = calcUnloading(totalVolume, state.unloadRate, special.unloadSideHours);
+    const loading = calcLoading(totalVolume, state.loadRate, special.loadSideHours, state.loadingScenario, state.loadingProfile);
+    const unloading = caconst loading = calcLoading(totalVolume, state.loadRate, special.loadSideHours, state.loadingScenario, state.loadingProfile);lcUnloading(totalVolume, state.unloadRate, special.unloadSideHours);
 
     const plannerTotals = {
         packingHours: packing.packHours,
@@ -13100,11 +13182,18 @@ function buildScheduleSpecialRhsHtml(state, special) {
 
         if (!qty || !itemName) return;
 
-       if (entry.dismantle && isBedInventoryItem(itemName)) {
-    const bedType = entry.bedType ? String(entry.bedType) : "Type not set";
+       if (
+    entry.dismantle &&
+    (
+        isBedInventoryItem(itemName) ||
+        isBunkBedItem(itemName) ||
+        isCotBedItem(itemName)
+    )
+) {
+    const bedType = entry.bedType ? String(entry.bedType) : "";
 
     bedRows.push(
-        qty + " x " + itemName + " — " + bedType
+        qty + " x " + itemName + (bedType ? " — " + bedType : "")
     );
 }
 
@@ -13114,15 +13203,17 @@ if (entry.dismantle && isWardrobeInventoryItem(itemName)) {
     );
 }
 
-        if (
-            entry.dismantle &&
-            !isBedInventoryItem(itemName) &&
-            !isWardrobeInventoryItem(itemName)
-        ) {
-            otherDismantleRows.push(
-                qty + " x " + itemName
-            );
-        }
+       if (
+    entry.dismantle &&
+    !isBedInventoryItem(itemName) &&
+    !isBunkBedItem(itemName) &&
+    !isCotBedItem(itemName) &&
+    !isWardrobeInventoryItem(itemName)
+) {
+    otherDismantleRows.push(
+        qty + " x " + itemName
+    );
+}
 
         if (entry.expWrap) {
             serviceRows.push(qty + " x " + itemName + " — Export wrap");
@@ -13157,10 +13248,8 @@ if (entry.dismantle && isWardrobeInventoryItem(itemName)) {
         otherDismantleRows.length;
 
     const hasSpecial =
-        specialRows.length ||
-        state.special.diningTables ||
-        state.special.cots ||
-        state.special.bunkBeds;
+    specialRows.length ||
+    state.special.diningTables;
 
     const hasServices =
         serviceRows.length ||
@@ -13169,6 +13258,21 @@ if (entry.dismantle && isWardrobeInventoryItem(itemName)) {
         state.special.appliance ||
         state.special.crate;
 
+    const isBunkBedItem = function(name) {
+    const clean = String(name || "").trim().toUpperCase();
+
+    return clean === "BUNK BED";
+};
+
+const isCotBedItem = function(name) {
+    const clean = String(name || "").trim().toUpperCase();
+
+    return (
+        clean === "COT / CHILDS BED" ||
+        clean === "COT / CHILD'S BED" ||
+        clean === "COT"
+    );
+};
     const renderList = function(items, emptyText) {
         if (!items.length) {
             return '<div class="special-rhs-empty">' + emptyText + '</div>';
@@ -13186,7 +13290,7 @@ if (entry.dismantle && isWardrobeInventoryItem(itemName)) {
                 <div class="special-rhs-subtitle">${special.breakdown.wardrobes.toFixed(2)} wardrobe hrs included in this section</div>
 
                 <div class="special-rhs-group-title">Beds</div>
-                ${renderList(bedRows, "No bed types recorded")}
+                ${renderList(bedRows, "No bed items recorded")}
 
                 <div class="special-rhs-group-title">Wardrobes</div>
                 ${renderList(wardrobeRows, "No wardrobe types recorded")}
@@ -13202,8 +13306,6 @@ if (entry.dismantle && isWardrobeInventoryItem(itemName)) {
                 ${renderList(specialRows, "No piano / grandfather clock items recorded")}
 
                 <div class="special-rhs-line">Dining tables: ${state.special.diningTables}</div>
-                <div class="special-rhs-line">Bunk beds: ${state.special.bunkBeds}</div>
-                <div class="special-rhs-line">Cots / childs beds: ${state.special.cots}</div>
             </div>
 
             <div class="special-rhs-card">
@@ -13276,8 +13378,8 @@ if (scheduleVolumeBadge) {
 setInventoryFedField(exportWrapVolEl, state.exportWrapVol);
 
     const special = calcSpecialLabour(state);
-    const loading = calcLoading(totalVolume, state.loadRate, special.loadSideHours, state.loadingScenario);
-    const unloading = calcUnloading(totalVolume, state.unloadRate, special.unloadSideHours);
+    const loadingconst loading = calcLoading(totalVolume, state.loadRate, special.loadSideHours, state.loadingScenario, state.loadingProfile); = calcLoading(totalVolume, state.loadRate, special.loadSideHours, state.loadingScenario);
+    const unloading = calcconst loading = calcLoading(totalVolume, state.loadRate, special.loadSideHours, state.loadingScenario, state.loadingProfile);Unloading(totalVolume, state.unloadRate, special.unloadSideHours);
 
     document.getElementById("summaryMode").textContent = getPackModeLabel(state.packOption);
     document.getElementById("summaryTotalVolume").textContent = totalVolume;
@@ -13287,7 +13389,10 @@ setInventoryFedField(exportWrapVolEl, state.exportWrapVol);
     document.getElementById("summaryLoadHours").textContent = loading.hours.toFixed(2);
     document.getElementById("summaryLoadDays").textContent = loading.days.toFixed(1);
     document.getElementById("summaryLoadCompletion").textContent = loading.completionCrew.toFixed(1);
-    document.getElementById("summaryLoadRate").textContent = state.loadRate;
+    document.getElementById("summaryLoadRate").textContent =
+    state.loadingProfile && state.loadingProfile.pmAfterAmEquivalentRate !== state.loadingProfile.morningEquivalentRate
+        ? state.loadingProfile.morningEquivalentRate + " / " + state.loadingProfile.pmAfterAmEquivalentRate
+        : state.loadRate;
 
     document.getElementById("summaryUnloadHours").textContent = unloading.hours.toFixed(2);
     document.getElementById("summaryUnloadDays").textContent = unloading.days.toFixed(1);
