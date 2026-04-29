@@ -12850,7 +12850,7 @@ function renderSchedulePlanner(){
     const totalVolume = round2(state.furnitureVol + boxVolume);
     const special = calcSpecialLabour(state);
     const loading = calcLoading(totalVolume, state.loadRate, special.loadSideHours, state.loadingScenario, state.loadingProfile);
-    const unloading = caconst loading = calcLoading(totalVolume, state.loadRate, special.loadSideHours, state.loadingScenario, state.loadingProfile);lcUnloading(totalVolume, state.unloadRate, special.unloadSideHours);
+    const unloading = calcUnloading(totalVolume, state.unloadRate, special.unloadSideHours, state.loadingScenario);
 
     const plannerTotals = {
         packingHours: packing.packHours,
@@ -13170,12 +13170,13 @@ function buildScheduleSpecialRhsHtml(state, special) {
     const rawItems = getActiveSequenceRawInventoryItems();
 
     const bedRows = [];
-    const wardrobeRows = [];
-    const otherDismantleRows = [];
-    const serviceRows = [];
-    const specialRows = [];
+const wardrobeRows = [];
+const otherDismantleRows = [];
+const serviceRows = [];
+const specialRows = [];
 
-    rawItems.forEach(function(entry) {
+
+rawItems.forEach(function(entry) {
         const qty = Number(entry.qty || 0);
         const itemName = String(entry.itemName || "").trim();
         const itemUpper = itemName.toUpperCase();
@@ -13378,9 +13379,8 @@ if (scheduleVolumeBadge) {
 setInventoryFedField(exportWrapVolEl, state.exportWrapVol);
 
     const special = calcSpecialLabour(state);
-    const loadingconst loading = calcLoading(totalVolume, state.loadRate, special.loadSideHours, state.loadingScenario, state.loadingProfile); = calcLoading(totalVolume, state.loadRate, special.loadSideHours, state.loadingScenario);
-    const unloading = calcconst loading = calcLoading(totalVolume, state.loadRate, special.loadSideHours, state.loadingScenario, state.loadingProfile);Unloading(totalVolume, state.unloadRate, special.unloadSideHours);
-
+    const loading = calcLoading(totalVolume, state.loadRate, special.loadSideHours, state.loadingScenario, state.loadingProfile);
+    const unloading = calcUnloading(totalVolume, state.unloadRate, special.unloadSideHours, state.loadingScenario);
     document.getElementById("summaryMode").textContent = getPackModeLabel(state.packOption);
     document.getElementById("summaryTotalVolume").textContent = totalVolume;
     document.getElementById("summaryPackHours").textContent = packing.packHours.toFixed(2);
