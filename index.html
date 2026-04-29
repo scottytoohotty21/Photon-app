@@ -7162,7 +7162,8 @@ function saveWardrobeModal() {
         return;
     }
 
-    rawEntry.wardrobeTypes = selectedWardrobeOptions.slice();
+   rawEntry.wardrobeTypes = selectedWardrobeOptions.slice();
+rawEntry.dismantle = true;
 
     saveToDevice();
     syncLiveInventoryFromRawForActiveSequence();
@@ -13157,6 +13158,28 @@ function formatWardrobeTypes(entry) {
 
     return "Type not set";
 }
+function isBunkBedItem(itemName) {
+    const clean = String(itemName || "").trim().toUpperCase();
+    return clean === "BUNK BED";
+}
+
+function isCotBedItem(itemName) {
+    const clean = String(itemName || "").trim().toUpperCase();
+
+    return (
+        clean === "COT / CHILDS BED" ||
+        clean === "COT / CHILD'S BED" ||
+        clean === "COT"
+    );
+}
+
+function isScheduleBedGroupItem(itemName) {
+    return (
+        isBedInventoryItem(itemName) ||
+        isBunkBedItem(itemName) ||
+        isCotBedItem(itemName)
+    );
+}
 
 function getActiveSequenceRawInventoryItems() {
     if (!currentJob || !activeSeqId) return [];
@@ -13183,14 +13206,7 @@ rawItems.forEach(function(entry) {
 
         if (!qty || !itemName) return;
 
-       if (
-    entry.dismantle &&
-    (
-        isBedInventoryItem(itemName) ||
-        isBunkBedItem(itemName) ||
-        isCotBedItem(itemName)
-    )
-) {
+       if (entry.dismantle && isScheduleBedGroupItem(itemName)) {
     const bedType = entry.bedType ? String(entry.bedType) : "";
 
     bedRows.push(
@@ -13204,11 +13220,9 @@ if (entry.dismantle && isWardrobeInventoryItem(itemName)) {
     );
 }
 
-       if (
+if (
     entry.dismantle &&
-    !isBedInventoryItem(itemName) &&
-    !isBunkBedItem(itemName) &&
-    !isCotBedItem(itemName) &&
+    !isScheduleBedGroupItem(itemName) &&
     !isWardrobeInventoryItem(itemName)
 ) {
     otherDismantleRows.push(
@@ -13259,21 +13273,7 @@ if (entry.dismantle && isWardrobeInventoryItem(itemName)) {
         state.special.appliance ||
         state.special.crate;
 
-    const isBunkBedItem = function(name) {
-    const clean = String(name || "").trim().toUpperCase();
-
-    return clean === "BUNK BED";
-};
-
-const isCotBedItem = function(name) {
-    const clean = String(name || "").trim().toUpperCase();
-
-    return (
-        clean === "COT / CHILDS BED" ||
-        clean === "COT / CHILD'S BED" ||
-        clean === "COT"
-    );
-};
+   
     const renderList = function(items, emptyText) {
         if (!items.length) {
             return '<div class="special-rhs-empty">' + emptyText + '</div>';
