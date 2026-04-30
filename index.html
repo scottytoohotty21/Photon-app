@@ -2436,6 +2436,11 @@ button {
     text-align: right;
     font-weight: 900;
 }
+.quote-cost-needs-entry {
+    background: #f0fdf4 !important;
+    border: 2px solid #22c55e !important;
+    box-shadow: 0 0 0 3px rgba(34,197,94,0.12);
+}
 
 .quote-del-wrap .action-btn{
     width:100%;
@@ -9781,6 +9786,7 @@ const QUOTE_CORE_COST_CHOICES = [
     "Export Wrap",
     "Overtime",
     "Nights Out",
+    "Crates",
     "Custom"
 ];
 
@@ -10019,9 +10025,61 @@ function getQuoteAdditionalCostLines(sequenceId) {
     return state.additionalCostLines;
 }
 
+function syncQuoteTriggeredCostRows(sequenceId) {
+    const state = ensureQuoteSequenceState(sequenceId);
+    if (!state) return;
+
+    if (!Array.isArray(state.pricingLines)) state.pricingLines = [];
+    if (!Array.isArray(state.additionalCostLines)) state.additionalCostLines = [];
+
+    const rawItems = getRawInventoryItemsForSequence(sequenceId).filter(function(entry) {
+        return !entry.excluded;
+    });
+
+    const hasCrates = rawItems.some(function(entry) {
+        return !!entry.crated;
+    });
+
+    const hasHandyman = rawItems.some(function(entry) {
+        return !!entry.handyman;
+    });
+
+    const existingCratesLine = state.pricingLines.find(function(line) {
+        return line.label === "Crates";
+    });
+
+    if (hasCrates && !existingCratesLine) {
+        state.pricingLines.push({
+            id: createQuoteLineId(),
+            label: "Crates",
+            customLabel: "",
+            qty: 1,
+            unitCost: 0,
+            autoFromInventory: true,
+            needsCostEntry: true
+        });
+    }
+
+    const existingHandymanLine = state.additionalCostLines.find(function(line) {
+        return line.label === "Handyman";
+    });
+
+    if (hasHandyman && !existingHandymanLine) {
+        state.additionalCostLines.push({
+            id: createQuoteLineId(),
+            label: "Handyman",
+            customLabel: "",
+            qty: 1,
+            unitCost: 0,
+            autoFromInventory: true,
+            needsCostEntry: true
+        });
+    }
+}
 function syncQuotePricingFromSchedule(sequenceId) {
     const state = ensureQuoteSequenceState(sequenceId);
     if (!state || !Array.isArray(state.pricingLines)) return;
+    syncQuoteTriggeredCostRows(sequenceId);
 
     const scheduleTotals = calcQuoteScheduleTotals(sequenceId);
     const feed = getQuoteSequenceFeed(sequenceId);
@@ -10588,8 +10646,14 @@ function updateQuoteLine(sequenceId, lineId, field, value, lineType, shouldReren
     } else if (field === "qty") {
         line.qty = Number(value || 0);
     } else if (field === "unitCost") {
-        line.unitCost = Number(value || 0);
+    line.unitCost = Number(value || 0);
+
+    if (line.unitCost > 0) {
+        line.needsCostEntry = false;
+    } else if (line.autoFromInventory) {
+        line.needsCostEntry = true;
     }
+}
 
     quotePricingSaved = false;
     saveToDevice();
@@ -10669,6 +10733,7 @@ function renderQuotePricingGrid(sequenceId) {
             ${lines.map(function(line) {
                 const total = calcQuoteLineTotal(line);
                 const isCustom = line.label === "Custom";
+                const needsCostEntry = !!line.needsCostEntry && Number(line.unitCost || 0) <= 0;
 
                 return `
                     <div class="pricing-row ${isCustom ? "pricing-row-custom" : ""}">
@@ -10712,7 +10777,7 @@ function renderQuotePricingGrid(sequenceId) {
                                     type="number"
                                     min="0"
                                     step="0.01"
-                                    class="field"
+                                    class="field ${needsCostEntry ? 'quote-cost-needs-entry' : ''}"
                                     value="${Number(line.unitCost || 0)}"
                                     oninput="updateQuoteLine('${sequenceId}','${line.id}','unitCost',this.value,'core',false)"
                                 >
@@ -10764,6 +10829,7 @@ function renderQuoteAdditionalCostsGrid(sequenceId) {
             ${lines.map(function(line) {
                 const total = calcQuoteLineTotal(line);
                 const isCustom = line.label === "Custom";
+                const needsCostEntry = !!line.needsCostEntry && Number(line.unitCost || 0) <= 0;
 
                 return `
                     <div class="pricing-row ${isCustom ? "pricing-row-custom" : ""}">
@@ -10807,7 +10873,7 @@ function renderQuoteAdditionalCostsGrid(sequenceId) {
                                     type="number"
                                     min="0"
                                     step="0.01"
-                                    class="field"
+                                    class="field ${needsCostEntry ? 'quote-cost-needs-entry' : ''}"
                                     value="${Number(line.unitCost || 0)}"
                                     oninput="updateQuoteLine('${sequenceId}','${line.id}','unitCost',this.value,'additional',false)"
                                 >
