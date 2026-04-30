@@ -1,4 +1,4 @@
-<<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -12266,23 +12266,23 @@ function autoBuildScheduleDays() {
         packMode === "full";
 
     if (hasPacking) {
-        newRows.push({
-            id: createId(),
-            groupId: createId(),
-            dayPart: "Full Day",
-            task: packMode === "cg" ? "Pack fragiles & breakables" : "Pack & Prepare",
-            completionWindow: "None",
-            men: 2,
-            vans: 1,
-            hours: 8,
-            nightsOut: false,
-overtimeHours: 0,
-legs: []
-                createEmptyScheduleLeg("Depot", collectionId, 30),
-                createEmptyScheduleLeg(collectionId, "Depot", 30)
-            ]
-        });
-    }
+    newRows.push({
+        id: createId(),
+        groupId: createId(),
+        dayPart: "Full Day",
+        task: packMode === "cg" ? "Pack fragiles & breakables" : "Pack & Prepare",
+        completionWindow: "None",
+        men: 2,
+        vans: 1,
+        hours: 8,
+        nightsOut: false,
+        overtimeHours: 0,
+        legs: [
+            createEmptyScheduleLeg("Depot", collectionId, 30),
+            createEmptyScheduleLeg(collectionId, "Depot", 30)
+        ]
+    });
+}
 
     if (moveMode === "intoStore") {
         newRows.push({
@@ -12356,9 +12356,10 @@ function addScheduleDay() {
         vans: 1,
         hours: 8,
         nightsOut: false,
-        legs: [
-            createEmptyScheduleLeg("Depot", "", 0)
-        ]
+overtimeHours: 0,
+legs: [
+    createEmptyScheduleLeg("Depot", "", 0)
+]
     });
 
     saveManualScheduleToActiveSequence();
@@ -12485,8 +12486,9 @@ function splitCompletionRowIntoAmPm(row) {
         men: row.men,
         vans: row.vans,
         hours: 4,
-        nightsOut: false,
-        legs: amLegs
+       nightsOut: false,
+overtimeHours: 0,
+legs: amLegs
     };
 
     const pmRow = {
@@ -12499,7 +12501,8 @@ function splitCompletionRowIntoAmPm(row) {
         vans: row.vans,
         hours: 4,
         nightsOut: false,
-        legs: pmLegs
+overtimeHours: 0,
+legs: pmLegs
     };
 
     manualSchedule = manualSchedule.filter(function(day) {
@@ -12845,7 +12848,7 @@ function buildScheduleRowTimeBreakdown(day, state, totals) {
 function buildScheduleRowCompactTimeSummary(day, state, totals) {
     ensureScheduleRowShape(day);
 
-    const bounds = getRowWindowBoundsWithOvertime(day);
+    const bounds = getRowWindowBounds(day.dayPart, day.overtimeHours || 0);
     const windowStart = bounds.start;
     const windowEnd = bounds.end;
     const completionCutoff = 13 * 60;
@@ -13848,4 +13851,4 @@ document.addEventListener('DOMContentLoaded', function () {
 </div>
 </body>
 </html>
->
+
