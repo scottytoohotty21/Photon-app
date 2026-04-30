@@ -9756,9 +9756,10 @@ const QUOTE_PRICING_DEFAULTS = [
     { label: "Vans", qty: 0, unitCost: 120 },
     { label: "Crew", qty: 0, unitCost: 200 },
     { label: "Mileage", qty: 0, unitCost: 0.45 },
-    { label: "Consumables", qty: 0, unitCost: 0 },
+    { label: "Consumables", qty: 1, unitCost: 60 },
     { label: "Cartons", qty: 0, unitCost: 2.5 },
     { label: "Export Wrap", qty: 0, unitCost: 0.3 },
+    { label: "Overtime", qty: 0, unitCost: 20 },
     { label: "Nights Out", qty: 0, unitCost: 40 }
 ];
 
@@ -9778,6 +9779,7 @@ const QUOTE_CORE_COST_CHOICES = [
     "Consumables",
     "Cartons",
     "Export Wrap",
+    "Overtime",
     "Nights Out",
     "Custom"
 ];
@@ -9915,11 +9917,12 @@ function calcQuoteScheduleTotals(sequenceId) {
 
         if (!grouped[groupKey]) {
             grouped[groupKey] = {
-                vans: 0,
-                crew: 0,
-                nightsOut: 0,
-                hasNightOut: false
-            };
+    vans: 0,
+    crew: 0,
+    nightsOut: 0,
+    overtime: 0,
+    hasNightOut: false
+};
         }
 
         const men = Number(row.men || 0);
@@ -9937,18 +9940,20 @@ function calcQuoteScheduleTotals(sequenceId) {
         if (isNightOutTask || isNightOutSelected) {
             grouped[groupKey].hasNightOut = true;
         }
+        grouped[groupKey].overtime += Math.max(0, Number(row.overtimeHours || 0)) * men;
     });
 
     return Object.values(grouped).reduce(function(acc, day) {
-        acc.vans += Number(day.vans || 0);
-        acc.crew += Number(day.crew || 0);
+    acc.vans += Number(day.vans || 0);
+    acc.crew += Number(day.crew || 0);
+    acc.overtime += Number(day.overtime || 0);
 
-        if (day.hasNightOut) {
-            acc.nightsOut += Number(day.crew || 0);
-        }
+    if (day.hasNightOut) {
+        acc.nightsOut += Number(day.crew || 0);
+    }
 
-        return acc;
-    }, { vans: 0, crew: 0, nightsOut: 0 });
+    return acc;
+}, { vans: 0, crew: 0, nightsOut: 0, overtime: 0 });
 }
 
 function buildDefaultQuotePricingLines(sequenceId) {
@@ -9978,6 +9983,7 @@ function buildDefaultQuotePricingLines(sequenceId) {
         if (item.label === "Crew") qty = scheduleTotals.crew;
         if (item.label === "Cartons") qty = cartonQty;
         if (item.label === "Export Wrap") qty = exportWrapQty;
+        if (item.label === "Overtime") qty = scheduleTotals.overtime;
         if (item.label === "Nights Out") qty = scheduleTotals.nightsOut;
 
         return {
@@ -10041,6 +10047,7 @@ function syncQuotePricingFromSchedule(sequenceId) {
         if (line.label === "Crew") return { ...line, qty: scheduleTotals.crew };
         if (line.label === "Cartons") return { ...line, qty: cartonQty };
         if (line.label === "Export Wrap") return { ...line, qty: exportWrapQty };
+        if (line.label === "Overtime") return { ...line, qty: scheduleTotals.overtime };
         if (line.label === "Nights Out") return { ...line, qty: scheduleTotals.nightsOut };
         return line;
     });
@@ -10282,17 +10289,7 @@ function handleQuoteCreateQuote() {
     const state = ensureQuoteSequenceState(sequenceId);
     const totals = getQuoteCommercialTotals(sequenceId);
     const scope = buildQuoteScopeSnapshot(sequenceId);
-    const QUOTE_CORE_COST_CHOICES = [
-    "Vans",
-    "Crew",
-    "Mileage",
-    "Consumables",
-    "Cartons",
-    "Export Wrap",
-    "Nights Out",
-    "Custom"
-];
-
+    
     const coreLines = getQuotePricingLines(sequenceId)
         .map(function(line) {
             const label = getQuoteLineLabel(line) || line.label || "Line";
@@ -10918,7 +10915,8 @@ function getDefaultManualScheduleRows() {
             men: 2,
             hours: 8,
             nightsOut: false,
-            legs: []
+overtimeHours: 0,
+legs: []
         }
     ];
 }
@@ -11434,7 +11432,8 @@ function loadManualScheduleFromActiveSequence() {
             vans: Math.max(0, Number(day.vans) || 0),
             hours: safeDayPart === "Full Day" ? 8 : 4,
             nightsOut: !!day.nightsOut,
-            legs: safeLegs.map(function(leg) {
+overtimeHours: Math.max(0, Number(day.overtimeHours || 0)),
+legs: safeLegs.map(function(leg) {
                 const roadType = leg.roadType || "Road";
                 const miles = Math.max(0, Number(leg.miles || 0));
 
@@ -11478,7 +11477,8 @@ function saveManualScheduleToActiveSequence() {
             vans: Math.max(0, Number(day.vans) || 0),
             hours: safeDayPart === "Full Day" ? 8 : 4,
             nightsOut: !!day.nightsOut,
-            legs: (Array.isArray(day.legs) ? day.legs : []).map(function(leg) {
+overtimeHours: Math.max(0, Number(day.overtimeHours || 0)),
+legs: (Array.isArray(day.legs) ? day.legs : []).map(function(leg) {
                 const roadType = leg.roadType || "Road";
                 const miles = Math.max(0, Number(leg.miles || 0));
 
@@ -12201,12 +12201,13 @@ function getNormalWindowHours(dayPart) {
 
 function getWindowHoursForRow(day) {
     const completionWindow = String(day.completionWindow || "None");
+    const baseHours = completionWindow === "Completion Day"
+        ? getCompletionWindowHours(day.dayPart)
+        : getNormalWindowHours(day.dayPart);
 
-    if (completionWindow === "Completion Day") {
-        return getCompletionWindowHours(day.dayPart);
-    }
+    const overtimeHours = Math.max(0, Number(day.overtimeHours || 0));
 
-    return getNormalWindowHours(day.dayPart);
+    return baseHours + overtimeHours;
 }
 function getCompletionAdjustedCapacity(day, mode, taskHours) {
     const completionWindow = String(day.completionWindow || "None");
@@ -12275,7 +12276,8 @@ function autoBuildScheduleDays() {
             vans: 1,
             hours: 8,
             nightsOut: false,
-            legs: [
+overtimeHours: 0,
+legs: []
                 createEmptyScheduleLeg("Depot", collectionId, 30),
                 createEmptyScheduleLeg(collectionId, "Depot", 30)
             ]
@@ -12293,7 +12295,8 @@ function autoBuildScheduleDays() {
             vans: 1,
             hours: 8,
             nightsOut: false,
-            legs: [
+overtimeHours: 0,
+legs: [
                 createEmptyScheduleLeg("Depot", collectionId, 30),
                 createEmptyScheduleLeg(collectionId, deliveryId, 30)
             ]
@@ -12309,7 +12312,8 @@ function autoBuildScheduleDays() {
             vans: 1,
             hours: 8,
             nightsOut: false,
-            legs: [
+overtimeHours: 0,
+legs: [
                 createEmptyScheduleLeg(collectionId, deliveryId, 30),
                 createEmptyScheduleLeg(deliveryId, "Depot", 30)
             ]
@@ -12325,7 +12329,8 @@ function autoBuildScheduleDays() {
             vans: 1,
             hours: 8,
             nightsOut: false,
-            legs: [
+overtimeHours: 0,
+legs: [
                 createEmptyScheduleLeg("Depot", collectionId, 30),
                 createEmptyScheduleLeg(collectionId, deliveryId, 30),
                 createEmptyScheduleLeg(deliveryId, "Depot", 30)
@@ -12392,7 +12397,8 @@ manualSchedule.push({
     vans: row.vans,
     hours: 4,
     nightsOut: false,
-    legs: [
+overtimeHours: 0,
+legs: [
     createEmptyScheduleLeg("Collection Address", "Delivery Address", 0),
     createEmptyScheduleLeg("Delivery Address", "Depot", 0)
 ]
@@ -12560,7 +12566,8 @@ if (value === "AM"){
             vans: updated.vans,
             hours: 4,
             nightsOut: false,
-            legs: [
+overtimeHours: 0,
+legs: [
     createEmptyScheduleLeg("Depot", "Collection Address", 0)
 ]
         });
@@ -12606,16 +12613,18 @@ function minutesToClock(totalMinutes) {
     return String(h).padStart(2, "0") + ":" + String(m).padStart(2, "0");
 }
 
-function getRowWindowBounds(dayPart) {
+function getRowWindowBounds(dayPart, overtimeHours = 0) {
+    const extraMinutes = Math.max(0, Number(overtimeHours || 0)) * 60;
+
     if (dayPart === "AM") {
-        return { start: 8 * 60, end: 13 * 60 };       // 08:00–13:00
+        return { start: 8 * 60, end: (13 * 60) + extraMinutes };
     }
 
     if (dayPart === "PM") {
-        return { start: 13 * 60, end: 17 * 60 + 30 }; // 13:00–17:30
+        return { start: 13 * 60, end: (17 * 60 + 30) + extraMinutes };
     }
 
-    return { start: 8 * 60, end: 17 * 60 + 30 };      // Full Day 08:00–17:30
+    return { start: 8 * 60, end: (17 * 60 + 30) + extraMinutes };
 }
 
 function getScheduleLocationLabel(value) {
@@ -12707,7 +12716,7 @@ function getPlannerTaskBlocks(day, state, totals) {
 function buildScheduleRowTimeBreakdown(day, state, totals) {
     ensureScheduleRowShape(day);
 
-    const bounds = getRowWindowBounds(day.dayPart);
+    const bounds = getRowWindowBounds(day.dayPart, day.overtimeHours || 0);
     const windowStart = bounds.start;
     const windowEnd = bounds.end;
     const completionCutoff = 13 * 60; // 13:00
@@ -12836,7 +12845,7 @@ function buildScheduleRowTimeBreakdown(day, state, totals) {
 function buildScheduleRowCompactTimeSummary(day, state, totals) {
     ensureScheduleRowShape(day);
 
-    const bounds = getRowWindowBounds(day.dayPart);
+    const bounds = getRowWindowBoundsWithOvertime(day);
     const windowStart = bounds.start;
     const windowEnd = bounds.end;
     const completionCutoff = 13 * 60;
@@ -12929,6 +12938,33 @@ function buildScheduleRowCompactTimeSummary(day, state, totals) {
             </div>
         </div>
     `;
+}
+function addOneHourOvertimeToScheduleDay(dayId) {
+    manualSchedule = manualSchedule.map(function(day) {
+        if (String(day.id) !== String(dayId)) return day;
+
+        return {
+            ...day,
+            overtimeHours: Math.max(0, Number(day.overtimeHours || 0)) + 1
+        };
+    });
+
+    saveManualScheduleToActiveSequence();
+    renderScheduleCalculator();
+}
+
+function clearOvertimeFromScheduleDay(dayId) {
+    manualSchedule = manualSchedule.map(function(day) {
+        if (String(day.id) !== String(dayId)) return day;
+
+        return {
+            ...day,
+            overtimeHours: 0
+        };
+    });
+
+    saveManualScheduleToActiveSequence();
+    renderScheduleCalculator();
 }
 function renderSchedulePlanner(){
     const list = document.getElementById("scheduleList");
@@ -13027,6 +13063,28 @@ function renderSchedulePlanner(){
                             </label>
                         </div>
                     </div>
+                    <div>
+    <label class="mini-label">Overtime</label>
+    <button
+        type="button"
+        class="schedule-value-btn"
+        onclick="addOneHourOvertimeToScheduleDay('${day.id}')"
+    >
+        +1 HR${Number(day.overtimeHours || 0) > 0 ? ' · ' + Number(day.overtimeHours || 0) + ' HR' : ''}
+    </button>
+    ${
+        Number(day.overtimeHours || 0) > 0
+            ? `<button
+                type="button"
+                class="schedule-remove"
+                style="margin-top:6px;width:100%;"
+                onclick="clearOvertimeFromScheduleDay('${day.id}')"
+            >
+                Clear OT
+            </button>`
+            : ""
+    }
+</div>
                 </div>
 
                                 ${renderScheduleLegs(day, state, plannerTotals)}
