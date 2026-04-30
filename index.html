@@ -11256,7 +11256,7 @@ function getScheduleLegAddressOptions() {
     return options;
 }
 
-function renderScheduleLegs(day) {
+function renderScheduleLegs(day, state, totals) {
     ensureScheduleRowShape(day);
 
     const addressOptions = getScheduleLegLocationOptions();
@@ -11268,22 +11268,13 @@ function renderScheduleLegs(day) {
         return match ? match.label : value;
     };
 
-    const routeMiles = getScheduleLegMiles(day);
-    const vanMiles = getScheduleLegVanMiles(day);
-    const travelHours = getRowLegHours(day);
-    const vans = Math.max(1, Number(day.vans || 1));
+        const vans = Math.max(1, Number(day.vans || 1));
 
     return `
         <div class="schedule-legs-shell">
             <div class="schedule-legs-head">
-    <div>
+       <div>
         <div class="mini-label">Travel Legs</div>
-        <div class="text-[10px] font-bold uppercase text-slate-400">
-            Route miles: ${routeMiles.toFixed(1)} · Vans: ${vans} · Costed mileage: ${vanMiles.toFixed(1)} · Travel: ${travelHours.toFixed(2)} hrs
-        </div>
-        <div class="text-[10px] font-bold text-slate-400" style="margin-top:4px; text-transform:none;">
-            Use Get Route to check Google Maps, then enter the mileage for this travel leg.
-        </div>
     </div>
 
                 <button
@@ -11304,6 +11295,8 @@ function renderScheduleLegs(day) {
                     `
                     : ""
             }
+
+                        ${buildScheduleRowCompactTimeSummary(day, state, totals)}
 
             <div class="schedule-legs-list">
                 <div class="text-[10px] font-bold text-slate-400" style="text-transform:none; margin-bottom:4px;">
@@ -12840,6 +12833,103 @@ function buildScheduleRowTimeBreakdown(day, state, totals) {
         </div>
     `;
 }
+function buildScheduleRowCompactTimeSummary(day, state, totals) {
+    ensureScheduleRowShape(day);
+
+    const bounds = getRowWindowBounds(day.dayPart);
+    const windowStart = bounds.start;
+    const windowEnd = bounds.end;
+    const completionCutoff = 13 * 60;
+    const isCompletionDay = String(day.completionWindow || "None") === "Completion Day";
+
+    const legs = Array.isArray(day.legs) ? day.legs : [];
+    const taskBlocks = getPlannerTaskBlocks(day, state, totals);
+
+    let cursor = windowStart;
+    const parts = [];
+
+    parts.push(
+        "Travel applied: " + getRowLegHours(day).toFixed(2) + " hrs."
+    );
+
+    parts.push(
+        "Net task time: " + getNetTaskHoursForPlannerRow(day, state).toFixed(2) + " hrs."
+    );
+
+    parts.push(
+        "Net man-hours: " +
+        (Number(day.men || 0) * getNetTaskHoursForPlannerRow(day, state)).toFixed(2) +
+        "."
+    );
+
+    parts.push(
+        "Window " + minutesToClock(windowStart) + "–" + minutesToClock(windowEnd) + "."
+    );
+
+    const maxSteps = Math.max(legs.length, taskBlocks.length);
+
+    for (let i = 0; i < maxSteps; i++) {
+        const leg = legs[i];
+
+        if (leg) {
+            const legStart = cursor;
+            const legEnd = cursor + Math.max(0, Number(leg.minutes || 0));
+
+            parts.push(
+                "Leg " + (i + 1) + " " +
+                getScheduleLocationLabel(leg.from) + " → " +
+                getScheduleLocationLabel(leg.to) + " " +
+                minutesToClock(legStart) + "–" + minutesToClock(legEnd) + "."
+            );
+
+            cursor = legEnd;
+        }
+
+        const taskBlock = taskBlocks[i];
+
+        if (taskBlock && taskBlock.minutes > 0) {
+            const isUnloadBlock = String(taskBlock.label || "").toLowerCase().includes("unload");
+
+            if (isCompletionDay && isUnloadBlock && cursor < completionCutoff) {
+                parts.push(
+                    "Wait " +
+                    minutesToClock(cursor) + "–" + minutesToClock(completionCutoff) + "."
+                );
+
+                cursor = completionCutoff;
+            }
+
+            const taskStart = cursor;
+            const taskEnd = cursor + taskBlock.minutes;
+
+            parts.push(
+                taskBlock.label.replace("Task: ", "Task ").toLowerCase() +
+                " " +
+                minutesToClock(taskStart) + "–" + minutesToClock(taskEnd) + "."
+            );
+
+            cursor = taskEnd;
+        }
+    }
+
+    parts.push("Finish " + minutesToClock(cursor) + ".");
+
+    const overrun = cursor - windowEnd;
+
+    if (overrun > 0) {
+        parts.push("Overruns by " + overrun + " mins.");
+    } else {
+        parts.push("Fits within row window.");
+    }
+
+    return `
+        <div class="schedule-time-breakdown">
+            <div class="schedule-time-line ${overrun > 0 ? "status-bad" : "status-ok"}">
+                ${escapeHtml(parts.join(" "))}
+            </div>
+        </div>
+    `;
+}
 function renderSchedulePlanner(){
     const list = document.getElementById("scheduleList");
     if (!list) return;
@@ -12857,8 +12947,7 @@ function renderSchedulePlanner(){
         loadingHours: loading.hours,
         unloadingHours: unloading.hours
     };
-    const mileageSummary = getPlannerMileageSummary();
-
+   
     const groups = [];
     const seen = new Set();
     manualSchedule.forEach(day => {
@@ -12868,32 +12957,7 @@ function renderSchedulePlanner(){
         }
     });
 
-    list.innerHTML = `
-    <div class="listed-stat-card">
-        <div class="listed-stat-label">Planner Mileage Summary</div>
-
-        <div class="grid grid-cols-3 gap-3">
-            <div>
-                <div class="listed-stat-sub">Costed Mileage</div>
-                <div class="listed-stat-value">${mileageSummary.costedMileage.toFixed(1)}</div>
-            </div>
-
-            <div>
-                <div class="listed-stat-sub">Rows with Mileage</div>
-                <div class="listed-stat-value">${mileageSummary.rowsWithMileage}</div>
-            </div>
-
-            <div>
-                <div class="listed-stat-sub">Extra Van Rows</div>
-                <div class="listed-stat-value">${mileageSummary.extraVanRows}</div>
-            </div>
-        </div>
-
-        <div class="footer-note">
-            Costed mileage includes the van count on each planner row.
-        </div>
-    </div>
-` + groups.map((groupId, groupIndex) => {
+        list.innerHTML = groups.map((groupId, groupIndex) => {
         const rows = manualSchedule.filter(day => day.groupId === groupId).sort((a,b) => {
             const order = { "Full Day": 0, "AM": 1, "PM": 2 };
             return order[a.dayPart] - order[b.dayPart];
@@ -12965,15 +13029,9 @@ function renderSchedulePlanner(){
                     </div>
                 </div>
 
-                ${renderScheduleLegs(day)}
+                                ${renderScheduleLegs(day, state, plannerTotals)}
 
-                <div class="schedule-debug-line">
-                    Travel applied: ${getRowLegHours(day).toFixed(2)} hrs ·
-                    Net task time: ${getNetTaskHoursForPlannerRow(day, state).toFixed(2)} hrs ·
-                    Net man-hours: ${(Number(day.men || 0) * getNetTaskHoursForPlannerRow(day, state)).toFixed(2)}
-                </div>
-
-                ${buildScheduleRowTimeBreakdown(day, state, plannerTotals)}
+            
             </div>
         `).join("");
     }).join("");
