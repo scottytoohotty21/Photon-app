@@ -2128,6 +2128,26 @@ button {
 .schedule-row-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px;}
 .schedule-row-title{font-size:11px;font-weight:900;text-transform:uppercase;color:var(--navy);}
 .schedule-remove{height:32px;border-radius:8px;border:1px solid var(--red-200);background:var(--red-50);color:var(--red-800);padding:0 10px;font-size:10px;font-weight:900;text-transform:uppercase;cursor:pointer;}
+.schedule-leg-delete-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    border: 1px solid #fecaca;
+    background: #fef2f2;
+    color: #dc2626;
+    font-size: 18px;
+    font-weight: 900;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+}
+
+.schedule-leg-delete-btn:active {
+    transform: scale(0.96);
+}
 .schedule-value-btn{
     width:100%;
     height:44px;
@@ -11444,10 +11464,12 @@ function renderScheduleLegs(day, state, totals) {
     <label class="mini-label">Remove</label>
     <button
         type="button"
-        class="schedule-remove"
+        class="schedule-leg-delete-btn"
+        title="Remove this travel leg"
+        aria-label="Remove this travel leg"
         onclick="removeScheduleLeg('${day.id}','${leg.id}')"
     >
-        Del
+        ×
     </button>
 </div>
                                 </div>
@@ -13072,7 +13094,7 @@ function renderSchedulePlanner(){
             <div class="schedule-row">
                 <div class="schedule-row-head">
                     <div class="schedule-row-title">Day ${groupIndex + 1}${rows.length > 1 ? ` · ${day.dayPart}` : ""}</div>
-                    ${rowIndex === 0 && manualSchedule.length > 1 ? `<button class="schedule-remove" onclick="removeScheduleDay('${day.id}')">Delete</button>` : ""}
+                    ${rowIndex === 0 && manualSchedule.length > 1 ? `<button class="schedule-remove" onclick="removeScheduleDay('${day.id}')">Delete Day</button>` : ""}
                 </div>
 
                 <div class="schedule-grid">
