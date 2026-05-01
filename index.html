@@ -2291,6 +2291,103 @@ button {
 .validation-ok{background:var(--green-50);border:1px solid var(--green-200);color:var(--green-800);}
 .validation-warn{background:var(--amber-50);border:1px solid var(--amber-200);color:var(--amber-800);}
 .validation-error{background:var(--red-50);border:1px solid var(--red-200);color:var(--red-800);}
+/* AVAILABILITY PRICING */
+.availability-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 14px;
+}
+
+.availability-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 42px;
+    gap: 8px;
+    align-items: end;
+    margin-bottom: 10px;
+}
+
+.availability-band-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 28px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 9px;
+    font-weight: 900;
+    text-transform: uppercase;
+    border: 1px solid #e2e8f0;
+}
+
+.availability-band-green {
+    background: #f0fdf4;
+    color: #166534;
+    border-color: #bbf7d0;
+}
+
+.availability-band-blue {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border-color: #bfdbfe;
+}
+
+.availability-band-yellow {
+    background: #fefce8;
+    color: #854d0e;
+    border-color: #fde68a;
+}
+
+.availability-band-red {
+    background: #fef2f2;
+    color: #b91c1c;
+    border-color: #fecaca;
+}
+
+.availability-band-grey {
+    background: #f8fafc;
+    color: #64748b;
+    border-color: #e2e8f0;
+}
+
+.availability-slider {
+    width: 100%;
+    accent-color: #2563eb;
+}
+
+.availability-result-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 12px;
+}
+
+.availability-result-label {
+    font-size: 9px;
+    font-weight: 900;
+    text-transform: uppercase;
+    color: #94a3b8;
+    margin-bottom: 6px;
+}
+
+.availability-result-value {
+    font-size: 20px;
+    font-weight: 900;
+    color: #0f172a;
+    line-height: 1;
+}
+
+.availability-delete-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    border: 1px solid #fecaca;
+    background: #fef2f2;
+    color: #dc2626;
+    font-size: 18px;
+    font-weight: 900;
+    line-height: 1;
+}
 /* COSTING & QUOTING */
 .quote-shell{display:block;}
 .quote-topbar{display:none;}
@@ -3010,6 +3107,16 @@ Enter as: Surname, First Name
                     </div>
                     <div class="panel-body">
                         <div id="quote-commercialSummaryCard"></div>
+                    </div>
+                </div>
+
+                                <div class="panel">
+                    <div class="panel-head">
+                        <div class="panel-title">Availability Pricing</div>
+                        <div class="panel-subtitle">Date demand, margin guidance and sell price</div>
+                    </div>
+                    <div class="panel-body">
+                        <div id="quote-availabilityPricingCard"></div>
                     </div>
                 </div>
 
@@ -9825,6 +9932,59 @@ const QUOTE_ADDITIONAL_SERVICE_CHOICES = [
     "Specialist Contractor"
 ];
 
+const QUOTE_AVAILABILITY_BANDS = [
+    {
+        id: "",
+        label: "Select Band",
+        cssClass: "availability-band-grey",
+        minMargin: 0,
+        maxMargin: 0
+    },
+    {
+        id: "green",
+        label: "Green",
+        cssClass: "availability-band-green",
+        minMargin: 10,
+        maxMargin: 20
+    },
+    {
+        id: "blue",
+        label: "Blue",
+        cssClass: "availability-band-blue",
+        minMargin: 20,
+        maxMargin: 30
+    },
+    {
+        id: "yellow",
+        label: "Yellow",
+        cssClass: "availability-band-yellow",
+        minMargin: 30,
+        maxMargin: 40
+    },
+    {
+        id: "red",
+        label: "Red",
+        cssClass: "availability-band-red",
+        minMargin: 40,
+        maxMargin: 50
+    }
+];
+
+/*
+    Later, the server/CRM refresh can fill this table.
+
+    Format:
+    "Branch|YYYY-MM-DD": "green"
+    "Branch|YYYY-MM-DD": "blue"
+    "Branch|YYYY-MM-DD": "yellow"
+    "Branch|YYYY-MM-DD": "red"
+*/
+const AVAILABILITY_RATE_TABLE = {
+    // Example:
+    // "Guildford|2026-05-14": "yellow",
+    // "London|2026-05-15": "green"
+};
+
 let quotePricingSaved = false;
 
 function ensureCostingStore() {
@@ -9847,7 +10007,14 @@ function createEmptyQuoteSequenceState() {
         customerPrice: 0,
         quoteNotes: "",
         pricingLines: [],
-        additionalCostLines: []
+        additionalCostLines: [],
+        availabilityPricing: {
+            dates: [],
+            faderValue: 5,
+            lastSuggestedMarginPct: 0,
+            lastSuggestedSellPrice: 0,
+            lastAppliedAt: ""
+        }
     };
 }
 
@@ -9865,6 +10032,30 @@ function ensureQuoteSequenceState(sequenceId) {
     if (!Array.isArray(state.additionalCostLines)) state.additionalCostLines = [];
     if (typeof state.quoteNotes !== "string") state.quoteNotes = "";
     if (typeof state.customerPrice !== "number") state.customerPrice = Number(state.customerPrice || 0);
+
+    if (!state.availabilityPricing || typeof state.availabilityPricing !== "object") {
+        state.availabilityPricing = createEmptyQuoteSequenceState().availabilityPricing;
+    }
+
+    if (!Array.isArray(state.availabilityPricing.dates)) {
+        state.availabilityPricing.dates = [];
+    }
+
+    if (state.availabilityPricing.faderValue === undefined) {
+        state.availabilityPricing.faderValue = 5;
+    }
+
+    if (state.availabilityPricing.lastSuggestedMarginPct === undefined) {
+        state.availabilityPricing.lastSuggestedMarginPct = 0;
+    }
+
+    if (state.availabilityPricing.lastSuggestedSellPrice === undefined) {
+        state.availabilityPricing.lastSuggestedSellPrice = 0;
+    }
+
+    if (typeof state.availabilityPricing.lastAppliedAt !== "string") {
+        state.availabilityPricing.lastAppliedAt = "";
+    }
 
     return state;
 }
@@ -10178,6 +10369,348 @@ function getQuoteCommercialTotals(sequenceId) {
     };
 }
 
+function createAvailabilityDateId() {
+    return "avail_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7);
+}
+
+function getAvailabilityBandById(bandId) {
+    return QUOTE_AVAILABILITY_BANDS.find(function(band) {
+        return band.id === bandId;
+    }) || QUOTE_AVAILABILITY_BANDS[0];
+}
+
+function getAvailabilityPricingState(sequenceId) {
+    const state = ensureQuoteSequenceState(sequenceId);
+    if (!state) return null;
+
+    if (!state.availabilityPricing) {
+        state.availabilityPricing = createEmptyQuoteSequenceState().availabilityPricing;
+    }
+
+    return state.availabilityPricing;
+}
+
+function getQuoteAvailabilityBranch(sequenceId) {
+    const seq = currentJob && currentJob.sequences
+        ? currentJob.sequences.find(function(item) {
+            return String(item.id) === String(sequenceId);
+        })
+        : null;
+
+    if (!seq) return "London";
+
+    const schedule = ensureSequenceScheduleShape(seq);
+    return schedule && schedule.operatingBranch ? schedule.operatingBranch : "London";
+}
+
+function getAvailabilityBandFromLocalTable(branch, dateValue) {
+    const key = String(branch || "") + "|" + String(dateValue || "");
+    return AVAILABILITY_RATE_TABLE[key] || "";
+}
+
+function addQuoteAvailabilityDate(sequenceId) {
+    const pricing = getAvailabilityPricingState(sequenceId);
+    if (!pricing) return;
+
+    pricing.dates.push({
+        id: createAvailabilityDateId(),
+        date: "",
+        branch: getQuoteAvailabilityBranch(sequenceId),
+        band: ""
+    });
+
+    quotePricingSaved = false;
+    saveToDevice();
+    renderQuoteTab();
+}
+
+function deleteQuoteAvailabilityDate(sequenceId, dateId) {
+    const pricing = getAvailabilityPricingState(sequenceId);
+    if (!pricing) return;
+
+    pricing.dates = pricing.dates.filter(function(row) {
+        return row.id !== dateId;
+    });
+
+    quotePricingSaved = false;
+    saveToDevice();
+    renderQuoteTab();
+}
+
+function updateQuoteAvailabilityDate(sequenceId, dateId, field, value) {
+    const pricing = getAvailabilityPricingState(sequenceId);
+    if (!pricing) return;
+
+    const row = pricing.dates.find(function(item) {
+        return item.id === dateId;
+    });
+
+    if (!row) return;
+
+    row[field] = value;
+
+    if (field === "date") {
+        const suggestedBand = getAvailabilityBandFromLocalTable(row.branch, value);
+        if (suggestedBand) {
+            row.band = suggestedBand;
+        }
+    }
+
+    quotePricingSaved = false;
+    saveToDevice();
+    renderQuoteAvailabilityPricingPanel(sequenceId);
+    updateQuoteCommercialDisplays(sequenceId);
+}
+
+function refreshQuoteAvailabilityFromLocalTable(sequenceId) {
+    const pricing = getAvailabilityPricingState(sequenceId);
+    if (!pricing) return;
+
+    let matchedCount = 0;
+
+    pricing.dates.forEach(function(row) {
+        const band = getAvailabilityBandFromLocalTable(row.branch, row.date);
+
+        if (band) {
+            row.band = band;
+            matchedCount += 1;
+        }
+    });
+
+    quotePricingSaved = false;
+    saveToDevice();
+    renderQuoteTab();
+
+    if (matchedCount === 0) {
+        alert("No availability matches found in the local table yet. You can still select the bands manually.");
+    } else {
+        alert("Availability refreshed for " + matchedCount + " date row(s).");
+    }
+}
+
+function getHighestAvailabilityBand(dates) {
+    const validBands = dates
+        .map(function(row) {
+            return getAvailabilityBandById(row.band);
+        })
+        .filter(function(band) {
+            return !!band.id;
+        });
+
+    if (!validBands.length) {
+        return getAvailabilityBandById("");
+    }
+
+    return validBands.sort(function(a, b) {
+        return b.maxMargin - a.maxMargin;
+    })[0];
+}
+
+function calculateAvailabilityMargin(band, faderValue) {
+    if (!band || !band.id) return 0;
+
+    const cleanFader = Math.max(0, Math.min(10, Number(faderValue || 0)));
+    const range = Number(band.maxMargin || 0) - Number(band.minMargin || 0);
+
+    return Math.round((Number(band.minMargin || 0) + ((range * cleanFader) / 10)) * 100) / 100;
+}
+
+function calculateSellPriceFromMargin(costBase, marginPct) {
+    const cost = Number(costBase || 0);
+    const margin = Number(marginPct || 0);
+
+    if (cost <= 0 || margin <= 0 || margin >= 95) {
+        return 0;
+    }
+
+    return Math.round((cost / (1 - (margin / 100))) * 100) / 100;
+}
+
+function updateQuoteAvailabilityFader(sequenceId, value) {
+    const pricing = getAvailabilityPricingState(sequenceId);
+    if (!pricing) return;
+
+    pricing.faderValue = Number(value || 0);
+
+    quotePricingSaved = false;
+    saveToDevice();
+    renderQuoteAvailabilityPricingPanel(sequenceId);
+    updateQuoteCommercialDisplays(sequenceId);
+}
+
+function applyAvailabilitySuggestedPrice(sequenceId) {
+    const state = ensureQuoteSequenceState(sequenceId);
+    const pricing = getAvailabilityPricingState(sequenceId);
+    if (!state || !pricing) return;
+
+    const totals = getQuoteCommercialTotals(sequenceId);
+    const band = getHighestAvailabilityBand(pricing.dates);
+    const marginPct = calculateAvailabilityMargin(band, pricing.faderValue);
+    const suggestedSellPrice = calculateSellPriceFromMargin(totals.totalCostBase, marginPct);
+
+    if (!suggestedSellPrice || suggestedSellPrice <= 0) {
+        alert("No suggested price available yet. Check the cost base and availability band.");
+        return;
+    }
+
+    state.customerPrice = suggestedSellPrice;
+    pricing.lastSuggestedMarginPct = marginPct;
+    pricing.lastSuggestedSellPrice = suggestedSellPrice;
+    pricing.lastAppliedAt = new Date().toISOString();
+
+    quotePricingSaved = false;
+    saveToDevice();
+    renderQuoteTab();
+}
+
+function renderAvailabilityBandOptions(selectedBand) {
+    return QUOTE_AVAILABILITY_BANDS.map(function(band) {
+        const selected = band.id === selectedBand ? "selected" : "";
+        return `<option value="${band.id}" ${selected}>${band.label}</option>`;
+    }).join("");
+}
+
+function renderQuoteAvailabilityPricingPanel(sequenceId) {
+    const target = document.getElementById("quote-availabilityPricingCard");
+    if (!target) return;
+
+    const state = ensureQuoteSequenceState(sequenceId);
+    const pricing = getAvailabilityPricingState(sequenceId);
+    if (!state || !pricing) return;
+
+    if (!pricing.dates.length) {
+        pricing.dates.push({
+            id: createAvailabilityDateId(),
+            date: "",
+            branch: getQuoteAvailabilityBranch(sequenceId),
+            band: ""
+        });
+        saveToDevice();
+    }
+
+    const totals = getQuoteCommercialTotals(sequenceId);
+    const highestBand = getHighestAvailabilityBand(pricing.dates);
+    const marginPct = calculateAvailabilityMargin(highestBand, pricing.faderValue);
+    const suggestedSellPrice = calculateSellPriceFromMargin(totals.totalCostBase, marginPct);
+
+    pricing.lastSuggestedMarginPct = marginPct;
+    pricing.lastSuggestedSellPrice = suggestedSellPrice;
+
+    const bandClass = highestBand && highestBand.cssClass ? highestBand.cssClass : "availability-band-grey";
+    const bandLabel = highestBand && highestBand.label ? highestBand.label : "No Band";
+
+    target.innerHTML = `
+        <div class="availability-card">
+            <div class="listed-stat-label">Move Dates</div>
+
+            ${
+                pricing.dates.map(function(row, index) {
+                    return `
+                        <div class="availability-row">
+                            <div>
+                                <label class="mini-label">Day ${index + 1} Date</label>
+                                <input
+                                    type="date"
+                                    class="field"
+                                    value="${escapeHtml(row.date || "")}"
+                                    onchange="updateQuoteAvailabilityDate('${sequenceId}','${row.id}','date',this.value)"
+                                >
+                            </div>
+
+                            <div>
+                                <label class="mini-label">Availability Band</label>
+                                <select
+                                    class="field"
+                                    onchange="updateQuoteAvailabilityDate('${sequenceId}','${row.id}','band',this.value)"
+                                >
+                                    ${renderAvailabilityBandOptions(row.band || "")}
+                                </select>
+                            </div>
+
+                            <button
+                                type="button"
+                                class="availability-delete-btn"
+                                onclick="deleteQuoteAvailabilityDate('${sequenceId}','${row.id}')"
+                            >
+                                ×
+                            </button>
+                        </div>
+                    `;
+                }).join("")
+            }
+
+            <div class="toolbar">
+                <button type="button" class="action-btn white" onclick="addQuoteAvailabilityDate('${sequenceId}')">
+                    Add Date
+                </button>
+
+                <button type="button" class="action-btn white" onclick="refreshQuoteAvailabilityFromLocalTable('${sequenceId}')">
+                    Refresh Availability
+                </button>
+            </div>
+
+            <div style="height:14px"></div>
+
+            <div class="listed-stat-label">Demand Band Used</div>
+            <div class="availability-band-pill ${bandClass}">
+                ${escapeHtml(bandLabel)}
+                ${
+                    highestBand && highestBand.id
+                        ? ` · ${highestBand.minMargin}%–${highestBand.maxMargin}%`
+                        : ""
+                }
+            </div>
+
+            <div style="height:14px"></div>
+
+            <div>
+                <label class="mini-label">
+                    Margin Fader: ${Number(pricing.faderValue || 0)} / 10
+                </label>
+
+                <input
+                    type="range"
+                    min="0"
+                    max="10"
+                    step="1"
+                    value="${Number(pricing.faderValue || 0)}"
+                    class="availability-slider"
+                    oninput="updateQuoteAvailabilityFader('${sequenceId}', this.value)"
+                >
+            </div>
+
+            <div style="height:14px"></div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div class="availability-result-box">
+                    <div class="availability-result-label">Suggested Margin</div>
+                    <div class="availability-result-value">${quoteMoney(marginPct)}%</div>
+                </div>
+
+                <div class="availability-result-box">
+                    <div class="availability-result-label">Suggested Sell Price</div>
+                    <div class="availability-result-value">${quoteMoney(suggestedSellPrice)}</div>
+                </div>
+            </div>
+
+            <div style="height:12px"></div>
+
+            <button
+                type="button"
+                class="action-btn btn-save"
+                style="width:100%;height:42px;"
+                onclick="applyAvailabilitySuggestedPrice('${sequenceId}')"
+            >
+                Apply Suggested Price
+            </button>
+
+            <div class="footer-note">
+                Uses the highest demand band across the selected move dates. Refresh currently checks the local availability table; server/CRM refresh can be connected later.
+            </div>
+        </div>
+    `;
+}
+
 function buildQuoteScopeSnapshot(sequenceId) {
     const seq = currentJob && currentJob.sequences
         ? currentJob.sequences.find(function(s) { return String(s.id) === String(sequenceId); })
@@ -10326,7 +10859,7 @@ function renderQuoteTabShellOnly() {
     const customerInput = document.getElementById("quote-customerPriceInput");
     const notesInput = document.getElementById("quote-quoteNotesInput");
 
-    if (customerInput) customerInput.value = Number(state.customerPrice || 0);
+    if (customerInput) customerInput.value = quoteMoney(state.customerPrice || 0);
     if (notesInput) notesInput.value = state.quoteNotes || "";
 
     updateQuoteCommercialDisplays(sequenceId);
@@ -10535,6 +11068,7 @@ function renderQuoteTab() {
 
 syncQuotePricingFromSchedule(sequenceId);
 
+renderQuoteAvailabilityPricingPanel(sequenceId);
 renderQuotePricingGrid(sequenceId);
 renderQuoteAdditionalCostsGrid(sequenceId);
 
