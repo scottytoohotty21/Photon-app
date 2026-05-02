@@ -11811,6 +11811,17 @@ function renderQuoteAvailabilityPanel(sequenceId) {
         </div>
     `;
 }
+function renderQuoteDateMarginPricingPanel(sequenceId) {
+    if (typeof renderQuoteAvailabilityPricingPanel === "function") {
+        renderQuoteAvailabilityPricingPanel(sequenceId);
+        return;
+    }
+
+    const target = document.getElementById("quote-availabilityPricingCard");
+    if (target) {
+        target.innerHTML = "";
+    }
+}
 function renderQuoteTab() {
     renderQuoteTabShellOnly();
     bindQuoteShellEvents();
@@ -11822,7 +11833,7 @@ function renderQuoteTab() {
 
 syncQuotePricingFromSchedule(sequenceId);
 
-renderQuoteDateMarginPricingPanel(sequenceId);
+renderQuoteAvailabilityPricingPanel(sequenceId);
 renderQuotePricingGrid(sequenceId);
 renderQuoteAdditionalCostsGrid(sequenceId);
 
