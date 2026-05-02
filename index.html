@@ -2687,6 +2687,30 @@ button {
     color:#334155;
     border:1.5px solid #cbd5e1;
 }
+.availability-refresh-status {
+    margin-top: 8px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    color: #64748b;
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    line-height: 1.35;
+}
+
+.availability-refresh-btn {
+    width: 100%;
+    height: 38px;
+    border-radius: 10px;
+    border: 1.5px solid #2563eb;
+    background: #eff6ff;
+    color: #1d4ed8;
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
     </style>
 </head>
 <body class="p-4 pb-12">
@@ -3215,6 +3239,24 @@ Enter as: Surname, First Name
                                     <div class="listed-stat-value" id="quote-customerPriceDisplay">0.00</div>
                                 </div>
                             </div>
+
+                            <div>
+    <label class="mini-label">Availability Refresh</label>
+    <button
+        type="button"
+        class="availability-refresh-btn"
+        onclick="refreshAvailabilityCacheSample()"
+    >
+        Refresh Availability
+    </button>
+
+    <div
+        id="quote-availabilityRefreshStatus"
+        class="availability-refresh-status"
+    >
+        Using local fallback availability
+    </div>
+</div>
 
                             <div id="quote-availabilityPricingCard"></div>
 
@@ -9949,6 +9991,119 @@ function printListedInventoryPdf() {
    COSTING & QUOTING STATE
 ========================= */
 
+/* =========================
+   AVAILABILITY CACHE
+========================= */
+
+const PHOTON_AVAILABILITY_CACHE_KEY = "photon_availability_cache";
+
+function getDefaultAvailabilityCache() {
+    return {
+        refreshedAt: "",
+        source: "Local fallback",
+        dates: {
+            "2026-05-01": "green",
+            "2026-05-02": "blue",
+            "2026-05-03": "yellow"
+        }
+    };
+}
+
+function getAvailabilityCache() {
+    const raw = localStorage.getItem(PHOTON_AVAILABILITY_CACHE_KEY);
+
+    if (!raw) {
+        return getDefaultAvailabilityCache();
+    }
+
+    try {
+        const parsed = JSON.parse(raw);
+
+        if (!parsed || typeof parsed !== "object") {
+            return getDefaultAvailabilityCache();
+        }
+
+        if (!parsed.dates || typeof parsed.dates !== "object") {
+            parsed.dates = {};
+        }
+
+        if (!parsed.source) {
+            parsed.source = "Cached availability";
+        }
+
+        if (!parsed.refreshedAt) {
+            parsed.refreshedAt = "";
+        }
+
+        return parsed;
+    } catch (err) {
+        return getDefaultAvailabilityCache();
+    }
+}
+
+function saveAvailabilityCache(cache) {
+    localStorage.setItem(PHOTON_AVAILABILITY_CACHE_KEY, JSON.stringify(cache));
+}
+
+function getAvailabilityBandForDate(dateValue) {
+    const cleanDate = String(dateValue || "").trim();
+
+    if (!cleanDate) {
+        return "green";
+    }
+
+    const cache = getAvailabilityCache();
+    const band = cache.dates && cache.dates[cleanDate];
+
+    return band || "green";
+}
+
+function getAvailabilityRefreshText() {
+    const cache = getAvailabilityCache();
+
+    if (!cache.refreshedAt) {
+        return "Using local fallback availability";
+    }
+
+    return "Last refreshed: " + new Date(cache.refreshedAt).toLocaleString("en-GB") + " · " + cache.source;
+}
+
+function buildSampleAvailabilityRefreshData() {
+    return {
+        refreshedAt: new Date().toISOString(),
+        source: "Sample refreshed availability",
+        dates: {
+            "2026-05-01": "green",
+            "2026-05-02": "green",
+            "2026-05-03": "blue",
+            "2026-05-04": "yellow",
+            "2026-05-05": "blue",
+            "2026-05-06": "green",
+            "2026-05-07": "yellow",
+            "2026-05-08": "green",
+            "2026-05-09": "blue",
+            "2026-05-10": "yellow"
+        }
+    };
+}
+
+function refreshAvailabilityCacheSample() {
+    const sampleData = buildSampleAvailabilityRefreshData();
+
+    saveAvailabilityCache(sampleData);
+
+    const statusEl = document.getElementById("quote-availabilityRefreshStatus");
+    if (statusEl) {
+        statusEl.innerText = getAvailabilityRefreshText();
+    }
+
+    const seq = getQuoteSelectedSequence();
+    if (seq) {
+        updateQuoteCommercialDisplays(String(seq.id));
+    }
+
+    alert("Sample availability refreshed.");
+}
 const QUOTE_MANDATORY_LABELS = ["Vans", "Crew", "Mileage", "Consumables", "Cartons", "Export Wrap", "Nights Out"];
 const QUOTE_PRICING_DEFAULTS = [
     { label: "Vans", qty: 0, unitCost: 120 },
@@ -10978,10 +11133,15 @@ function renderQuoteTabShellOnly() {
     renderQuoteSequenceSelect();
 
     const customerInput = document.getElementById("quote-customerPriceInput");
-    const notesInput = document.getElementById("quote-quoteNotesInput");
+const notesInput = document.getElementById("quote-quoteNotesInput");
+const availabilityStatus = document.getElementById("quote-availabilityRefreshStatus");
 
     if (customerInput) customerInput.value = Number(state.customerPrice || 0);
 if (notesInput) notesInput.value = state.quoteNotes || "";
+
+if (availabilityStatus) {
+    availabilityStatus.innerText = getAvailabilityRefreshText();
+}
 
 renderAvailabilityPricingPanel(sequenceId);
 updateQuoteCommercialDisplays(sequenceId);
@@ -11150,15 +11310,6 @@ function renderQuoteCommercialSummary(sequenceId) {
     `;
 }
 
-function getAvailabilityBandForDate(dateValue) {
-    const cleanDate = String(dateValue || "").trim();
-
-    if (!cleanDate) {
-        return "green";
-    }
-
-    return LOCAL_AVAILABILITY_BY_DATE[cleanDate] || "green";
-}
 
 function getAvailabilityPricingState(sequenceId) {
     const state = ensureQuoteSequenceState(sequenceId);
