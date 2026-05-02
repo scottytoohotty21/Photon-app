@@ -2126,6 +2126,39 @@ button {
 .schedule-list{display:grid;gap:12px;}
 .schedule-row{border:1px solid var(--slate-200);border-radius:14px;background:#fff;padding:12px;}
 .schedule-row-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px;}
+.schedule-row-actions{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+}
+
+.schedule-overtime-btn{
+    height:32px;
+    border-radius:8px;
+    border:1px solid #bfdbfe;
+    background:#eff6ff;
+    color:#1d4ed8;
+    padding:0 10px;
+    font-size:10px;
+    font-weight:900;
+    text-transform:uppercase;
+    cursor:pointer;
+}
+
+.schedule-overtime-clear-btn{
+    height:32px;
+    border-radius:8px;
+    border:1px solid var(--red-200);
+    background:var(--red-50);
+    color:var(--red-800);
+    padding:0 10px;
+    font-size:10px;
+    font-weight:900;
+    text-transform:uppercase;
+    cursor:pointer;
+}
 .schedule-row-title{font-size:11px;font-weight:900;text-transform:uppercase;color:var(--navy);}
 .schedule-remove{height:32px;border-radius:8px;border:1px solid var(--red-200);background:var(--red-50);color:var(--red-800);padding:0 10px;font-size:10px;font-weight:900;text-transform:uppercase;cursor:pointer;}
 .schedule-leg-delete-btn {
@@ -12001,12 +12034,13 @@ function getDefaultManualScheduleRows() {
             dayPart: "Full Day",
             task: "Load and Deliver",
             completionWindow: "None",
+            date: "",
             vans: 1,
             men: 2,
             hours: 8,
             nightsOut: false,
-overtimeHours: 0,
-legs: []
+            overtimeHours: 0,
+            legs: []
         }
     ];
 }
@@ -12520,12 +12554,13 @@ function loadManualScheduleFromActiveSequence() {
             task: day.task || "Load and Deliver",
             travelPattern: day.travelPattern || "None",
             completionWindow: day.completionWindow || "None",
+            date: day.date || "",
             men: Math.max(0, Number(day.men) || 0),
             vans: Math.max(0, Number(day.vans) || 0),
             hours: safeDayPart === "Full Day" ? 8 : 4,
             nightsOut: !!day.nightsOut,
-overtimeHours: Math.max(0, Number(day.overtimeHours || 0)),
-legs: safeLegs.map(function(leg) {
+            overtimeHours: Math.max(0, Number(day.overtimeHours || 0)),
+            legs: safeLegs.map(function(leg) {
                 const roadType = leg.roadType || "Road";
                 const miles = Math.max(0, Number(leg.miles || 0));
 
@@ -12565,12 +12600,13 @@ function saveManualScheduleToActiveSequence() {
             task: day.task || "Load and Deliver",
             travelPattern: day.travelPattern || "None",
             completionWindow: day.completionWindow || "None",
+            date: day.date || "",
             men: Math.max(0, Number(day.men) || 0),
             vans: Math.max(0, Number(day.vans) || 0),
             hours: safeDayPart === "Full Day" ? 8 : 4,
             nightsOut: !!day.nightsOut,
-overtimeHours: Math.max(0, Number(day.overtimeHours || 0)),
-legs: (Array.isArray(day.legs) ? day.legs : []).map(function(leg) {
+            overtimeHours: Math.max(0, Number(day.overtimeHours || 0)),
+            legs: (Array.isArray(day.legs) ? day.legs : []).map(function(leg) {
                 const roadType = leg.roadType || "Road";
                 const miles = Math.max(0, Number(leg.miles || 0));
 
@@ -13364,6 +13400,7 @@ function autoBuildScheduleDays() {
         dayPart: "Full Day",
         task: packMode === "cg" ? "Pack fragiles & breakables" : "Pack & Prepare",
         completionWindow: "None",
+        date: "",
         men: 2,
         vans: 1,
         hours: 8,
@@ -13383,6 +13420,7 @@ function autoBuildScheduleDays() {
             dayPart: "Full Day",
             task: "Load",
             completionWindow: "None",
+            date: "",
             men: 2,
             vans: 1,
             hours: 8,
@@ -13400,6 +13438,7 @@ legs: [
             dayPart: "Full Day",
             task: "Deliver",
             completionWindow: "None",
+            date: "",
             men: 2,
             vans: 1,
             hours: 8,
@@ -13417,6 +13456,7 @@ legs: [
             dayPart: "Full Day",
             task: "Load and Deliver",
             completionWindow: "None",
+            date: "",
             men: 2,
             vans: 1,
             hours: 8,
@@ -13444,14 +13484,15 @@ function addScheduleDay() {
         dayPart: "Full Day",
         task: "Load and Deliver",
         completionWindow: "None",
+        date: "",
         men: 2,
         vans: 1,
         hours: 8,
         nightsOut: false,
-overtimeHours: 0,
-legs: [
-    createEmptyScheduleLeg("Depot", "", 0)
-]
+        overtimeHours: 0,
+        legs: [
+            createEmptyScheduleLeg("Depot", "", 0)
+        ]
     });
 
     saveManualScheduleToActiveSequence();
@@ -13486,15 +13527,16 @@ manualSchedule.push({
     dayPart: "PM",
     task: "Deliver",
     completionWindow: "None",
+    date: row.date || "",
     men: row.men,
     vans: row.vans,
     hours: 4,
     nightsOut: false,
-overtimeHours: 0,
-legs: [
-    createEmptyScheduleLeg("Collection Address", "Delivery Address", 0),
-    createEmptyScheduleLeg("Delivery Address", "Depot", 0)
-]
+    overtimeHours: 0,
+    legs: [
+        createEmptyScheduleLeg("Collection Address", "Delivery Address", 0),
+        createEmptyScheduleLeg("Delivery Address", "Depot", 0)
+    ]
 });
     }
 }
@@ -13575,26 +13617,28 @@ function splitCompletionRowIntoAmPm(row) {
         dayPart: "AM",
         task: amTask,
         completionWindow: "Completion Day",
+        date: row.date || "",
         men: row.men,
         vans: row.vans,
         hours: 4,
-       nightsOut: false,
-overtimeHours: 0,
-legs: amLegs
+        nightsOut: false,
+        overtimeHours: 0,
+        legs: amLegs
     };
 
-    const pmRow = {
+   const pmRow = {
         id: createId(),
         groupId: row.groupId,
         dayPart: "PM",
         task: pmTask,
         completionWindow: "Completion Day",
+        date: row.date || "",
         men: row.men,
         vans: row.vans,
         hours: 4,
         nightsOut: false,
-overtimeHours: 0,
-legs: pmLegs
+        overtimeHours: 0,
+        legs: pmLegs
     };
 
     manualSchedule = manualSchedule.filter(function(day) {
@@ -13657,14 +13701,15 @@ if (value === "AM"){
             dayPart: "AM",
             task: "Commence loading",
             completionWindow: "None",
+            date: updated.date || "",
             men: updated.men,
             vans: updated.vans,
             hours: 4,
             nightsOut: false,
-overtimeHours: 0,
-legs: [
-    createEmptyScheduleLeg("Depot", "Collection Address", 0)
-]
+            overtimeHours: 0,
+            legs: [
+                createEmptyScheduleLeg("Depot", "Collection Address", 0)
+            ]
         });
     }
 }
@@ -14098,7 +14143,30 @@ function renderSchedulePlanner(){
             <div class="schedule-row">
                 <div class="schedule-row-head">
                     <div class="schedule-row-title">Day ${groupIndex + 1}${rows.length > 1 ? ` · ${day.dayPart}` : ""}</div>
-                    ${rowIndex === 0 && manualSchedule.length > 1 ? `<button class="schedule-remove" onclick="removeScheduleDay('${day.id}')">Delete Day</button>` : ""}
+
+                    <div class="schedule-row-actions">
+                        <button
+                            type="button"
+                            class="schedule-overtime-btn"
+                            onclick="addOneHourOvertimeToScheduleDay('${day.id}')"
+                        >
+                            +1 HR${Number(day.overtimeHours || 0) > 0 ? ' · ' + Number(day.overtimeHours || 0) + ' HR' : ''}
+                        </button>
+
+                        ${
+                            Number(day.overtimeHours || 0) > 0
+                                ? `<button
+                                    type="button"
+                                    class="schedule-overtime-clear-btn"
+                                    onclick="clearOvertimeFromScheduleDay('${day.id}')"
+                                >
+                                    Clear OT
+                                </button>`
+                                : ""
+                        }
+
+                        ${rowIndex === 0 && manualSchedule.length > 1 ? `<button class="schedule-remove" onclick="removeScheduleDay('${day.id}')">Delete Day</button>` : ""}
+                    </div>
                 </div>
 
                 <div class="schedule-grid">
@@ -14159,26 +14227,13 @@ function renderSchedulePlanner(){
                         </div>
                     </div>
                     <div>
-    <label class="mini-label">Overtime</label>
-    <button
-        type="button"
-        class="schedule-value-btn"
-        onclick="addOneHourOvertimeToScheduleDay('${day.id}')"
+    <label class="mini-label">Date</label>
+    <input
+        type="date"
+        class="field"
+        value="${escapeHtml(day.date || "")}"
+        onchange="updateScheduleDay('${day.id}','date',this.value)"
     >
-        +1 HR${Number(day.overtimeHours || 0) > 0 ? ' · ' + Number(day.overtimeHours || 0) + ' HR' : ''}
-    </button>
-    ${
-        Number(day.overtimeHours || 0) > 0
-            ? `<button
-                type="button"
-                class="schedule-remove"
-                style="margin-top:6px;width:100%;"
-                onclick="clearOvertimeFromScheduleDay('${day.id}')"
-            >
-                Clear OT
-            </button>`
-            : ""
-    }
 </div>
                 </div>
 
