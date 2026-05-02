@@ -2591,6 +2591,80 @@ button {
     border: 2px solid #22c55e !important;
     box-shadow: 0 0 0 3px rgba(34,197,94,0.12);
 }
+/* --- QUOTE AVAILABILITY BANDS --- */
+.quote-availability-list {
+    display: grid;
+    gap: 10px;
+}
+
+.quote-availability-row {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    background: #ffffff;
+    padding: 10px;
+}
+
+.quote-availability-date {
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+    color: #0f172a;
+    margin-bottom: 8px;
+}
+
+.quote-availability-select {
+    width: 100%;
+    height: 40px;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #0f172a;
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+    padding: 0 10px;
+    outline: none;
+}
+
+.quote-availability-summary {
+    margin-top: 12px;
+    border-radius: 12px;
+    padding: 10px 12px;
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+    line-height: 1.4;
+}
+
+.quote-availability-summary.none {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    color: #64748b;
+}
+
+.quote-availability-summary.green {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #166534;
+}
+
+.quote-availability-summary.blue {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    color: #1d4ed8;
+}
+
+.quote-availability-summary.yellow {
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+    color: #c2410c;
+}
+
+.quote-availability-summary.red {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #b91c1c;
+}
 
 /* --- AVAILABILITY PRICING ASSISTANT --- */
 .availability-card {
@@ -3291,7 +3365,7 @@ Enter as: Surname, First Name
     </div>
 </div>
 
-                            <div id="quote-availabilityPricingCard"></div>
+                            <div id="quote-dateMarginPricingCard"></div>
 
                             <button type="button" class="action-btn quote-save-compact btn-save" id="quote-savePricingBtn">
                                 Save Pricing
@@ -10294,7 +10368,7 @@ function createEmptyQuoteSequenceState() {
         additionalCostLines: [],
         availabilityPricing: {
             moveDate: "",
-            band: "green",
+            band: "",
             uplift: 0,
             appliedSuggestedPrice: 0
         }
@@ -10315,13 +10389,17 @@ function ensureQuoteSequenceState(sequenceId) {
     if (!Array.isArray(state.additionalCostLines)) state.additionalCostLines = [];
     if (typeof state.quoteNotes !== "string") state.quoteNotes = "";
     if (typeof state.customerPrice !== "number") state.customerPrice = Number(state.customerPrice || 0);
-    if (!state.availabilityPricing || typeof state.availabilityPricing !== "object") {
+   if (!state.availabilityPricing || typeof state.availabilityPricing !== "object") {
     state.availabilityPricing = {
         moveDate: "",
-        band: "green",
+        band: "",
         uplift: 0,
         appliedSuggestedPrice: 0
     };
+}
+
+if (state.availabilityPricing.band === "green" && !state.availabilityPricing.moveDate) {
+    state.availabilityPricing.band = "";
 }
 
 if (typeof state.availabilityPricing.moveDate !== "string") {
@@ -11560,6 +11638,179 @@ function renderQuoteAdditionalBreakdown(sequenceId) {
     `;
 }
 
+function getQuoteAvailabilityBandById(bandId) {
+    return QUOTE_AVAILABILITY_BANDS.find(function(band) {
+        return band.id === bandId;
+    }) || QUOTE_AVAILABILITY_BANDS[0];
+}
+
+function getScheduleRowDateValue(row) {
+    if (!row) return "";
+
+    return String(
+        row.date ||
+        row.scheduleDate ||
+        row.moveDate ||
+        row.rowDate ||
+        ""
+    ).trim();
+}
+
+function formatQuoteAvailabilityDate(dateValue) {
+    if (!dateValue) return "No Date";
+
+    const parsed = new Date(dateValue + "T00:00:00");
+
+    if (isNaN(parsed.getTime())) {
+        return dateValue;
+    }
+
+    return parsed.toLocaleDateString("en-GB", {
+        weekday: "short",
+        day: "2-digit",
+        month: "short",
+        year: "numeric"
+    });
+}
+
+function getQuoteScheduleDates(sequenceId) {
+    const rows = getQuoteScheduleRows(sequenceId);
+    const seen = {};
+    const dates = [];
+
+    rows.forEach(function(row) {
+        const dateValue = getScheduleRowDateValue(row);
+
+        if (!dateValue) return;
+
+        if (!seen[dateValue]) {
+            seen[dateValue] = true;
+            dates.push(dateValue);
+        }
+    });
+
+    return dates.sort();
+}
+
+function getHighestAvailabilityBand(dateBands) {
+    const selectedBands = Object.values(dateBands || {})
+        .map(function(bandId) {
+            return getQuoteAvailabilityBandById(bandId);
+        })
+        .filter(function(band) {
+            return band.id !== "none";
+        });
+
+    if (!selectedBands.length) {
+        return getQuoteAvailabilityBandById("none");
+    }
+
+    return selectedBands.reduce(function(highest, band) {
+        return Number(band.marginPct || 0) > Number(highest.marginPct || 0)
+            ? band
+            : highest;
+    }, selectedBands[0]);
+}
+
+function updateQuoteAvailabilityBand(sequenceId, dateValue, bandId) {
+    const state = ensureQuoteSequenceState(sequenceId);
+    if (!state) return;
+
+    if (!state.availabilityByDate || typeof state.availabilityByDate !== "object") {
+        state.availabilityByDate = {};
+    }
+
+    state.availabilityByDate[dateValue] = bandId || "none";
+
+    quotePricingSaved = false;
+    saveToDevice();
+
+    renderQuoteAvailabilityPanel(sequenceId);
+}
+
+function renderQuoteAvailabilityPanel(sequenceId) {
+    const target = document.getElementById("quote-availabilityCard");
+    if (!target) return;
+
+    const state = ensureQuoteSequenceState(sequenceId);
+    if (!state) return;
+
+    if (!state.availabilityByDate || typeof state.availabilityByDate !== "object") {
+        state.availabilityByDate = {};
+    }
+
+    const scheduleDates = getQuoteScheduleDates(sequenceId);
+
+    if (!scheduleDates.length) {
+        target.innerHTML = `
+            <div class="document-block">
+                <div class="document-heading">Schedule Dates</div>
+                <div class="document-empty">No dated schedule rows found yet</div>
+                <div class="footer-note">
+                    Add dates on the Schedule tab first. Those dates will appear here for availability banding.
+                </div>
+            </div>
+        `;
+        return;
+    }
+
+    const activeDateBands = {};
+
+    scheduleDates.forEach(function(dateValue) {
+        activeDateBands[dateValue] = state.availabilityByDate[dateValue] || "none";
+    });
+
+    const highestBand = getHighestAvailabilityBand(activeDateBands);
+
+    target.innerHTML = `
+        <div class="quote-availability-list">
+            ${
+                scheduleDates.map(function(dateValue) {
+                    const selectedBandId = state.availabilityByDate[dateValue] || "none";
+
+                    return `
+                        <div class="quote-availability-row">
+                            <div class="quote-availability-date">
+                                ${escapeHtml(formatQuoteAvailabilityDate(dateValue))}
+                            </div>
+
+                            <select
+                                class="quote-availability-select"
+                                onchange="updateQuoteAvailabilityBand('${sequenceId}', '${escapeHtml(dateValue)}', this.value)"
+                            >
+                                ${
+                                    QUOTE_AVAILABILITY_BANDS.map(function(band) {
+                                        const selected = band.id === selectedBandId ? "selected" : "";
+                                        const label = band.id === "none"
+                                            ? band.label
+                                            : band.label + " — " + band.marginPct + "%";
+
+                                        return `<option value="${band.id}" ${selected}>${label}</option>`;
+                                    }).join("")
+                                }
+                            </select>
+                        </div>
+                    `;
+                }).join("")
+            }
+        </div>
+
+        <div class="quote-availability-summary ${highestBand.id}">
+            Availability pricing basis:
+            ${
+                highestBand.id === "none"
+                    ? "Not set yet"
+                    : highestBand.label + " / " + highestBand.marginPct + "% margin"
+            }
+            <br>
+            ${escapeHtml(highestBand.note)}
+        </div>
+
+        <div class="footer-note">
+            Phase 4A only stores the availability bands. It does not change the quote price yet.
+        </div>
+    `;
+}
 function renderQuoteTab() {
     renderQuoteTabShellOnly();
     bindQuoteShellEvents();
@@ -11571,7 +11822,7 @@ function renderQuoteTab() {
 
 syncQuotePricingFromSchedule(sequenceId);
 
-renderQuoteAvailabilityPricingPanel(sequenceId);
+renderQuoteDateMarginPricingPanel(sequenceId);
 renderQuotePricingGrid(sequenceId);
 renderQuoteAdditionalCostsGrid(sequenceId);
 
