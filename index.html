@@ -2559,6 +2559,70 @@ button {
     box-shadow: 0 0 0 3px rgba(34,197,94,0.12);
 }
 
+/* --- AVAILABILITY PRICING ASSISTANT --- */
+.availability-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    background: #ffffff;
+    padding: 12px;
+}
+
+.availability-band-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 28px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+    border: 1px solid #cbd5e1;
+    background: #f8fafc;
+    color: #334155;
+}
+
+.availability-band-pill.green {
+    background: #f0fdf4;
+    border-color: #86efac;
+    color: #166534;
+}
+
+.availability-band-pill.blue {
+    background: #eff6ff;
+    border-color: #93c5fd;
+    color: #1d4ed8;
+}
+
+.availability-band-pill.yellow {
+    background: #fefce8;
+    border-color: #fde68a;
+    color: #854d0e;
+}
+
+.availability-suggested-price {
+    font-size: 24px;
+    font-weight: 900;
+    color: #0f172a;
+    line-height: 1;
+}
+
+.availability-range {
+    width: 100%;
+    accent-color: #2563eb;
+}
+
+.availability-apply-btn {
+    width: 100%;
+    height: 42px;
+    border-radius: 10px;
+    border: 1px solid #16a34a;
+    background: #ffffff;
+    color: #16a34a;
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
 .quote-del-wrap .action-btn{
     width:100%;
     height:44px;
@@ -3151,6 +3215,8 @@ Enter as: Surname, First Name
                                     <div class="listed-stat-value" id="quote-customerPriceDisplay">0.00</div>
                                 </div>
                             </div>
+
+                            <div id="quote-availabilityPricingCard"></div>
 
                             <button type="button" class="action-btn quote-save-compact btn-save" id="quote-savePricingBtn">
                                 Save Pricing
@@ -9932,6 +9998,36 @@ const QUOTE_ADDITIONAL_SERVICE_CHOICES = [
     "Specialist Contractor"
 ];
 
+const AVAILABILITY_MARGIN_BANDS = {
+    green: {
+        label: "Green Availability",
+        baseMargin: 10,
+        className: "green"
+    },
+    blue: {
+        label: "Blue Availability",
+        baseMargin: 20,
+        className: "blue"
+    },
+    yellow: {
+        label: "Yellow Availability",
+        baseMargin: 30,
+        className: "yellow"
+    }
+};
+
+/*
+    Phase 2 local placeholder availability map.
+    Later, this can be refreshed from CRM/server.
+    Format:
+    "YYYY-MM-DD": "green" / "blue" / "yellow"
+*/
+const LOCAL_AVAILABILITY_BY_DATE = {
+    "2026-05-01": "green",
+    "2026-05-02": "blue",
+    "2026-05-03": "yellow"
+};
+
 const QUOTE_AVAILABILITY_BANDS = [
     {
         id: "",
@@ -10009,11 +10105,10 @@ function createEmptyQuoteSequenceState() {
         pricingLines: [],
         additionalCostLines: [],
         availabilityPricing: {
-            dates: [],
-            faderValue: 5,
-            lastSuggestedMarginPct: 0,
-            lastSuggestedSellPrice: 0,
-            lastAppliedAt: ""
+            moveDate: "",
+            band: "green",
+            uplift: 0,
+            appliedSuggestedPrice: 0
         }
     };
 }
@@ -10032,6 +10127,31 @@ function ensureQuoteSequenceState(sequenceId) {
     if (!Array.isArray(state.additionalCostLines)) state.additionalCostLines = [];
     if (typeof state.quoteNotes !== "string") state.quoteNotes = "";
     if (typeof state.customerPrice !== "number") state.customerPrice = Number(state.customerPrice || 0);
+    if (!state.availabilityPricing || typeof state.availabilityPricing !== "object") {
+    state.availabilityPricing = {
+        moveDate: "",
+        band: "green",
+        uplift: 0,
+        appliedSuggestedPrice: 0
+    };
+}
+
+if (typeof state.availabilityPricing.moveDate !== "string") {
+    state.availabilityPricing.moveDate = "";
+}
+
+if (!AVAILABILITY_MARGIN_BANDS[state.availabilityPricing.band]) {
+    state.availabilityPricing.band = "green";
+}
+
+state.availabilityPricing.uplift = Math.max(
+    0,
+    Math.min(10, Number(state.availabilityPricing.uplift || 0))
+);
+
+state.availabilityPricing.appliedSuggestedPrice = Number(
+    state.availabilityPricing.appliedSuggestedPrice || 0
+);
 
     if (!state.availabilityPricing || typeof state.availabilityPricing !== "object") {
         state.availabilityPricing = createEmptyQuoteSequenceState().availabilityPricing;
@@ -10844,7 +10964,8 @@ function updateQuoteCommercialDisplays(sequenceId) {
     }
 
     renderQuoteCommercialSummary(sequenceId);
-    renderQuoteAdditionalBreakdown(sequenceId);
+renderQuoteAdditionalBreakdown(sequenceId);
+renderAvailabilityPricingPanel(sequenceId);
 }
 
 function renderQuoteTabShellOnly() {
@@ -10859,8 +10980,11 @@ function renderQuoteTabShellOnly() {
     const customerInput = document.getElementById("quote-customerPriceInput");
     const notesInput = document.getElementById("quote-quoteNotesInput");
 
-    if (customerInput) customerInput.value = quoteMoney(state.customerPrice || 0);
-    if (notesInput) notesInput.value = state.quoteNotes || "";
+    if (customerInput) customerInput.value = Number(state.customerPrice || 0);
+if (notesInput) notesInput.value = state.quoteNotes || "";
+
+renderAvailabilityPricingPanel(sequenceId);
+updateQuoteCommercialDisplays(sequenceId);
 
     updateQuoteCommercialDisplays(sequenceId);
 }
@@ -11024,6 +11148,201 @@ function renderQuoteCommercialSummary(sequenceId) {
             </div>
         </div>
     `;
+}
+
+function getAvailabilityBandForDate(dateValue) {
+    const cleanDate = String(dateValue || "").trim();
+
+    if (!cleanDate) {
+        return "green";
+    }
+
+    return LOCAL_AVAILABILITY_BY_DATE[cleanDate] || "green";
+}
+
+function getAvailabilityPricingState(sequenceId) {
+    const state = ensureQuoteSequenceState(sequenceId);
+    if (!state) return null;
+
+    if (!state.availabilityPricing) {
+        state.availabilityPricing = {
+            moveDate: "",
+            band: "green",
+            uplift: 0,
+            appliedSuggestedPrice: 0
+        };
+    }
+
+    return state.availabilityPricing;
+}
+
+function calculateSuggestedSellPriceFromMargin(costBase, marginPercent) {
+    const cleanCost = Number(costBase || 0);
+    const cleanMargin = Number(marginPercent || 0);
+
+    if (cleanCost <= 0) return 0;
+    if (cleanMargin <= 0) return cleanCost;
+    if (cleanMargin >= 95) return cleanCost;
+
+    return cleanCost / (1 - (cleanMargin / 100));
+}
+
+function roundSuggestedQuotePrice(value) {
+    const cleanValue = Number(value || 0);
+    if (cleanValue <= 0) return 0;
+
+    return Math.ceil(cleanValue / 10) * 10;
+}
+
+function renderAvailabilityPricingPanel(sequenceId) {
+    const target = document.getElementById("quote-availabilityPricingCard");
+    if (!target) return;
+
+    const state = ensureQuoteSequenceState(sequenceId);
+    const availability = getAvailabilityPricingState(sequenceId);
+    const totals = getQuoteCommercialTotals(sequenceId);
+
+    if (!state || !availability) return;
+
+    if (!availability.moveDate) {
+        availability.moveDate = "";
+    }
+
+    const bandKey = availability.band || "green";
+    const band = AVAILABILITY_MARGIN_BANDS[bandKey] || AVAILABILITY_MARGIN_BANDS.green;
+
+    const uplift = Math.max(0, Math.min(10, Number(availability.uplift || 0)));
+    const targetMargin = Number(band.baseMargin || 0) + uplift;
+
+    const suggestedRaw = calculateSuggestedSellPriceFromMargin(
+        totals.totalCostBase,
+        targetMargin
+    );
+
+    const suggestedPrice = roundSuggestedQuotePrice(suggestedRaw);
+
+    target.innerHTML = `
+        <div class="availability-card">
+            <div class="flex items-center justify-between gap-2 mb-3">
+                <div>
+                    <div class="listed-stat-label">Availability Pricing</div>
+                    <div class="listed-stat-sub">Uses core move cost only</div>
+                </div>
+
+                <div class="availability-band-pill ${band.className}">
+                    ${escapeHtml(band.label)}
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <div>
+                    <label class="mini-label">Move Date</label>
+                    <input
+                        type="date"
+                        class="field"
+                        value="${escapeHtml(availability.moveDate || "")}"
+                        onchange="handleAvailabilityMoveDateChange('${sequenceId}', this.value)"
+                    >
+                </div>
+
+                <div>
+                    <label class="mini-label">Availability Band</label>
+                    <select
+                        class="field"
+                        onchange="handleAvailabilityBandChange('${sequenceId}', this.value)"
+                    >
+                        <option value="green" ${bandKey === "green" ? "selected" : ""}>Green - 10% base margin</option>
+                        <option value="blue" ${bandKey === "blue" ? "selected" : ""}>Blue - 20% base margin</option>
+                        <option value="yellow" ${bandKey === "yellow" ? "selected" : ""}>Yellow - 30% base margin</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="mini-label">Margin Uplift: +${uplift}%</label>
+                    <input
+                        type="range"
+                        min="0"
+                        max="10"
+                        step="1"
+                        value="${uplift}"
+                        class="availability-range"
+                        oninput="handleAvailabilityUpliftChange('${sequenceId}', this.value)"
+                    >
+                    <div class="listed-stat-sub">
+                        Target margin: ${targetMargin}%
+                    </div>
+                </div>
+
+                <div class="listed-stat-card">
+                    <div class="listed-stat-label">Suggested Quote Price</div>
+                    <div class="availability-suggested-price">${quoteMoney(suggestedPrice)}</div>
+                    <div class="listed-stat-sub">
+                        Based on core cost base ${quoteMoney(totals.totalCostBase)}
+                    </div>
+                </div>
+
+                <button
+                    type="button"
+                    class="availability-apply-btn"
+                    onclick="applyAvailabilitySuggestedPrice('${sequenceId}', ${suggestedPrice})"
+                >
+                    Apply Suggested Price
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+function handleAvailabilityMoveDateChange(sequenceId, value) {
+    const availability = getAvailabilityPricingState(sequenceId);
+    if (!availability) return;
+
+    availability.moveDate = String(value || "");
+
+    const matchedBand = getAvailabilityBandForDate(availability.moveDate);
+    availability.band = matchedBand;
+
+    quotePricingSaved = false;
+    saveToDevice();
+    renderQuoteTab();
+}
+
+function handleAvailabilityBandChange(sequenceId, value) {
+    const availability = getAvailabilityPricingState(sequenceId);
+    if (!availability) return;
+
+    availability.band = AVAILABILITY_MARGIN_BANDS[value] ? value : "green";
+
+    quotePricingSaved = false;
+    saveToDevice();
+    renderQuoteTab();
+}
+
+function handleAvailabilityUpliftChange(sequenceId, value) {
+    const availability = getAvailabilityPricingState(sequenceId);
+    if (!availability) return;
+
+    availability.uplift = Math.max(0, Math.min(10, Number(value || 0)));
+
+    quotePricingSaved = false;
+    saveToDevice();
+    renderQuoteTab();
+}
+
+function applyAvailabilitySuggestedPrice(sequenceId, suggestedPrice) {
+    const state = ensureQuoteSequenceState(sequenceId);
+    const availability = getAvailabilityPricingState(sequenceId);
+    if (!state || !availability) return;
+
+    const cleanPrice = Number(suggestedPrice || 0);
+
+    state.customerPrice = cleanPrice;
+    availability.appliedSuggestedPrice = cleanPrice;
+
+    quotePricingSaved = false;
+    saveToDevice();
+
+    renderQuoteTab();
 }
 
 function renderQuoteAdditionalBreakdown(sequenceId) {
