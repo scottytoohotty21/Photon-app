@@ -11863,6 +11863,7 @@ function renderQuoteDateMarginPricingPanel(sequenceId) {
     }
 }
 function renderQuoteTab() {
+console.log("QUOTE TEST 1: renderQuoteTab started");
     renderQuoteTabShellOnly();
     bindQuoteShellEvents();
 
@@ -11876,7 +11877,13 @@ syncQuotePricingFromSchedule(sequenceId);
 if (typeof syncQuoteAvailabilityDateFromSchedule === "function") {
     syncQuoteAvailabilityDateFromSchedule(sequenceId);
 }
-
+console.log("QUOTE TEST 2: about to render grids", {
+    commercialSummary: !!document.getElementById("quote-commercialSummaryCard"),
+    availabilityCard: !!document.getElementById("quote-availabilityPricingCard"),
+    coreGrid: !!document.getElementById("quote-pricingGrid"),
+    additionalGrid: !!document.getElementById("quote-additionalCostsGrid"),
+    additionalBreakdown: !!document.getElementById("quote-additionalCostsBreakdownCard")
+});
 renderQuotePricingGrid(sequenceId);
 renderQuoteAdditionalCostsGrid(sequenceId);
 
