@@ -11032,7 +11032,7 @@ function renderAvailabilityBandOptions(selectedBand) {
 function renderQuoteAvailabilityPricingPanel(sequenceId) {
     const target = document.getElementById("quote-availabilityPricingCard");
     if (!target) return;
-   
+
     const pricing = getAvailabilityPricingState(sequenceId);
     const totals = getQuoteCommercialTotals(sequenceId);
 
@@ -11045,13 +11045,16 @@ function renderQuoteAvailabilityPricingPanel(sequenceId) {
         return;
     }
 
-    const dateUsed = getAvailabilityDateUsedForSequence(sequenceId);
+    const dateUsed = typeof getAvailabilityDateUsedForSequence === "function"
+        ? getAvailabilityDateUsedForSequence(sequenceId)
+        : "";
+
     const dateLabel = dateUsed
         ? new Date(dateUsed + "T00:00:00").toLocaleDateString("en-GB")
         : "";
 
-    const band = getHighestAvailabilityBand(pricing.dates);
-    const marginPct = calculateAvailabilityMargin(band, pricing.faderValue);
+    const band = getHighestAvailabilityBand(pricing.dates || []);
+    const marginPct = calculateAvailabilityMargin(band, pricing.faderValue || 0);
     const suggestedSellPrice = calculateSellPriceFromMargin(totals.totalCostBase, marginPct);
 
     const bandLabel = band && band.label ? band.label : "No Band";
