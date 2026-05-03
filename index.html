@@ -11073,8 +11073,41 @@ function renderQuoteAvailabilityPricingPanel(sequenceId) {
         ? new Date(dateUsed + "T00:00:00").toLocaleDateString("en-GB")
         : "";
 
-    const band = getHighestAvailabilityBand(pricing.dates);
-    const marginPct = calculateAvailabilityMargin(band, pricing.faderValue);
+    const pricingDates = Array.isArray(pricing.dates)
+        ? pricing.dates
+        : (dateUsed ? [dateUsed] : []);
+
+    let band = null;
+
+    if (typeof getHighestAvailabilityBand === "function") {
+        band = getHighestAvailabilityBand(pricingDates);
+    }
+
+    if (!band && pricing.band && AVAILABILITY_MARGIN_BANDS && AVAILABILITY_MARGIN_BANDS[pricing.band]) {
+        const oldBand = AVAILABILITY_MARGIN_BANDS[pricing.band];
+
+        band = {
+            id: pricing.band,
+            label: oldBand.label || pricing.band,
+            minMargin: Number(oldBand.baseMargin || 0),
+            maxMargin: Number(oldBand.baseMargin || 0) + 10
+        };
+    }
+
+    if (!band) {
+        band = {
+            id: "",
+            label: "No Band",
+            minMargin: 0,
+            maxMargin: 0
+        };
+    }
+
+    const faderValue = pricing.faderValue !== undefined
+        ? Number(pricing.faderValue || 0)
+        : Number(pricing.uplift || 0);
+
+    const marginPct = calculateAvailabilityMargin(band, faderValue);
     const suggestedSellPrice = calculateSellPriceFromMargin(totals.totalCostBase, marginPct);
 
     const bandLabel = band && band.label ? band.label : "No Band";
@@ -11110,7 +11143,7 @@ function renderQuoteAvailabilityPricingPanel(sequenceId) {
                     min="0"
                     max="10"
                     step="1"
-                    value="${Number(pricing.faderValue || 0)}"
+                    value="${Number(faderValue || 0)}"
                     class="availability-slider"
                     oninput="updateAvailabilityFader('${sequenceId}', this.value)"
                 >
@@ -11123,7 +11156,7 @@ function renderQuoteAvailabilityPricingPanel(sequenceId) {
                 <div class="listed-stat-label">Suggested Price</div>
                 <div class="listed-stat-value">${quoteMoney(suggestedSellPrice)}</div>
                 <div class="listed-stat-sub">
-                    Based on current cost base and availability margin
+                    Based on current core cost base and schedule availability
                 </div>
             </div>
 
@@ -11571,21 +11604,9 @@ function roundSuggestedQuotePrice(value) {
     return Math.ceil(cleanValue / 10) * 10;
 }
 
-ffunction renderAvailabilityPricingPanel(sequenceId) {
-    /*
-        Safety wrapper.
-        The quote tab now uses renderQuoteAvailabilityPricingPanel().
-        This older function is kept only so any old references do not break the costing tab.
-    */
-
+function renderAvailabilityPricingPanel(sequenceId) {
     if (typeof renderQuoteAvailabilityPricingPanel === "function") {
         renderQuoteAvailabilityPricingPanel(sequenceId);
-        return;
-    }
-
-    const target = document.getElementById("quote-availabilityPricingCard");
-    if (target) {
-        target.innerHTML = "";
     }
 }
 
