@@ -3295,86 +3295,55 @@ Enter as: Surname, First Name
     <div class="quote-shell">
         <div class="quote-bottom-layout">
             <div class="quote-stack quote-left-rail quote-summary-strip">
-                <div class="panel">
-                    <div class="panel-head">
-                        <div class="panel-title">Commercial Summary</div>
-                        <div class="panel-subtitle">Cost base, sell price and gross margin</div>
-                    </div>
-                    <div class="panel-body">
-                        <div id="quote-commercialSummaryCard"></div>
+    <div class="panel">
+        <div class="panel-head">
+            <div class="panel-title">Commercial Summary</div>
+            <div class="panel-subtitle">Cost base, sell price and gross margin</div>
+        </div>
+        <div class="panel-body">
+            <div id="quote-commercialSummaryCard"></div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-head">
+            <div class="panel-title">Availability Pricing</div>
+            <div class="panel-subtitle">Schedule date, availability band and suggested price</div>
+        </div>
+        <div class="panel-body">
+            <div id="quote-availabilityPricingCard"></div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-head">
+            <div class="panel-title">Controls</div>
+            <div class="panel-subtitle">Sequence and pricing save</div>
+        </div>
+        <div class="panel-body">
+            <div class="space-y-3">
+                <div>
+                    <label class="mini-label">Selected Sequence</label>
+                    <select id="quote-sequenceSelect" class="field"></select>
+                </div>
+
+                <div>
+                    <label class="mini-label">Enter Quote Price</label>
+                    <input id="quote-customerPriceInput" type="number" min="0" step="0.01" class="field" value="0" />
+                    <div style="height:6px"></div>
+                    <div class="listed-stat-card">
+                        <div class="listed-stat-label">Quote Price</div>
+                        <div class="listed-stat-value" id="quote-customerPriceDisplay">0.00</div>
                     </div>
                 </div>
 
-                                <div class="panel">
-                    <div class="panel-head">
-                        <div class="panel-title">Availability Pricing</div>
-                        <div class="panel-subtitle">Date demand, margin guidance and sell price</div>
-                    </div>
-                    <div class="panel-body">
-                        <div id="quote-availabilityPricingCard"></div>
-                    </div>
-                </div>
-
-                <div class="panel">
-                    <div class="panel-head">
-                        <div class="panel-title">Additional Costs Breakdown</div>
-                        <div class="panel-subtitle">Optional services added</div>
-                    </div>
-                    <div class="panel-body">
-                        <div id="quote-additionalCostsBreakdownCard"></div>
-                    </div>
-                </div>
-
-                <div class="panel">
-                    <div class="panel-head">
-                        <div class="panel-title">Controls</div>
-                        <div class="panel-subtitle">Sequence and pricing save</div>
-                    </div>
-                    <div class="panel-body">
-                        <div class="space-y-3">
-                            <div>
-                                <label class="mini-label">Selected Sequence</label>
-                                <select id="quote-sequenceSelect" class="field"></select>
-                            </div>
-
-                            <div>
-                                <label class="mini-label">Enter Quote Price</label>
-                                <input id="quote-customerPriceInput" type="number" min="0" step="0.01" class="field" value="0" />
-                                <div style="height:6px"></div>
-                                <div class="listed-stat-card">
-                                    <div class="listed-stat-label">Quote Price</div>
-                                    <div class="listed-stat-value" id="quote-customerPriceDisplay">0.00</div>
-                                </div>
-                            </div>
-
-                            <div>
-    <label class="mini-label">Availability Refresh</label>
-    <button
-        type="button"
-        class="availability-refresh-btn"
-        onclick="refreshAvailabilityCacheSample()"
-    >
-        Refresh Availability
-    </button>
-
-    <div
-        id="quote-availabilityRefreshStatus"
-        class="availability-refresh-status"
-    >
-        Using local fallback availability
+                <button type="button" class="action-btn quote-save-compact btn-save" id="quote-savePricingBtn">
+                    Save Pricing
+                </button>
+            </div>
+        </div>
     </div>
 </div>
-
-                            <div id="quote-dateMarginPricingCard"></div>
-
-                            <button type="button" class="action-btn quote-save-compact btn-save" id="quote-savePricingBtn">
-                                Save Pricing
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <div class="quote-stack">
                 <div class="panel">
                     <div class="panel-head">
@@ -3402,6 +3371,15 @@ Enter as: Surname, First Name
                         </div>
                     </div>
                 </div>
+                <div class="panel">
+    <div class="panel-head">
+        <div class="panel-title">Additional Costs Breakdown</div>
+        <div class="panel-subtitle">Optional services added</div>
+    </div>
+    <div class="panel-body">
+        <div id="quote-additionalCostsBreakdownCard"></div>
+    </div>
+</div>
             </div>
         </div>
     </div>
@@ -11055,138 +11033,85 @@ function renderQuoteAvailabilityPricingPanel(sequenceId) {
     const target = document.getElementById("quote-availabilityPricingCard");
     if (!target) return;
 
-    const state = ensureQuoteSequenceState(sequenceId);
-    if (!state) return;
-
-    syncQuoteAvailabilityDateFromSchedule(sequenceId);
-
-    const availability = state.availabilityPricing || {};
-    const pricingDate = availability.moveDate || "";
-    const selectedBandId = availability.band || "";
-    const uplift = Number(availability.uplift || 0);
-
-    const band = QUOTE_AVAILABILITY_BANDS.find(function(item) {
-        return item.id === selectedBandId;
-    }) || QUOTE_AVAILABILITY_BANDS[0];
-
+    const pricing = getAvailabilityPricingState(sequenceId);
     const totals = getQuoteCommercialTotals(sequenceId);
-    const costBase = Number(totals.totalCostBase || 0);
 
-    const minMargin = Number(band.minMargin || 0);
-    const maxMargin = Number(band.maxMargin || 0);
+    if (!pricing) {
+        target.innerHTML = `
+            <div class="quote-date-confirm-line warn">
+                No availability pricing state found
+            </div>
+        `;
+        return;
+    }
 
-    const targetMargin = minMargin + uplift;
-    const cappedTargetMargin = Math.min(maxMargin, Math.max(minMargin, targetMargin));
+    const dateUsed = getAvailabilityDateUsedForSequence(sequenceId);
+    const dateLabel = dateUsed
+        ? new Date(dateUsed + "T00:00:00").toLocaleDateString("en-GB")
+        : "";
 
-    const suggestedPrice = cappedTargetMargin >= 100
-        ? 0
-        : costBase / (1 - (cappedTargetMargin / 100));
+    const band = getHighestAvailabilityBand(pricing.dates);
+    const marginPct = calculateAvailabilityMargin(band, pricing.faderValue);
+    const suggestedSellPrice = calculateSellPriceFromMargin(totals.totalCostBase, marginPct);
 
-    const hasDate = !!pricingDate;
-    const hasBand = !!selectedBandId;
-
-    const dateSourceLabel = availability.dateSourceLabel || "Using schedule date";
+    const bandLabel = band && band.label ? band.label : "No Band";
+    const bandClass = band && band.id ? band.id : "";
 
     target.innerHTML = `
-        <div class="listed-stat-card">
-            <div class="listed-stat-label">Availability Pricing Date</div>
-
+        <div class="availability-pricing-card">
             ${
-                hasDate
+                dateUsed
                     ? `
-                        <div class="listed-stat-value" style="font-size:16px;">
-                            ${escapeHtml(pricingDate)}
-                        </div>
-                        <div class="listed-stat-sub">
-                            ${escapeHtml(dateSourceLabel)}
+                        <div class="quote-date-confirm-line">
+                            Using schedule date: ${dateLabel}
                         </div>
                     `
                     : `
-                        <div class="listed-stat-value" style="font-size:14px;color:#dc2626;">
-                            No Date Set
-                        </div>
-                        <div class="listed-stat-sub">
-                            Add a date to the Schedule planner first
+                        <div class="quote-date-confirm-line warn">
+                            No schedule date entered yet
                         </div>
                     `
             }
-        </div>
 
-        <div style="height:10px"></div>
-
-        <div class="listed-stat-card ${band.cssClass || ""}">
-            <div class="listed-stat-label">Availability Band</div>
-
-            ${
-                hasBand
-                    ? `
-                        <div class="listed-stat-value" style="font-size:18px;">
-                            ${escapeHtml(band.label || selectedBandId)}
-                        </div>
-                        <div class="listed-stat-sub">
-                            Margin range: ${minMargin}% to ${maxMargin}%
-                        </div>
-                    `
-                    : `
-                        <div class="listed-stat-value" style="font-size:14px;color:#dc2626;">
-                            No Availability Band
-                        </div>
-                        <div class="listed-stat-sub">
-                            Refresh availability or add this date to the availability table
-                        </div>
-                    `
-            }
-        </div>
-
-        <div style="height:10px"></div>
-
-        <div>
-            <label class="mini-label">Margin Uplift</label>
-            <input
-                type="range"
-                min="0"
-                max="${Math.max(0, maxMargin - minMargin)}"
-                step="1"
-                value="${uplift}"
-                class="w-full"
-                ${hasDate && hasBand ? "" : "disabled"}
-                oninput="handleQuoteAvailabilityUpliftChange('${sequenceId}', this.value)"
-            >
-
-            <div class="listed-stat-card" style="margin-top:8px;">
-                <div class="listed-stat-label">Target Margin</div>
-                <div class="listed-stat-value">${hasDate && hasBand ? cappedTargetMargin.toFixed(0) + "%" : "—"}</div>
-                <div class="listed-stat-sub">
-                    ${
-                        hasDate && hasBand
-                            ? "Based on availability colour and uplift slider"
-                            : "Waiting for schedule date and availability band"
-                    }
+            <div>
+                <label class="mini-label">Availability Band</label>
+                <div class="availability-band-pill ${bandClass}">
+                    ${escapeHtml(bandLabel)}
                 </div>
             </div>
-        </div>
 
-        <div style="height:10px"></div>
-
-        <div class="listed-stat-card">
-            <div class="listed-stat-label">Suggested Sell Price</div>
-            <div class="listed-stat-value">
-                ${hasDate && hasBand ? quoteMoney(suggestedPrice) : "—"}
+            <div class="availability-slider-row">
+                <label class="mini-label">Margin Uplift</label>
+                <input
+                    type="range"
+                    min="0"
+                    max="10"
+                    step="1"
+                    value="${Number(pricing.faderValue || 0)}"
+                    class="availability-slider"
+                    oninput="updateAvailabilityFader('${sequenceId}', this.value)"
+                >
+                <div class="text-[10px] font-bold text-slate-500 uppercase">
+                    Suggested margin: ${quoteMoney(marginPct)}%
+                </div>
             </div>
-            <div class="listed-stat-sub">
-                Core cost base: ${quoteMoney(costBase)}
-            </div>
-        </div>
 
-        <button
-            type="button"
-            class="availability-refresh-btn"
-            style="margin-top:10px;"
-            ${hasDate && hasBand ? "" : "disabled"}
-            onclick="applyAvailabilitySuggestedPrice('${sequenceId}')"
-        >
-            Apply Suggested Price
-        </button>
+            <div class="availability-suggested-price">
+                <div class="listed-stat-label">Suggested Price</div>
+                <div class="listed-stat-value">${quoteMoney(suggestedSellPrice)}</div>
+                <div class="listed-stat-sub">
+                    Based on current cost base and availability margin
+                </div>
+            </div>
+
+            <button
+                type="button"
+                class="availability-apply-btn"
+                onclick="applyAvailabilitySuggestedPrice('${sequenceId}', ${Number(suggestedSellPrice || 0)})"
+            >
+                Apply Suggested Price
+            </button>
+        </div>
     `;
 }
 
