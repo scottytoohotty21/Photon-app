@@ -11571,108 +11571,22 @@ function roundSuggestedQuotePrice(value) {
     return Math.ceil(cleanValue / 10) * 10;
 }
 
-function renderAvailabilityPricingPanel(sequenceId) {
+ffunction renderAvailabilityPricingPanel(sequenceId) {
+    /*
+        Safety wrapper.
+        The quote tab now uses renderQuoteAvailabilityPricingPanel().
+        This older function is kept only so any old references do not break the costing tab.
+    */
+
+    if (typeof renderQuoteAvailabilityPricingPanel === "function") {
+        renderQuoteAvailabilityPricingPanel(sequenceId);
+        return;
+    }
+
     const target = document.getElementById("quote-availabilityPricingCard");
-    if (!target) return;
-
-    const state = ensureQuoteSequenceState(sequenceId);
-    const availability = getAvailabilityPricingState(sequenceId);
-    const totals = getQuoteCommercialTotals(sequenceId);
-
-    if (!state || !availability) return;
-
-    const dateUsed = getAvailabilityDateUsedForSequence(sequenceId);
-    const dateLabel = dateUsed
-        ? new Date(dateUsed + "T00:00:00").toLocaleDateString("en-GB")
-        : "";
-
-    const bandKey = availability.band || "green";
-    const band = AVAILABILITY_MARGIN_BANDS[bandKey] || AVAILABILITY_MARGIN_BANDS.green;
-
-    const uplift = Math.max(0, Math.min(10, Number(availability.uplift || 0)));
-    const targetMargin = Number(band.baseMargin || 0) + uplift;
-
-    const suggestedRaw = calculateSuggestedSellPriceFromMargin(
-        totals.totalCostBase,
-        targetMargin
-    );
-
-    const suggestedPrice = roundSuggestedQuotePrice(suggestedRaw);
-
-    target.innerHTML = `
-        <div class="availability-card">
-            <div class="flex items-center justify-between gap-2 mb-3">
-                <div>
-                    <div class="listed-stat-label">Availability Pricing</div>
-                    <div class="listed-stat-sub">Uses core move cost only</div>
-                </div>
-
-                <div class="availability-band-pill ${band.className}">
-                    ${escapeHtml(band.label)}
-                </div>
-            </div>
-
-            <div class="space-y-3">
-                ${
-                    dateUsed
-                        ? `
-                            <div class="quote-date-confirm-line">
-                                Using schedule date: ${escapeHtml(dateLabel)}
-                            </div>
-                        `
-                        : `
-                            <div class="quote-date-confirm-line warn">
-                                No schedule date entered yet
-                            </div>
-                        `
-                }
-
-                <div>
-                    <label class="mini-label">Availability Band</label>
-                    <select
-                        class="field"
-                        onchange="handleAvailabilityBandChange('${sequenceId}', this.value)"
-                    >
-                        <option value="green" ${bandKey === "green" ? "selected" : ""}>Green - 10% base margin</option>
-                        <option value="blue" ${bandKey === "blue" ? "selected" : ""}>Blue - 20% base margin</option>
-                        <option value="yellow" ${bandKey === "yellow" ? "selected" : ""}>Yellow - 30% base margin</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label class="mini-label">Margin Uplift: +${uplift}%</label>
-                    <input
-                        type="range"
-                        min="0"
-                        max="10"
-                        step="1"
-                        value="${uplift}"
-                        class="availability-range"
-                        oninput="handleAvailabilityUpliftChange('${sequenceId}', this.value)"
-                    >
-                    <div class="listed-stat-sub">
-                        Target margin: ${targetMargin}%
-                    </div>
-                </div>
-
-                <div class="listed-stat-card">
-                    <div class="listed-stat-label">Suggested Quote Price</div>
-                    <div class="availability-suggested-price">${quoteMoney(suggestedPrice)}</div>
-                    <div class="listed-stat-sub">
-                        Based on core cost base ${quoteMoney(totals.totalCostBase)}
-                    </div>
-                </div>
-
-                <button
-                    type="button"
-                    class="availability-apply-btn"
-                    onclick="applyAvailabilitySuggestedPrice('${sequenceId}', ${Number(suggestedPrice || 0)})"
-                >
-                    Apply Suggested Price
-                </button>
-            </div>
-        </div>
-    `;
+    if (target) {
+        target.innerHTML = "";
+    }
 }
 
 function handleAvailabilityMoveDateChange(sequenceId, value) {
