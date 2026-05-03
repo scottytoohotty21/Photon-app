@@ -2461,6 +2461,66 @@ button {
     color: #475569;
     font-weight: 700;
 }
+.quote-price-result-card {
+    background: #eff6ff !important;
+    border: 1px solid #bfdbfe !important;
+}
+
+.quote-price-result-card .listed-stat-label {
+    color: #1e3a8a;
+}
+
+.quote-price-result-card .listed-stat-value {
+    color: #1e3a8a;
+    text-align: right;
+}
+
+.availability-refresh-row {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 10px;
+    margin-bottom: 12px;
+}
+
+.availability-refresh-topline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.availability-refresh-title {
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #334155;
+}
+
+.availability-refresh-btn {
+    background: #2563eb;
+    color: #ffffff;
+    border: 1px solid #1d4ed8;
+    border-radius: 999px;
+    padding: 8px 12px;
+    font-size: 11px;
+    font-weight: 900;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(37,99,235,0.18);
+}
+
+.availability-refresh-btn:active {
+    transform: scale(0.97);
+}
+
+.availability-refresh-status {
+    margin-top: 7px;
+    font-size: 11px;
+    line-height: 1.3;
+    color: #64748b;
+    font-weight: 700;
+}
 .quote-main-workspace {
     background: #f8fafc;
     border: 1px solid #e2e8f0;
@@ -3430,33 +3490,15 @@ Enter as: Surname, First Name
 
                 <div>
                     <label class="mini-label">Enter Quote Price (£ excl VAT)</label>
-                    <input id="quote-customerPriceInput" type="number" min="0" step="0.01" class="field" value="0" />
+                    <input id="quote-customerPriceInput" type="number" min="0" step="0.01" class="field quote-cost-editable-field" value="0" />
                     <div style="height:6px"></div>
-                    <div class="listed-stat-card">
-                        <div class="listed-stat-label">Quote Price (£ excl VAT)</div>
-                        <div class="listed-stat-value" id="quote-customerPriceDisplay">0.00</div>
-                    </div>
+                   <div class="listed-stat-card quote-price-result-card">
+    <div class="listed-stat-label">Quote Price (£ excl VAT)</div>
+    <div class="listed-stat-value" id="quote-customerPriceDisplay">0.00</div>
+</div>
                 </div>
 
-                <div>
-                    <label class="mini-label">Availability Refresh</label>
-                    <button
-                        type="button"
-                        class="availability-refresh-btn"
-                        onclick="refreshAvailabilityCacheSample()"
-                    >
-                        Refresh Availability
-                    </button>
-
-                    <div
-                        id="quote-availabilityRefreshStatus"
-                        class="availability-refresh-status"
-                    >
-                        Using local fallback availability
-                    </div>
-                </div>
-
-                <button type="button" class="action-btn quote-save-compact btn-save" id="quote-savePricingBtn">
+                                <button type="button" class="action-btn quote-save-compact btn-save" id="quote-savePricingBtn">
                     Save Pricing
                 </button>
             </div>
@@ -11276,9 +11318,32 @@ function renderQuoteAvailabilityPricingPanel(sequenceId) {
     const bandClass = manualBand && manualBand.id ? manualBand.id : "";
 
     target.innerHTML = `
-        <div class="availability-pricing-card">
-            ${
-                dateUsed
+    <div class="availability-pricing-card">
+        <div class="availability-refresh-row">
+            <div class="availability-refresh-topline">
+                <div class="availability-refresh-title">
+                    Availability Source
+                </div>
+
+                <button
+                    type="button"
+                    class="availability-refresh-btn"
+                    onclick="refreshAvailabilityCacheSample()"
+                >
+                    Refresh Availability
+                </button>
+            </div>
+
+            <div
+                id="quote-availabilityRefreshStatus"
+                class="availability-refresh-status"
+            >
+                Using local fallback availability
+            </div>
+        </div>
+
+        ${
+            dateUsed
                     ? `
                         <div class="quote-date-confirm-line">
                             Using schedule date: ${dateLabel}
