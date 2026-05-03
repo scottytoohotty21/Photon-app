@@ -2598,8 +2598,8 @@ button {
 }
 
 .pricing-row.pricing-row-custom {
-    background: #eff6ff;
-    border-color: #93c5fd;
+    background: #f8fafc;
+    border-color: #e2e8f0;
 }
 
 .pricing-row .field {
@@ -12259,9 +12259,10 @@ function renderQuotePricingGrid(sequenceId) {
                             <div class="quote-custom-label-wrap">
                                 <label class="mini-label">Custom Label</label>
                                 <input
-                                    type="text"
-                                    class="field"
-                                    value="${escapeHtml(line.customLabel || "")}"
+                                    <input
+    type="text"
+    class="field quote-cost-editable-field"
+    value="${escapeHtml(line.customLabel || "")}"
                                     ${isCustom ? "" : "disabled"}
                                     oninput="updateQuoteLine('${sequenceId}','${line.id}','customLabel',this.value,'core',false)"
                                     placeholder=""
@@ -12356,9 +12357,10 @@ function renderQuoteAdditionalCostsGrid(sequenceId) {
                             <div class="quote-custom-label-wrap">
                                 <label class="mini-label">Custom Label</label>
                                 <input
-                                    type="text"
-                                    class="field"
-                                    value="${escapeHtml(line.customLabel || "")}"
+                                    <input
+    type="text"
+    class="field quote-cost-editable-field"
+    value="${escapeHtml(line.customLabel || "")}"
                                     ${isCustom ? "" : "disabled"}
                                     oninput="updateQuoteLine('${sequenceId}','${line.id}','customLabel',this.value,'additional',false)"
                                     placeholder=""
