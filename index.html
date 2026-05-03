@@ -11029,6 +11029,69 @@ function renderAvailabilityBandOptions(selectedBand) {
     }).join("");
 }
 
+function getAvailabilityDateUsedForSequence(sequenceId) {
+    if (!currentJob || !Array.isArray(currentJob.sequences)) return "";
+
+    const seq = currentJob.sequences.find(function(s) {
+        return String(s.id) === String(sequenceId);
+    });
+
+    if (!seq || !seq.schedule || !Array.isArray(seq.schedule.manualDays)) {
+        return "";
+    }
+
+    const rows = seq.schedule.manualDays.filter(function(day) {
+        return day && String(day.date || "").trim();
+    });
+
+    if (!rows.length) {
+        return "";
+    }
+
+    const completionRow = rows.find(function(day) {
+        return String(day.completionWindow || "") === "Completion Day";
+    });
+
+    if (completionRow && completionRow.date) {
+        return String(completionRow.date || "").trim();
+    }
+
+    return String(rows[0].date || "").trim();
+}
+
+function updateAvailabilityManualBand(sequenceId, bandId) {
+    const pricing = getAvailabilityPricingState(sequenceId);
+    if (!pricing) return;
+
+    pricing.manualBand = String(bandId || "green");
+    pricing.band = pricing.manualBand;
+
+    quotePricingSaved = false;
+    saveToDevice();
+
+    renderQuoteAvailabilityPricingPanel(sequenceId);
+    updateQuoteCommercialDisplays(sequenceId);
+}
+
+function updateAvailabilityFader(sequenceId, value) {
+    const pricing = getAvailabilityPricingState(sequenceId);
+    if (!pricing) return;
+
+    const cleanValue = Number(value || 0);
+    pricing.faderValue = Math.max(0, Math.min(10, cleanValue));
+
+    /*
+        Keep older availability shape in sync too,
+        in case any previous function still reads uplift.
+    */
+    pricing.uplift = pricing.faderValue;
+
+    quotePricingSaved = false;
+    saveToDevice();
+
+    renderQuoteAvailabilityPricingPanel(sequenceId);
+    updateQuoteCommercialDisplays(sequenceId);
+}
 function renderQuoteAvailabilityPricingPanel(sequenceId) {
     const target = document.getElementById("quote-availabilityPricingCard");
     if (!target) return;
@@ -11045,20 +11108,32 @@ function renderQuoteAvailabilityPricingPanel(sequenceId) {
         return;
     }
 
-    const dateUsed = typeof getAvailabilityDateUsedForSequence === "function"
-        ? getAvailabilityDateUsedForSequence(sequenceId)
-        : "";
-
+    const dateUsed = getAvailabilityDateUsedForSequence(sequenceId);
     const dateLabel = dateUsed
         ? new Date(dateUsed + "T00:00:00").toLocaleDateString("en-GB")
         : "";
 
-    const band = getHighestAvailabilityBand(pricing.dates || []);
-    const marginPct = calculateAvailabilityMargin(band, pricing.faderValue || 0);
+    /*
+        Temporary manual band fallback.
+        Later the CRM/server refresh can set this automatically.
+    */
+    if (!pricing.manualBand) {
+        pricing.manualBand = pricing.band || "green";
+    }
+
+    const manualBandId = String(pricing.manualBand || "green");
+
+    const manualBand = QUOTE_AVAILABILITY_BANDS.find(function(item) {
+        return item.id === manualBandId;
+    }) || QUOTE_AVAILABILITY_BANDS.find(function(item) {
+        return item.id === "green";
+    });
+
+    const marginPct = calculateAvailabilityMargin(manualBand, pricing.faderValue || 0);
     const suggestedSellPrice = calculateSellPriceFromMargin(totals.totalCostBase, marginPct);
 
-    const bandLabel = band && band.label ? band.label : "No Band";
-    const bandClass = band && band.id ? band.id : "";
+    const bandLabel = manualBand && manualBand.label ? manualBand.label : "No Band";
+    const bandClass = manualBand && manualBand.id ? manualBand.id : "";
 
     target.innerHTML = `
         <div class="availability-pricing-card">
@@ -11078,6 +11153,25 @@ function renderQuoteAvailabilityPricingPanel(sequenceId) {
 
             <div>
                 <label class="mini-label">Availability Band</label>
+                <select
+                    class="field"
+                    onchange="updateAvailabilityManualBand('${sequenceId}', this.value)"
+                >
+                    ${QUOTE_AVAILABILITY_BANDS
+                        .filter(function(band) {
+                            return band.id;
+                        })
+                        .map(function(band) {
+                            return `
+                                <option value="${band.id}" ${band.id === manualBandId ? "selected" : ""}>
+                                    ${band.label} · ${band.minMargin}% to ${band.maxMargin}%
+                                </option>
+                            `;
+                        }).join("")}
+                </select>
+
+                <div style="height:6px"></div>
+
                 <div class="availability-band-pill ${bandClass}">
                     ${escapeHtml(bandLabel)}
                 </div>
@@ -11103,7 +11197,7 @@ function renderQuoteAvailabilityPricingPanel(sequenceId) {
                 <div class="listed-stat-label">Suggested Price</div>
                 <div class="listed-stat-value">${quoteMoney(suggestedSellPrice)}</div>
                 <div class="listed-stat-sub">
-                    Based on current cost base and availability margin
+                    Based on current cost base and manual availability band
                 </div>
             </div>
 
