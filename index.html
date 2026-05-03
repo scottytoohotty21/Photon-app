@@ -3353,14 +3353,7 @@ Enter as: Surname, First Name
                     <div class="panel-body">
                         <div class="pricing-grid" id="quote-pricingGrid"></div>
                         <div class="toolbar">
-                            <button
-    type="button"
-    class="action-btn"
-    id="quote-addPricingLineBtn"
-    onclick="addQuotePricingLine()"
->
-    Add Core Cost Row
-</button>
+                            <button type="button" class="action-btn" id="quote-addPricingLineBtn">Add Core Cost Row</button>
                         </div>
                         <div class="footer-note">Core costing should stay focused on move cost base.</div>
                     </div>
@@ -3374,14 +3367,7 @@ Enter as: Surname, First Name
                     <div class="panel-body">
                         <div class="pricing-grid" id="quote-additionalCostsGrid"></div>
                         <div class="toolbar">
-                            <button
-    type="button"
-    class="action-btn"
-    id="quote-addAdditionalCostLineBtn"
-    onclick="addQuoteAdditionalCostLine()"
->
-    Add Optional Service
-</button>
+                            <button type="button" class="action-btn" id="quote-addAdditionalCostLineBtn">Add Optional Service</button>
                         </div>
                     </div>
                 </div>
@@ -10593,15 +10579,6 @@ function getQuoteSelectedSequence() {
     }) || currentJob.sequences[0] || null;
 }
 
-function formatDateForDisplay(dateValue) {
-    if (!dateValue) return "";
-
-    const parts = String(dateValue).split("-");
-    if (parts.length !== 3) return dateValue;
-
-    return parts[2] + "/" + parts[1] + "/" + parts[0];
-}
-
 function quoteMoney(value) {
     return Number(value || 0).toFixed(2);
 }
@@ -11055,7 +11032,7 @@ function renderAvailabilityBandOptions(selectedBand) {
 function renderQuoteAvailabilityPricingPanel(sequenceId) {
     const target = document.getElementById("quote-availabilityPricingCard");
     if (!target) return;
-
+   
     const pricing = getAvailabilityPricingState(sequenceId);
     const totals = getQuoteCommercialTotals(sequenceId);
 
@@ -11073,41 +11050,8 @@ function renderQuoteAvailabilityPricingPanel(sequenceId) {
         ? new Date(dateUsed + "T00:00:00").toLocaleDateString("en-GB")
         : "";
 
-    const pricingDates = Array.isArray(pricing.dates)
-        ? pricing.dates
-        : (dateUsed ? [dateUsed] : []);
-
-    let band = null;
-
-    if (typeof getHighestAvailabilityBand === "function") {
-        band = getHighestAvailabilityBand(pricingDates);
-    }
-
-    if (!band && pricing.band && AVAILABILITY_MARGIN_BANDS && AVAILABILITY_MARGIN_BANDS[pricing.band]) {
-        const oldBand = AVAILABILITY_MARGIN_BANDS[pricing.band];
-
-        band = {
-            id: pricing.band,
-            label: oldBand.label || pricing.band,
-            minMargin: Number(oldBand.baseMargin || 0),
-            maxMargin: Number(oldBand.baseMargin || 0) + 10
-        };
-    }
-
-    if (!band) {
-        band = {
-            id: "",
-            label: "No Band",
-            minMargin: 0,
-            maxMargin: 0
-        };
-    }
-
-    const faderValue = pricing.faderValue !== undefined
-        ? Number(pricing.faderValue || 0)
-        : Number(pricing.uplift || 0);
-
-    const marginPct = calculateAvailabilityMargin(band, faderValue);
+    const band = getHighestAvailabilityBand(pricing.dates);
+    const marginPct = calculateAvailabilityMargin(band, pricing.faderValue);
     const suggestedSellPrice = calculateSellPriceFromMargin(totals.totalCostBase, marginPct);
 
     const bandLabel = band && band.label ? band.label : "No Band";
@@ -11143,7 +11087,7 @@ function renderQuoteAvailabilityPricingPanel(sequenceId) {
                     min="0"
                     max="10"
                     step="1"
-                    value="${Number(faderValue || 0)}"
+                    value="${Number(pricing.faderValue || 0)}"
                     class="availability-slider"
                     oninput="updateAvailabilityFader('${sequenceId}', this.value)"
                 >
@@ -11156,7 +11100,7 @@ function renderQuoteAvailabilityPricingPanel(sequenceId) {
                 <div class="listed-stat-label">Suggested Price</div>
                 <div class="listed-stat-value">${quoteMoney(suggestedSellPrice)}</div>
                 <div class="listed-stat-sub">
-                    Based on current core cost base and schedule availability
+                    Based on current cost base and availability margin
                 </div>
             </div>
 
@@ -11605,9 +11549,102 @@ function roundSuggestedQuotePrice(value) {
 }
 
 function renderAvailabilityPricingPanel(sequenceId) {
-    if (typeof renderQuoteAvailabilityPricingPanel === "function") {
-        renderQuoteAvailabilityPricingPanel(sequenceId);
+    const target = document.getElementById("quote-availabilityPricingCard");
+    if (!target) return;
+
+    const state = ensureQuoteSequenceState(sequenceId);
+    const availability = getAvailabilityPricingState(sequenceId);
+    const totals = getQuoteCommercialTotals(sequenceId);
+
+    if (!state || !availability) return;
+
+    if (!availability.moveDate) {
+        availability.moveDate = "";
     }
+
+    const bandKey = availability.band || "green";
+    const band = AVAILABILITY_MARGIN_BANDS[bandKey] || AVAILABILITY_MARGIN_BANDS.green;
+
+    const uplift = Math.max(0, Math.min(10, Number(availability.uplift || 0)));
+    const targetMargin = Number(band.baseMargin || 0) + uplift;
+
+    const suggestedRaw = calculateSuggestedSellPriceFromMargin(
+        totals.totalCostBase,
+        targetMargin
+    );
+
+    const suggestedPrice = roundSuggestedQuotePrice(suggestedRaw);
+
+    target.innerHTML = `
+        <div class="availability-card">
+            <div class="flex items-center justify-between gap-2 mb-3">
+                <div>
+                    <div class="listed-stat-label">Availability Pricing</div>
+                    <div class="listed-stat-sub">Uses core move cost only</div>
+                </div>
+
+                <div class="availability-band-pill ${band.className}">
+                    ${escapeHtml(band.label)}
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <div>
+                    <label class="mini-label">Move Date</label>
+                    <input
+                        type="date"
+                        class="field"
+                        value="${escapeHtml(availability.moveDate || "")}"
+                        onchange="handleAvailabilityMoveDateChange('${sequenceId}', this.value)"
+                    >
+                </div>
+
+                <div>
+                    <label class="mini-label">Availability Band</label>
+                    <select
+                        class="field"
+                        onchange="handleAvailabilityBandChange('${sequenceId}', this.value)"
+                    >
+                        <option value="green" ${bandKey === "green" ? "selected" : ""}>Green - 10% base margin</option>
+                        <option value="blue" ${bandKey === "blue" ? "selected" : ""}>Blue - 20% base margin</option>
+                        <option value="yellow" ${bandKey === "yellow" ? "selected" : ""}>Yellow - 30% base margin</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="mini-label">Margin Uplift: +${uplift}%</label>
+                    <input
+                        type="range"
+                        min="0"
+                        max="10"
+                        step="1"
+                        value="${uplift}"
+                        class="availability-range"
+                        oninput="handleAvailabilityUpliftChange('${sequenceId}', this.value)"
+                    >
+                    <div class="listed-stat-sub">
+                        Target margin: ${targetMargin}%
+                    </div>
+                </div>
+
+                <div class="listed-stat-card">
+                    <div class="listed-stat-label">Suggested Quote Price</div>
+                    <div class="availability-suggested-price">${quoteMoney(suggestedPrice)}</div>
+                    <div class="listed-stat-sub">
+                        Based on core cost base ${quoteMoney(totals.totalCostBase)}
+                    </div>
+                </div>
+
+                <button
+                    type="button"
+                    class="availability-apply-btn"
+                    onclick="applyAvailabilitySuggestedPrice('${sequenceId}', ${suggestedPrice})"
+                >
+                    Apply Suggested Price
+                </button>
+            </div>
+        </div>
+    `;
 }
 
 function handleAvailabilityMoveDateChange(sequenceId, value) {
@@ -11863,7 +11900,6 @@ function renderQuoteDateMarginPricingPanel(sequenceId) {
     }
 }
 function renderQuoteTab() {
-console.log("QUOTE TEST 1: renderQuoteTab started");
     renderQuoteTabShellOnly();
     bindQuoteShellEvents();
 
@@ -11873,34 +11909,11 @@ console.log("QUOTE TEST 1: renderQuoteTab started");
     const sequenceId = String(seq.id);
 
 syncQuotePricingFromSchedule(sequenceId);
+syncQuoteAvailabilityDateFromSchedule(sequenceId);
 
-if (typeof syncQuoteAvailabilityDateFromSchedule === "function") {
-    syncQuoteAvailabilityDateFromSchedule(sequenceId);
-}
-console.log("QUOTE TEST 2: about to render grids", {
-    commercialSummary: !!document.getElementById("quote-commercialSummaryCard"),
-    availabilityCard: !!document.getElementById("quote-availabilityPricingCard"),
-    coreGrid: !!document.getElementById("quote-pricingGrid"),
-    additionalGrid: !!document.getElementById("quote-additionalCostsGrid"),
-    additionalBreakdown: !!document.getElementById("quote-additionalCostsBreakdownCard")
-});
 renderQuotePricingGrid(sequenceId);
 renderQuoteAdditionalCostsGrid(sequenceId);
-
-try {
-    renderQuoteAvailabilityPricingPanel(sequenceId);
-} catch (err) {
-    console.error("Availability pricing render failed:", err);
-
-    const availabilityTarget = document.getElementById("quote-availabilityPricingCard");
-    if (availabilityTarget) {
-        availabilityTarget.innerHTML = `
-            <div class="quote-date-confirm-line warn">
-                Availability pricing could not load. Costing rows are still available.
-            </div>
-        `;
-    }
-}
+renderQuoteAvailabilityPricingPanel(sequenceId);
 
     const addPricingBtn = document.getElementById("quote-addPricingLineBtn");
     const addAdditionalBtn = document.getElementById("quote-addAdditionalCostLineBtn");
@@ -15325,4 +15338,3 @@ document.addEventListener('DOMContentLoaded', function () {
 </div>
 </body>
 </html>
-
