@@ -11872,11 +11872,28 @@ function renderQuoteTab() {
     const sequenceId = String(seq.id);
 
 syncQuotePricingFromSchedule(sequenceId);
-syncQuoteAvailabilityDateFromSchedule(sequenceId);
+
+if (typeof syncQuoteAvailabilityDateFromSchedule === "function") {
+    syncQuoteAvailabilityDateFromSchedule(sequenceId);
+}
 
 renderQuotePricingGrid(sequenceId);
 renderQuoteAdditionalCostsGrid(sequenceId);
-renderQuoteAvailabilityPricingPanel(sequenceId);
+
+try {
+    renderQuoteAvailabilityPricingPanel(sequenceId);
+} catch (err) {
+    console.error("Availability pricing render failed:", err);
+
+    const availabilityTarget = document.getElementById("quote-availabilityPricingCard");
+    if (availabilityTarget) {
+        availabilityTarget.innerHTML = `
+            <div class="quote-date-confirm-line warn">
+                Availability pricing could not load. Costing rows are still available.
+            </div>
+        `;
+    }
+}
 
     const addPricingBtn = document.getElementById("quote-addPricingLineBtn");
     const addAdditionalBtn = document.getElementById("quote-addAdditionalCostLineBtn");
