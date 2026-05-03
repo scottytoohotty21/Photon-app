@@ -3295,25 +3295,6 @@ Enter as: Surname, First Name
     <div class="quote-shell">
         <div class="quote-bottom-layout">
             <div class="quote-stack quote-left-rail quote-summary-strip">
-    <div class="panel">
-        <div class="panel-head">
-            <div class="panel-title">Commercial Summary</div>
-            <div class="panel-subtitle">Cost base, sell price and gross margin</div>
-        </div>
-        <div class="panel-body">
-            <div id="quote-commercialSummaryCard"></div>
-        </div>
-    </div>
-
-    <div class="panel">
-        <div class="panel-head">
-            <div class="panel-title">Availability Pricing</div>
-            <div class="panel-subtitle">Schedule date, availability band and suggested price</div>
-        </div>
-        <div class="panel-body">
-            <div id="quote-availabilityPricingCard"></div>
-        </div>
-    </div>
 
     <div class="panel">
         <div class="panel-head">
@@ -3337,12 +3318,51 @@ Enter as: Surname, First Name
                     </div>
                 </div>
 
+                <div>
+                    <label class="mini-label">Availability Refresh</label>
+                    <button
+                        type="button"
+                        class="availability-refresh-btn"
+                        onclick="refreshAvailabilityCacheSample()"
+                    >
+                        Refresh Availability
+                    </button>
+
+                    <div
+                        id="quote-availabilityRefreshStatus"
+                        class="availability-refresh-status"
+                    >
+                        Using local fallback availability
+                    </div>
+                </div>
+
                 <button type="button" class="action-btn quote-save-compact btn-save" id="quote-savePricingBtn">
                     Save Pricing
                 </button>
             </div>
         </div>
     </div>
+
+    <div class="panel">
+        <div class="panel-head">
+            <div class="panel-title">Availability Pricing</div>
+            <div class="panel-subtitle">Schedule date, availability band and suggested price</div>
+        </div>
+        <div class="panel-body">
+            <div id="quote-availabilityPricingCard"></div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-head">
+            <div class="panel-title">Commercial Summary</div>
+            <div class="panel-subtitle">Cost base, sell price and gross margin</div>
+        </div>
+        <div class="panel-body">
+            <div id="quote-commercialSummaryCard"></div>
+        </div>
+    </div>
+
 </div>
             <div class="quote-stack">
                 <div class="panel">
