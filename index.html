@@ -3353,7 +3353,14 @@ Enter as: Surname, First Name
                     <div class="panel-body">
                         <div class="pricing-grid" id="quote-pricingGrid"></div>
                         <div class="toolbar">
-                            <button type="button" class="action-btn" id="quote-addPricingLineBtn">Add Core Cost Row</button>
+                            <button
+    type="button"
+    class="action-btn"
+    id="quote-addPricingLineBtn"
+    onclick="addQuotePricingLine()"
+>
+    Add Core Cost Row
+</button>
                         </div>
                         <div class="footer-note">Core costing should stay focused on move cost base.</div>
                     </div>
@@ -3367,7 +3374,14 @@ Enter as: Surname, First Name
                     <div class="panel-body">
                         <div class="pricing-grid" id="quote-additionalCostsGrid"></div>
                         <div class="toolbar">
-                            <button type="button" class="action-btn" id="quote-addAdditionalCostLineBtn">Add Optional Service</button>
+                            <button
+    type="button"
+    class="action-btn"
+    id="quote-addAdditionalCostLineBtn"
+    onclick="addQuoteAdditionalCostLine()"
+>
+    Add Optional Service
+</button>
                         </div>
                     </div>
                 </div>
@@ -10579,6 +10593,15 @@ function getQuoteSelectedSequence() {
     }) || currentJob.sequences[0] || null;
 }
 
+function formatDateForDisplay(dateValue) {
+    if (!dateValue) return "";
+
+    const parts = String(dateValue).split("-");
+    if (parts.length !== 3) return dateValue;
+
+    return parts[2] + "/" + parts[1] + "/" + parts[0];
+}
+
 function quoteMoney(value) {
     return Number(value || 0).toFixed(2);
 }
@@ -11032,7 +11055,7 @@ function renderAvailabilityBandOptions(selectedBand) {
 function renderQuoteAvailabilityPricingPanel(sequenceId) {
     const target = document.getElementById("quote-availabilityPricingCard");
     if (!target) return;
-   
+
     const pricing = getAvailabilityPricingState(sequenceId);
     const totals = getQuoteCommercialTotals(sequenceId);
 
