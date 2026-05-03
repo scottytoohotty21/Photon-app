@@ -2787,6 +2787,32 @@ button {
     min-width:0;
     padding:0 8px;
 }
+.quote-delete-x-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    border: 1px solid #fecaca;
+    background: #fef2f2;
+    color: #dc2626;
+    font-size: 18px;
+    font-weight: 900;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+}
+
+.quote-delete-x-btn:active {
+    transform: scale(0.96);
+}
+
+.quote-del-wrap {
+    display: flex;
+    align-items: end;
+    justify-content: center;
+}
 
 @media (max-width:1180px){
     .quote-line-grid{
@@ -12263,13 +12289,14 @@ function renderQuotePricingGrid(sequenceId) {
 
                             <div class="quote-del-wrap">
                                 <button
-                                    type="button"
-                                    class="action-btn btn-change"
-                                    style="width:100%;height:44px;"
-                                    onclick="deleteQuoteLine('${sequenceId}','${line.id}','core')"
-                                >
-                                    Del
-                                </button>
+    type="button"
+    class="quote-delete-x-btn"
+    title="Delete this cost row"
+    aria-label="Delete this cost row"
+    onclick="deleteQuoteLine('${sequenceId}','${line.id}','core')"
+>
+    ×
+</button>
                             </div>
                         </div>
                     </div>
@@ -12358,14 +12385,15 @@ function renderQuoteAdditionalCostsGrid(sequenceId) {
                             </div>
 
                             <div class="quote-del-wrap">
-                                <button
-                                    type="button"
-                                    class="action-btn btn-change"
-                                    style="width:100%;height:44px;"
-                                    onclick="deleteQuoteLine('${sequenceId}','${line.id}','additional')"
-                                >
-                                    Del
-                                </button>
+                               <button
+    type="button"
+    class="quote-delete-x-btn"
+    title="Delete this additional cost row"
+    aria-label="Delete this additional cost row"
+    onclick="deleteQuoteLine('${sequenceId}','${line.id}','additional')"
+>
+    ×
+</button>
                             </div>
                         </div>
                     </div>
