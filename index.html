@@ -11581,9 +11581,10 @@ function renderAvailabilityPricingPanel(sequenceId) {
 
     if (!state || !availability) return;
 
-    if (!availability.moveDate) {
-        availability.moveDate = "";
-    }
+    const dateUsed = getAvailabilityDateUsedForSequence(sequenceId);
+    const dateLabel = dateUsed
+        ? new Date(dateUsed + "T00:00:00").toLocaleDateString("en-GB")
+        : "";
 
     const bandKey = availability.band || "green";
     const band = AVAILABILITY_MARGIN_BANDS[bandKey] || AVAILABILITY_MARGIN_BANDS.green;
@@ -11612,15 +11613,19 @@ function renderAvailabilityPricingPanel(sequenceId) {
             </div>
 
             <div class="space-y-3">
-                <div>
-                    <label class="mini-label">Move Date</label>
-                    <input
-                        type="date"
-                        class="field"
-                        value="${escapeHtml(availability.moveDate || "")}"
-                        onchange="handleAvailabilityMoveDateChange('${sequenceId}', this.value)"
-                    >
-                </div>
+                ${
+                    dateUsed
+                        ? `
+                            <div class="quote-date-confirm-line">
+                                Using schedule date: ${escapeHtml(dateLabel)}
+                            </div>
+                        `
+                        : `
+                            <div class="quote-date-confirm-line warn">
+                                No schedule date entered yet
+                            </div>
+                        `
+                }
 
                 <div>
                     <label class="mini-label">Availability Band</label>
@@ -11661,7 +11666,7 @@ function renderAvailabilityPricingPanel(sequenceId) {
                 <button
                     type="button"
                     class="availability-apply-btn"
-                    onclick="applyAvailabilitySuggestedPrice('${sequenceId}', ${suggestedPrice})"
+                    onclick="applyAvailabilitySuggestedPrice('${sequenceId}', ${Number(suggestedPrice || 0)})"
                 >
                     Apply Suggested Price
                 </button>
