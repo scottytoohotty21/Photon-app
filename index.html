@@ -2594,7 +2594,7 @@ button {
     border: 1px solid #e2e8f0;
     border-radius: 12px;
     padding: 12px;
-    background: #ffffff;
+    background: #f8fafc;
 }
 
 .pricing-row.pricing-row-custom {
@@ -2604,6 +2604,17 @@ button {
 
 .pricing-row .field {
     min-width: 0;
+}
+
+.quote-cost-editable-field {
+    background: #f1f5f9 !important;
+    border-color: #cbd5e1 !important;
+}
+
+.quote-cost-editable-field:focus {
+    background: #ffffff !important;
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.10);
 }
 
 .quote-line-total {
@@ -2630,7 +2641,9 @@ button {
 }
 
 .quote-line-total {
-    background: #f8fafc;
+    background: #eff6ff !important;
+    border-color: #bfdbfe !important;
+    color: #1e3a8a;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -12261,9 +12274,9 @@ function renderQuotePricingGrid(sequenceId) {
                                     type="number"
                                     min="0"
                                     step="0.01"
-                                    class="field"
-                                    value="${Number(line.qty || 0)}"
-                                    oninput="updateQuoteLine('${sequenceId}','${line.id}','qty',this.value,'core',false)"
+                                    class="field quote-cost-editable-field"
+value="${Number(line.qty || 0)}"
+oninput="updateQuoteLine('${sequenceId}','${line.id}','qty',this.value,'core',false)"
                                 >
                             </div>
 
@@ -12273,9 +12286,9 @@ function renderQuotePricingGrid(sequenceId) {
                                     type="number"
                                     min="0"
                                     step="0.01"
-                                    class="field ${needsCostEntry ? 'quote-cost-needs-entry' : ''}"
-                                    value="${Number(line.unitCost || 0)}"
-                                    oninput="updateQuoteLine('${sequenceId}','${line.id}','unitCost',this.value,'core',false)"
+                                    class="field quote-cost-editable-field ${needsCostEntry ? 'quote-cost-needs-entry' : ''}"
+value="${Number(line.unitCost || 0)}"
+oninput="updateQuoteLine('${sequenceId}','${line.id}','unitCost',this.value,'core',false)"
                                 >
                             </div>
 
@@ -12358,9 +12371,9 @@ function renderQuoteAdditionalCostsGrid(sequenceId) {
                                     type="number"
                                     min="0"
                                     step="0.01"
-                                    class="field"
-                                    value="${Number(line.qty || 0)}"
-                                    oninput="updateQuoteLine('${sequenceId}','${line.id}','qty',this.value,'additional',false)"
+                                   class="field quote-cost-editable-field"
+value="${Number(line.qty || 0)}"
+oninput="updateQuoteLine('${sequenceId}','${line.id}','qty',this.value,'additional',false)"
                                 >
                             </div>
 
@@ -12370,9 +12383,9 @@ function renderQuoteAdditionalCostsGrid(sequenceId) {
                                     type="number"
                                     min="0"
                                     step="0.01"
-                                    class="field ${needsCostEntry ? 'quote-cost-needs-entry' : ''}"
-                                    value="${Number(line.unitCost || 0)}"
-                                    oninput="updateQuoteLine('${sequenceId}','${line.id}','unitCost',this.value,'additional',false)"
+                                    class="field quote-cost-editable-field ${needsCostEntry ? 'quote-cost-needs-entry' : ''}"
+value="${Number(line.unitCost || 0)}"
+oninput="updateQuoteLine('${sequenceId}','${line.id}','unitCost',this.value,'additional',false)"
                                 >
                             </div>
 
