@@ -11388,13 +11388,28 @@ function getOperatingBranchForSequence(sequenceId) {
 
     const sourceRow = completionRow || rows[0];
 
-    return String(
-        sourceRow.operatingBranch ||
-        sourceRow.branch ||
-        sourceRow.depot ||
-        sourceRow.startBranch ||
-        ""
-    ).trim();
+    const legs = Array.isArray(sourceRow.legs) ? sourceRow.legs : [];
+
+    /*
+        Operating branch is currently inferred from the travel legs.
+        The branch is usually the depot/branch location used in From/To.
+    */
+    const branchOptions = ["Aylesbury", "Edinburgh"];
+
+    for (const leg of legs) {
+        const fromValue = String(leg.from || "").trim();
+        const toValue = String(leg.to || "").trim();
+
+        if (branchOptions.includes(fromValue)) {
+            return fromValue;
+        }
+
+        if (branchOptions.includes(toValue)) {
+            return toValue;
+        }
+    }
+
+    return "";
 }
 
 function getTestAvailabilityForBranchDate(branchValue, dateValue) {
