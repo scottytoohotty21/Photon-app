@@ -15103,18 +15103,7 @@ function renderSchedulePlanner(){
                             </label>
                         </div>
                     </div>
-                    <div>
-    <label class="mini-label">Operating Branch</label>
-    <select
-        class="field"
-        onchange="updateScheduleDay('${day.id}','operatingBranch',this.value)"
-    >
-        <option value="">Select Branch</option>
-        ${OPERATING_BRANCHES.map(function(branch) {
-            return `<option value="${escapeHtml(branch)}" ${String(day.operatingBranch || "") === branch ? "selected" : ""}>${escapeHtml(branch)}</option>`;
-        }).join("")}
-    </select>
-</div>
+                    
                     <div>
     <label class="mini-label">Date</label>
     <input
