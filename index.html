@@ -2114,6 +2114,14 @@ button {
 .schedule-toolbar-branch .mini-label {
     margin-bottom: 4px;
 }
+
+.schedule-toolbar-loading {
+    min-width: 170px;
+}
+
+.schedule-toolbar-loading .mini-label {
+    margin-bottom: 4px;
+}
 .schedule-title-row {
     display: flex;
     align-items: center;
@@ -3382,14 +3390,7 @@ Enter as: Surname, First Name
 
     <div class="grid-2">
         
-        <div>
-            <label class="mini-label">Loading Variant</label>
-            <select id="loadingVariant" class="field" onchange="handleScheduleInputChange()">
-                <option value="Standard">Standard</option>
-                <option value="Slow">Slow</option>
-            </select>
-        </div>
-    </div>
+            </div>
 </div>
   
                                   
@@ -3442,15 +3443,26 @@ Enter as: Surname, First Name
 
     <div class="schedule-toolbar-actions">
     <div class="schedule-toolbar-branch">
-    <label class="mini-label">Operating Branch</label>
-    <select
-        id="scheduleToolbarOperatingBranch"
-        class="field"
-        onchange="updateScheduleOperatingBranchForAllRows(this.value)"
-    >
-        <option value="">Select Branch</option>
-    </select>
-</div>
+        <label class="mini-label">Operating Branch</label>
+        <select
+            id="scheduleToolbarOperatingBranch"
+            class="field"
+            onchange="updateScheduleOperatingBranchForAllRows(this.value)"
+        >
+            <option value="">Select Branch</option>
+        </select>
+    </div>
+
+    <div class="schedule-toolbar-loading">
+        <label class="mini-label">Loading Variant</label>
+        <select id="loadingVariant" class="field">
+            <option value="Standard">Standard</option>
+            <option value="Access">Access</option>
+            <option value="Stairs">Stairs</option>
+            <option value="Long Carry">Long Carry</option>
+            <option value="Difficult Access">Difficult Access</option>
+        </select>
+    </div>
 
     <button class="schedule-btn" onclick="autoBuildScheduleDays()">Auto Build</button>
     <button class="schedule-btn" onclick="addScheduleDay()">Add Day</button>
