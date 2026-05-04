@@ -8264,14 +8264,44 @@ function buildMileagePlannerRows(branch) {
 
     return rows;
 }
+function getOperatingBranchFromManualScheduleRows() {
+    if (!Array.isArray(manualSchedule) || !manualSchedule.length) {
+        return "";
+    }
+
+    const rows = manualSchedule.filter(function(day) {
+        return day;
+    });
+
+    if (!rows.length) {
+        return "";
+    }
+
+    /*
+        Use same priority as availability:
+        1. Completion Day row if present
+        2. First schedule row
+    */
+    const completionRow = rows.find(function(day) {
+        return String(day.completionWindow || "") === "Completion Day";
+    });
+
+    const sourceRow = completionRow || rows[0];
+
+    return String(sourceRow.operatingBranch || "").trim();
+}
 
 function getMileageRouteData() {
     const seq = getActiveSequenceRecord();
     if (!seq) return null;
 
-    const schedule = ensureSequenceScheduleShape(seq);
-    const branch = schedule.operatingBranch || "London";
-    const depotAddress = BRANCH_DEPOTS[branch] || "";
+    const branch = getOperatingBranchFromManualScheduleRows();
+
+if (!branch) {
+    return null;
+}
+
+const depotAddress = BRANCH_DEPOTS[branch] || "";
 
     const firstCollectionId = Array.isArray(seq.collections) && seq.collections.length
         ? seq.collections[0]
@@ -10823,10 +10853,11 @@ function getAvailabilityBandForScheduleDate(sequenceId, dateValue) {
         })
         : null;
 
-    const schedule = seq ? ensureSequenceScheduleShape(seq) : null;
-    const branch = schedule && schedule.operatingBranch
-        ? schedule.operatingBranch
-        : "London";
+    const branch = getOperatingBranchForSequence(sequenceId);
+
+if (!branch) {
+    return "";
+}
 
     const branchKey = branch + "|" + dateValue;
 
@@ -11175,16 +11206,8 @@ function getAvailabilityPricingState(sequenceId) {
 }
 
 function getQuoteAvailabilityBranch(sequenceId) {
-    const seq = currentJob && currentJob.sequences
-        ? currentJob.sequences.find(function(item) {
-            return String(item.id) === String(sequenceId);
-        })
-        : null;
-
-    if (!seq) return "London";
-
-    const schedule = ensureSequenceScheduleShape(seq);
-    return schedule && schedule.operatingBranch ? schedule.operatingBranch : "London";
+    const branch = getOperatingBranchForSequence(sequenceId);
+    return branch || "";
 }
 
 function getAvailabilityBandFromLocalTable(branch, dateValue) {
@@ -11197,11 +11220,11 @@ function addQuoteAvailabilityDate(sequenceId) {
     if (!pricing) return;
 
     pricing.dates.push({
-        id: createAvailabilityDateId(),
-        date: "",
-        branch: getQuoteAvailabilityBranch(sequenceId),
-        band: ""
-    });
+    id: createAvailabilityDateId(),
+    date: "",
+    branch: getQuoteAvailabilityBranch(sequenceId) || "",
+    band: ""
+});
 
     quotePricingSaved = false;
     saveToDevice();
