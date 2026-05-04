@@ -3367,11 +3367,7 @@ Enter as: Surname, First Name
     <div class="section-title">Operating Branch & Loading Variant</div>
 
     <div class="grid-2">
-        <div>
-            <label class="mini-label">Operating Branch</label>
-            <select id="operatingBranch" class="field" onchange="handleScheduleInputChange()"></select>
-        </div>
-
+        
         <div>
             <label class="mini-label">Loading Variant</label>
             <select id="loadingVariant" class="field" onchange="handleScheduleInputChange()">
@@ -13497,7 +13493,10 @@ function loadScheduleInputsFromActiveSequence() {
 const loadRateEl = document.getElementById("loadRate");
 const unloadRateEl = document.getElementById("unloadRate");
 const loadingVariantEl = document.getElementById("loadingVariant");
-const operatingBranchEl = document.getElementById("operatingBranch");
+/*
+    Operating Branch is now selected per schedule row.
+    Old Inputs card operating branch dropdown retired.
+*/
 
 const svcCustomMinutesEl = document.getElementById("svc_custom_minutes");
 const svcCustomNoteEl = document.getElementById("svc_custom_note");
@@ -13507,12 +13506,6 @@ const exportWrapVolEl = document.getElementById("exportWrapVol");
 if (loadRateEl) loadRateEl.value = schedule.loadRate;
 if (unloadRateEl) unloadRateEl.value = schedule.unloadRate;
 
-if (operatingBranchEl) {
-    operatingBranchEl.innerHTML = OPERATING_BRANCHES.map(function(branch) {
-        const selected = (schedule.operatingBranch || "London") === branch ? "selected" : "";
-        return '<option value="' + branch + '" ' + selected + '>' + branch + '</option>';
-    }).join("");
-}
 
 if (loadingVariantEl) loadingVariantEl.value = schedule.loadingVariant || "Standard";
 
@@ -13545,7 +13538,7 @@ function saveScheduleInputsToActiveSequence() {
     schedule.loadRate = getNum("loadRate", 125);
     schedule.unloadRate = getNum("unloadRate", 132);
     schedule.loadingVariant = getText("loadingVariant", "Standard");
-    schedule.operatingBranch = getText("operatingBranch", "London");
+    // Operating Branch is now saved per schedule row.
 
     schedule.special.customItemMinutes = getNum("svc_custom_minutes", 0);
     schedule.special.customItemNote = getText("svc_custom_note", "");
