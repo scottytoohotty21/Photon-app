@@ -2542,6 +2542,13 @@ button {
     color: #64748b;
     font-weight: 700;
 }
+
+.availability-pricing-card .listed-stat-sub {
+    font-size: 11px;
+    line-height: 1.3;
+    color: #64748b;
+    font-weight: 700;
+}
 .quote-main-workspace {
     background: #f8fafc;
     border: 1px solid #e2e8f0;
@@ -3520,7 +3527,7 @@ Enter as: Surname, First Name
 
                 <div>
                     <label class="mini-label">Enter Quote Price (£ excl VAT)</label>
-                    <input id="quote-customerPriceInput" type="number" min="0" step="0.01" class="field quote-cost-editable-field" value="0" />
+                    <input id="quote-customerPriceInput" type="number" min="0" step="1" class="field quote-cost-editable-field" value="0" />
                     <div style="height:6px"></div>
                    <div class="listed-stat-card quote-price-result-card">
     <div class="listed-stat-label">Quote Price (£ excl VAT)</div>
@@ -10485,6 +10492,18 @@ const LOCAL_AVAILABILITY_BY_DATE = {
     "2026-05-02": "blue",
     "2026-05-03": "yellow"
 };
+/*
+    Temporary date-based availability margin test.
+    Later this can be replaced by CRM/server availability rates.
+
+    Format:
+    "YYYY-MM-DD": margin percentage
+*/
+const TEST_AVAILABILITY_MARGIN_BY_DATE = {
+    "2026-06-30": 10,
+    "2026-07-01": 20,
+    "2026-07-03": 35
+};
 
 const QUOTE_AVAILABILITY_BANDS = [
     {
@@ -11276,6 +11295,40 @@ function getAvailabilityDateUsedForSequence(sequenceId) {
 
     return String(rows[0].date || "").trim();
 }
+function getTestAvailabilityForDate(dateValue) {
+    const cleanDate = String(dateValue || "").trim();
+
+    if (!cleanDate) {
+        return null;
+    }
+
+    const marginPct = TEST_AVAILABILITY_MARGIN_BY_DATE[cleanDate];
+
+    if (typeof marginPct !== "number") {
+        return null;
+    }
+
+    let label = "Standard Availability";
+    let cssClass = "green";
+
+    if (marginPct >= 30) {
+        label = "High Demand Availability";
+        cssClass = "red";
+    } else if (marginPct >= 20) {
+        label = "Medium Availability";
+        cssClass = "blue";
+    } else {
+        label = "Good Availability";
+        cssClass = "green";
+    }
+
+    return {
+        date: cleanDate,
+        marginPct: marginPct,
+        label: label,
+        cssClass: cssClass
+    };
+}
 
 function updateAvailabilityManualBand(sequenceId, bandId) {
     const pricing = getAvailabilityPricingState(sequenceId);
@@ -11331,9 +11384,12 @@ function renderQuoteAvailabilityPricingPanel(sequenceId) {
         ? new Date(dateUsed + "T00:00:00").toLocaleDateString("en-GB")
         : "";
 
+    const dateAvailability = getTestAvailabilityForDate(dateUsed);
+
     /*
-        Temporary manual band fallback.
-        Later the CRM/server refresh can set this automatically.
+        Manual band remains as fallback only.
+        If the schedule date has a test availability rate,
+        the app uses that instead of the dropdown.
     */
     if (!pricing.manualBand) {
         pricing.manualBand = pricing.band || "green";
@@ -11347,39 +11403,58 @@ function renderQuoteAvailabilityPricingPanel(sequenceId) {
         return item.id === "green";
     });
 
-    const marginPct = calculateAvailabilityMargin(manualBand, pricing.faderValue || 0);
-    const suggestedSellPrice = calculateSellPriceFromMargin(totals.totalCostBase, marginPct);
+    const uplift = Math.max(0, Math.min(10, Number(pricing.faderValue || 0)));
 
-    const bandLabel = manualBand && manualBand.label ? manualBand.label : "No Band";
-    const bandClass = manualBand && manualBand.id ? manualBand.id : "";
+    const baseMarginPct = dateAvailability
+        ? Number(dateAvailability.marginPct || 0)
+        : calculateAvailabilityMargin(manualBand, 0);
+
+    const marginPct = baseMarginPct + uplift;
+
+    const suggestedSellPrice = calculateSellPriceFromMargin(
+        totals.totalCostBase,
+        marginPct
+    );
+
+    const displayLabel = dateAvailability
+        ? dateAvailability.label
+        : manualBand && manualBand.label
+            ? manualBand.label + " Manual Fallback"
+            : "Manual Fallback";
+
+    const displayClass = dateAvailability
+        ? dateAvailability.cssClass
+        : manualBand && manualBand.id
+            ? manualBand.id
+            : "";
 
     target.innerHTML = `
-    <div class="availability-pricing-card">
-        <div class="availability-refresh-row">
-            <div class="availability-refresh-topline">
-                <div class="availability-refresh-title">
-                    Availability Source
+        <div class="availability-pricing-card">
+            <div class="availability-refresh-row">
+                <div class="availability-refresh-topline">
+                    <div class="availability-refresh-title">
+                        Availability Source
+                    </div>
+
+                    <button
+                        type="button"
+                        class="availability-refresh-btn"
+                        onclick="refreshAvailabilityCacheSample()"
+                    >
+                        Refresh Availability
+                    </button>
                 </div>
 
-                <button
-                    type="button"
-                    class="availability-refresh-btn"
-                    onclick="refreshAvailabilityCacheSample()"
+                <div
+                    id="quote-availabilityRefreshStatus"
+                    class="availability-refresh-status"
                 >
-                    Refresh Availability
-                </button>
+                    Using local fallback availability
+                </div>
             </div>
 
-            <div
-                id="quote-availabilityRefreshStatus"
-                class="availability-refresh-status"
-            >
-                Using local fallback availability
-            </div>
-        </div>
-
-        ${
-            dateUsed
+            ${
+                dateUsed
                     ? `
                         <div class="quote-date-confirm-line">
                             Using schedule date: ${dateLabel}
@@ -11392,31 +11467,51 @@ function renderQuoteAvailabilityPricingPanel(sequenceId) {
                     `
             }
 
-            <div>
-                <label class="mini-label">Availability Band</label>
-                <select
-                    class="field"
-                    onchange="updateAvailabilityManualBand('${sequenceId}', this.value)"
-                >
-                    ${QUOTE_AVAILABILITY_BANDS
-                        .filter(function(band) {
-                            return band.id;
-                        })
-                        .map(function(band) {
-                            return `
-                                <option value="${band.id}" ${band.id === manualBandId ? "selected" : ""}>
-                                    ${band.label} · ${band.minMargin}% to ${band.maxMargin}%
-                                </option>
-                            `;
-                        }).join("")}
-                </select>
+            ${
+                dateAvailability
+                    ? `
+                        <div>
+                            <label class="mini-label">Availability Rate</label>
+                            <div class="availability-band-pill ${displayClass}">
+                                ${escapeHtml(displayLabel)} · ${quoteMoney(baseMarginPct)}%
+                            </div>
+                            <div class="listed-stat-sub" style="margin-top:6px;">
+                                Matched from schedule date test table
+                            </div>
+                        </div>
+                    `
+                    : `
+                        <div>
+                            <label class="mini-label">Availability Band</label>
+                            <select
+                                class="field"
+                                onchange="updateAvailabilityManualBand('${sequenceId}', this.value)"
+                            >
+                                ${QUOTE_AVAILABILITY_BANDS
+                                    .filter(function(band) {
+                                        return band.id;
+                                    })
+                                    .map(function(band) {
+                                        return `
+                                            <option value="${band.id}" ${band.id === manualBandId ? "selected" : ""}>
+                                                ${band.label} · ${band.minMargin}% to ${band.maxMargin}%
+                                            </option>
+                                        `;
+                                    }).join("")}
+                            </select>
 
-                <div style="height:6px"></div>
+                            <div style="height:6px"></div>
 
-                <div class="availability-band-pill ${bandClass}">
-                    ${escapeHtml(bandLabel)}
-                </div>
-            </div>
+                            <div class="availability-band-pill ${displayClass}">
+                                ${escapeHtml(displayLabel)}
+                            </div>
+
+                            <div class="listed-stat-sub" style="margin-top:6px;">
+                                No date rate found yet, using manual fallback
+                            </div>
+                        </div>
+                    `
+            }
 
             <div class="availability-slider-row">
                 <label class="mini-label">Margin Uplift</label>
@@ -11425,12 +11520,12 @@ function renderQuoteAvailabilityPricingPanel(sequenceId) {
                     min="0"
                     max="10"
                     step="1"
-                    value="${Number(pricing.faderValue || 0)}"
+                    value="${uplift}"
                     class="availability-slider"
                     oninput="updateAvailabilityFader('${sequenceId}', this.value)"
                 >
                 <div class="text-[10px] font-bold text-slate-500 uppercase">
-                    Suggested margin: ${quoteMoney(marginPct)}%
+                    Base margin: ${quoteMoney(baseMarginPct)}% · Suggested margin: ${quoteMoney(marginPct)}%
                 </div>
             </div>
 
@@ -11438,7 +11533,7 @@ function renderQuoteAvailabilityPricingPanel(sequenceId) {
                 <div class="listed-stat-label">Suggested Price</div>
                 <div class="listed-stat-value">${quoteMoney(suggestedSellPrice)}</div>
                 <div class="listed-stat-sub">
-                    Based on current cost base and manual availability band
+                    Based on current cost base and availability margin
                 </div>
             </div>
 
