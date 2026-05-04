@@ -10526,10 +10526,46 @@ const LOCAL_AVAILABILITY_BY_DATE = {
     Format:
     "YYYY-MM-DD": margin percentage
 */
-const TEST_AVAILABILITY_MARGIN_BY_DATE = {
-    "2026-06-30": 10,
-    "2026-07-01": 20,
-    "2026-07-03": 35
+
+/*
+    Temporary branch + date availability margin test.
+    Later this can be replaced by CRM/server availability rates.
+
+    Format:
+    "Branch|YYYY-MM-DD": availability result
+*/
+const TEST_AVAILABILITY_MARGIN_BY_BRANCH_DATE = {
+    "Aylesbury|2026-06-30": {
+        marginPct: 10,
+        band: "green",
+        label: "Good Availability"
+    },
+    "Aylesbury|2026-07-01": {
+        marginPct: 20,
+        band: "blue",
+        label: "Medium Availability"
+    },
+    "Aylesbury|2026-07-03": {
+        marginPct: 35,
+        band: "red",
+        label: "High Demand Availability"
+    },
+
+    "Edinburgh|2026-06-30": {
+        marginPct: 35,
+        band: "red",
+        label: "High Demand Availability"
+    },
+    "Edinburgh|2026-07-01": {
+        marginPct: 20,
+        band: "blue",
+        label: "Medium Availability"
+    },
+    "Edinburgh|2026-07-03": {
+        marginPct: 10,
+        band: "green",
+        label: "Good Availability"
+    }
 };
 
 const QUOTE_AVAILABILITY_BANDS = [
@@ -11322,38 +11358,66 @@ function getAvailabilityDateUsedForSequence(sequenceId) {
 
     return String(rows[0].date || "").trim();
 }
-function getTestAvailabilityForDate(dateValue) {
+function getOperatingBranchForSequence(sequenceId) {
+    if (!currentJob || !Array.isArray(currentJob.sequences)) return "";
+
+    const seq = currentJob.sequences.find(function(s) {
+        return String(s.id) === String(sequenceId);
+    });
+
+    if (!seq || !seq.schedule || !Array.isArray(seq.schedule.manualDays)) {
+        return "";
+    }
+
+    const rows = seq.schedule.manualDays.filter(function(day) {
+        return day;
+    });
+
+    if (!rows.length) {
+        return "";
+    }
+
+    /*
+        Use the same row priority as the availability date:
+        1. Completion Day row if present
+        2. First schedule row
+    */
+    const completionRow = rows.find(function(day) {
+        return String(day.completionWindow || "") === "Completion Day";
+    });
+
+    const sourceRow = completionRow || rows[0];
+
+    return String(
+        sourceRow.operatingBranch ||
+        sourceRow.branch ||
+        sourceRow.depot ||
+        sourceRow.startBranch ||
+        ""
+    ).trim();
+}
+
+function getTestAvailabilityForBranchDate(branchValue, dateValue) {
+    const cleanBranch = String(branchValue || "").trim();
     const cleanDate = String(dateValue || "").trim();
 
-    if (!cleanDate) {
+    if (!cleanBranch || !cleanDate) {
         return null;
     }
 
-    const marginPct = TEST_AVAILABILITY_MARGIN_BY_DATE[cleanDate];
+    const lookupKey = cleanBranch + "|" + cleanDate;
+    const result = TEST_AVAILABILITY_MARGIN_BY_BRANCH_DATE[lookupKey];
 
-    if (typeof marginPct !== "number") {
+    if (!result || typeof result.marginPct !== "number") {
         return null;
-    }
-
-    let label = "Standard Availability";
-    let cssClass = "green";
-
-    if (marginPct >= 30) {
-        label = "High Demand Availability";
-        cssClass = "red";
-    } else if (marginPct >= 20) {
-        label = "Medium Availability";
-        cssClass = "blue";
-    } else {
-        label = "Good Availability";
-        cssClass = "green";
     }
 
     return {
+        branch: cleanBranch,
         date: cleanDate,
-        marginPct: marginPct,
-        label: label,
-        cssClass: cssClass
+        marginPct: Number(result.marginPct || 0),
+        label: result.label || "Availability Rate",
+        cssClass: result.band || "green"
     };
 }
 
@@ -11411,7 +11475,8 @@ function renderQuoteAvailabilityPricingPanel(sequenceId) {
         ? new Date(dateUsed + "T00:00:00").toLocaleDateString("en-GB")
         : "";
 
-    const dateAvailability = getTestAvailabilityForDate(dateUsed);
+    const branchUsed = getOperatingBranchForSequence(sequenceId);
+const dateAvailability = getTestAvailabilityForBranchDate(branchUsed, dateUsed);
 
     /*
         Manual band remains as fallback only.
@@ -11481,18 +11546,33 @@ function renderQuoteAvailabilityPricingPanel(sequenceId) {
             </div>
 
             ${
-                dateUsed
-                    ? `
-                        <div class="quote-date-confirm-line">
-                            Using schedule date: ${dateLabel}
-                        </div>
-                    `
-                    : `
-                        <div class="quote-date-confirm-line warn">
-                            No schedule date entered yet
-                        </div>
-                    `
-            }
+                ${
+    dateUsed
+        ? `
+            <div class="quote-date-confirm-line">
+                Using schedule date: ${dateLabel}
+            </div>
+        `
+        : `
+            <div class="quote-date-confirm-line warn">
+                No schedule date entered yet
+            </div>
+        `
+}
+
+${
+    branchUsed
+        ? `
+            <div class="quote-date-confirm-line">
+                Using operating branch: ${escapeHtml(branchUsed)}
+            </div>
+        `
+        : `
+            <div class="quote-date-confirm-line warn">
+                No operating branch selected yet
+            </div>
+        `
+}
 
             ${
                 dateAvailability
@@ -11503,7 +11583,7 @@ function renderQuoteAvailabilityPricingPanel(sequenceId) {
                                 ${escapeHtml(displayLabel)} · ${quoteMoney(baseMarginPct)}%
                             </div>
                             <div class="listed-stat-sub" style="margin-top:6px;">
-                                Matched from schedule date test table
+                                Matched from branch/date test table
                             </div>
                         </div>
                     `
