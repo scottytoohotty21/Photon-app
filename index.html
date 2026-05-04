@@ -11388,28 +11388,7 @@ function getOperatingBranchForSequence(sequenceId) {
 
     const sourceRow = completionRow || rows[0];
 
-    const legs = Array.isArray(sourceRow.legs) ? sourceRow.legs : [];
-
-    /*
-        Operating branch is currently inferred from the travel legs.
-        The branch is usually the depot/branch location used in From/To.
-    */
-    const branchOptions = ["Aylesbury", "Edinburgh"];
-
-    for (const leg of legs) {
-        const fromValue = String(leg.from || "").trim();
-        const toValue = String(leg.to || "").trim();
-
-        if (branchOptions.includes(fromValue)) {
-            return fromValue;
-        }
-
-        if (branchOptions.includes(toValue)) {
-            return toValue;
-        }
-    }
-
-    return "";
+    return String(sourceRow.operatingBranch || "").trim();
 }
 
 function getTestAvailabilityForBranchDate(branchValue, dateValue) {
@@ -12854,6 +12833,7 @@ function getDefaultManualScheduleRows() {
             hours: 8,
             nightsOut: false,
             overtimeHours: 0,
+            operatingBranch: "",
             legs: []
         }
     ];
@@ -13374,6 +13354,7 @@ function loadManualScheduleFromActiveSequence() {
             hours: safeDayPart === "Full Day" ? 8 : 4,
             nightsOut: !!day.nightsOut,
             overtimeHours: Math.max(0, Number(day.overtimeHours || 0)),
+            operatingBranch: day.operatingBranch || "",
             legs: safeLegs.map(function(leg) {
                 const roadType = leg.roadType || "Road";
                 const miles = Math.max(0, Number(leg.miles || 0));
@@ -13419,6 +13400,7 @@ function saveManualScheduleToActiveSequence() {
             vans: Math.max(0, Number(day.vans) || 0),
             hours: safeDayPart === "Full Day" ? 8 : 4,
             nightsOut: !!day.nightsOut,
+            operatingBranch: day.operatingBranch || "",
             overtimeHours: Math.max(0, Number(day.overtimeHours || 0)),
             legs: (Array.isArray(day.legs) ? day.legs : []).map(function(leg) {
                 const roadType = leg.roadType || "Road";
@@ -14220,6 +14202,7 @@ function autoBuildScheduleDays() {
         hours: 8,
         nightsOut: false,
         overtimeHours: 0,
+        operatingBranch: "",
         legs: [
             createEmptyScheduleLeg("Depot", collectionId, 30),
             createEmptyScheduleLeg(collectionId, "Depot", 30)
@@ -14304,6 +14287,7 @@ function addScheduleDay() {
         hours: 8,
         nightsOut: false,
         overtimeHours: 0,
+        operatingBranch: "",
         legs: [
             createEmptyScheduleLeg("Depot", "", 0)
         ]
@@ -14347,6 +14331,7 @@ manualSchedule.push({
     hours: 4,
     nightsOut: false,
     overtimeHours: 0,
+    operatingBranch: row.operatingBranch || "",
     legs: [
         createEmptyScheduleLeg("Collection Address", "Delivery Address", 0),
         createEmptyScheduleLeg("Delivery Address", "Depot", 0)
@@ -14437,6 +14422,7 @@ function splitCompletionRowIntoAmPm(row) {
         hours: 4,
         nightsOut: false,
         overtimeHours: 0,
+        operatingBranch: row.operatingBranch || "",
         legs: amLegs
     };
 
@@ -14452,6 +14438,7 @@ function splitCompletionRowIntoAmPm(row) {
         hours: 4,
         nightsOut: false,
         overtimeHours: 0,
+        operatingBranch: row.operatingBranch || "",
         legs: pmLegs
     };
 
@@ -15040,6 +15027,18 @@ function renderSchedulePlanner(){
                             </label>
                         </div>
                     </div>
+                    <div>
+    <label class="mini-label">Operating Branch</label>
+    <select
+        class="field"
+        onchange="updateScheduleDay('${day.id}','operatingBranch',this.value)"
+    >
+        <option value="">Select Branch</option>
+        ${OPERATING_BRANCHES.map(function(branch) {
+            return `<option value="${escapeHtml(branch)}" ${String(day.operatingBranch || "") === branch ? "selected" : ""}>${escapeHtml(branch)}</option>`;
+        }).join("")}
+    </select>
+</div>
                     <div>
     <label class="mini-label">Date</label>
     <input
