@@ -2906,6 +2906,33 @@ button {
     width: 100%;
     accent-color: #2563eb;
 }
+.quote-action-pulse-btn {
+    transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+}
+
+.quote-action-pulse-btn:active {
+    transform: scale(0.97);
+    filter: brightness(0.96);
+}
+
+.quote-action-pulse-hit {
+    animation: quoteActionPulse 0.42s ease-out;
+}
+
+@keyframes quoteActionPulse {
+    0% {
+        transform: scale(0.98);
+        box-shadow: 0 0 0 0 rgba(34,197,94,0.35);
+    }
+    45% {
+        transform: scale(1.02);
+        box-shadow: 0 0 0 7px rgba(34,197,94,0.16);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(34,197,94,0);
+    }
+}
 
 .availability-apply-btn {
     width: 100%;
@@ -3540,9 +3567,9 @@ Enter as: Surname, First Name
         Save this pricing for the selected sequence.
     </div>
 
-    <button type="button" class="action-btn quote-save-compact btn-save" id="quote-savePricingBtn">
-        Save Pricing
-    </button>
+    <button type="button" class="action-btn quote-save-compact btn-save quote-action-pulse-btn" id="quote-savePricingBtn">
+    Save Pricing
+</button>
 </div>
             </div>
         </div>
@@ -11538,12 +11565,12 @@ function renderQuoteAvailabilityPricingPanel(sequenceId) {
             </div>
 
             <button
-                type="button"
-                class="availability-apply-btn"
-                onclick="applyAvailabilitySuggestedPrice('${sequenceId}', ${Number(suggestedSellPrice || 0)})"
-            >
-                Apply Suggested Price
-            </button>
+    type="button"
+    class="availability-apply-btn quote-action-pulse-btn"
+    onclick="applyAvailabilitySuggestedPrice('${sequenceId}', ${Number(suggestedSellPrice || 0)}, this)"
+>
+    Apply Suggested Price
+</button>
         </div>
     `;
 }
@@ -11821,59 +11848,57 @@ ${state.quoteNotes || "None"}
 
     alert(quoteText);
 }
-function applyAvailabilitySuggestedPrice(sequenceId) {
+function pulseQuoteActionButton(buttonEl) {
+    if (!buttonEl) return;
+
+    buttonEl.classList.remove("quote-action-pulse-hit");
+
+    void buttonEl.offsetWidth;
+
+    buttonEl.classList.add("quote-action-pulse-hit");
+
+    if (navigator.vibrate) {
+        navigator.vibrate(20);
+    }
+
+    setTimeout(function() {
+        buttonEl.classList.remove("quote-action-pulse-hit");
+    }, 450);
+}
+function applyAvailabilitySuggestedPrice(sequenceId, suggestedPrice, buttonEl) {
     const state = ensureQuoteSequenceState(sequenceId);
-    if (!state) return;
+    const availability = getAvailabilityPricingState(sequenceId);
 
-    syncQuoteAvailabilityDateFromSchedule(sequenceId);
+    if (!state || !availability) return;
 
-    const availability = state.availabilityPricing || {};
-    const pricingDate = availability.moveDate || "";
-    const selectedBandId = availability.band || "";
+    const cleanPrice = Number(suggestedPrice || 0);
 
-    if (!pricingDate) {
-        alert("Add a date to the Schedule planner first.");
+    if (!cleanPrice || cleanPrice <= 0) {
+        alert("No suggested price available yet. Check the cost base and availability margin.");
         return;
     }
 
-    if (!selectedBandId) {
-        alert("No availability band found for this schedule date.");
-        return;
-    }
-
-    const band = QUOTE_AVAILABILITY_BANDS.find(function(item) {
-        return item.id === selectedBandId;
-    });
-
-    if (!band) {
-        alert("Availability band could not be found.");
-        return;
-    }
-
-    const uplift = Number(availability.uplift || 0);
-    const minMargin = Number(band.minMargin || 0);
-    const maxMargin = Number(band.maxMargin || 0);
-    const targetMargin = Math.min(maxMargin, Math.max(minMargin, minMargin + uplift));
-
-    const totals = getQuoteCommercialTotals(sequenceId);
-    const costBase = Number(totals.totalCostBase || 0);
-
-    if (costBase <= 0) {
-        alert("Core cost base is zero, so a suggested price cannot be calculated yet.");
-        return;
-    }
-
-    const suggestedPrice = targetMargin >= 100
-        ? 0
-        : costBase / (1 - (targetMargin / 100));
-
-    state.customerPrice = Math.round(suggestedPrice * 100) / 100;
-    state.availabilityPricing.appliedSuggestedPrice = state.customerPrice;
+    state.customerPrice = cleanPrice;
+    availability.appliedSuggestedPrice = cleanPrice;
+    availability.lastAppliedAt = new Date().toISOString();
 
     quotePricingSaved = false;
     saveToDevice();
 
-    renderQuoteTab();
+    const input = document.getElementById("quote-customerPriceInput");
+    if (input) {
+        input.value = cleanPrice;
+    }
+
+    const display = document.getElementById("quote-customerPriceDisplay");
+    if (display) {
+        display.textContent = quoteMoney(cleanPrice);
+    }
+
+    updateQuoteCommercialDisplays(sequenceId);
+    renderQuoteAvailabilityPricingPanel(sequenceId);
+
+    pulseQuoteActionButton(buttonEl);
 }
 
 function handleQuoteSavePricing() {
@@ -11915,8 +11940,11 @@ function bindQuoteShellEvents() {
     }
 
     if (saveBtn) {
-        saveBtn.onclick = handleQuoteSavePricing;
-    }
+    saveBtn.onclick = function() {
+        pulseQuoteActionButton(this);
+        handleQuoteSavePricing();
+    };
+}
 }
 function renderQuoteCommercialSummary(sequenceId) {
     const target = document.getElementById("quote-commercialSummaryCard");
