@@ -3442,18 +3442,15 @@ Enter as: Surname, First Name
 
     <div class="schedule-toolbar-actions">
     <div class="schedule-toolbar-branch">
-        <label class="mini-label">Operating Branch</label>
-        <select
-            class="field"
-            onchange="updateScheduleOperatingBranchForAllRows(this.value)"
-        >
-            <option value="">Select Branch</option>
-            ${OPERATING_BRANCHES.map(function(branch) {
-                const selected = String(getOperatingBranchFromManualScheduleRows() || "") === branch ? "selected" : "";
-                return `<option value="${escapeHtml(branch)}" ${selected}>${escapeHtml(branch)}</option>`;
-            }).join("")}
-        </select>
-    </div>
+    <label class="mini-label">Operating Branch</label>
+    <select
+        id="scheduleToolbarOperatingBranch"
+        class="field"
+        onchange="updateScheduleOperatingBranchForAllRows(this.value)"
+    >
+        <option value="">Select Branch</option>
+    </select>
+</div>
 
     <button class="schedule-btn" onclick="autoBuildScheduleDays()">Auto Build</button>
     <button class="schedule-btn" onclick="addScheduleDay()">Add Day</button>
@@ -14320,6 +14317,20 @@ legs: [
     saveManualScheduleToActiveSequence();
     renderScheduleCalculator();
 }
+function renderScheduleToolbarOperatingBranch() {
+    const select = document.getElementById("scheduleToolbarOperatingBranch");
+    if (!select) return;
+
+    const selectedBranch = getOperatingBranchFromManualScheduleRows() || "";
+
+    select.innerHTML = `
+        <option value="">Select Branch</option>
+        ${OPERATING_BRANCHES.map(function(branch) {
+            const selected = String(selectedBranch) === String(branch) ? "selected" : "";
+            return `<option value="${escapeHtml(branch)}" ${selected}>${escapeHtml(branch)}</option>`;
+        }).join("")}
+    `;
+}
 function updateScheduleOperatingBranchForAllRows(branchValue) {
     const cleanBranch = String(branchValue || "").trim();
 
@@ -14974,6 +14985,7 @@ function clearOvertimeFromScheduleDay(dayId) {
 function renderSchedulePlanner(){
     const list = document.getElementById("scheduleList");
     if (!list) return;
+    renderScheduleToolbarOperatingBranch();
 
     const state = getState();
     const packing = calcPacking(state);
