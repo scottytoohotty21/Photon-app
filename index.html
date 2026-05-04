@@ -3454,15 +3454,16 @@ Enter as: Surname, First Name
     </div>
 
     <div class="schedule-toolbar-loading">
-        <label class="mini-label">Loading Variant</label>
-        <select id="loadingVariant" class="field">
-            <option value="Standard">Standard</option>
-            <option value="Access">Access</option>
-            <option value="Stairs">Stairs</option>
-            <option value="Long Carry">Long Carry</option>
-            <option value="Difficult Access">Difficult Access</option>
-        </select>
-    </div>
+    <label class="mini-label">Loading Variant</label>
+    <select
+        id="loadingVariant"
+        class="field"
+        onchange="handleLoadingVariantToolbarChange(this.value)"
+    >
+        <option value="Standard">Standard</option>
+        <option value="Slow">Slow</option>
+    </select>
+</div>
 
     <button class="schedule-btn" onclick="autoBuildScheduleDays()">Auto Build</button>
     <button class="schedule-btn" onclick="addScheduleDay()">Add Day</button>
@@ -14329,6 +14330,17 @@ legs: [
     saveManualScheduleToActiveSequence();
     renderScheduleCalculator();
 }
+
+function handleLoadingVariantToolbarChange(value) {
+    const seq = getActiveSequenceRecord();
+    if (!seq) return;
+
+    const schedule = ensureSequenceScheduleShape(seq);
+    schedule.loadingVariant = String(value || "Standard");
+
+    saveToDevice();
+    renderScheduleCalculator();
+}
 function renderScheduleToolbarOperatingBranch() {
     const select = document.getElementById("scheduleToolbarOperatingBranch");
     if (!select) return;
@@ -14343,6 +14355,17 @@ function renderScheduleToolbarOperatingBranch() {
         }).join("")}
     `;
 }
+function renderScheduleToolbarLoadingVariant() {
+    const select = document.getElementById("loadingVariant");
+    if (!select) return;
+
+    const seq = getActiveSequenceRecord();
+    if (!seq) return;
+
+    const schedule = ensureSequenceScheduleShape(seq);
+    select.value = schedule.loadingVariant || "Standard";
+}
+
 function updateScheduleOperatingBranchForAllRows(branchValue) {
     const cleanBranch = String(branchValue || "").trim();
 
@@ -14998,6 +15021,7 @@ function renderSchedulePlanner(){
     const list = document.getElementById("scheduleList");
     if (!list) return;
     renderScheduleToolbarOperatingBranch();
+    renderScheduleToolbarLoadingVariant();
 
     const state = getState();
     const packing = calcPacking(state);
