@@ -6268,11 +6268,12 @@ function openScheduleLegInGoogleMaps(dayId, legId) {
         return;
     }
 
-    const seq = getActiveSequenceRecord();
-    const schedule = seq ? ensureSequenceScheduleShape(seq) : null;
-    const branch = schedule && schedule.operatingBranch
-        ? schedule.operatingBranch
-        : "London";
+    const branch = String(day.operatingBranch || "").trim();
+
+if (!branch) {
+    alert("Select an Operating Branch on this schedule row before opening Google Maps.");
+    return;
+}
 
     const fromAddress = getScheduleLocationAddress(leg.from, branch);
     const toAddress = getScheduleLocationAddress(leg.to, branch);
