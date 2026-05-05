@@ -9417,7 +9417,8 @@ function buildCrewInstructionsSummary(items) {
     damage: [],
     notes: [],
     beds: [],
-    wardrobes: []
+    wardrobes: [],
+    pianos: []
 };
 
     if (!Array.isArray(items)) return summary;
@@ -9438,6 +9439,18 @@ if (Array.isArray(entry.wardrobeTypes) && entry.wardrobeTypes.length) {
     summary.wardrobes.push(
         baseLine + " — " + entry.wardrobeTypes.join(", ").toUpperCase()
     );
+}
+const pianoListedTag = getPianoDetailsListedTag(entry.pianoDetails);
+const pianoNeedsSpecialist = !!(
+    entry.pianoDetails &&
+    (
+        (entry.pianoDetails.collection && entry.pianoDetails.collection.specialistRequired) ||
+        (entry.pianoDetails.delivery && entry.pianoDetails.delivery.specialistRequired)
+    )
+);
+
+if (pianoNeedsSpecialist) {
+    summary.pianos.push(baseLine + " — " + pianoListedTag);
 }
 
 
@@ -9639,6 +9652,16 @@ function renderListedSummary(summary, materials, crewInstructions) {
     ${
         crew.beds.length
             ? crew.beds.map(function(item) {
+                return `<div>${escapeHtml(item)}</div>`;
+            }).join("")
+            : `<div class="text-slate-400 italic">None</div>`
+    }
+</div>
+<div>
+    <div class="text-slate-400 pb-1">Piano Specialist</div>
+    ${
+        crew.pianos.length
+            ? crew.pianos.map(function(item) {
                 return `<div>${escapeHtml(item)}</div>`;
             }).join("")
             : `<div class="text-slate-400 italic">None</div>`
