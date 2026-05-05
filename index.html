@@ -6530,8 +6530,45 @@ function renderDashboard() {
     renderScheduleSequenceDropdown();
     saveToDevice();
 }
-    function copySequence() {
-    const original = currentJob.sequences.find(s => s.id == activeSeqId);
+function copyInventoryItemsFromSequenceToSequence(sourceSequenceId, targetSequenceId) {
+    if (!currentJob) return 0;
+
+    if (!currentJob.inventory) {
+        currentJob.inventory = {};
+    }
+
+    if (!Array.isArray(currentJob.inventory.items)) {
+        currentJob.inventory.items = [];
+    }
+
+    const sourceItems = currentJob.inventory.items.filter(function(entry) {
+        return String(entry.sequenceId) === String(sourceSequenceId);
+    });
+
+    if (!sourceItems.length) {
+        return 0;
+    }
+
+    const copiedAt = Date.now();
+
+    const copiedItems = sourceItems.map(function(entry, index) {
+        const copiedEntry = JSON.parse(JSON.stringify(entry));
+
+        copiedEntry.id = "raw_" + copiedAt + "_" + index + "_" + Math.random().toString(36).slice(2, 7);
+        copiedEntry.sequenceId = targetSequenceId;
+
+        return copiedEntry;
+    });
+
+    currentJob.inventory.items = currentJob.inventory.items.concat(copiedItems);
+
+    return copiedItems.length;
+}
+        function copySequence() {
+    const sourceSequenceId = activeSeqId;
+    const original = currentJob.sequences.find(s => s.id == sourceSequenceId);
+    if (!original) return;
+
     const copy = JSON.parse(JSON.stringify(original));
 
     copy.schedule = copy.schedule || createEmptySequenceSchedule();
@@ -6549,11 +6586,21 @@ function renderDashboard() {
         : [];
 
     currentJob.sequences.push(copy);
+
+    copyInventoryItemsFromSequenceToSequence(sourceSequenceId, copy.id);
+
     activeSeqId = copy.id;
+
+    if (currentJob.inventory) {
+        currentJob.inventory.activeSequenceId = copy.id;
+    }
+
     renderSequenceUI();
     renderInventorySequenceDropdown();
     renderInventoryDeliveryDropdown();
     renderScheduleSequenceDropdown();
+    rebuildLiveInventoryFromSequence(activeSeqId);
+    saveCalculatorFeedForActiveSequence();
     saveToDevice();
 }
         function deleteSequence() {
