@@ -4756,7 +4756,8 @@ function buildRawInventoryEntry(entryData) {
     crateDims: entryData.crateDims || null,
     damage: entryData.damage || "",
     bedType: entryData.bedType || "",
-    wardrobeTypes: Array.isArray(entryData.wardrobeTypes) ? entryData.wardrobeTypes : []
+    wardrobeTypes: Array.isArray(entryData.wardrobeTypes) ? entryData.wardrobeTypes : [],
+    pianoDetails: entryData.pianoDetails || null
 };
 }
 
@@ -5361,7 +5362,7 @@ function rebuildLiveInventoryFromSequence(sequenceId) {
         if (existing) {
             existing.qty += qty;
         } else {
-            inventoryItems.push({
+            inventoryItems.push({ 
     liveKey: liveKey,
     item: entry.itemName,
     displayName: entry.itemName,
@@ -5379,9 +5380,10 @@ function rebuildLiveInventoryFromSequence(sequenceId) {
     damage: entry.damage || "",
     bedType: entry.bedType || "",
     wardrobeTypes: Array.isArray(entry.wardrobeTypes) ? entry.wardrobeTypes : [],
+    pianoDetails: entry.pianoDetails || null,
     crated: !!entry.crated,
     crateDims: entry.crateDims || null
-});
+})
         }
     });
 
@@ -7100,9 +7102,10 @@ function addBox(boxCode) {
             expWrap: false,
             excluded: false,
             note: "",
-            damage: "",
+                        damage: "",
             crated: false,
-            crateDims: null
+            crateDims: null,
+            pianoDetails: extraData.pianoDetails || null
         });
     }
 
@@ -7351,21 +7354,33 @@ function readPianoModalDetails() {
 }
 
 function savePianoModal() {
+    const itemName = pendingPianoItemName;
     const pianoDetails = readPianoModalDetails();
 
-    console.log("Piano modal saved:", {
-        itemName: pendingPianoItemName,
-        pianoDetails: pianoDetails
-    });
+    if (!itemName) {
+        setModalErrorText("piano-error-text", "No piano item selected.");
+        return;
+    }
 
     closePianoModal();
+
+    addInventoryItem(itemName, {
+        pianoDetails: pianoDetails
+    });
 }
 
-function addInventoryItem(itemName) {
-    let item = furnitureDB.find(function(i) {
+function addInventoryItem(itemName, extraData) {
+        let item = furnitureDB.find(function(i) {
         return i.item === itemName;
     });
     if (!item) return;
+
+    extraData = extraData || {};
+
+    if (isPianoInventoryItem(item.item) && !extraData.pianoDetails) {
+        openPianoModalForInventoryItem(item.item);
+        return;
+    }
 
     const clickedBtn = event && event.currentTarget ? event.currentTarget : null;
     const qtyInput = document.getElementById("inv-qty");
@@ -7415,7 +7430,8 @@ function addInventoryItem(itemName) {
             note: "",
             damage: "",
             crated: false,
-            crateDims: null
+            crateDims: null,
+            pianoDetails: extraData.pianoDetails || null
         });
     }
 
@@ -7428,7 +7444,8 @@ function addInventoryItem(itemName) {
         qty: qty,
         unitVolume: item.volume,
         totalVolume: item.volume * qty,
-        kind: "item"
+        kind: "item",
+        pianoDetails: extraData.pianoDetails || null
     });
 
     inventoryHistory.push({
@@ -7591,7 +7608,8 @@ function saveMiscModal() {
             note: "",
             damage: "",
             crated: false,
-            crateDims: null
+            crateDims: null,
+            pianoDetails: extraData.pianoDetails || null
         });
     }
 
@@ -16166,7 +16184,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         <div class="piano-actions">
             <button type="button" class="piano-cancel-btn" onclick="closePianoModal()">Cancel</button>
-            <button type="button" class="piano-save-btn" onclick="savePianoModal()">Add Piano</button>
+            <button type="button" class="piano-save-btn" onclick="savePianoModal()">Confirm Piano Details</button>
         </div>
     </div>
 </div>
