@@ -10239,9 +10239,12 @@ function getPrintableListedSections(items) {
     }
 }
                 if (entry.damage) tags.push("DAMAGE: " + entry.damage.toUpperCase());
-                if (entry.excluded) tags.push("EXCLUDED");
-                if (entry.note) tags.push("NOTE: " + entry.note.toUpperCase());
 
+const pianoListedTag = getPianoDetailsListedTag(entry.pianoDetails);
+if (pianoListedTag) tags.push(pianoListedTag);
+
+if (entry.excluded) tags.push("EXCLUDED");
+if (entry.note) tags.push("NOTE: " + entry.note.toUpperCase());
                 const tagText = tags.length ? " [" + tags.join("] [") + "]" : "";
                 const isExcluded = !!entry.excluded;
 
