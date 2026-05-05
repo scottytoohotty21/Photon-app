@@ -7066,19 +7066,20 @@ function addBox(boxCode) {
     const floorName = currentJob && currentJob.inventory ? currentJob.inventory.activeFloor : "";
 
     const liveKey = getLiveInventoryGroupKey({
-        itemName: itemName,
-        deliveryId: deliveryId,
-        roomName: roomName,
-        floorName: floorName,
-        unitVolume: boxVolume,
-        excluded: false,
-        dismantle: false,
-        expWrap: false,
-        note: "",
-        damage: "",
-        crated: false,
-        crateDims: null
-    });
+    itemName: itemName,
+    deliveryId: deliveryId,
+    roomName: roomName,
+    floorName: floorName,
+    unitVolume: boxVolume,
+    excluded: false,
+    dismantle: false,
+    expWrap: false,
+    note: "",
+    damage: "",
+    pianoDetails: null,
+    crated: false,
+    crateDims: null
+});
 
     lastAddedItemName = itemName;
 
@@ -7092,23 +7093,23 @@ function addBox(boxCode) {
         existing.qty += qty;
     } else {
         inventoryItems.push({
-            liveKey: liveKey,
-            item: itemName,
-            displayName: itemName,
-            volume: boxVolume,
-            qty: qty,
-            roomName: roomName,
-            floorName: floorName,
-            deliveryId: deliveryId,
-            dismantle: false,
-            expWrap: false,
-            excluded: false,
-            note: "",
-                        damage: "",
-            crated: false,
-            crateDims: null,
-            pianoDetails: extraData.pianoDetails || null
-        });
+    liveKey: liveKey,
+    item: itemName,
+    displayName: itemName,
+    volume: boxVolume,
+    qty: qty,
+    roomName: roomName,
+    floorName: floorName,
+    deliveryId: deliveryId,
+    dismantle: false,
+    expWrap: false,
+    excluded: false,
+    note: "",
+    damage: "",
+    pianoDetails: null,
+    crated: false,
+    crateDims: null
+});
     }
 
     const rawEntryId = saveRawInventoryEntry({
