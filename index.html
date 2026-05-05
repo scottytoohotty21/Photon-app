@@ -5294,6 +5294,7 @@ function buildLiveInventoryKeyFromValues(data) {
 String(data.damage || ""),
 String(data.bedType || ""),
 Array.isArray(data.wardrobeTypes) ? data.wardrobeTypes.join("|") : "",
+data.pianoDetails ? JSON.stringify(data.pianoDetails) : "",
 !!data.crated,
         data.crateDims
             ? [
