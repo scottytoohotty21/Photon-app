@@ -2010,6 +2010,15 @@ button {
     display: flex;
     flex-direction: column;
     gap: 12px;
+    position: sticky;
+    top: 12px;
+    align-self: start;
+    z-index: 5;
+}
+
+.schedule-left-column .schedule-left-sticky {
+    position: static !important;
+    top: auto !important;
 }
 .lhs-rate-grid {
     display: grid;
@@ -3449,18 +3458,18 @@ Enter as: Surname, First Name
         </div>
 
                 <div class="lhs-rate-grid">
-            <div class="summary-card">
-                <div class="summary-label">Loading Rate</div>
-                <div class="summary-value" id="summaryLoadingRate">0</div>
-                <div class="summary-sub">cuft per man-hour</div>
-            </div>
+    <div class="summary-card">
+        <div class="summary-label">Loading Rate</div>
+        <div class="summary-value" id="summaryLoadRate">0</div>
+        <div class="summary-sub">Cuft per man-hour</div>
+    </div>
 
-            <div class="summary-card">
-                <div class="summary-label">Unloading Rate</div>
-                <div class="summary-value" id="summaryUnloadingRate">0</div>
-                <div class="summary-sub">cuft per man-hour</div>
-            </div>
-        </div>
+    <div class="summary-card">
+        <div class="summary-label">Unloading Rate</div>
+        <div class="summary-value" id="summaryUnloadRate">0</div>
+        <div class="summary-sub">Cuft per man-hour</div>
+    </div>
+</div>
     </div>
         <div class="panel">
             <div class="panel-head">
@@ -3554,11 +3563,7 @@ Enter as: Surname, First Name
             <div class="summary-value" id="summaryLoadCompletion">0.0</div>
             <div class="summary-sub">Men needed for a 4-hour loading window</div>
         </div>
-        <div class="summary-card">
-            <div class="summary-label">Loading Rate</div>
-            <div class="summary-value" id="summaryLoadRate">125</div>
-            <div class="summary-sub">Cuft per man-hour</div>
-        </div>
+       
         <div class="summary-card">
             <div class="summary-label">Unloading Man Hours</div>
             <div class="summary-value" id="summaryUnloadHours">0.00</div>
@@ -3575,11 +3580,7 @@ Enter as: Surname, First Name
             <div class="summary-value" id="summaryUnloadCompletion">0.0</div>
             <div class="summary-sub">Men needed for a 4-hour unloading window</div>
         </div>
-        <div class="summary-card">
-            <div class="summary-label">Unloading Rate</div>
-            <div class="summary-value" id="summaryUnloadRate">132</div>
-            <div class="summary-sub">Cuft per man-hour</div>
-        </div>
+       
     </div>
 
     <div style="height:12px"></div>
