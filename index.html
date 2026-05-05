@@ -7084,6 +7084,23 @@ function isBedRawEntry(rawEntry) {
 function isElectricBedType(bedType) {
     return String(bedType || "").trim() === "Electric Motor / TV";
 }
+
+function isPianoInventoryItem(itemName) {
+    const clean = String(itemName || "").trim().toUpperCase();
+
+    return (
+        clean === "PIANO (UPRIGHT)" ||
+        clean === "PIANO (ELECTRIC)" ||
+        clean === "PIANO (BABY GRAND)" ||
+        clean === "PIANO (GRAND)"
+    );
+}
+
+function isPianoRawEntry(rawEntry) {
+    if (!rawEntry) return false;
+    return isPianoInventoryItem(rawEntry.itemName);
+}
+
 function addInventoryItem(itemName) {
     let item = furnitureDB.find(function(i) {
         return i.item === itemName;
