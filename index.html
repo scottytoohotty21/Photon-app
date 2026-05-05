@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Photon Survey System</title>
+    <title>MovePilot Survey System</title>
 
     <link rel="stylesheet" href="./tailwind-local.css">
    
@@ -263,6 +263,12 @@ button {
             border: 2px solid #ef4444; position: relative;
         }
         .logo-inner { width: 10px; height: 10px; background: #ef4444; border-radius: 50%; box-shadow: 0 0 10px rgba(239, 68, 68, 0.6); }
+        .app-logo-image {
+    display: block;
+    width: 300px;
+    max-width: 100%;
+    height: auto;
+}
 
         /* --- GLOBAL UI --- */
         .header-bar { 
@@ -3125,12 +3131,8 @@ button {
     <main id="view-dashboard">
         <div class="flex items-center justify-between mb-8">
             <div class="flex items-center gap-3">
-                <div class="logo-circle"><div class="logo-inner"></div></div>
-                <div>
-                    <h1 class="text-2xl font-black text-slate-900 leading-none tracking-tighter uppercase">Photon</h1>
-                    <p class="text-[10px] font-bold text-blue-600 uppercase tracking-[0.2em] mt-1">Survey System</p>
-                </div>
-            </div>
+    <img src="./movepilot-logo.png" alt="MovePilot" class="app-logo-image">
+</div>
             <div class="flex gap-2">
     <button onclick="handleDashboardImportClick(event)" class="dashboard-action-btn btn-crm-upload">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
