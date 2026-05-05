@@ -2006,6 +2006,34 @@ button {
     align-items:flex-end;
 }
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.schedule-left-column {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.lhs-rate-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.lhs-rate-grid .summary-card {
+    min-height: 110px;
+    padding: 14px;
+}
+
+.lhs-rate-grid .summary-label {
+    font-size: 10px;
+}
+
+.lhs-rate-grid .summary-value {
+    font-size: 26px;
+}
+
+.lhs-rate-grid .summary-sub {
+    font-size: 10px;
+}
 .summary-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;}
 .summary-card{background:#fff;border:1px solid var(--slate-200);border-radius:16px;padding:16px;min-height:128px;}
 .summary-label{font-size:10px;font-weight:900;text-transform:uppercase;color:var(--slate-400);margin-bottom:8px;line-height:1.35;}
@@ -3374,11 +3402,13 @@ Enter as: Surname, First Name
 </section>
    <section id="content-schedule" class="tab-content hidden bg-white p-6 rounded-2xl shadow-inner">
     <div class="layout">
-        <div class="panel schedule-left-sticky">
+        <div class="schedule-left-column">
+    <div class="panel schedule-left-sticky">
             <div class="panel-head">
                 <div class="panel-title">Inputs</div>
                 <div class="panel-subtitle">Sequence, volume and special labour inputs</div>
             </div>
+
             <div class="panel-body">
                              <div class="section-block">
     <div class="section-title">Sequence</div>
@@ -3418,6 +3448,20 @@ Enter as: Surname, First Name
             </div>
         </div>
 
+                <div class="lhs-rate-grid">
+            <div class="summary-card">
+                <div class="summary-label">Loading Rate</div>
+                <div class="summary-value" id="summaryLoadingRate">0</div>
+                <div class="summary-sub">cuft per man-hour</div>
+            </div>
+
+            <div class="summary-card">
+                <div class="summary-label">Unloading Rate</div>
+                <div class="summary-value" id="summaryUnloadingRate">0</div>
+                <div class="summary-sub">cuft per man-hour</div>
+            </div>
+        </div>
+    </div>
         <div class="panel">
             <div class="panel-head">
                 <div class="panel-title">Live Results</div>
