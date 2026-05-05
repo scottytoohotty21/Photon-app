@@ -1230,6 +1230,138 @@ button {
     font-weight: 900;
     text-transform: uppercase;
 }
+/* --- PIANO MODAL --- */
+.piano-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(2px);
+    align-items: center;
+    justify-content: center;
+    z-index: 2180;
+}
+
+.piano-panel {
+    width: 92%;
+    max-width: 460px;
+    background: white;
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
+}
+
+.piano-title {
+    font-size: 16px;
+    font-weight: 900;
+    text-transform: uppercase;
+    color: #0f172a;
+    text-align: center;
+    letter-spacing: 0.02em;
+}
+
+.piano-subtitle {
+    font-size: 12px;
+    font-weight: 700;
+    color: #64748b;
+    text-align: center;
+    margin-top: 6px;
+    margin-bottom: 18px;
+    line-height: 1.45;
+}
+
+.piano-side-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    background: #f8fafc;
+    padding: 14px;
+    margin-bottom: 12px;
+}
+
+.piano-side-title {
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+    color: #0f172a;
+    margin-bottom: 10px;
+}
+
+.piano-label {
+    display: block;
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+    color: #64748b;
+    margin-bottom: 6px;
+}
+
+.piano-select {
+    width: 100%;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 12px;
+    font-weight: 800;
+    outline: none;
+    background: #ffffff;
+    color: #0f172a;
+    margin-bottom: 10px;
+}
+
+.piano-toggle-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+.piano-toggle-btn {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    min-height: 42px;
+    padding: 8px 6px;
+    font-size: 9px;
+    font-weight: 900;
+    text-transform: uppercase;
+    color: #475569;
+    text-align: center;
+}
+
+.piano-toggle-btn.active {
+    background: #3b82f6;
+    color: white;
+    border-color: #2563eb;
+}
+
+.piano-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.piano-cancel-btn {
+    flex: 1;
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 12px;
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.piano-save-btn {
+    flex: 1;
+    background: #3b82f6;
+    color: white;
+    border: 1px solid #2563eb;
+    border-radius: 12px;
+    padding: 12px;
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
 /* --- MISC MODAL --- */
 .misc-overlay {
     display: none;
@@ -15853,6 +15985,60 @@ document.addEventListener('DOMContentLoaded', function () {
         <div class="damage-actions">
             <button type="button" class="damage-cancel-btn" onclick="closeDamageModal()">Cancel</button>
             <button type="button" class="damage-save-btn" onclick="saveDamageModal()">Save Damage</button>
+        </div>
+    </div>
+</div>
+<!-- PIANO MODAL -->
+<div id="piano-overlay" class="piano-overlay" onclick="closePianoModal()">
+    <div class="piano-panel" onclick="event.stopPropagation()">
+        <div class="piano-title">Piano Details</div>
+        <div id="piano-subtitle" class="piano-subtitle">Set collection and delivery access details</div>
+
+        <div class="piano-side-card">
+            <div class="piano-side-title">Collection</div>
+
+            <label class="piano-label" for="piano-collection-floor">Floor</label>
+            <select id="piano-collection-floor" class="piano-select">
+                <option value="basement">Basement</option>
+                <option value="ground" selected>Ground</option>
+                <option value="first">1st</option>
+                <option value="second">2nd</option>
+                <option value="above_second">Above 2nd</option>
+            </select>
+
+            <div class="piano-toggle-grid">
+                <button type="button" id="piano-collection-stairs" class="piano-toggle-btn" onclick="togglePianoOption('collection', 'stairs')">Stairs</button>
+                <button type="button" id="piano-collection-lift" class="piano-toggle-btn" onclick="togglePianoOption('collection', 'lift')">Lift</button>
+                <button type="button" id="piano-collection-tightAccess" class="piano-toggle-btn" onclick="togglePianoOption('collection', 'tightAccess')">Tight Access</button>
+                <button type="button" id="piano-collection-specialistRequired" class="piano-toggle-btn" onclick="togglePianoOption('collection', 'specialistRequired')">Specialist Required</button>
+            </div>
+        </div>
+
+        <div class="piano-side-card">
+            <div class="piano-side-title">Delivery</div>
+
+            <label class="piano-label" for="piano-delivery-floor">Floor</label>
+            <select id="piano-delivery-floor" class="piano-select">
+                <option value="basement">Basement</option>
+                <option value="ground" selected>Ground</option>
+                <option value="first">1st</option>
+                <option value="second">2nd</option>
+                <option value="above_second">Above 2nd</option>
+            </select>
+
+            <div class="piano-toggle-grid">
+                <button type="button" id="piano-delivery-stairs" class="piano-toggle-btn" onclick="togglePianoOption('delivery', 'stairs')">Stairs</button>
+                <button type="button" id="piano-delivery-lift" class="piano-toggle-btn" onclick="togglePianoOption('delivery', 'lift')">Lift</button>
+                <button type="button" id="piano-delivery-tightAccess" class="piano-toggle-btn" onclick="togglePianoOption('delivery', 'tightAccess')">Tight Access</button>
+                <button type="button" id="piano-delivery-specialistRequired" class="piano-toggle-btn" onclick="togglePianoOption('delivery', 'specialistRequired')">Specialist Required</button>
+            </div>
+        </div>
+
+        <div id="piano-error-text" class="modal-error-text"></div>
+
+        <div class="piano-actions">
+            <button type="button" class="piano-cancel-btn" onclick="closePianoModal()">Cancel</button>
+            <button type="button" class="piano-save-btn" onclick="savePianoModal()">Add Piano</button>
         </div>
     </div>
 </div>
