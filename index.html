@@ -10399,13 +10399,16 @@ function getPrintableCrewInstructionsHtml(items) {
     const crew = buildCrewInstructionsSummary(items);
 
     const hasContent =
-        crew.dismantle.length ||
-        crew.exportWrap.length ||
-        crew.crate.length ||
-        crew.disconnect.length ||
-        crew.handyman.length ||
-        crew.damage.length ||
-        crew.notes.length;
+    crew.dismantle.length ||
+    crew.exportWrap.length ||
+    crew.crate.length ||
+    crew.disconnect.length ||
+    crew.handyman.length ||
+    crew.damage.length ||
+    crew.notes.length ||
+    crew.beds.length ||
+    crew.wardrobes.length ||
+    crew.pianos.length;
 
     if (!hasContent) {
         return `<div class="pdf-small-note">No crew instructions or responsibilities recorded</div>`;
@@ -10449,10 +10452,19 @@ ${
                         : `<div>None</div>`
                 }
 
-                <div class="pdf-mini-head space-top">Disconnect</div>
+                                <div class="pdf-mini-head space-top">Disconnect</div>
                 ${
                     crew.disconnect.length
                         ? crew.disconnect.map(function(item) {
+                            return `<div>${escapeHtml(item)}</div>`;
+                        }).join("")
+                        : `<div>None</div>`
+                }
+
+                <div class="pdf-mini-head space-top">Piano Specialist</div>
+                ${
+                    crew.pianos.length
+                        ? crew.pianos.map(function(item) {
                             return `<div>${escapeHtml(item)}</div>`;
                         }).join("")
                         : `<div>None</div>`
