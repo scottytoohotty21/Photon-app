@@ -5321,6 +5321,7 @@ function getLiveInventoryGroupKey(entry) {
 String(entry.damage || ""),
 String(entry.bedType || ""),
 Array.isArray(entry.wardrobeTypes) ? entry.wardrobeTypes.join("|") : "",
+entry.pianoDetails ? JSON.stringify(entry.pianoDetails) : "",
 !!entry.crated,
         entry.crateDims
             ? [
