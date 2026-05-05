@@ -3520,11 +3520,7 @@ Enter as: Surname, First Name
     <div style="height:12px"></div>
 
     <div class="summary-grid">
-        <div class="summary-card">
-            <div class="summary-label">Packing Mode</div>
-            <div class="summary-value" id="summaryMode">—</div>
-            <div class="summary-sub">No packing, CG packing, or full packing</div>
-        </div>
+        
         <div class="summary-card">
             <div class="summary-label">Total Volume</div>
             <div class="summary-value" id="summaryTotalVolume">0</div>
@@ -15595,7 +15591,10 @@ setInventoryFedField(exportWrapVolEl, state.exportWrapVol);
     const special = calcSpecialLabour(state);
     const loading = calcLoading(totalVolume, state.loadRate, special.loadSideHours, state.loadingScenario, state.loadingProfile);
     const unloading = calcUnloading(totalVolume, state.unloadRate, special.unloadSideHours, state.loadingScenario);
-    document.getElementById("summaryMode").textContent = getPackModeLabel(state.packOption);
+    const summaryModeEl = document.getElementById("summaryMode");
+if (summaryModeEl) {
+    summaryModeEl.textContent = getPackModeLabel(state.packOption);
+}
     document.getElementById("summaryTotalVolume").textContent = totalVolume;
     document.getElementById("summaryPackHours").textContent = packing.packHours.toFixed(2);
     document.getElementById("summaryPackDays").textContent = packing.packDays.toFixed(1);
