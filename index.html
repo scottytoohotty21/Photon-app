@@ -9215,6 +9215,43 @@ saveCalculatorFeedForActiveSequence();
 updateInventoryDisplay("LISTED FLAGS UPDATED");
 closeListedFlagsModal();;
 }
+function getPianoFloorDisplayLabel(value) {
+    const labels = {
+        basement: "BASEMENT",
+        ground: "GROUND",
+        first: "1ST",
+        second: "2ND",
+        above_second: "ABOVE 2ND"
+    };
+
+    return labels[value] || "GROUND";
+}
+
+function getPianoSideDisplayText(sideDetails) {
+    if (!sideDetails) return "";
+
+    const parts = [
+        getPianoFloorDisplayLabel(sideDetails.floor)
+    ];
+
+    if (sideDetails.stairs) parts.push("STAIRS");
+    if (sideDetails.lift) parts.push("LIFT");
+    if (sideDetails.tightAccess) parts.push("TIGHT ACCESS");
+    if (sideDetails.specialistRequired) parts.push("SPECIALIST");
+
+    return parts.join(" / ");
+}
+
+function getPianoDetailsListedTag(pianoDetails) {
+    if (!pianoDetails) return "";
+
+    const collectionText = getPianoSideDisplayText(pianoDetails.collection);
+    const deliveryText = getPianoSideDisplayText(pianoDetails.delivery);
+
+    if (!collectionText && !deliveryText) return "";
+
+    return "PIANO: COL " + collectionText + " → DEL " + deliveryText;
+}
 function getListedEntryMergeKey(entry) {
     const crateText = entry.crated && entry.crateDims
         ? [
@@ -9835,6 +9872,10 @@ if (entry.bedType) tags.push("BED: " + String(entry.bedType).toUpperCase());
 if (Array.isArray(entry.wardrobeTypes) && entry.wardrobeTypes.length) {
     tags.push("WARDROBE: " + entry.wardrobeTypes.join(", ").toUpperCase());
 }
+
+const pianoListedTag = getPianoDetailsListedTag(entry.pianoDetails);
+if (pianoListedTag) tags.push(pianoListedTag);
+
 if (entry.dismantle) tags.push("DISMANTLE");
 if (entry.expWrap) tags.push("EXP WRAP");
 if (entry.disconnect) tags.push("DISCONNECT");
