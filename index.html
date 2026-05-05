@@ -11015,6 +11015,7 @@ const QUOTE_CORE_COST_CHOICES = [
 const QUOTE_ADDITIONAL_SERVICE_CHOICES = [
     "Custom",
     "Handyman",
+    "Piano Specialist",
     "Parking Admin",
     "Hoist / Crane",
     "Ferry",
@@ -12879,6 +12880,7 @@ function renderQuoteTab() {
 
 syncQuotePricingFromSchedule(sequenceId);
 syncQuoteAvailabilityDateFromSchedule(sequenceId);
+syncQuotePianoSpecialistAdditionalCost(sequenceId);
 
 renderQuotePricingGrid(sequenceId);
 renderQuoteAdditionalCostsGrid(sequenceId);
@@ -13051,6 +13053,57 @@ function addQuotePricingLine() {
     renderQuoteTab();
 }
 
+function sequenceNeedsPianoSpecialistCost(sequenceId) {
+    const items = getRawInventoryItemsForSequence(sequenceId);
+
+    return items.some(function(entry) {
+        if (!isPianoRawEntry(entry)) return false;
+
+        const details = entry.pianoDetails || {};
+
+        return !!(
+            (details.collection && details.collection.specialistRequired) ||
+            (details.delivery && details.delivery.specialistRequired)
+        );
+    });
+}
+
+function syncQuotePianoSpecialistAdditionalCost(sequenceId) {
+    const state = ensureQuoteSequenceState(sequenceId);
+    if (!state) return;
+
+    if (!Array.isArray(state.additionalCostLines)) {
+        state.additionalCostLines = [];
+    }
+
+    const needsPianoSpecialist = sequenceNeedsPianoSpecialistCost(sequenceId);
+
+    const existingLine = state.additionalCostLines.find(function(line) {
+        return line.autoFromInventory === "pianoSpecialist";
+    });
+
+    if (!needsPianoSpecialist) {
+        return;
+    }
+
+    if (existingLine) {
+        existingLine.label = "Piano Specialist";
+        existingLine.customLabel = "";
+        existingLine.qty = Number(existingLine.qty || 0) > 0 ? Number(existingLine.qty || 0) : 1;
+        existingLine.needsCostEntry = Number(existingLine.unitCost || 0) <= 0;
+        return;
+    }
+
+    state.additionalCostLines.push({
+        id: createQuoteLineId(),
+        label: "Piano Specialist",
+        customLabel: "",
+        qty: 1,
+        unitCost: 0,
+        autoFromInventory: "pianoSpecialist",
+        needsCostEntry: true
+    });
+}
 function addQuoteAdditionalCostLine() {
     const seq = getQuoteSelectedSequence();
     if (!seq) return;
