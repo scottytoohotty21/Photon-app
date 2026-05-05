@@ -7392,19 +7392,20 @@ function addInventoryItem(itemName, extraData) {
     const floorName = currentJob && currentJob.inventory ? currentJob.inventory.activeFloor : "";
 
     const liveKey = getLiveInventoryGroupKey({
-        itemName: item.item,
-        deliveryId: deliveryId,
-        roomName: roomName,
-        floorName: floorName,
-        unitVolume: item.volume,
-        excluded: false,
-        dismantle: false,
-        expWrap: false,
-        note: "",
-        damage: "",
-        crated: false,
-        crateDims: null
-    });
+    itemName: item.item,
+    deliveryId: deliveryId,
+    roomName: roomName,
+    floorName: floorName,
+    unitVolume: item.volume,
+    excluded: false,
+    dismantle: false,
+    expWrap: false,
+    note: "",
+    damage: "",
+    pianoDetails: extraData.pianoDetails || null,
+    crated: false,
+    crateDims: null
+});
 
     lastAddedItemName = itemName;
 
