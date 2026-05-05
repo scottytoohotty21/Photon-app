@@ -4754,7 +4754,7 @@ function buildRawInventoryEntry(entryData) {
     note: entryData.note || "",
     crated: !!entryData.crated,
     crateDims: entryData.crateDims || null,
-    damage: entryData.damage || "",
+        damage: entryData.damage || "",
     bedType: entryData.bedType || "",
     wardrobeTypes: Array.isArray(entryData.wardrobeTypes) ? entryData.wardrobeTypes : [],
     pianoDetails: entryData.pianoDetails || null
@@ -9241,6 +9241,7 @@ function getListedEntryMergeKey(entry) {
 entry.damage || "",
 entry.bedType || "",
 Array.isArray(entry.wardrobeTypes) ? entry.wardrobeTypes.join("|") : "",
+entry.pianoDetails ? JSON.stringify(entry.pianoDetails) : "",
 !!entry.crated,
         crateText
     ].join("||");
