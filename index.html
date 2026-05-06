@@ -2162,6 +2162,9 @@ button {
 .lhs-rate-grid .summary-card {
     min-height: 110px;
     padding: 14px;
+    background: #ffffff;
+    border-color: #e2e8f0;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
 }
 
 .lhs-rate-grid .summary-label {
@@ -2204,6 +2207,11 @@ button {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
+    border: 2px solid #3b82f6;
+    border-radius: 18px;
+    padding: 16px;
+    background: #ffffff;
+    box-shadow: 0 10px 24px rgba(37,99,235,0.08);
 }
 
 .special-rhs-card {
@@ -15838,45 +15846,7 @@ function calcScheduleValidation(packing, loading, unloading, special, state){
         return { type: "ok", text: `${passIcon} ${task} capacity matches requirement.` };
     });
 
-    results.push({
-        type: "ok",
-        text: `${passIcon} Planner validation now uses task mode directly from the selected task.`
-    });
-
-    results.push({
-        type: "ok",
-        text: `${passIcon} Travel is now taken from the row travel legs list, and deducted before task labour is validated.`
-    });
-
-    results.push({
-        type: "ok",
-        text: `${passIcon} Travel is deducted before task labour is checked, so only net working time counts toward validation.`
-    });
-
-    results.push({
-        type: "ok",
-        text: state.loadingScenario === "exStore"
-            ? `${passIcon} Ex store move type is treated as delivery only, so no loading capacity is required.`
-            : `${passIcon} Loading requirement still uses the ${loadingProfile.label} loading profile for calculated demand.`
-    });
-
-    const hasCompletionWindow = manualSchedule.some(day =>
-        String(day.completionWindow || "None") === "Completion Day"
-    );
-
-    if (hasCompletionWindow) {
-        results.push({
-            type: "ok",
-            text: `${passIcon} Completion day rows are capped by the 1pm completion split when load or unload work is being validated.`
-        });
-    }
-
-    results.push({
-        type: "ok",
-        text: `${passIcon} Load-side specials remain in loading demand, and unload-side specials remain in unloading demand.`
-    });
-
-    return results;
+       return results;
 }
 
 function renderValidation(packing, loading, unloading, special, state){
