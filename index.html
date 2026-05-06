@@ -6718,6 +6718,24 @@ function copyInventoryItemsFromSequenceToSequence(sourceSequenceId, targetSequen
 
     return copiedItems.length;
 }
+function copyAdditionalCostLinesFromSequenceToSequence(sourceSequenceId, targetSequenceId) {
+    const sourceState = ensureQuoteSequenceState(sourceSequenceId);
+    const targetState = ensureQuoteSequenceState(targetSequenceId);
+
+    if (!sourceState || !targetState) return;
+
+    const sourceAdditionalLines = Array.isArray(sourceState.additionalCostLines)
+        ? sourceState.additionalCostLines
+        : [];
+
+    targetState.additionalCostLines = sourceAdditionalLines.map(function(line) {
+        const copiedLine = JSON.parse(JSON.stringify(line));
+
+        copiedLine.id = createQuoteLineId();
+
+        return copiedLine;
+    });
+}
         function copySequence() {
     const sourceSequenceId = activeSeqId;
     const original = currentJob.sequences.find(s => s.id == sourceSequenceId);
@@ -6741,13 +6759,16 @@ function copyInventoryItemsFromSequenceToSequence(sourceSequenceId, targetSequen
 
     currentJob.sequences.push(copy);
 
-    copyInventoryItemsFromSequenceToSequence(sourceSequenceId, copy.id);
+copyInventoryItemsFromSequenceToSequence(sourceSequenceId, copy.id);
+copyAdditionalCostLinesFromSequenceToSequence(sourceSequenceId, copy.id);
 
-    activeSeqId = copy.id;
+activeSeqId = copy.id;
 
     if (currentJob.inventory) {
         currentJob.inventory.activeSequenceId = copy.id;
     }
+    ensureCostingStore();
+currentJob.costingQuote.selectedSequenceId = String(copy.id);
 
     renderSequenceUI();
     renderInventorySequenceDropdown();
