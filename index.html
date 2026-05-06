@@ -3364,7 +3364,7 @@ Enter as: Surname, First Name
 </div>
 
 <div class="sequence-copy-note">
-    Tip: Complete the inventory before copying a sequence. Copied sequences get their own separate inventory. If the inventory changes later, delete the copied sequence and copy again to create a fresh twin.
+    Top Tip: Complete inventory first, then copy. For later inventory changes, delete the copy and copy again to make a fresh twin.
 </div>
 
 <div id="active-sequence-ui" class="bg-slate-50 border-2 border-slate-200 rounded-2xl p-6 space-y-6"></div>
@@ -7334,6 +7334,24 @@ function resetPianoModalFields() {
     if (deliveryFloorEl) deliveryFloorEl.value = "ground";
 }
 
+function handlePianoFloorChange(side) {
+    if (!pendingPianoDetails) {
+        pendingPianoDetails = createDefaultPianoDetails();
+    }
+
+    if (!pendingPianoDetails[side]) return;
+
+    const floorEl = document.getElementById("piano-" + side + "-floor");
+    const selectedFloor = floorEl ? floorEl.value : "ground";
+
+    pendingPianoDetails[side].floor = selectedFloor;
+
+    if (selectedFloor !== "ground") {
+        pendingPianoDetails[side].specialistRequired = true;
+    }
+
+    renderPianoModalState();
+}
 function togglePianoOption(side, optionName) {
     if (!pendingPianoDetails) {
         pendingPianoDetails = createDefaultPianoDetails();
@@ -7372,9 +7390,17 @@ function readPianoModalDetails() {
     const deliveryFloorEl = document.getElementById("piano-delivery-floor");
 
     pendingPianoDetails.collection.floor = collectionFloorEl ? collectionFloorEl.value : "ground";
-    pendingPianoDetails.delivery.floor = deliveryFloorEl ? deliveryFloorEl.value : "ground";
+pendingPianoDetails.delivery.floor = deliveryFloorEl ? deliveryFloorEl.value : "ground";
 
-    return JSON.parse(JSON.stringify(pendingPianoDetails));
+if (pendingPianoDetails.collection.floor !== "ground") {
+    pendingPianoDetails.collection.specialistRequired = true;
+}
+
+if (pendingPianoDetails.delivery.floor !== "ground") {
+    pendingPianoDetails.delivery.specialistRequired = true;
+}
+
+return JSON.parse(JSON.stringify(pendingPianoDetails));
 }
 
 function savePianoModal() {
@@ -16302,7 +16328,7 @@ document.addEventListener('DOMContentLoaded', function () {
             <div class="piano-side-title">Collection</div>
 
             <label class="piano-label" for="piano-collection-floor">Floor</label>
-            <select id="piano-collection-floor" class="piano-select">
+            <select id="piano-collection-floor" class="piano-select" onchange="handlePianoFloorChange('collection')">
                 <option value="basement">Basement</option>
                 <option value="ground" selected>Ground</option>
                 <option value="first">1st</option>
@@ -16322,7 +16348,7 @@ document.addEventListener('DOMContentLoaded', function () {
             <div class="piano-side-title">Delivery</div>
 
             <label class="piano-label" for="piano-delivery-floor">Floor</label>
-            <select id="piano-delivery-floor" class="piano-select">
+            <select id="piano-delivery-floor" class="piano-select" onchange="handlePianoFloorChange('delivery')">
                 <option value="basement">Basement</option>
                 <option value="ground" selected>Ground</option>
                 <option value="first">1st</option>
