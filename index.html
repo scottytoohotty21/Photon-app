@@ -3737,6 +3737,7 @@ Enter as: Surname, First Name
     <button id="tool-expwrap" class="inv-tool-btn" onclick="toggleItemAction('expWrap')">Exp Wrap</button>
     <button id="tool-crate" class="inv-tool-btn" onclick="addOrEditCrate()">Crate</button>
     <button id="tool-damage" class="inv-tool-btn" onclick="addOrEditDamage()">Condition</button>
+    <button id="tool-photos" class="inv-tool-btn" onclick="openInventoryPhotosModal()">Photos</button>
     <button id="tool-exclude" class="inv-tool-btn" onclick="toggleItemAction('excluded')">Exclude</button>
     <button class="inv-tool-btn" onclick="addInventoryNote()">Note</button>
     <button class="inv-tool-btn" onclick="addMiscItem()">Misc</button>
@@ -5512,8 +5513,9 @@ function renderActionButtonStates() {
     const handymanBtn = document.getElementById("tool-handyman");
     const excludeBtn = document.getElementById("tool-exclude");
     const crateBtn = document.getElementById("tool-crate");
-    const damageBtn = document.getElementById("tool-damage");
-    const rawEntry = getLastRawInventoryEntry();
+const damageBtn = document.getElementById("tool-damage");
+const photosBtn = document.getElementById("tool-photos");
+const rawEntry = getLastRawInventoryEntry();
 
     if (dismantleBtn) {
         dismantleBtn.classList.toggle("active", !!(rawEntry && rawEntry.dismantle));
@@ -5542,6 +5544,9 @@ function renderActionButtonStates() {
     if (damageBtn) {
         damageBtn.classList.toggle("active", !!(rawEntry && rawEntry.damage));
     }
+    if (photosBtn) {
+    photosBtn.disabled = !(rawEntry && rawEntry.kind !== "note");
+}
 }
 
 function toggleItemAction(actionName) {
@@ -8796,6 +8801,16 @@ function parseConditionReportValue(value) {
         options: selectedOptions,
         note: noteBits.join(" - ")
     };
+}
+function openInventoryPhotosModal() {
+    const rawEntry = getLastRawInventoryEntry();
+
+    if (!rawEntry || rawEntry.kind === "note") {
+        alert("Add or select an inventory item before adding photos.");
+        return;
+    }
+
+    alert("Inventory item photos will be added in the next stage.");
 }
 
 function addOrEditDamage() {
