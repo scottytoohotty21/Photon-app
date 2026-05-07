@@ -2389,6 +2389,32 @@ button {
     cursor:pointer;
 }
 .schedule-row-title{font-size:11px;font-weight:900;text-transform:uppercase;color:var(--navy);}
+.schedule-row-title-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 8px;
+    border-radius: 999px;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    color: #0f172a;
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+    line-height: 1;
+}
+
+.schedule-row-part-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 6px;
+    border-radius: 999px;
+    background: #dbeafe;
+    color: #1d4ed8;
+    font-size: 9px;
+    font-weight: 900;
+    line-height: 1;
+}
 .schedule-remove{height:32px;border-radius:8px;border:1px solid var(--red-200);background:var(--red-50);color:var(--red-800);padding:0 10px;font-size:10px;font-weight:900;text-transform:uppercase;cursor:pointer;}
 .schedule-leg-delete-btn {
     width: 34px;
@@ -15656,7 +15682,10 @@ function renderSchedulePlanner(){
             return `
             <div class="schedule-row${rowAccentClass}">
                 <div class="schedule-row-head">
-                    <div class="schedule-row-title">Day ${groupIndex + 1}${rows.length > 1 ? ` · ${day.dayPart}` : ""}</div>
+                    <div class="schedule-row-title-pill">
+    <span>Day ${groupIndex + 1}</span>
+    ${rows.length > 1 ? `<span class="schedule-row-part-pill">${day.dayPart}</span>` : ""}
+</div>
 
                     <div class="schedule-row-actions">
                         <button
