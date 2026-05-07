@@ -5571,6 +5571,15 @@ function getLastRawInventoryEntry() {
     if (!lastAddedRawEntryId) return null;
     return findRawInventoryEntry(lastAddedRawEntryId);
 }
+function getRawInventoryEntryById(rawEntryId) {
+    if (!currentJob || !currentJob.inventory || !Array.isArray(currentJob.inventory.items)) {
+        return null;
+    }
+
+    return currentJob.inventory.items.find(function(entry) {
+        return String(entry.id) === String(rawEntryId);
+    }) || null;
+}
 function getLiveInventoryEntryForRaw(rawEntryId) {
     const rawEntry = findRawInventoryEntry(rawEntryId);
     if (!rawEntry) return null;
@@ -5647,6 +5656,15 @@ const rawEntry = getLastRawInventoryEntry();
     }
     if (photosBtn) {
     photosBtn.disabled = !(rawEntry && rawEntry.kind !== "note");
+
+    const hasItemPhotos = !!(
+        rawEntry &&
+        rawEntry.photos &&
+        rawEntry.photos.item &&
+        rawEntry.photos.item.length
+    );
+
+    photosBtn.classList.toggle("active", hasItemPhotos);
 }
 }
 
@@ -8967,10 +8985,85 @@ function renderInventoryPhotoList(rawEntry) {
     list.innerHTML = `
         <div class="inventory-photo-grid">
             ${photos.map(function(photoRef, index) {
-                return `<div class="inventory-photo-thumb">Photo ${index + 1}</div>`;
+                return `
+                    <div class="inventory-photo-thumb">
+                        <button
+                            type="button"
+                            class="address-photo-thumb-view"
+                            onclick="openPhotoViewModal('${photoRef.id}', 'Item Photo ${index + 1}')"
+                        >
+                            ${
+                                photoRef.thumbDataUrl
+                                    ? `<img src="${photoRef.thumbDataUrl}" alt="Item photo ${index + 1}" class="address-photo-thumb-img">`
+                                    : `Photo ${index + 1}`
+                            }
+                        </button>
+                    </div>
+                `;
             }).join("")}
         </div>
     `;
+}
+async function handleInventoryPhotoSelected(event) {
+    const input = event.target;
+    const file = input && input.files && input.files[0] ? input.files[0] : null;
+
+    if (!file) return;
+
+    const rawEntry = getRawInventoryEntryById(activeInventoryPhotoRawEntryId);
+
+    if (!rawEntry) {
+        alert("Selected inventory item could not be found.");
+        input.value = "";
+        return;
+    }
+
+    ensureRawEntryPhotoShape(rawEntry);
+
+    if (rawEntry.photos.item.length >= 4) {
+        alert("Maximum 4 photos per inventory item.");
+        input.value = "";
+        return;
+    }
+
+    try {
+        const fullImage = await compressImageFile(file, 1600, 0.78);
+        const thumbImage = await compressImageFile(file, 320, 0.72);
+
+        const photoId = "photo_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7);
+
+        await savePhotoBlobToIndexedDb({
+            id: photoId,
+            blob: fullImage.blob,
+            createdAt: new Date().toISOString(),
+            scopeType: "inventory",
+            scopeId: String(rawEntry.id),
+            category: "item",
+            originalName: file.name || "",
+            mimeType: "image/jpeg",
+            width: fullImage.width,
+            height: fullImage.height
+        });
+
+        rawEntry.photos.item.push({
+            id: photoId,
+            category: "item",
+            thumbDataUrl: thumbImage.dataUrl,
+            createdAt: new Date().toISOString()
+        });
+
+        saveToDevice();
+        syncLiveInventoryFromRawForActiveSequence();
+        refreshCurrentInventorySelectionDisplay();
+        renderActionButtonStates();
+        saveCalculatorFeedForActiveSequence();
+
+        renderInventoryPhotoList(rawEntry);
+    } catch (err) {
+        alert("Photo could not be saved. Please try again.");
+    }
+
+    input.value = "";
 }
 
 function addOrEditDamage() {
@@ -17328,11 +17421,20 @@ document.addEventListener('DOMContentLoaded', function () {
             <button type="button" class="inventory-photo-close" onclick="closeInventoryPhotosModal()">×</button>
         </div>
 
-        <button type="button" class="inventory-photo-add-btn" onclick="alert('Item photo upload will be added in the next stage.')">
-            Add Item Photo
-        </button>
+        <button type="button" class="inventory-photo-add-btn" onclick="document.getElementById('inventory-photo-input').click()">
+    Add Item Photo
+</button>
 
-        <div id="inventory-photo-list">
+<input
+    id="inventory-photo-input"
+    type="file"
+    accept="image/*"
+    capture="environment"
+    style="display:none"
+    onchange="handleInventoryPhotoSelected(event)"
+>
+
+<div id="inventory-photo-list">
             <div class="inventory-photo-empty">No item photos added</div>
         </div>
     </div>
