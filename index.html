@@ -2343,7 +2343,17 @@ button {
 .schedule-title{font-size:10px;font-weight:900;text-transform:uppercase;color:var(--slate-400);}
 .schedule-btn{height:38px;border-radius:10px;border:1px solid var(--slate-300);background:#fff;color:var(--slate-700);padding:0 14px;font-size:11px;font-weight:900;text-transform:uppercase;cursor:pointer;}
 .schedule-list{display:grid;gap:12px;}
-.schedule-row{border:1px solid var(--slate-200);border-radius:14px;background:#fff;padding:12px;}
+.schedule-row{
+    border:1px solid var(--slate-200);
+    border-radius:14px;
+    background:#fff;
+    padding:12px;
+}
+
+.schedule-row.schedule-row-accent{
+    border-left:4px solid #3b82f6;
+    background:#eff6ff;
+}
 .schedule-row-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px;}
 .schedule-row-actions{
     display:flex;
@@ -15639,8 +15649,12 @@ function renderSchedulePlanner(){
             return order[a.dayPart] - order[b.dayPart];
         });
 
-        return rows.map((day, rowIndex) => `
-            <div class="schedule-row">
+                return rows.map((day, rowIndex) => {
+            const isSplitDayRow = rows.length > 1 || String(day.dayPart || "") === "AM" || String(day.dayPart || "") === "PM";
+            const rowAccentClass = isSplitDayRow ? " schedule-row-accent" : "";
+
+            return `
+            <div class="schedule-row${rowAccentClass}">
                 <div class="schedule-row-head">
                     <div class="schedule-row-title">Day ${groupIndex + 1}${rows.length > 1 ? ` · ${day.dayPart}` : ""}</div>
 
@@ -15742,7 +15756,8 @@ function renderSchedulePlanner(){
 
             
             </div>
-        `).join("");
+                `;
+        }).join("");
     }).join("");
 }
 
