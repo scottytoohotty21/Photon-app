@@ -9964,15 +9964,15 @@ function renderListedSummary(summary, materials, crewInstructions) {
                 </div>
 
                 <div>
-                    <div class="text-slate-400 pb-1">Damage</div>
-                    ${
-                        crew.damage.length
-                            ? crew.damage.map(function(item) {
-                                return `<div>${escapeHtml(item)}</div>`;
-                            }).join("")
-                            : `<div class="text-slate-400 italic">None</div>`
-                    }
-                </div>
+    <div class="text-slate-400 pb-1">Condition</div>
+    ${
+        crew.damage.length
+            ? crew.damage.map(function(item) {
+                return `<div>${escapeHtml(item)}</div>`;
+            }).join("")
+            : `<div class="text-slate-400 italic">None</div>`
+    }
+</div>
 
                 <div>
                     <div class="text-slate-400 pb-1">Notes</div>
@@ -10158,7 +10158,7 @@ if (entry.handyman) tags.push("HANDYMAN");
                         tags.push("CRATE");
                     }
                 }
-                if (entry.damage) tags.push("DAMAGE: " + entry.damage.toUpperCase());
+                if (entry.damage) tags.push("CONDITION: " + entry.damage.toUpperCase());
                 if (entry.excluded) tags.push("EXCLUDED");
                 if (entry.note) tags.push("NOTE: " + entry.note.toUpperCase());
 
@@ -10503,7 +10503,7 @@ function getPrintableListedSections(items) {
         tags.push("CRATE");
     }
 }
-                if (entry.damage) tags.push("DAMAGE: " + entry.damage.toUpperCase());
+                if (entry.damage) tags.push("CONDITION: " + entry.damage.toUpperCase());
 
 const pianoListedTag = getPianoDetailsListedTag(entry.pianoDetails);
 if (pianoListedTag) tags.push(pianoListedTag);
@@ -10722,14 +10722,14 @@ ${
                         : `<div>None</div>`
                 }
 
-                <div class="pdf-mini-head space-top">Damage</div>
-                ${
-                    crew.damage.length
-                        ? crew.damage.map(function(item) {
-                            return `<div>${escapeHtml(item)}</div>`;
-                        }).join("")
-                        : `<div>None</div>`
-                }
+                <div class="pdf-mini-head space-top">Condition</div>
+${
+    crew.damage.length
+        ? crew.damage.map(function(item) {
+            return `<div>${escapeHtml(item)}</div>`;
+        }).join("")
+        : `<div>None</div>`
+}
 
                 <div class="pdf-mini-head space-top">Notes</div>
                 ${
@@ -16465,7 +16465,7 @@ document.addEventListener('DOMContentLoaded', function () {
 <div id="damage-overlay" class="damage-overlay" onclick="closeDamageModal()">
     <div class="damage-panel" onclick="event.stopPropagation()">
         <div class="damage-title">Condition Report</div>
-<div class="damage-subtitle">Select condition or add your own note</div>
+<div class="damage-subtitle">Select one or more conditions, or add your own note</div>
 
         <div class="damage-grid">
             <button type="button" id="damage-option-dented" class="damage-option-btn" onclick="selectDamageOption('Dented')">Dented</button>
@@ -16481,7 +16481,7 @@ document.addEventListener('DOMContentLoaded', function () {
         <textarea
             id="damage-custom-note"
             class="damage-note-input"
-            placeholder="If none apply, enter condition note here..."
+            placeholder="Add any extra condition note here..."
         ></textarea>
 
         <div id="damage-error-text" class="modal-error-text"></div>
