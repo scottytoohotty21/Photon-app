@@ -537,12 +537,74 @@ button {
     font-weight: 900;
     text-transform: uppercase;
 }
+.address-photo-thumb {
+    position: relative;
+    overflow: hidden;
+}
+
+.address-photo-thumb-view {
+    width: 100%;
+    height: 74px;
+    border: none;
+    padding: 0;
+    background: transparent;
+    cursor: pointer;
+}
+
+.address-photo-delete-btn {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 24px;
+    height: 24px;
+    border-radius: 999px;
+    border: 1px solid #fecaca;
+    background: #fef2f2;
+    color: #dc2626;
+    font-size: 15px;
+    font-weight: 900;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 .address-photo-thumb-img {
     width: 100%;
     height: 74px;
     object-fit: cover;
     border-radius: 10px;
     display: block;
+}
+.address-photo-thumb {
+    position: relative;
+    overflow: hidden;
+}
+
+.address-photo-thumb-view {
+    width: 100%;
+    height: 74px;
+    border: none;
+    padding: 0;
+    background: transparent;
+    cursor: pointer;
+}
+
+.address-photo-delete-btn {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 24px;
+    height: 24px;
+    border-radius: 999px;
+    border: 1px solid #fecaca;
+    background: #fef2f2;
+    color: #dc2626;
+    font-size: 15px;
+    font-weight: 900;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
         
         #manual-entry-area { display: none; background: white; border: 3px solid #3b82f6; border-radius: 20px; padding: 20px; margin-bottom: 24px; }
@@ -1726,6 +1788,62 @@ button {
             color: #166534;
         }
 
+        /* --- PHOTO VIEW MODAL --- */
+.photo-view-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.72);
+    backdrop-filter: blur(3px);
+    align-items: center;
+    justify-content: center;
+    z-index: 2600;
+    padding: 18px;
+}
+
+.photo-view-panel {
+    width: 96%;
+    max-width: 760px;
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 14px;
+    box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.35);
+}
+
+.photo-view-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.photo-view-title {
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+    color: #0f172a;
+}
+
+.photo-view-close {
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    color: #334155;
+    font-size: 18px;
+    font-weight: 900;
+}
+
+.photo-view-img {
+    display: block;
+    width: 100%;
+    max-height: 72vh;
+    object-fit: contain;
+    border-radius: 14px;
+    background: #f8fafc;
+}
         /* --- SIMPLE INPUT MODAL --- */
         .simple-input-overlay {
             display: none;
@@ -4804,16 +4922,34 @@ function renderAddressAccessPhotosPanel(prop, isSaved) {
                     photos.length
                         ? `<div class="address-photo-grid">
                             ${photos.map(function(photoRef, index) {
-                                return `
-                                    <div class="address-photo-thumb">
-                                        ${
-                                            photoRef.thumbDataUrl
-                                                ? `<img src="${photoRef.thumbDataUrl}" alt="Access photo ${index + 1}" class="address-photo-thumb-img">`
-                                                : `Photo ${index + 1}`
-                                        }
-                                    </div>
-                                `;
-                            }).join("")}
+    return `
+        <div class="address-photo-thumb">
+            <button
+                type="button"
+                class="address-photo-thumb-view"
+                onclick="openPhotoViewModal('${photoRef.id}', 'Access Photo ${index + 1}')"
+            >
+                ${
+                    photoRef.thumbDataUrl
+                        ? `<img src="${photoRef.thumbDataUrl}" alt="Access photo ${index + 1}" class="address-photo-thumb-img">`
+                        : `Photo ${index + 1}`
+                }
+            </button>
+
+            ${
+                isSaved
+                    ? ""
+                    : `<button
+                        type="button"
+                        class="address-photo-delete-btn"
+                        title="Delete photo"
+                        aria-label="Delete photo"
+                        onclick="deleteAddressAccessPhoto(${prop.id}, '${photoRef.id}')"
+                    >×</button>`
+            }
+        </div>
+    `;
+}).join("")}
                         </div>`
                         : `<div class="address-photo-empty">No access photos added</div>`
                 }
@@ -4863,6 +4999,46 @@ function savePhotoBlobToIndexedDb(photoRecord) {
             tx.oncomplete = function() {
                 db.close();
                 resolve(photoRecord.id);
+            };
+
+            tx.onerror = function() {
+                db.close();
+                reject(tx.error);
+            };
+        });
+    });
+}
+function getPhotoBlobFromIndexedDb(photoId) {
+    return openPhotoDatabase().then(function(db) {
+        return new Promise(function(resolve, reject) {
+            const tx = db.transaction(PHOTO_STORE_NAME, "readonly");
+            const store = tx.objectStore(PHOTO_STORE_NAME);
+            const request = store.get(photoId);
+
+            request.onsuccess = function() {
+                db.close();
+                resolve(request.result || null);
+            };
+
+            request.onerror = function() {
+                db.close();
+                reject(request.error);
+            };
+        });
+    });
+}
+
+function deletePhotoBlobFromIndexedDb(photoId) {
+    return openPhotoDatabase().then(function(db) {
+        return new Promise(function(resolve, reject) {
+            const tx = db.transaction(PHOTO_STORE_NAME, "readwrite");
+            const store = tx.objectStore(PHOTO_STORE_NAME);
+
+            store.delete(photoId);
+
+            tx.oncomplete = function() {
+                db.close();
+                resolve();
             };
 
             tx.onerror = function() {
@@ -4987,6 +5163,80 @@ async function handleAddressPhotoSelected(event, propId) {
     }
 
     input.value = "";
+}
+let activePhotoObjectUrl = "";
+
+async function openPhotoViewModal(photoId, title) {
+    const overlay = document.getElementById("photo-view-overlay");
+    const img = document.getElementById("photo-view-img");
+    const titleEl = document.getElementById("photo-view-title");
+
+    if (!overlay || !img) return;
+
+    try {
+        const photoRecord = await getPhotoBlobFromIndexedDb(photoId);
+
+        if (!photoRecord || !photoRecord.blob) {
+            alert("Photo could not be loaded on this device.");
+            return;
+        }
+
+        if (activePhotoObjectUrl) {
+            URL.revokeObjectURL(activePhotoObjectUrl);
+            activePhotoObjectUrl = "";
+        }
+
+        activePhotoObjectUrl = URL.createObjectURL(photoRecord.blob);
+
+        img.src = activePhotoObjectUrl;
+
+        if (titleEl) {
+            titleEl.innerText = title || "Photo";
+        }
+
+        overlay.style.display = "flex";
+    } catch (err) {
+        alert("Photo could not be opened.");
+    }
+}
+
+function closePhotoViewModal() {
+    const overlay = document.getElementById("photo-view-overlay");
+    const img = document.getElementById("photo-view-img");
+
+    if (overlay) overlay.style.display = "none";
+
+    if (img) {
+        img.removeAttribute("src");
+    }
+
+    if (activePhotoObjectUrl) {
+        URL.revokeObjectURL(activePhotoObjectUrl);
+        activePhotoObjectUrl = "";
+    }
+}
+
+async function deleteAddressAccessPhoto(propId, photoId) {
+    const prop = findPropertyById(propId);
+    if (!prop) return;
+
+    ensurePropertyPhotoShape(prop);
+
+    const confirmed = confirm("Delete this access photo?");
+    if (!confirmed) return;
+
+    prop.photos.access = prop.photos.access.filter(function(photoRef) {
+        return String(photoRef.id) !== String(photoId);
+    });
+
+    try {
+        await deletePhotoBlobFromIndexedDb(photoId);
+    } catch (err) {
+        // If the blob delete fails, still remove the reference from the job.
+    }
+
+    saveToDevice();
+    renderAddressUI();
 }
         function renderAddressUI() {
          const prop = currentJob.properties.find(p => p.id === activePropId);
@@ -16891,6 +17141,17 @@ document.addEventListener('DOMContentLoaded', function () {
     </div>
 </div>
 
+<!-- PHOTO VIEW MODAL -->
+<div id="photo-view-overlay" class="photo-view-overlay" onclick="closePhotoViewModal()">
+    <div class="photo-view-panel" onclick="event.stopPropagation()">
+        <div class="photo-view-head">
+            <div id="photo-view-title" class="photo-view-title">Access Photo</div>
+            <button type="button" class="photo-view-close" onclick="closePhotoViewModal()">×</button>
+        </div>
+
+        <img id="photo-view-img" class="photo-view-img" alt="Selected photo">
+    </div>
+</div>
 <!-- MISC MODAL -->
 <div id="misc-overlay" class="misc-overlay" onclick="closeMiscModal()">
     <div class="misc-panel" onclick="event.stopPropagation()">
