@@ -8985,22 +8985,30 @@ function renderInventoryPhotoList(rawEntry) {
     list.innerHTML = `
         <div class="inventory-photo-grid">
             ${photos.map(function(photoRef, index) {
-                return `
-                    <div class="inventory-photo-thumb">
-                        <button
-                            type="button"
-                            class="address-photo-thumb-view"
-                            onclick="openPhotoViewModal('${photoRef.id}', 'Item Photo ${index + 1}')"
-                        >
-                            ${
-                                photoRef.thumbDataUrl
-                                    ? `<img src="${photoRef.thumbDataUrl}" alt="Item photo ${index + 1}" class="address-photo-thumb-img">`
-                                    : `Photo ${index + 1}`
-                            }
-                        </button>
-                    </div>
-                `;
-            }).join("")}
+    return `
+        <div class="inventory-photo-thumb">
+            <button
+                type="button"
+                class="address-photo-thumb-view"
+                onclick="openPhotoViewModal('${photoRef.id}', 'Item Photo ${index + 1}')"
+            >
+                ${
+                    photoRef.thumbDataUrl
+                        ? `<img src="${photoRef.thumbDataUrl}" alt="Item photo ${index + 1}" class="address-photo-thumb-img">`
+                        : `Photo ${index + 1}`
+                }
+            </button>
+
+            <button
+                type="button"
+                class="address-photo-delete-btn"
+                title="Delete photo"
+                aria-label="Delete photo"
+                onclick="deleteInventoryItemPhoto('${rawEntry.id}', '${photoRef.id}')"
+            >×</button>
+        </div>
+    `;
+}).join("")}
         </div>
     `;
 }
@@ -9064,6 +9072,37 @@ async function handleInventoryPhotoSelected(event) {
     }
 
     input.value = "";
+}
+async function deleteInventoryItemPhoto(rawEntryId, photoId) {
+    const rawEntry = getRawInventoryEntryById(rawEntryId);
+
+    if (!rawEntry) {
+        alert("Selected inventory item could not be found.");
+        return;
+    }
+
+    ensureRawEntryPhotoShape(rawEntry);
+
+    const confirmed = confirm("Delete this item photo?");
+    if (!confirmed) return;
+
+    rawEntry.photos.item = rawEntry.photos.item.filter(function(photoRef) {
+        return String(photoRef.id) !== String(photoId);
+    });
+
+    try {
+        await deletePhotoBlobFromIndexedDb(photoId);
+    } catch (err) {
+        // If blob delete fails, still remove the reference from the item.
+    }
+
+    saveToDevice();
+    syncLiveInventoryFromRawForActiveSequence();
+    refreshCurrentInventorySelectionDisplay();
+    renderActionButtonStates();
+    saveCalculatorFeedForActiveSequence();
+
+    renderInventoryPhotoList(rawEntry);
 }
 
 function addOrEditDamage() {
