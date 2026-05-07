@@ -8155,7 +8155,7 @@ function addOrEditDamage() {
     currentDamage === "Scratched" ||
     currentDamage === "Marked" ||
     currentDamage === "Cracked" ||
-    currentDamage === "Elec.Cond.Unknown" ||
+    currentDamage === "ECU" ||
     currentDamage === "Soiled" ||
     currentDamage === "Chipped" ||
     currentDamage === "Broken"
@@ -8200,12 +8200,12 @@ function selectDamageOption(option) {
 }
 
 function clearDamageOptionButtons() {
-    [
+   [
     "damage-option-dented",
     "damage-option-scratched",
     "damage-option-marked",
     "damage-option-cracked",
-    "damage-option-elec.cond.unknown",
+    "damage-option-ecu",
     "damage-option-soiled",
     "damage-option-chipped",
     "damage-option-broken"
@@ -8223,7 +8223,7 @@ function highlightDamageOption(option) {
     "Scratched": "damage-option-scratched",
     "Marked": "damage-option-marked",
     "Cracked": "damage-option-cracked",
-    "ECU": "damage-option-elec.cond.unknown",
+    "ECU": "damage-option-ecu",
     "Soiled": "damage-option-soiled",
     "Chipped": "damage-option-chipped",
     "Broken": "damage-option-broken"
@@ -16420,7 +16420,7 @@ document.addEventListener('DOMContentLoaded', function () {
 <button type="button" id="damage-option-scratched" class="damage-option-btn" onclick="selectDamageOption('Scratched')">Scratched</button>
 <button type="button" id="damage-option-marked" class="damage-option-btn" onclick="selectDamageOption('Marked')">Marked</button>
 <button type="button" id="damage-option-cracked" class="damage-option-btn" onclick="selectDamageOption('Cracked')">Cracked</button>
-<button type="button" id="damage-option-ecu" class="damage-option-btn" onclick="selectDamageOption('Elec.Cond.Unknown')">Elec.Cond.Unkown</button>
+<button type="button" id="damage-option-ecu" class="damage-option-btn" onclick="selectDamageOption('ECU')">ECU</button>
 <button type="button" id="damage-option-soiled" class="damage-option-btn" onclick="selectDamageOption('Soiled')">Soiled</button>
 <button type="button" id="damage-option-chipped" class="damage-option-btn" onclick="selectDamageOption('Chipped')">Chipped</button>
 <button type="button" id="damage-option-broken" class="damage-option-btn" onclick="selectDamageOption('Broken')">Broken</button>
