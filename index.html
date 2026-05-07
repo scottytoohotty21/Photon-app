@@ -3532,7 +3532,7 @@ Enter as: Surname, First Name
     <button id="tool-dismantle" class="inv-tool-btn" onclick="toggleItemAction('dismantle')">Dismantle</button>
     <button id="tool-expwrap" class="inv-tool-btn" onclick="toggleItemAction('expWrap')">Exp Wrap</button>
     <button id="tool-crate" class="inv-tool-btn" onclick="addOrEditCrate()">Crate</button>
-    <button id="tool-damage" class="inv-tool-btn" onclick="addOrEditDamage()">Damage</button>
+    <button id="tool-damage" class="inv-tool-btn" onclick="addOrEditDamage()">Condition</button>
     <button id="tool-exclude" class="inv-tool-btn" onclick="toggleItemAction('excluded')">Exclude</button>
     <button class="inv-tool-btn" onclick="addInventoryNote()">Note</button>
     <button class="inv-tool-btn" onclick="addMiscItem()">Misc</button>
@@ -16400,8 +16400,8 @@ document.addEventListener('DOMContentLoaded', function () {
 <!-- DAMAGE MODAL -->
 <div id="damage-overlay" class="damage-overlay" onclick="closeDamageModal()">
     <div class="damage-panel" onclick="event.stopPropagation()">
-        <div class="damage-title">Damage</div>
-        <div class="damage-subtitle">Select type or add your own note</div>
+        <div class="damage-title">Condition Report</div>
+<div class="damage-subtitle">Select condition or add your own note</div>
 
         <div class="damage-grid">
             <button type="button" id="damage-option-dented" class="damage-option-btn" onclick="selectDamageOption('Dented')">Dented</button>
@@ -16413,14 +16413,14 @@ document.addEventListener('DOMContentLoaded', function () {
         <textarea
             id="damage-custom-note"
             class="damage-note-input"
-            placeholder="If none apply, enter damage note here..."
+            placeholder="If none apply, enter condition note here..."
         ></textarea>
 
         <div id="damage-error-text" class="modal-error-text"></div>
 
         <div class="damage-actions">
             <button type="button" class="damage-cancel-btn" onclick="closeDamageModal()">Cancel</button>
-            <button type="button" class="damage-save-btn" onclick="saveDamageModal()">Save Damage</button>
+            <button type="button" class="damage-save-btn" onclick="saveDamageModal()">Save Condition</button>
         </div>
     </div>
 </div>
