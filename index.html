@@ -537,6 +537,13 @@ button {
     font-weight: 900;
     text-transform: uppercase;
 }
+.address-photo-thumb-img {
+    width: 100%;
+    height: 74px;
+    object-fit: cover;
+    border-radius: 10px;
+    display: block;
+}
         
         #manual-entry-area { display: none; background: white; border: 3px solid #3b82f6; border-radius: 20px; padding: 20px; margin-bottom: 24px; }
         .add-stop-btn { font-size: 9px; font-weight: 900; color: #3b82f6; text-transform: uppercase; padding: 4px 8px; border: 1px dashed #3b82f6; border-radius: 6px; margin-top: 5px; display: inline-block; }
@@ -4761,7 +4768,9 @@ function ensurePropertyPhotoShape(prop) {
 function renderAddressAccessPhotosPanel(prop, isSaved) {
     ensurePropertyPhotoShape(prop);
 
-    const photos = prop.photos.access;
+    const photos = prop.photos.access || [];
+    const maxPhotos = 4;
+    const isAtLimit = photos.length >= maxPhotos;
 
     return `
         <div class="col-12">
@@ -4769,24 +4778,41 @@ function renderAddressAccessPhotosPanel(prop, isSaved) {
                 <div class="address-photo-head">
                     <div>
                         <div class="address-photo-title">Access Photos</div>
-                        <div class="address-photo-subtitle">Photos linked to this address only</div>
+                        <div class="address-photo-subtitle">Photos linked to this address only · ${photos.length}/${maxPhotos}</div>
                     </div>
 
                     <button
                         type="button"
                         class="address-photo-add-btn"
-                        ${isSaved ? "disabled" : ""}
-                        onclick="openAddressPhotoPicker(${prop.id})"
+                        ${(isSaved || isAtLimit) ? "disabled" : ""}
+                        onclick="document.getElementById('address-photo-input-${prop.id}').click()"
                     >
                         Add Access Photo
                     </button>
+
+                    <input
+                        id="address-photo-input-${prop.id}"
+                        type="file"
+                        accept="image/*"
+                        capture="environment"
+                        style="display:none"
+                        onchange="handleAddressPhotoSelected(event, ${prop.id})"
+                    >
                 </div>
 
                 ${
                     photos.length
                         ? `<div class="address-photo-grid">
                             ${photos.map(function(photoRef, index) {
-                                return `<div class="address-photo-thumb">Photo ${index + 1}</div>`;
+                                return `
+                                    <div class="address-photo-thumb">
+                                        ${
+                                            photoRef.thumbDataUrl
+                                                ? `<img src="${photoRef.thumbDataUrl}" alt="Access photo ${index + 1}" class="address-photo-thumb-img">`
+                                                : `Photo ${index + 1}`
+                                        }
+                                    </div>
+                                `;
                             }).join("")}
                         </div>`
                         : `<div class="address-photo-empty">No access photos added</div>`
@@ -4797,7 +4823,170 @@ function renderAddressAccessPhotosPanel(prop, isSaved) {
 }
 
 function openAddressPhotoPicker(propId) {
-    alert("Access photo upload will be added in the next stage.");
+    const input = document.getElementById("address-photo-input-" + propId);
+    if (input) input.click();
+}
+const PHOTO_DB_NAME = "MovePilotPhotoStore";
+const PHOTO_DB_VERSION = 1;
+const PHOTO_STORE_NAME = "photos";
+
+function openPhotoDatabase() {
+    return new Promise(function(resolve, reject) {
+        const request = indexedDB.open(PHOTO_DB_NAME, PHOTO_DB_VERSION);
+
+        request.onupgradeneeded = function(event) {
+            const db = event.target.result;
+
+            if (!db.objectStoreNames.contains(PHOTO_STORE_NAME)) {
+                db.createObjectStore(PHOTO_STORE_NAME, { keyPath: "id" });
+            }
+        };
+
+        request.onsuccess = function(event) {
+            resolve(event.target.result);
+        };
+
+        request.onerror = function() {
+            reject(request.error);
+        };
+    });
+}
+
+function savePhotoBlobToIndexedDb(photoRecord) {
+    return openPhotoDatabase().then(function(db) {
+        return new Promise(function(resolve, reject) {
+            const tx = db.transaction(PHOTO_STORE_NAME, "readwrite");
+            const store = tx.objectStore(PHOTO_STORE_NAME);
+
+            store.put(photoRecord);
+
+            tx.oncomplete = function() {
+                db.close();
+                resolve(photoRecord.id);
+            };
+
+            tx.onerror = function() {
+                db.close();
+                reject(tx.error);
+            };
+        });
+    });
+}
+
+function createImageFromFile(file) {
+    return new Promise(function(resolve, reject) {
+        const reader = new FileReader();
+
+        reader.onload = function(event) {
+            const img = new Image();
+
+            img.onload = function() {
+                resolve(img);
+            };
+
+            img.onerror = reject;
+            img.src = event.target.result;
+        };
+
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+
+function canvasToBlob(canvas, quality) {
+    return new Promise(function(resolve) {
+        canvas.toBlob(
+            function(blob) {
+                resolve(blob);
+            },
+            "image/jpeg",
+            quality
+        );
+    });
+}
+
+async function compressImageFile(file, maxSize, quality) {
+    const img = await createImageFromFile(file);
+
+    const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
+    const width = Math.max(1, Math.round(img.width * scale));
+    const height = Math.max(1, Math.round(img.height * scale));
+
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(img, 0, 0, width, height);
+
+    const blob = await canvasToBlob(canvas, quality);
+
+    return {
+        blob: blob,
+        dataUrl: canvas.toDataURL("image/jpeg", quality),
+        width: width,
+        height: height
+    };
+}
+
+function findPropertyById(propId) {
+    if (!currentJob || !Array.isArray(currentJob.properties)) return null;
+
+    return currentJob.properties.find(function(prop) {
+        return String(prop.id) === String(propId);
+    }) || null;
+}
+
+async function handleAddressPhotoSelected(event, propId) {
+    const input = event.target;
+    const file = input && input.files && input.files[0] ? input.files[0] : null;
+
+    if (!file) return;
+
+    const prop = findPropertyById(propId);
+    if (!prop) return;
+
+    ensurePropertyPhotoShape(prop);
+
+    if (prop.photos.access.length >= 4) {
+        alert("Maximum 4 access photos per address.");
+        input.value = "";
+        return;
+    }
+
+    try {
+        const fullImage = await compressImageFile(file, 1600, 0.78);
+        const thumbImage = await compressImageFile(file, 320, 0.72);
+
+        const photoId = "photo_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7);
+
+        await savePhotoBlobToIndexedDb({
+            id: photoId,
+            blob: fullImage.blob,
+            createdAt: new Date().toISOString(),
+            scopeType: "address",
+            scopeId: String(propId),
+            category: "access",
+            originalName: file.name || "",
+            mimeType: "image/jpeg",
+            width: fullImage.width,
+            height: fullImage.height
+        });
+
+        prop.photos.access.push({
+            id: photoId,
+            category: "access",
+            thumbDataUrl: thumbImage.dataUrl,
+            createdAt: new Date().toISOString()
+        });
+
+        saveToDevice();
+        renderAddressUI();
+    } catch (err) {
+        alert("Photo could not be saved. Please try again.");
+    }
+
+    input.value = "";
 }
         function renderAddressUI() {
          const prop = currentJob.properties.find(p => p.id === activePropId);
