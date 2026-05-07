@@ -6629,7 +6629,9 @@ saveBtn.setAttribute('aria-label', isSaved ? 'Unlock sequence' : 'Lock sequence'
             const selectedSeqId = activeSeqId || getDefaultSequenceId();
 
 document.getElementById('seq-switcher').innerHTML = currentJob.sequences.map((s, idx) => {
-    const label = s.moveType ? `Seq #${idx+1}: ${s.moveType}` : `Seq #${idx+1}: New Sequence`;
+    const moveLabel = s.moveType || 'New Sequence';
+    const packLabel = s.packOption || 'No Packing Set';
+    const label = `Seq #${idx + 1}: ${moveLabel} / ${packLabel}`;
     return `<option value="${s.id}" ${s.id == selectedSeqId ? 'selected' : ''}>${label}</option>`;
 }).join('');
             
