@@ -458,6 +458,85 @@ button {
     white-space: nowrap;
     font-family: 'Inter', sans-serif;
 }
+.address-photo-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 14px;
+}
+
+.address-photo-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.address-photo-title {
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+    color: #0f172a;
+}
+
+.address-photo-subtitle {
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #64748b;
+    margin-top: 3px;
+    line-height: 1.35;
+}
+
+.address-photo-add-btn {
+    min-width: 126px;
+    height: 38px;
+    border-radius: 10px;
+    border: 1px solid #bfdbfe;
+    background: #eff6ff;
+    color: #1d4ed8;
+    font-size: 9px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.address-photo-add-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.address-photo-empty {
+    border: 1px dashed #cbd5e1;
+    border-radius: 12px;
+    padding: 12px;
+    background: #f8fafc;
+    color: #94a3b8;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    text-align: center;
+}
+
+.address-photo-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.address-photo-thumb {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    background: #f8fafc;
+    min-height: 74px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #64748b;
+    font-size: 9px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
         
         #manual-entry-area { display: none; background: white; border: 3px solid #3b82f6; border-radius: 20px; padding: 20px; margin-bottom: 24px; }
         .add-stop-btn { font-size: 9px; font-weight: 900; color: #3b82f6; text-transform: uppercase; padding: 4px 8px; border: 1px dashed #3b82f6; border-radius: 6px; margin-top: 5px; display: inline-block; }
@@ -4667,6 +4746,59 @@ saveCalculatorFeedForActiveSequence();
 saveToDevice();
 }
 
+function ensurePropertyPhotoShape(prop) {
+    if (!prop) return;
+
+    if (!prop.photos || typeof prop.photos !== "object") {
+        prop.photos = {};
+    }
+
+    if (!Array.isArray(prop.photos.access)) {
+        prop.photos.access = [];
+    }
+}
+
+function renderAddressAccessPhotosPanel(prop, isSaved) {
+    ensurePropertyPhotoShape(prop);
+
+    const photos = prop.photos.access;
+
+    return `
+        <div class="col-12">
+            <div class="address-photo-card">
+                <div class="address-photo-head">
+                    <div>
+                        <div class="address-photo-title">Access Photos</div>
+                        <div class="address-photo-subtitle">Photos linked to this address only</div>
+                    </div>
+
+                    <button
+                        type="button"
+                        class="address-photo-add-btn"
+                        ${isSaved ? "disabled" : ""}
+                        onclick="openAddressPhotoPicker(${prop.id})"
+                    >
+                        Add Access Photo
+                    </button>
+                </div>
+
+                ${
+                    photos.length
+                        ? `<div class="address-photo-grid">
+                            ${photos.map(function(photoRef, index) {
+                                return `<div class="address-photo-thumb">Photo ${index + 1}</div>`;
+                            }).join("")}
+                        </div>`
+                        : `<div class="address-photo-empty">No access photos added</div>`
+                }
+            </div>
+        </div>
+    `;
+}
+
+function openAddressPhotoPicker(propId) {
+    alert("Access photo upload will be added in the next stage.");
+}
         function renderAddressUI() {
          const prop = currentJob.properties.find(p => p.id === activePropId);
 const isSaved = prop.isSaved;
@@ -4744,6 +4876,7 @@ saveBtn.setAttribute('aria-label', isSaved ? 'Unlock address' : 'Lock address');
                     <div class="col-3"><label class="mini-label">Lift</label><input type="text" ${status} oninput="updatePropData('lift', this.value)" class="input-field" value="${prop.lift || ''}"></div>
                     <div class="col-3"><label class="mini-label">Dist (m)</label><input type="number" ${status} oninput="updatePropData('distance', this.value)" class="input-field" value="${prop.distance || ''}"></div>
                     <div class="col-12"><label class="mini-label">Parking & Instructions</label><textarea ${status} oninput="updatePropData('parking', this.value)" class="input-field h-20">${prop.parking || ''}</textarea></div>
+                ${renderAddressAccessPhotosPanel(prop, isSaved)}
                 ${!isCollectionAddress ? `
     <div class="col-6">
         <label class="mini-label">Contact Name</label>
