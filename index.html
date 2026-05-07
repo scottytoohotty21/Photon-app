@@ -7718,7 +7718,7 @@ function saveMiscModal() {
     if (!nameInput || !volumeInput) return;
 
     const cleanName = nameInput.value.trim();
-    const unitVolume = parseFloat(volumeInput.value);
+    const unitVolume = Number(volumeInput.value);
 
     if (!cleanName && (!volumeInput.value || String(volumeInput.value).trim() === "")) {
         setModalErrorText("misc-error-text", "Enter item name and unit volume");
@@ -7745,21 +7745,24 @@ function saveMiscModal() {
     const floorName = currentJob && currentJob.inventory ? currentJob.inventory.activeFloor : "";
 
     const liveKey = getLiveInventoryGroupKey({
-    itemName: cleanName,
-    deliveryId: deliveryId,
-    roomName: roomName,
-    floorName: floorName,
-    unitVolume: unitVolume,
-    excluded: false,
-    dismantle: false,
-    expWrap: false,
-    disconnect: false,
-    handyman: false,
-    note: "",
-    damage: "",
-    crated: false,
-    crateDims: null
-});
+        itemName: cleanName,
+        deliveryId: deliveryId,
+        roomName: roomName,
+        floorName: floorName,
+        unitVolume: unitVolume,
+        excluded: false,
+        dismantle: false,
+        expWrap: false,
+        disconnect: false,
+        handyman: false,
+        note: "",
+        damage: "",
+        bedType: "",
+        wardrobeTypes: [],
+        pianoDetails: null,
+        crated: false,
+        crateDims: null
+    });
 
     lastAddedItemName = miscKey;
 
@@ -7785,12 +7788,16 @@ function saveMiscModal() {
             deliveryId: deliveryId,
             dismantle: false,
             expWrap: false,
+            disconnect: false,
+            handyman: false,
             excluded: false,
             note: "",
             damage: "",
+            bedType: "",
+            wardrobeTypes: [],
+            pianoDetails: null,
             crated: false,
-            crateDims: null,
-            pianoDetails: extraData.pianoDetails || null
+            crateDims: null
         });
     }
 
@@ -7803,7 +7810,19 @@ function saveMiscModal() {
         qty: qty,
         unitVolume: unitVolume,
         totalVolume: unitVolume * qty,
-        kind: "misc"
+        kind: "misc",
+        dismantle: false,
+        expWrap: false,
+        disconnect: false,
+        handyman: false,
+        excluded: false,
+        note: "",
+        damage: "",
+        bedType: "",
+        wardrobeTypes: [],
+        pianoDetails: null,
+        crated: false,
+        crateDims: null
     });
 
     inventoryHistory.push({
@@ -7817,19 +7836,22 @@ function saveMiscModal() {
 
     lastAddedRawEntryId = rawEntryId;
 
-syncLiveInventoryFromRawForActiveSequence();
-recalculateTotalVolume();
-refreshCurrentInventorySelectionDisplay();
+    syncLiveInventoryFromRawForActiveSequence();
+    recalculateTotalVolume();
+    refreshCurrentInventorySelectionDisplay();
 
-triggerInventoryPulse("current", "blue");
-triggerInventoryPulse("total", "blue");
-updateUndoButtonState();
-renderActionButtonStates();
-saveCalculatorFeedForActiveSequence();
+    updateInventoryDisplay(qty + " X " + cleanName.toUpperCase());
 
-if (qtyInput) qtyInput.value = 1;
+    triggerInventoryPulse("current", "blue");
+    triggerInventoryPulse("total", "blue");
+    updateUndoButtonState();
+    renderActionButtonStates();
+    saveCalculatorFeedForActiveSequence();
+    saveToDevice();
 
-closeMiscModal();
+    if (qtyInput) qtyInput.value = 1;
+
+    closeMiscModal();
 }
 function addInventoryNote() {
     const rawEntry = getLastRawInventoryEntry();
