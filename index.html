@@ -2592,7 +2592,47 @@ button {
     gap:10px;
     align-items:end;
 }
-.validation-list{display:grid;gap:8px;margin-top:12px;}
+.validation-list {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.validation-item {
+    border-radius: 14px;
+    padding: 10px 12px;
+    font-size: 10px;
+    font-weight: 900;
+    line-height: 1.35;
+    text-transform: uppercase;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+}
+
+.validation-ok {
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+    color: #166534;
+}
+
+.validation-error {
+    background: #fff5f5;
+    border-color: #fecaca;
+    color: #991b1b;
+}
+
+.validation-warn {
+    background: #fff7ed;
+    border-color: #fed7aa;
+    color: #c2410c;
+}
+
+@media (max-width: 760px) {
+    .validation-list {
+        grid-template-columns: 1fr;
+    }
+}
 .validation-item{border-radius:12px;padding:10px 12px;font-size:11px;font-weight:800;text-transform:uppercase;line-height:1.4;}
 .validation-ok{background:var(--green-50);border:1px solid var(--green-200);color:var(--green-800);}
 .validation-warn{background:var(--amber-50);border:1px solid var(--amber-200);color:var(--amber-800);}
@@ -15913,28 +15953,34 @@ function calcScheduleValidation(packing, loading, unloading, special, state){
     });
 
     const passIcon = "✓";
-    const failIcon = "✕";
-    const warnIcon = "!";
+const failIcon = "✕";
 
-    const results = Object.keys(required).map(task => {
-        const req = required[task] || 0;
-        const cap = allocated[task] || 0;
-        const diff = round2(cap - req);
+const taskLabels = {
+    Pack: "Packing",
+    Load: "Loading",
+    Unload: "Unloading"
+};
 
-        if (req === 0 && cap === 0) {
-            return { type: "ok", text: `${passIcon} ${task} not required and none allocated.` };
-        }
+const results = Object.keys(required).map(task => {
+    const req = required[task] || 0;
+    const cap = allocated[task] || 0;
+    const diff = round2(cap - req);
+    const label = taskLabels[task] || task;
 
-        if (cap + 0.01 < req) {
-            return { type: "error", text: `${failIcon} ${task} short by ${Math.abs(diff).toFixed(2)} man-hours.` };
-        }
+    if (req === 0 && cap === 0) {
+        return { type: "ok", text: `${passIcon} ${label}: Not required` };
+    }
 
-        if (diff > 0.5) {
-            return { type: "warn", text: `${warnIcon} ${task} has ${diff.toFixed(2)} spare man-hours allocated.` };
-        }
+    if (cap + 0.01 < req) {
+        return { type: "error", text: `${failIcon} ${label}: Short by ${Math.abs(diff).toFixed(2)} hrs` };
+    }
 
-        return { type: "ok", text: `${passIcon} ${task} capacity matches requirement.` };
-    });
+    if (diff > 0.5) {
+        return { type: "ok", text: `${passIcon} ${label}: Covered — ${diff.toFixed(2)} hrs spare` };
+    }
+
+    return { type: "ok", text: `${passIcon} ${label}: Covered` };
+});
 
        return results;
 }
