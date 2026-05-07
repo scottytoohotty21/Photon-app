@@ -1788,6 +1788,107 @@ button {
             color: #166534;
         }
 
+        /* --- INVENTORY PHOTOS MODAL --- */
+.inventory-photo-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(2px);
+    align-items: center;
+    justify-content: center;
+    z-index: 2550;
+    padding: 18px;
+}
+
+.inventory-photo-panel {
+    width: 94%;
+    max-width: 520px;
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.28);
+}
+
+.inventory-photo-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.inventory-photo-title {
+    font-size: 13px;
+    font-weight: 900;
+    text-transform: uppercase;
+    color: #0f172a;
+}
+
+.inventory-photo-subtitle {
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #64748b;
+    margin-top: 4px;
+    line-height: 1.35;
+}
+
+.inventory-photo-close {
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    color: #334155;
+    font-size: 18px;
+    font-weight: 900;
+}
+
+.inventory-photo-add-btn {
+    width: 100%;
+    min-height: 42px;
+    border-radius: 12px;
+    border: 1px solid #bfdbfe;
+    background: #eff6ff;
+    color: #1d4ed8;
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+}
+
+.inventory-photo-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.inventory-photo-empty {
+    border: 1px dashed #cbd5e1;
+    border-radius: 12px;
+    padding: 14px;
+    background: #f8fafc;
+    color: #94a3b8;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    text-align: center;
+}
+
+.inventory-photo-thumb {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    background: #f8fafc;
+    min-height: 74px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #64748b;
+    font-size: 9px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
         /* --- PHOTO VIEW MODAL --- */
 .photo-view-overlay {
     display: none;
@@ -8802,6 +8903,8 @@ function parseConditionReportValue(value) {
         note: noteBits.join(" - ")
     };
 }
+let activeInventoryPhotoRawEntryId = "";
+
 function openInventoryPhotosModal() {
     const rawEntry = getLastRawInventoryEntry();
 
@@ -8810,7 +8913,64 @@ function openInventoryPhotosModal() {
         return;
     }
 
-    alert("Inventory item photos will be added in the next stage.");
+    activeInventoryPhotoRawEntryId = rawEntry.id;
+
+    const overlay = document.getElementById("inventory-photo-overlay");
+    const subtitle = document.getElementById("inventory-photo-subtitle");
+
+    if (subtitle) {
+        subtitle.innerText = String(rawEntry.itemName || "Selected item").toUpperCase();
+    }
+
+    renderInventoryPhotoList(rawEntry);
+
+    if (overlay) {
+        overlay.style.display = "flex";
+    }
+}
+
+function closeInventoryPhotosModal() {
+    const overlay = document.getElementById("inventory-photo-overlay");
+
+    if (overlay) {
+        overlay.style.display = "none";
+    }
+
+    activeInventoryPhotoRawEntryId = "";
+}
+
+function ensureRawEntryPhotoShape(rawEntry) {
+    if (!rawEntry) return;
+
+    if (!rawEntry.photos || typeof rawEntry.photos !== "object") {
+        rawEntry.photos = {};
+    }
+
+    if (!Array.isArray(rawEntry.photos.item)) {
+        rawEntry.photos.item = [];
+    }
+}
+
+function renderInventoryPhotoList(rawEntry) {
+    const list = document.getElementById("inventory-photo-list");
+    if (!list || !rawEntry) return;
+
+    ensureRawEntryPhotoShape(rawEntry);
+
+    const photos = rawEntry.photos.item || [];
+
+    if (!photos.length) {
+        list.innerHTML = `<div class="inventory-photo-empty">No item photos added</div>`;
+        return;
+    }
+
+    list.innerHTML = `
+        <div class="inventory-photo-grid">
+            ${photos.map(function(photoRef, index) {
+                return `<div class="inventory-photo-thumb">Photo ${index + 1}</div>`;
+            }).join("")}
+        </div>
+    `;
 }
 
 function addOrEditDamage() {
@@ -17152,6 +17312,28 @@ document.addEventListener('DOMContentLoaded', function () {
         <div class="piano-actions">
             <button type="button" class="piano-cancel-btn" onclick="closePianoModal()">Cancel</button>
             <button type="button" class="piano-save-btn" onclick="savePianoModal()">Confirm Piano Details</button>
+        </div>
+    </div>
+</div>
+
+<!-- INVENTORY PHOTOS MODAL -->
+<div id="inventory-photo-overlay" class="inventory-photo-overlay" onclick="closeInventoryPhotosModal()">
+    <div class="inventory-photo-panel" onclick="event.stopPropagation()">
+        <div class="inventory-photo-head">
+            <div>
+                <div class="inventory-photo-title">Item Photos</div>
+                <div id="inventory-photo-subtitle" class="inventory-photo-subtitle">Selected item</div>
+            </div>
+
+            <button type="button" class="inventory-photo-close" onclick="closeInventoryPhotosModal()">×</button>
+        </div>
+
+        <button type="button" class="inventory-photo-add-btn" onclick="alert('Item photo upload will be added in the next stage.')">
+            Add Item Photo
+        </button>
+
+        <div id="inventory-photo-list">
+            <div class="inventory-photo-empty">No item photos added</div>
         </div>
     </div>
 </div>
