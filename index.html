@@ -2153,6 +2153,111 @@ button {
             text-transform: uppercase;
             line-height: 1.3;
         }
+        /* --- LISTED INVENTORY PHOTO REVIEW --- */
+.listed-photo-review {
+    margin-top: 16px;
+}
+
+.listed-photo-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 18px;
+    padding: 16px;
+}
+
+.listed-photo-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.listed-photo-title {
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+    color: #0f172a;
+}
+
+.listed-photo-subtitle {
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #64748b;
+    margin-top: 4px;
+    line-height: 1.35;
+}
+
+.listed-photo-section {
+    margin-top: 14px;
+}
+
+.listed-photo-section-title {
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+    color: #334155;
+    margin-bottom: 8px;
+}
+
+.listed-photo-grid {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.listed-photo-thumb {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    background: #f8fafc;
+    overflow: hidden;
+}
+
+.listed-photo-thumb-btn {
+    width: 100%;
+    border: none;
+    padding: 0;
+    background: transparent;
+    cursor: pointer;
+    display: block;
+}
+
+.listed-photo-thumb-img {
+    width: 100%;
+    height: 78px;
+    object-fit: cover;
+    display: block;
+}
+
+.listed-photo-caption {
+    padding: 7px 8px;
+    border-top: 1px solid #e2e8f0;
+    font-size: 8px;
+    font-weight: 900;
+    text-transform: uppercase;
+    color: #475569;
+    line-height: 1.25;
+    background: #ffffff;
+}
+
+.listed-photo-empty {
+    border: 1px dashed #cbd5e1;
+    border-radius: 12px;
+    padding: 12px;
+    background: #f8fafc;
+    color: #94a3b8;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    text-align: center;
+}
+
+@media (max-width: 900px) {
+    .listed-photo-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
         .listed-row-actions {
     display: flex;
     align-items: center;
@@ -3970,6 +4075,8 @@ Enter as: Surname, First Name
     <div id="listed-inventory-output" class="space-y-4">
     <div class="p-12 text-center text-slate-400 font-bold italic uppercase">No inventory saved</div>
 </div>
+
+<div id="listed-photo-review" class="listed-photo-review"></div>
 
 <div id="listed-footer-summary" class="grid grid-cols-2 gap-3 mt-4"></div>
 </section>
@@ -9982,6 +10089,122 @@ function getSequenceLabelById(sequenceId) {
     return "Seq #" + (seqIndex + 1) + ": " + moveLabel + " / " + packLabel;
 }
 
+function collectListedAddressPhotos() {
+    if (!currentJob || !Array.isArray(currentJob.properties)) {
+        return [];
+    }
+
+    const photos = [];
+
+    currentJob.properties.forEach(function(prop) {
+        ensurePropertyPhotoShape(prop);
+
+        const propertyLabel = toTitleCase(prop.label || "Address");
+
+        prop.photos.access.forEach(function(photoRef, index) {
+            photos.push({
+                id: photoRef.id,
+                thumbDataUrl: photoRef.thumbDataUrl || "",
+                title: "Access Photo " + (index + 1),
+                caption: propertyLabel,
+                type: "address"
+            });
+        });
+    });
+
+    return photos;
+}
+
+function collectListedInventoryPhotos(items) {
+    if (!Array.isArray(items)) {
+        return [];
+    }
+
+    const photos = [];
+
+    items.forEach(function(entry) {
+        ensureRawEntryPhotoShape(entry);
+
+        const qty = Number(entry.qty || 0);
+        const itemName = String(entry.itemName || "Item").toUpperCase();
+
+        entry.photos.item.forEach(function(photoRef, index) {
+            photos.push({
+                id: photoRef.id,
+                thumbDataUrl: photoRef.thumbDataUrl || "",
+                title: "Item Photo " + (index + 1),
+                caption: qty + " x " + itemName,
+                type: "inventory"
+            });
+        });
+    });
+
+    return photos;
+}
+
+function renderListedPhotoThumbs(photos) {
+    if (!photos.length) {
+        return `<div class="listed-photo-empty">No photos recorded</div>`;
+    }
+
+    return `
+        <div class="listed-photo-grid">
+            ${photos.map(function(photo, index) {
+                return `
+                    <div class="listed-photo-thumb">
+                        <button
+                            type="button"
+                            class="listed-photo-thumb-btn"
+                            onclick="openPhotoViewModal('${photo.id}', '${escapeHtml(photo.title)}')"
+                        >
+                            ${
+                                photo.thumbDataUrl
+                                    ? `<img src="${photo.thumbDataUrl}" alt="${escapeHtml(photo.title)}" class="listed-photo-thumb-img">`
+                                    : `<div class="listed-photo-empty">Photo ${index + 1}</div>`
+                            }
+                        </button>
+                        <div class="listed-photo-caption">${escapeHtml(photo.caption)}</div>
+                    </div>
+                `;
+            }).join("")}
+        </div>
+    `;
+}
+
+function renderListedPhotoReview(items) {
+    const container = document.getElementById("listed-photo-review");
+    if (!container) return;
+
+    const addressPhotos = collectListedAddressPhotos();
+    const inventoryPhotos = collectListedInventoryPhotos(items);
+    const totalPhotos = addressPhotos.length + inventoryPhotos.length;
+
+    if (!totalPhotos) {
+        container.innerHTML = "";
+        return;
+    }
+
+    container.innerHTML = `
+        <div class="listed-photo-card">
+            <div class="listed-photo-head">
+                <div>
+                    <div class="listed-photo-title">Photo Review</div>
+                    <div class="listed-photo-subtitle">${totalPhotos} photo${totalPhotos === 1 ? "" : "s"} recorded for this survey</div>
+                </div>
+            </div>
+
+            <div class="listed-photo-section">
+                <div class="listed-photo-section-title">Address Access Photos</div>
+                ${renderListedPhotoThumbs(addressPhotos)}
+            </div>
+
+            <div class="listed-photo-section">
+                <div class="listed-photo-section-title">Inventory Item Photos</div>
+                ${renderListedPhotoThumbs(inventoryPhotos)}
+            </div>
+        </div>
+    `;
+}
 function getListedInventoryItems() {
     if (!currentJob || !currentJob.inventory || !Array.isArray(currentJob.inventory.items)) {
         return [];
@@ -11045,26 +11268,29 @@ function renderListedInventory() {
     const filteredItems = filterListedInventoryItems(allItems);
 
     if (filteredItems.length === 0) {
-        container.innerHTML = `<div class="p-12 text-center text-slate-400 font-bold italic uppercase">No inventory matches current view</div>`;
-        renderListedSummary(
-            buildListedSummary([]),
-            buildMaterialsSummary([])
-        );
-        return;
-    }
+    container.innerHTML = `<div class="p-12 text-center text-slate-400 font-bold italic uppercase">No inventory matches current view</div>`;
+    renderListedPhotoReview([]);
+    renderListedSummary(
+        buildListedSummary([]),
+        buildMaterialsSummary([])
+    );
+    return;
+}
 
     const listedSummary = buildListedSummary(filteredItems);
 const materialsSummary = buildMaterialsSummary(filteredItems);
 
 renderListedSummary(listedSummary, materialsSummary, filteredItems);
+renderListedPhotoReview(filteredItems);
 
-    window.__listedEntryMap = {};
+window.__listedEntryMap = {};
     const groupedSections = groupInventoryItemsForListedView(filteredItems);
 
     if (groupedSections.length === 0) {
-        container.innerHTML = `<div class="p-12 text-center text-slate-400 font-bold italic uppercase">No inventory matches current view</div>`;
-        return;
-    }
+    container.innerHTML = `<div class="p-12 text-center text-slate-400 font-bold italic uppercase">No inventory matches current view</div>`;
+    renderListedPhotoReview(filteredItems);
+    return;
+}
 
     container.innerHTML = groupedSections.map(function(section) {
         const roomBlocks = section.rooms.map(function(room) {
