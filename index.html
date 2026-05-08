@@ -16051,25 +16051,14 @@ function calcLoading(totalVolume, loadRate, loadSideSpecialHours, loadingScenari
 
     const volume = Number(totalVolume || 0);
 
-    const morningCutoffHours = 4;
-    const morningCapacity = morningRate * morningCutoffHours;
+const morningVolumeHours = morningRate > 0 ? volume / morningRate : 0;
+const pmAfterAmVolumeHours = pmAfterAmRate > 0 ? volume / pmAfterAmRate : morningVolumeHours;
 
-    const morningVolumeHours = volume / morningRate;
-    const pmAfterAmVolumeHours = pmAfterAmRate > 0 ? volume / pmAfterAmRate : morningVolumeHours;
+// Base required loading hours use the main loading rate.
+// Planner validation handles whether those hours are available before/after completion windows.
+const volumeHours = morningVolumeHours;
 
-    let volumeHours = 0;
-
-    if (volume <= 0) {
-        volumeHours = 0;
-    } else if (volume <= morningCapacity || !pmAfterAmRate || pmAfterAmRate <= 0) {
-        volumeHours = morningVolumeHours;
-    } else {
-        const remainingVolume = volume - morningCapacity;
-        volumeHours = morningCutoffHours + (remainingVolume / pmAfterAmRate);
-    }
-
-    const totalHours = volumeHours + Number(loadSideSpecialHours || 0);
-
+const totalHours = volumeHours + Number(loadSideSpecialHours || 0);
     return {
         hours: round2(totalHours),
         days: round1(totalHours / 8),
@@ -16186,6 +16175,46 @@ function getWindowHoursForRow(day) {
     const overtimeHours = Math.max(0, Number(day.overtimeHours || 0));
 
     return baseHours + overtimeHours;
+}
+function getPlannerLoadEquivalentHours(day, taskHours, state) {
+    const usableTaskHours = Math.max(0, Number(taskHours || 0));
+
+    const loadingProfile = state && state.loadingProfile ? state.loadingProfile : {};
+    const morningRate = Number(loadingProfile.morningEquivalentRate || state.loadRate || 0);
+    const pmRate = Number(loadingProfile.pmAfterAmEquivalentRate || morningRate || 0);
+
+    if (!morningRate || morningRate <= 0) {
+        return usableTaskHours;
+    }
+
+    const pmMultiplier = pmRate > 0 ? pmRate / morningRate : 1;
+
+    const completionWindow = String(day.completionWindow || "None");
+    const dayPart = String(day.dayPart || "Full Day");
+
+    if (completionWindow === "Completion Day") {
+        return getCompletionAdjustedCapacity(day, "load", usableTaskHours, state);
+    }
+
+    if (dayPart === "AM") {
+        return usableTaskHours;
+    }
+
+    if (dayPart === "PM") {
+        return usableTaskHours * pmMultiplier;
+    }
+
+    if (dayPart === "Full Day") {
+        const preLoadTravelHours = getFirstRowLegHours(day);
+        const morningWindowHours = Math.max(0, 5 - preLoadTravelHours);
+
+        const morningHours = Math.min(usableTaskHours, morningWindowHours);
+        const pmHours = Math.max(0, usableTaskHours - morningHours);
+
+        return morningHours + (pmHours * pmMultiplier);
+    }
+
+    return usableTaskHours;
 }
 function getCompletionAdjustedCapacity(day, mode, taskHours) {
     const completionWindow = String(day.completionWindow || "None");
@@ -17213,10 +17242,10 @@ function calcScheduleValidation(packing, loading, unloading, special, state){
             }
 
             if (taskMode === "load") {
-                const usableHours = getCompletionAdjustedCapacity(day, "load", taskHours, state);
-                allocated.Load += men * usableHours;
-                return;
-            }
+    const equivalentLoadHours = getPlannerLoadEquivalentHours(day, taskHours, state);
+    allocated.Load += men * equivalentLoadHours;
+    return;
+}
 
             if (taskMode === "unload") {
                 const usableHours = getCompletionAdjustedCapacity(day, "unload", taskHours, state);
