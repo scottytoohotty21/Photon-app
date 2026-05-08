@@ -15067,6 +15067,12 @@ function getRowLegHours(day) {
 
     return round2(totalMinutes / 60);
 }
+function getFirstRowLegHours(day) {
+    if (!day || !Array.isArray(day.legs) || !day.legs.length) return 0;
+
+    const firstLeg = day.legs[0];
+    return round2(Math.max(0, Number(firstLeg.minutes || 0)) / 60);
+}
 
 function addScheduleLeg(dayId) {
     manualSchedule = manualSchedule.map(function(day) {
@@ -16043,12 +16049,26 @@ function calcLoading(totalVolume, loadRate, loadSideSpecialHours, loadingScenari
         };
     }
 
-    const morningVolumeHours = totalVolume / morningRate;
-    const pmAfterAmVolumeHours = pmAfterAmRate > 0 ? totalVolume / pmAfterAmRate : morningVolumeHours;
+    const volume = Number(totalVolume || 0);
 
-    // Main loading calculation remains based on morning-equivalent rate
-    const volumeHours = morningVolumeHours;
-    const totalHours = volumeHours + loadSideSpecialHours;
+    const morningCutoffHours = 4;
+    const morningCapacity = morningRate * morningCutoffHours;
+
+    const morningVolumeHours = volume / morningRate;
+    const pmAfterAmVolumeHours = pmAfterAmRate > 0 ? volume / pmAfterAmRate : morningVolumeHours;
+
+    let volumeHours = 0;
+
+    if (volume <= 0) {
+        volumeHours = 0;
+    } else if (volume <= morningCapacity || !pmAfterAmRate || pmAfterAmRate <= 0) {
+        volumeHours = morningVolumeHours;
+    } else {
+        const remainingVolume = volume - morningCapacity;
+        volumeHours = morningCutoffHours + (remainingVolume / pmAfterAmRate);
+    }
+
+    const totalHours = volumeHours + Number(loadSideSpecialHours || 0);
 
     return {
         hours: round2(totalHours),
@@ -16176,10 +16196,19 @@ function getCompletionAdjustedCapacity(day, mode, taskHours) {
     }
 
     if (mode === "load") {
-        if (day.dayPart === "PM") return 0;
-        if (day.dayPart === "AM") return Math.min(usableTaskHours, 5);
-        if (day.dayPart === "Full Day") return Math.min(usableTaskHours, 5);
+    if (day.dayPart === "PM") return 0;
+
+    const preLoadTravelHours = getFirstRowLegHours(day);
+    const loadWindowBeforeCompletion = Math.max(0, 5 - preLoadTravelHours);
+
+    if (day.dayPart === "AM") {
+        return Math.min(usableTaskHours, loadWindowBeforeCompletion);
     }
+
+    if (day.dayPart === "Full Day") {
+        return Math.min(usableTaskHours, loadWindowBeforeCompletion);
+    }
+}
 
     if (mode === "unload") {
         if (day.dayPart === "AM") return 0;
