@@ -5659,14 +5659,17 @@ const rawEntry = getLastRawInventoryEntry();
     if (photosBtn) {
     photosBtn.disabled = !(rawEntry && rawEntry.kind !== "note");
 
-    const hasItemPhotos = !!(
-        rawEntry &&
+    const itemPhotoCount = rawEntry &&
         rawEntry.photos &&
-        rawEntry.photos.item &&
-        rawEntry.photos.item.length
-    );
+        Array.isArray(rawEntry.photos.item)
+            ? rawEntry.photos.item.length
+            : 0;
 
-    photosBtn.classList.toggle("active", hasItemPhotos);
+    photosBtn.innerText = itemPhotoCount > 0
+        ? "Photos (" + itemPhotoCount + ")"
+        : "Photos";
+
+    photosBtn.classList.toggle("active", itemPhotoCount > 0);
 }
 }
 
@@ -10397,6 +10400,40 @@ function getPianoDetailsListedTag(pianoDetails) {
 
     return "PIANO: COL " + collectionText + " → DEL " + deliveryText;
 }
+function getInventoryEntryPhotoCount(entry) {
+    if (!entry || !entry.photos || !Array.isArray(entry.photos.item)) {
+        return 0;
+    }
+
+    return entry.photos.item.length;
+}
+
+function mergeInventoryEntryPhotoRefs(targetEntry, sourceEntry) {
+    if (!targetEntry || !sourceEntry) return;
+
+    if (!targetEntry.photos || typeof targetEntry.photos !== "object") {
+        targetEntry.photos = {};
+    }
+
+    if (!Array.isArray(targetEntry.photos.item)) {
+        targetEntry.photos.item = [];
+    }
+
+    if (
+        sourceEntry.photos &&
+        Array.isArray(sourceEntry.photos.item)
+    ) {
+        sourceEntry.photos.item.forEach(function(photoRef) {
+            const alreadyExists = targetEntry.photos.item.some(function(existingRef) {
+                return String(existingRef.id) === String(photoRef.id);
+            });
+
+            if (!alreadyExists) {
+                targetEntry.photos.item.push(photoRef);
+            }
+        });
+    }
+}
 function getListedEntryMergeKey(entry) {
     const crateText = entry.crated && entry.crateDims
         ? [
@@ -10445,9 +10482,11 @@ function mergeListedInventoryEntries(items) {
 
         mergedMap[key].qty += Number(entry.qty || 0);
 
-        if (!entry.excluded) {
-            mergedMap[key].totalVolume += Number(entry.totalVolume || 0);
-        }
+mergeInventoryEntryPhotoRefs(mergedMap[key], entry);
+
+if (!entry.excluded) {
+    mergedMap[key].totalVolume += Number(entry.totalVolume || 0);
+}
     });
 
     return Object.values(mergedMap);
@@ -11043,6 +11082,9 @@ if (Array.isArray(entry.wardrobeTypes) && entry.wardrobeTypes.length) {
 
 const pianoListedTag = getPianoDetailsListedTag(entry.pianoDetails);
 if (pianoListedTag) tags.push(pianoListedTag);
+
+const photoCount = getInventoryEntryPhotoCount(entry);
+if (photoCount > 0) tags.push("PHOTOS: " + photoCount);
 
 if (entry.dismantle) tags.push("DISMANTLE");
 if (entry.expWrap) tags.push("EXP WRAP");
