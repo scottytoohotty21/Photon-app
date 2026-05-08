@@ -11453,6 +11453,9 @@ function getPrintableListedSections(items) {
 const pianoListedTag = getPianoDetailsListedTag(entry.pianoDetails);
 if (pianoListedTag) tags.push(pianoListedTag);
 
+const photoCount = getInventoryEntryPhotoCount(entry);
+if (photoCount > 0) tags.push("PHOTOS: " + photoCount);
+
 if (entry.excluded) tags.push("EXCLUDED");
 if (entry.note) tags.push("NOTE: " + entry.note.toUpperCase());
                 const tagText = tags.length ? " [" + tags.join("] [") + "]" : "";
