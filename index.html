@@ -10193,15 +10193,15 @@ function renderListedPhotoReview(items) {
                 </div>
             </div>
 
-            <div class="listed-photo-section">
-                <div class="listed-photo-section-title">Address Access Photos</div>
-                ${renderListedPhotoThumbs(addressPhotos)}
-            </div>
+           <div class="listed-photo-section">
+    <div class="listed-photo-section-title">Address Access Photos (${addressPhotos.length})</div>
+    ${renderListedPhotoThumbs(addressPhotos)}
+</div>
 
-            <div class="listed-photo-section">
-                <div class="listed-photo-section-title">Inventory Item Photos</div>
-                ${renderListedPhotoThumbs(inventoryPhotos)}
-            </div>
+<div class="listed-photo-section">
+    <div class="listed-photo-section-title">Inventory Item Photos (${inventoryPhotos.length})</div>
+    ${renderListedPhotoThumbs(inventoryPhotos)}
+</div>
         </div>
     `;
 }
@@ -15909,42 +15909,81 @@ function calcBoxVolume(state){
 }
 
 function calcSpecialLabour(state) {
-    const includedExportWrapVol = 50;
+    const includedExportWrapVol = 30;
+    const includedBedDismantleCount = 1;
 
-    const extraExportWrapVol = Math.max(0, state.exportWrapVol - includedExportWrapVol);
+    const exportWrapVol = Number(state.exportWrapVol || 0);
+    const loftVol = Number(state.loftVol || 0);
+
+    const extraExportWrapVol = Math.max(0, exportWrapVol - includedExportWrapVol);
+
     const depotToCollectionMinutes = Number(state.depotToCollectionMinutes || 0);
     const collectionToDeliveryMinutes = Number(state.collectionToDeliveryMinutes || 0);
     const deliveryToDepotMinutes = Number(state.deliveryToDepotMinutes || 0);
 
+    let includedBedsRemaining = includedBedDismantleCount;
+
+const frameBedCount = Math.max(0, Number(state.special.frameBeds || 0));
+const ottomanBedCount = Math.max(0, Number(state.special.ottomanBeds || 0));
+const bunkBedCount = Math.max(0, Number(state.special.bunkBeds || 0));
+const cotCount = Math.max(0, Number(state.special.cots || 0));
+
+const billableFrameBeds = Math.max(0, frameBedCount - includedBedsRemaining);
+includedBedsRemaining = Math.max(0, includedBedsRemaining - frameBedCount);
+
+const billableOttomanBeds = Math.max(0, ottomanBedCount - includedBedsRemaining);
+includedBedsRemaining = Math.max(0, includedBedsRemaining - ottomanBedCount);
+
+const billableBunkBeds = Math.max(0, bunkBedCount - includedBedsRemaining);
+includedBedsRemaining = Math.max(0, includedBedsRemaining - bunkBedCount);
+
+const billableCots = Math.max(0, cotCount - includedBedsRemaining);
+
+const frameBedMinutes = billableFrameBeds * 15;
+const ottomanBedMinutes = billableOttomanBeds * 30;
+const bunkBedMinutes = billableBunkBeds * 30;
+const cotMinutes = billableCots * 10;
+    const diningTableMinutes = Number(state.special.diningTables || 0) * 15;
+    const wardrobeMinutes = Number(state.special.wardrobes || 0) * 20;
+    const uprightPianoMinutes = Number(state.special.upright || 0) * 10;
+    const grandPianoMinutes = Number(state.special.grand || 0) * 30;
+    const grandfatherClockMinutes = Number(state.special.clock || 0) * 15;
+    const applianceMinutes = Number(state.special.appliance || 0) * 10;
+    const crateMinutes = Number(state.special.crate || 0) * 15;
+    const customMinutes = state.special.customMinutes > 0 ? Number(state.special.customMinutes || 0) : 0;
+
+    const loftMinutes = loftVol > 0 ? (loftVol / 200) * 60 : 0;
+    const exportWrapMinutes = extraExportWrapVol > 0 ? (extraExportWrapVol / 30) * 60 : 0;
+
     const loadMinutes =
-        (state.special.frameBeds * 15) +
-        (state.special.ottomanBeds * 30) +
-        (state.special.bunkBeds * 30) +
-        (state.special.cots * 15) +
-        (state.special.diningTables * 15) +
-(state.special.wardrobes * 30) +
-(state.special.customMinutes > 0 ? state.special.customMinutes : 0) +
-        (state.special.upright * 25) +
-        (state.special.grand * 60) +
-        (state.special.clock * 30) +
-        (state.special.appliance * 30) +
-        (state.special.crate * 15) +
-        ((state.loftVol / 100) * 20) +
-        ((extraExportWrapVol / 100) * 25);
+        frameBedMinutes +
+        ottomanBedMinutes +
+        bunkBedMinutes +
+        cotMinutes +
+        diningTableMinutes +
+        wardrobeMinutes +
+        customMinutes +
+        uprightPianoMinutes +
+        grandPianoMinutes +
+        grandfatherClockMinutes +
+        applianceMinutes +
+        crateMinutes +
+        loftMinutes +
+        exportWrapMinutes;
 
     const unloadMinutes =
-        (state.special.frameBeds * 15) +
-        (state.special.ottomanBeds * 30) +
-        (state.special.bunkBeds * 30) +
-        (state.special.cots * 15) +
-        (state.special.diningTables * 15) +
-(state.special.wardrobes * 30) +
-(state.special.customMinutes > 0 ? state.special.customMinutes : 0) +
-        (state.special.upright * 25) +
-        (state.special.grand * 60) +
-        (state.special.clock * 30) +
-        (state.special.appliance * 30) +
-        (state.special.crate * 15);
+        frameBedMinutes +
+        ottomanBedMinutes +
+        bunkBedMinutes +
+        cotMinutes +
+        diningTableMinutes +
+        wardrobeMinutes +
+        customMinutes +
+        uprightPianoMinutes +
+        grandPianoMinutes +
+        grandfatherClockMinutes +
+        applianceMinutes +
+        crateMinutes;
 
     const totalHours = (loadMinutes + unloadMinutes) / 60;
 
@@ -15956,24 +15995,24 @@ function calcSpecialLabour(state) {
         collectionToDeliveryHours: round2(collectionToDeliveryMinutes / 60),
         deliveryToDepotHours: round2(deliveryToDepotMinutes / 60),
         breakdown: {
-            frameBeds: round2((state.special.frameBeds * 30) / 60),
-            ottomanBeds: round2((state.special.ottomanBeds * 60) / 60),
+            frameBeds: round2((frameBedMinutes * 2) / 60),
+            ottomanBeds: round2((ottomanBedMinutes * 2) / 60),
             divanBeds: 0,
             electricBeds: 0,
-            bunkBeds: round2((state.special.bunkBeds * 60) / 60),
-            cots: round2((state.special.cots * 30) / 60),
-            diningTables: round2((state.special.diningTables * 30) / 60),
-wardrobes: round2((state.special.wardrobes * 60) / 60),
-custom: round2(((state.special.customMinutes > 0 ? state.special.customMinutes * 2 : 0)) / 60),
-            upright: round2((state.special.upright * 50) / 60),
-            grand: round2((state.special.grand * 120) / 60),
-            clock: round2((state.special.clock * 60) / 60),
-            appliance: round2((state.special.appliance * 60) / 60),
-            crate: round2((state.special.crate * 30) / 60),
-            loft: round2(((state.loftVol / 100) * 20) / 60),
-            exportWrap: round2(((extraExportWrapVol / 100) * 25) / 60),
+            bunkBeds: round2((bunkBedMinutes * 2) / 60),
+            cots: round2((cotMinutes * 2) / 60),
+            diningTables: round2((diningTableMinutes * 2) / 60),
+            wardrobes: round2((wardrobeMinutes * 2) / 60),
+            custom: round2((customMinutes * 2) / 60),
+            upright: round2((uprightPianoMinutes * 2) / 60),
+            grand: round2((grandPianoMinutes * 2) / 60),
+            clock: round2((grandfatherClockMinutes * 2) / 60),
+            appliance: round2((applianceMinutes * 2) / 60),
+            crate: round2((crateMinutes * 2) / 60),
+            loft: round2(loftMinutes / 60),
+            exportWrap: round2(exportWrapMinutes / 60),
             transit: 0,
-            includedExportWrapVol
+            includedExportWrapVol: includedExportWrapVol
         }
     };
 }
