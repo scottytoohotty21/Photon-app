@@ -17562,7 +17562,7 @@ if (
         <div class="special-rhs-grid">
             <div class="special-rhs-card">
                 <div class="special-rhs-title">Dismantle & Reassemble</div>
-                <div class="special-rhs-subtitle">${special.breakdown.wardrobes.toFixed(2)} wardrobe hrs included in this section</div>
+                <div class="special-rhs-subtitle">${formatHoursAndMinutes(special.breakdown.wardrobes)} wardrobe time included in this section</div>
 
                 <div class="special-rhs-group-title">Beds</div>
                 ${renderList(bedRows, "No bed items recorded")}
@@ -17599,19 +17599,19 @@ if (
                 <div class="special-rhs-title">Time Breakdown</div>
                 <div class="special-rhs-subtitle">Calculated from inventory and manual extras</div>
 
-                <div class="special-rhs-line">Beds: ${(special.breakdown.frameBeds + special.breakdown.ottomanBeds + special.breakdown.divanBeds + special.breakdown.bunkBeds + special.breakdown.cots).toFixed(2)} hrs</div>
-                <div class="special-rhs-line">Wardrobes: ${special.breakdown.wardrobes.toFixed(2)} hrs</div>
-                <div class="special-rhs-line">Pianos: ${(special.breakdown.upright + special.breakdown.grand).toFixed(2)} hrs</div>
-                <div class="special-rhs-line">Grandfather clocks: ${special.breakdown.clock.toFixed(2)} hrs</div>
-                <div class="special-rhs-line">Appliances: ${special.breakdown.appliance.toFixed(2)} hrs</div>
-                <div class="special-rhs-line">Crating: ${special.breakdown.crate.toFixed(2)} hrs</div>
-                <div class="special-rhs-line">Loft effects: ${special.breakdown.loft.toFixed(2)} hrs</div>
-                <div class="special-rhs-line">Export wrap: ${special.breakdown.exportWrap.toFixed(2)} hrs</div>
-                <div class="special-rhs-line">Custom: ${special.breakdown.custom.toFixed(2)} hrs</div>
+                <div class="special-rhs-line">Beds: ${formatHoursAndMinutes(special.breakdown.frameBeds + special.breakdown.ottomanBeds + special.breakdown.divanBeds + special.breakdown.bunkBeds + special.breakdown.cots)}</div>
+<div class="special-rhs-line">Wardrobes: ${formatHoursAndMinutes(special.breakdown.wardrobes)}</div>
+<div class="special-rhs-line">Pianos: ${formatHoursAndMinutes(special.breakdown.upright + special.breakdown.grand)}</div>
+<div class="special-rhs-line">Grandfather clocks: ${formatHoursAndMinutes(special.breakdown.clock)}</div>
+<div class="special-rhs-line">Appliances: ${formatHoursAndMinutes(special.breakdown.appliance)}</div>
+<div class="special-rhs-line">Crating: ${formatHoursAndMinutes(special.breakdown.crate)}</div>
+<div class="special-rhs-line">Loft effects: ${formatHoursAndMinutes(special.breakdown.loft)}</div>
+<div class="special-rhs-line">Export wrap: ${formatHoursAndMinutes(special.breakdown.exportWrap)}</div>
+<div class="special-rhs-line">Custom: ${formatHoursAndMinutes(special.breakdown.custom)}</div>
 
-                <div class="special-rhs-total">
-                    Total special labour: ${special.specialHours.toFixed(2)} hrs
-                </div>
+<div class="special-rhs-total">
+    Total special labour: ${formatHoursAndMinutes(special.specialHours)}
+</div>
             </div>
         </div>
     `;
