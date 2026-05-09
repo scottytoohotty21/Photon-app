@@ -17316,6 +17316,16 @@ const loadingVolumeCapacity = loadingMorningRate > 0
 const requiredLoadingVolume = loadingMorningRate > 0
     ? round2(required.Load * loadingMorningRate)
     : 0;
+
+const unloadingRate = Number(state.unloadRate || 0);
+
+const unloadingVolumeCapacity = unloadingRate > 0
+    ? round2(allocated.Unload * unloadingRate)
+    : 0;
+
+const requiredUnloadingVolume = unloadingRate > 0
+    ? round2(required.Unload * unloadingRate)
+    : 0;
     const passIcon = "✓";
 const failIcon = "✕";
 
@@ -17352,6 +17362,15 @@ const results = Object.keys(required).map(task => {
         Math.round(loadingVolumeCapacity) +
         " cuft / Required: " +
         Math.round(requiredLoadingVolume) +
+        " cuft"
+});
+
+results.push({
+    type: unloadingVolumeCapacity + 0.01 >= requiredUnloadingVolume ? "ok" : "error",
+    text: "Unloading Volume Capacity: " +
+        Math.round(unloadingVolumeCapacity) +
+        " cuft / Required: " +
+        Math.round(requiredUnloadingVolume) +
         " cuft"
 });
 
