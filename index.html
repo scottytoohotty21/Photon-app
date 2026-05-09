@@ -15552,19 +15552,20 @@ function getLoadingProfile(loadingVariant, loadingScenario) {
     const scenario = String(loadingScenario || "direct");
 
     if (scenario === "exStore") {
-        return {
-            label: "Ex Store",
-            loadingApplies: false,
-            unloadingApplies: true,
+    return {
+        label: "Ex Store",
+        loadingApplies: false,
+        unloadingApplies: true,
 
-            // Loading not applicable
-            morningEquivalentRate: 0,
-            pmAfterAmEquivalentRate: 0,
+        // Loading not applicable
+        morningEquivalentRate: 0,
+        pmAfterAmEquivalentRate: 0,
 
-            // Unloading rate for ex-store delivery
-            unloadRate: 115
-        };
-    }
+        // Ex-store unloading rates
+        unloadRate: 115,
+        pmAfterAmUnloadRate: 91
+    };
+}
 
     if (scenario === "intoStore") {
         if (variant === "Slow") {
@@ -16232,6 +16233,49 @@ function getPlannerLoadEquivalentHours(day, taskHours, state) {
         const preLoadTravelHours = getFirstRowLegHours(day);
         const amWindowHours = Math.max(0, 5 - preLoadTravelHours);
 
+        const amHours = Math.min(usableTaskHours, amWindowHours);
+        const pmHours = Math.max(0, usableTaskHours - amHours);
+
+        return amHours + (pmHours * pmMultiplier);
+    }
+
+    return usableTaskHours;
+}
+
+function getPlannerUnloadEquivalentHours(day, taskHours, state) {
+    const usableTaskHours = Math.max(0, Number(taskHours || 0));
+
+    const loadingScenario = String(state && state.loadingScenario ? state.loadingScenario : "");
+    const loadingProfile = state && state.loadingProfile ? state.loadingProfile : {};
+
+    const mainUnloadRate = Number(state && state.unloadRate ? state.unloadRate : 0);
+    const pmUnloadRate = Number(loadingProfile.pmAfterAmUnloadRate || mainUnloadRate || 0);
+
+    /*
+        Only apply split unloading rate to ex-store for now.
+        Other move types keep existing unloading behaviour.
+    */
+    if (loadingScenario !== "exStore") {
+        return getCompletionAdjustedCapacity(day, "unload", usableTaskHours, state);
+    }
+
+    if (!mainUnloadRate || mainUnloadRate <= 0) {
+        return usableTaskHours;
+    }
+
+    const pmMultiplier = pmUnloadRate > 0 ? pmUnloadRate / mainUnloadRate : 1;
+    const dayPart = String(day.dayPart || "Full Day");
+
+    if (dayPart === "AM") {
+        return usableTaskHours;
+    }
+
+    if (dayPart === "PM") {
+        return usableTaskHours * pmMultiplier;
+    }
+
+    if (dayPart === "Full Day") {
+        const amWindowHours = 5;
         const amHours = Math.min(usableTaskHours, amWindowHours);
         const pmHours = Math.max(0, usableTaskHours - amHours);
 
@@ -17401,10 +17445,10 @@ function calcScheduleValidation(packing, loading, unloading, special, state){
 }
 
             if (taskMode === "unload") {
-                const usableHours = getCompletionAdjustedCapacity(day, "unload", taskHours, state);
-                allocated.Unload += men * usableHours;
-                return;
-            }
+    const equivalentUnloadHours = getPlannerUnloadEquivalentHours(day, taskHours, state);
+    allocated.Unload += men * equivalentUnloadHours;
+    return;
+}
 
             if (taskMode === "pack_load") {
     const rowManHours = men * taskHours;
