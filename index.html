@@ -16192,26 +16192,32 @@ function getPlannerLoadEquivalentHours(day, taskHours, state) {
     const completionWindow = String(day.completionWindow || "None");
     const dayPart = String(day.dayPart || "Full Day");
 
+    /*
+        Completion day rule:
+        Loading must finish by 1pm.
+        Depot-to-collection travel reduces the available loading window.
+        No PM loading capacity counts.
+    */
     if (completionWindow === "Completion Day") {
         return getCompletionAdjustedCapacity(day, "load", usableTaskHours, state);
     }
 
-    if (dayPart === "AM") {
-        return usableTaskHours;
-    }
+    /*
+        Normal direct loading rule:
+        First 4 net loading hours count at full loading rate.
+        Remaining loading hours count at the reduced PM-after-AM rate.
+    */
+    const fullRateLoadingHours = 4;
 
     if (dayPart === "PM") {
         return usableTaskHours * pmMultiplier;
     }
 
-    if (dayPart === "Full Day") {
-        const preLoadTravelHours = getFirstRowLegHours(day);
-        const morningWindowHours = Math.max(0, 5 - preLoadTravelHours);
+    if (dayPart === "AM" || dayPart === "Full Day") {
+        const fullRateHours = Math.min(usableTaskHours, fullRateLoadingHours);
+        const reducedRateHours = Math.max(0, usableTaskHours - fullRateHours);
 
-        const morningHours = Math.min(usableTaskHours, morningWindowHours);
-        const pmHours = Math.max(0, usableTaskHours - morningHours);
-
-        return morningHours + (pmHours * pmMultiplier);
+        return fullRateHours + (reducedRateHours * pmMultiplier);
     }
 
     return usableTaskHours;
@@ -17254,30 +17260,42 @@ function calcScheduleValidation(packing, loading, unloading, special, state){
             }
 
             if (taskMode === "pack_load") {
-                const usableHours = getCompletionAdjustedCapacity(day, "load", taskHours);
-                const rowManHours = men * usableHours;
+    const rowManHours = men * taskHours;
 
-                const packShortfall = Math.max(0, required.Pack - allocated.Pack);
-                const toPack = Math.min(rowManHours, packShortfall);
+    const packShortfall = Math.max(0, required.Pack - allocated.Pack);
+    const toPack = Math.min(rowManHours, packShortfall);
 
-                allocated.Pack += toPack;
-                allocated.Load += Math.max(0, rowManHours - toPack);
-                return;
-            }
+    const remainingRawManHours = Math.max(0, rowManHours - toPack);
+
+    const equivalentLoadHoursForWholeRow =
+        men * getPlannerLoadEquivalentHours(day, taskHours, state);
+
+    const loadEquivalentRatio = rowManHours > 0
+        ? equivalentLoadHoursForWholeRow / rowManHours
+        : 1;
+
+    allocated.Pack += toPack;
+    allocated.Load += remainingRawManHours * loadEquivalentRatio;
+    return;
+}
 
             if (taskMode === "load_unload") {
     const totalRowManHours = men * taskHours;
 
-    const maxLoadManHours =
-        men * getCompletionAdjustedCapacity(day, "load", taskHours, state);
+    const maxLoadEquivalentHours =
+        men * getPlannerLoadEquivalentHours(day, taskHours, state);
 
     const maxUnloadManHours =
         men * getCompletionAdjustedCapacity(day, "unload", taskHours, state);
 
     const loadShortfall = Math.max(0, required.Load - allocated.Load);
-    const toLoad = Math.min(loadShortfall, maxLoadManHours, totalRowManHours);
+    const toLoad = Math.min(loadShortfall, maxLoadEquivalentHours);
 
-    const remainingAfterLoad = Math.max(0, totalRowManHours - toLoad);
+    const rawLoadHoursUsed = maxLoadEquivalentHours > 0
+        ? Math.min(totalRowManHours, totalRowManHours * (toLoad / maxLoadEquivalentHours))
+        : 0;
+
+    const remainingAfterLoad = Math.max(0, totalRowManHours - rawLoadHoursUsed);
     const toUnload = Math.min(maxUnloadManHours, remainingAfterLoad);
 
     allocated.Load += toLoad;
