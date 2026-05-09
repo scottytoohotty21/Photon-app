@@ -14336,22 +14336,11 @@ const SPECIAL_MINUTES = {
 const DAY_PARTS = ["Full Day", "AM", "PM"];
 
 const TASK_OPTIONS = [
-    "Pack & Prepare",
-    "Pack fragiles & breakables",
-    "Pack and part Load",
-    "Pack, Load & Deliver",
-    "Commence loading",
-    "Continue loading",
-    "Complete loading",
+    "Pack",
     "Load",
-    "Load and Deliver",
-    "Load & Travel",
     "Travel",
     "Deliver",
-    "Continue Delivery",
-    "Complete delivery",
-    "Deliver and Crew Return",
-    "Unpack"
+    "Pack + Load"
 ];
 
 const TRAVEL_PATTERN_OPTIONS = [
@@ -16123,12 +16112,13 @@ function optionHtml(options, selected){
 function getPlannerTaskMode(day) {
     const task = String(day && day.task ? day.task : "").trim();
 
-    if (
-        task === "Pack & Prepare" ||
-        task === "Pack fragiles & breakables"
-    ) {
-        return "pack";
-    }
+   if (
+    task === "Pack" ||
+    task === "Pack & Prepare" ||
+    task === "Pack fragiles & breakables"
+) {
+    return "pack";
+}
 
     if (
         task === "Commence loading" ||
@@ -16150,9 +16140,12 @@ function getPlannerTaskMode(day) {
         return "unload";
     }
 
-    if (task === "Pack and part Load") {
-        return "pack_load";
-    }
+    if (
+    task === "Pack + Load" ||
+    task === "Pack and part Load"
+) {
+    return "pack_load";
+}
 
     if (
         task === "Pack, Load & Deliver" ||
@@ -16298,7 +16291,6 @@ function autoBuildScheduleDays() {
     const packMode = photonFeed.packOption || "none";
 
     const newRows = [];
-    const moveGroupId = createId();
 
     const collectionId = seq && Array.isArray(seq.collections) && seq.collections.length
         ? String(seq.collections[0])
@@ -16307,38 +16299,60 @@ function autoBuildScheduleDays() {
     const deliveryId = seq && Array.isArray(seq.deliveries) && seq.deliveries.length
         ? String(seq.deliveries[0])
         : "";
-        const selectedOperatingBranch = getOperatingBranchFromManualScheduleRows() || "";
+
+    const selectedOperatingBranch = getOperatingBranchFromManualScheduleRows() || "";
 
     const hasPacking =
         packMode === "cg" ||
         packMode === "full";
 
     if (hasPacking) {
-    newRows.push({
-        id: createId(),
-        groupId: createId(),
-        dayPart: "Full Day",
-        task: packMode === "cg" ? "Pack fragiles & breakables" : "Pack & Prepare",
-        completionWindow: "None",
-        date: "",
-        men: 2,
-        vans: 1,
-        hours: 8,
-        nightsOut: false,
-        overtimeHours: 0,
-        operatingBranch: selectedOperatingBranch,
-        legs: [
-            createEmptyScheduleLeg("Depot", collectionId, 30),
-            createEmptyScheduleLeg(collectionId, "Depot", 30)
-        ]
-    });
-}
+        const packGroupId = createId();
+
+        newRows.push({
+            id: createId(),
+            groupId: packGroupId,
+            dayPart: "AM",
+            task: "Pack",
+            completionWindow: "None",
+            date: "",
+            men: 2,
+            vans: 1,
+            hours: 8,
+            nightsOut: false,
+            overtimeHours: 0,
+            operatingBranch: selectedOperatingBranch,
+            legs: [
+                createEmptyScheduleLeg("Depot", collectionId, 30)
+            ]
+        });
+
+        newRows.push({
+            id: createId(),
+            groupId: packGroupId,
+            dayPart: "PM",
+            task: "Pack",
+            completionWindow: "None",
+            date: "",
+            men: 2,
+            vans: 1,
+            hours: 8,
+            nightsOut: false,
+            overtimeHours: 0,
+            operatingBranch: selectedOperatingBranch,
+            legs: [
+                createEmptyScheduleLeg(collectionId, "Depot", 30)
+            ]
+        });
+    }
+
+    const moveGroupId = createId();
 
     if (moveMode === "intoStore") {
         newRows.push({
             id: createId(),
             groupId: moveGroupId,
-            dayPart: "Full Day",
+            dayPart: "AM",
             task: "Load",
             completionWindow: "None",
             date: "",
@@ -16346,10 +16360,27 @@ function autoBuildScheduleDays() {
             vans: 1,
             hours: 8,
             nightsOut: false,
-overtimeHours: 0,
-operatingBranch: selectedOperatingBranch,
-legs: [
-                createEmptyScheduleLeg("Depot", collectionId, 30),
+            overtimeHours: 0,
+            operatingBranch: selectedOperatingBranch,
+            legs: [
+                createEmptyScheduleLeg("Depot", collectionId, 30)
+            ]
+        });
+
+        newRows.push({
+            id: createId(),
+            groupId: moveGroupId,
+            dayPart: "PM",
+            task: "Load",
+            completionWindow: "None",
+            date: "",
+            men: 2,
+            vans: 1,
+            hours: 8,
+            nightsOut: false,
+            overtimeHours: 0,
+            operatingBranch: selectedOperatingBranch,
+            legs: [
                 createEmptyScheduleLeg(collectionId, deliveryId, 30)
             ]
         });
@@ -16357,17 +16388,35 @@ legs: [
         newRows.push({
             id: createId(),
             groupId: moveGroupId,
-            dayPart: "Full Day",
+            dayPart: "AM",
             task: "Deliver",
             completionWindow: "None",
             date: "",
             men: 2,
             vans: 1,
             hours: 8,
-           nightsOut: false,
-overtimeHours: 0,
-operatingBranch: selectedOperatingBranch,
-legs: [
+            nightsOut: false,
+            overtimeHours: 0,
+            operatingBranch: selectedOperatingBranch,
+            legs: [
+                createEmptyScheduleLeg("Depot", collectionId, 30)
+            ]
+        });
+
+        newRows.push({
+            id: createId(),
+            groupId: moveGroupId,
+            dayPart: "PM",
+            task: "Deliver",
+            completionWindow: "None",
+            date: "",
+            men: 2,
+            vans: 1,
+            hours: 8,
+            nightsOut: false,
+            overtimeHours: 0,
+            operatingBranch: selectedOperatingBranch,
+            legs: [
                 createEmptyScheduleLeg(collectionId, deliveryId, 30),
                 createEmptyScheduleLeg(deliveryId, "Depot", 30)
             ]
@@ -16376,18 +16425,35 @@ legs: [
         newRows.push({
             id: createId(),
             groupId: moveGroupId,
-            dayPart: "Full Day",
-            task: "Load and Deliver",
+            dayPart: "AM",
+            task: "Load",
             completionWindow: "None",
             date: "",
             men: 2,
             vans: 1,
             hours: 8,
             nightsOut: false,
-overtimeHours: 0,
-operatingBranch: selectedOperatingBranch,
-legs: [
-                createEmptyScheduleLeg("Depot", collectionId, 30),
+            overtimeHours: 0,
+            operatingBranch: selectedOperatingBranch,
+            legs: [
+                createEmptyScheduleLeg("Depot", collectionId, 30)
+            ]
+        });
+
+        newRows.push({
+            id: createId(),
+            groupId: moveGroupId,
+            dayPart: "PM",
+            task: "Deliver",
+            completionWindow: "None",
+            date: "",
+            men: 2,
+            vans: 1,
+            hours: 8,
+            nightsOut: false,
+            overtimeHours: 0,
+            operatingBranch: selectedOperatingBranch,
+            legs: [
                 createEmptyScheduleLeg(collectionId, deliveryId, 30),
                 createEmptyScheduleLeg(deliveryId, "Depot", 30)
             ]
@@ -16453,11 +16519,23 @@ function updateScheduleOperatingBranchForAllRows(branchValue) {
 function addScheduleDay() {
     const newGroupId = createId();
 
+    const seq = getActiveSequenceRecord();
+
+    const collectionId = seq && Array.isArray(seq.collections) && seq.collections.length
+        ? String(seq.collections[0])
+        : "";
+
+    const deliveryId = seq && Array.isArray(seq.deliveries) && seq.deliveries.length
+        ? String(seq.deliveries[0])
+        : "";
+
+    const selectedOperatingBranch = getOperatingBranchFromManualScheduleRows() || "";
+
     manualSchedule.push({
         id: createId(),
         groupId: newGroupId,
-        dayPart: "Full Day",
-        task: "Load and Deliver",
+        dayPart: "AM",
+        task: "Load",
         completionWindow: "None",
         date: "",
         men: 2,
@@ -16465,9 +16543,28 @@ function addScheduleDay() {
         hours: 8,
         nightsOut: false,
         overtimeHours: 0,
-        operatingBranch: getOperatingBranchFromManualScheduleRows() || "",
-legs: [
-            createEmptyScheduleLeg("Depot", "", 0)
+        operatingBranch: selectedOperatingBranch,
+        legs: [
+            createEmptyScheduleLeg("Depot", collectionId, 30)
+        ]
+    });
+
+    manualSchedule.push({
+        id: createId(),
+        groupId: newGroupId,
+        dayPart: "PM",
+        task: "Deliver",
+        completionWindow: "None",
+        date: "",
+        men: 2,
+        vans: 1,
+        hours: 8,
+        nightsOut: false,
+        overtimeHours: 0,
+        operatingBranch: selectedOperatingBranch,
+        legs: [
+            createEmptyScheduleLeg(collectionId, deliveryId, 30),
+            createEmptyScheduleLeg(deliveryId, "Depot", 30)
         ]
     });
 
