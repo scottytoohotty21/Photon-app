@@ -17383,19 +17383,19 @@ if (diff > 0.5) {
 
        results.push({
     type: loadingVolumeCapacity + 0.01 >= requiredLoadingVolume ? "ok" : "error",
-    text: "Loading Volume Capacity: " +
-        Math.round(loadingVolumeCapacity) +
-        " cuft / Required: " +
-        Math.round(requiredLoadingVolume) +
+    text: "Loading Capacity: " +
+        Math.round(loadingVolumeCapacity).toLocaleString("en-GB") +
+        " / " +
+        Math.round(requiredLoadingVolume).toLocaleString("en-GB") +
         " cuft"
 });
 
 results.push({
     type: unloadingVolumeCapacity + 0.01 >= requiredUnloadingVolume ? "ok" : "error",
-    text: "Unloading Volume Capacity: " +
-        Math.round(unloadingVolumeCapacity) +
-        " cuft / Required: " +
-        Math.round(requiredUnloadingVolume) +
+    text: "Unloading Capacity: " +
+        Math.round(unloadingVolumeCapacity).toLocaleString("en-GB") +
+        " / " +
+        Math.round(requiredUnloadingVolume).toLocaleString("en-GB") +
         " cuft"
 });
 
@@ -17688,13 +17688,13 @@ document.getElementById("summaryUnloadCompletion").textContent = unloading.compl
         `Loft effects volume is used for extra loft labour only and does not change total move volume. ` +
         `${state.loadingScenario === "exStore"
             ? "This move type is treated as delivery only, so loading hours are not applied. "
-            : "Loading uses total volume ÷ " + state.loadRate + " cuft per man-hour, then adds load-side specials. "}` +
-        `${state.loadingScenario === "intoStore"
-            ? "This move type is treated as loading only into store, so delivery-side logic should be interpreted separately. "
-            : ""}` +
+            : state.loadingScenario === "intoStore"
+                ? "This move type is treated as loading into store only, using the selected loading profile. "
+                : "Direct loading uses the selected loading profile. AM loading uses the main loading rate, and PM loading is validated using the reduced after-AM rate where applicable. "}` +
         `Unloading uses total volume ÷ ${state.unloadRate} cuft per man-hour, then adds unload-side specials. ` +
         `Travel is taken from the travel legs added to each planner row, and is deducted before net working time is validated. ` +
-       `One standard bed and 50 cuft of export wrap are treated as already included before extra special time is added.`;
+        `On completion-day direct moves, loading must be completed by 1pm after depot-to-collection travel is deducted. ` +
+        `One standard bed and 50 cuft of export wrap are treated as already included before extra special time is added.`;
 
     const specialTextEl = document.getElementById("specialText");
 if (specialTextEl) {
