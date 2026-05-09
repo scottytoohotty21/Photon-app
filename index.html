@@ -15808,6 +15808,25 @@ function round2(value){
 function round1(value){
     return Math.round((Number(value || 0) + Number.EPSILON) * 10) / 10;
 }
+function formatHoursAndMinutes(hours) {
+    const totalMinutes = Math.round(Number(hours || 0) * 60);
+    const hrs = Math.floor(totalMinutes / 60);
+    const mins = totalMinutes % 60;
+
+    if (hrs > 0 && mins > 0) {
+        return hrs + " hr" + (hrs === 1 ? "" : "s") + " " + mins + " mins";
+    }
+
+    if (hrs > 0) {
+        return hrs + " hr" + (hrs === 1 ? "" : "s");
+    }
+
+    if (mins > 0) {
+        return mins + " mins";
+    }
+
+    return "0 mins";
+}
 
 function getPackModeLabel(packOption){
     if (packOption === "none") return "No";
@@ -17346,12 +17365,18 @@ const results = Object.keys(required).map(task => {
     }
 
     if (cap + 0.01 < req) {
-        return { type: "error", text: `${failIcon} ${label}: Short by ${Math.abs(diff).toFixed(2)} hrs` };
-    }
+    return {
+        type: "error",
+        text: `${failIcon} ${label}: Short by ${formatHoursAndMinutes(Math.abs(diff))}`
+    };
+}
 
-    if (diff > 0.5) {
-        return { type: "ok", text: `${passIcon} ${label}: Covered — ${diff.toFixed(2)} hrs spare` };
-    }
+if (diff > 0.5) {
+    return {
+        type: "ok",
+        text: `${passIcon} ${label}: Covered — ${formatHoursAndMinutes(diff)} spare`
+    };
+}
 
     return { type: "ok", text: `${passIcon} ${label}: Covered` };
 });
