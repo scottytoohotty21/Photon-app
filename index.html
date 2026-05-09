@@ -17305,6 +17305,17 @@ function calcScheduleValidation(packing, loading, unloading, special, state){
         });
     });
 
+const loadingMorningRate = Number(
+    loadingProfile.morningEquivalentRate || state.loadRate || 0
+);
+
+const loadingVolumeCapacity = loadingMorningRate > 0
+    ? round2(allocated.Load * loadingMorningRate)
+    : 0;
+
+const requiredLoadingVolume = loadingMorningRate > 0
+    ? round2(required.Load * loadingMorningRate)
+    : 0;
     const passIcon = "✓";
 const failIcon = "✕";
 
@@ -17335,7 +17346,16 @@ const results = Object.keys(required).map(task => {
     return { type: "ok", text: `${passIcon} ${label}: Covered` };
 });
 
-       return results;
+       results.push({
+    type: loadingVolumeCapacity + 0.01 >= requiredLoadingVolume ? "ok" : "error",
+    text: "Loading Volume Capacity: " +
+        Math.round(loadingVolumeCapacity) +
+        " cuft / Required: " +
+        Math.round(requiredLoadingVolume) +
+        " cuft"
+});
+
+return results;
 }
 
 function renderValidation(packing, loading, unloading, special, state){
