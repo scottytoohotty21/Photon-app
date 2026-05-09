@@ -17229,7 +17229,24 @@ function renderSchedulePlanner(){
     }).join("");
 }
 
+function buildLoadDebugLine(day, taskMode, men, taskHours, equivalentLoadHours, state) {
+    const loadingProfile = state && state.loadingProfile ? state.loadingProfile : {};
+    const morningRate = Number(loadingProfile.morningEquivalentRate || state.loadRate || 0);
+    const capacityCuft = morningRate > 0
+        ? Math.round(Number(equivalentLoadHours || 0) * morningRate)
+        : 0;
 
+    return [
+        "Day Part: " + String(day.dayPart || "-"),
+        "Completion: " + String(day.completionWindow || "None"),
+        "Task: " + String(day.task || "-"),
+        "Mode: " + String(taskMode || "-"),
+        "Men: " + Number(men || 0),
+        "Net Hrs: " + round2(taskHours),
+        "Effective Load Hrs: " + round2(equivalentLoadHours),
+        "Capacity: " + capacityCuft.toLocaleString("en-GB") + " cuft"
+    ].join(" | ");
+}
 function calcScheduleValidation(packing, loading, unloading, special, state){
     const loadingProfile = getLoadingProfile(state.loadingVariant, state.loadingScenario);
     const seq = getActiveSequenceRecord();
@@ -17247,6 +17264,7 @@ function calcScheduleValidation(packing, loading, unloading, special, state){
         Load: 0,
         Unload: 0
     };
+    const loadDebugLines = [];
 
     const groups = {};
 
@@ -17268,7 +17286,14 @@ function calcScheduleValidation(packing, loading, unloading, special, state){
 
             if (taskMode === "load") {
     const equivalentLoadHours = getPlannerLoadEquivalentHours(day, taskHours, state);
-    allocated.Load += men * equivalentLoadHours;
+    const rowLoadAllocation = men * equivalentLoadHours;
+
+    allocated.Load += rowLoadAllocation;
+
+    loadDebugLines.push(
+        buildLoadDebugLine(day, taskMode, men, taskHours, rowLoadAllocation, state)
+    );
+
     return;
 }
 
@@ -17293,10 +17318,16 @@ function calcScheduleValidation(packing, loading, unloading, special, state){
         ? equivalentLoadHoursForWholeRow / rowManHours
         : 1;
 
-    allocated.Pack += toPack;
-    allocated.Load += remainingRawManHours * loadEquivalentRatio;
-    return;
-}
+    const rowLoadAllocation = remainingRawManHours * loadEquivalentRatio;
+
+allocated.Pack += toPack;
+allocated.Load += rowLoadAllocation;
+
+loadDebugLines.push(
+    buildLoadDebugLine(day, taskMode, men, taskHours, rowLoadAllocation, state)
+);
+
+return;
 
             if (taskMode === "load_unload") {
     const totalRowManHours = men * taskHours;
@@ -17318,8 +17349,13 @@ function calcScheduleValidation(packing, loading, unloading, special, state){
     const toUnload = Math.min(maxUnloadManHours, remainingAfterLoad);
 
     allocated.Load += toLoad;
-    allocated.Unload += toUnload;
-    return;
+allocated.Unload += toUnload;
+
+loadDebugLines.push(
+    buildLoadDebugLine(day, taskMode, men, taskHours, toLoad, state)
+);
+
+return;
 }
         });
     });
@@ -17398,6 +17434,13 @@ results.push({
         Math.round(requiredUnloadingVolume).toLocaleString("en-GB") +
         " cuft"
 });
+
+if (loadDebugLines.length) {
+    results.push({
+        type: "warn",
+        text: "LOAD DEBUG: " + loadDebugLines.join(" || ")
+    });
+}
 
 return results;
 }
