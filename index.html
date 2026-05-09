@@ -16223,20 +16223,26 @@ function getPlannerLoadEquivalentHours(day, taskHours, state) {
 
     /*
         Normal direct loading rule:
-        First 4 net loading hours count at full loading rate.
-        Remaining loading hours count at the reduced PM-after-AM rate.
+        Anything before 1pm counts at the main loading rate.
+        Anything after 1pm counts at the reduced after-AM rate.
     */
-    const fullRateLoadingHours = 4;
+
+    if (dayPart === "AM") {
+        return usableTaskHours;
+    }
 
     if (dayPart === "PM") {
         return usableTaskHours * pmMultiplier;
     }
 
-    if (dayPart === "AM" || dayPart === "Full Day") {
-        const fullRateHours = Math.min(usableTaskHours, fullRateLoadingHours);
-        const reducedRateHours = Math.max(0, usableTaskHours - fullRateHours);
+    if (dayPart === "Full Day") {
+        const preLoadTravelHours = getFirstRowLegHours(day);
+        const amWindowHours = Math.max(0, 5 - preLoadTravelHours);
 
-        return fullRateHours + (reducedRateHours * pmMultiplier);
+        const amHours = Math.min(usableTaskHours, amWindowHours);
+        const pmHours = Math.max(0, usableTaskHours - amHours);
+
+        return amHours + (pmHours * pmMultiplier);
     }
 
     return usableTaskHours;
