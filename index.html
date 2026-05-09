@@ -17660,20 +17660,20 @@ if (summaryModeEl) {
     summaryModeEl.textContent = getPackModeLabel(state.packOption);
 }
     document.getElementById("summaryTotalVolume").textContent = totalVolume;
-    document.getElementById("summaryPackHours").textContent = packing.packHours.toFixed(2);
-    document.getElementById("summaryPackDays").textContent = packing.packDays.toFixed(1);
-    document.getElementById("summarySpecialHours").textContent = special.specialHours.toFixed(2);
-    document.getElementById("summaryLoadHours").textContent = loading.hours.toFixed(2);
-    document.getElementById("summaryLoadDays").textContent = loading.days.toFixed(1);
-    document.getElementById("summaryLoadCompletion").textContent = loading.completionCrew.toFixed(1);
+document.getElementById("summaryPackHours").textContent = formatHoursAndMinutes(packing.packHours);
+document.getElementById("summaryPackDays").textContent = packing.packDays.toFixed(1);
+document.getElementById("summarySpecialHours").textContent = formatHoursAndMinutes(special.specialHours);
+document.getElementById("summaryLoadHours").textContent = formatHoursAndMinutes(loading.hours);
+document.getElementById("summaryLoadDays").textContent = loading.days.toFixed(1);
+document.getElementById("summaryLoadCompletion").textContent = loading.completionCrew.toFixed(1);
     document.getElementById("summaryLoadRate").textContent =
     state.loadingProfile && state.loadingProfile.pmAfterAmEquivalentRate !== state.loadingProfile.morningEquivalentRate
         ? state.loadingProfile.morningEquivalentRate + " / " + state.loadingProfile.pmAfterAmEquivalentRate
         : state.loadRate;
 
-    document.getElementById("summaryUnloadHours").textContent = unloading.hours.toFixed(2);
-    document.getElementById("summaryUnloadDays").textContent = unloading.days.toFixed(1);
-    document.getElementById("summaryUnloadCompletion").textContent = unloading.completionCrew.toFixed(1);
+    document.getElementById("summaryUnloadHours").textContent = formatHoursAndMinutes(unloading.hours);
+document.getElementById("summaryUnloadDays").textContent = unloading.days.toFixed(1);
+document.getElementById("summaryUnloadCompletion").textContent = unloading.completionCrew.toFixed(1);
     document.getElementById("summaryUnloadRate").textContent = state.unloadRate;
 
     const packingRule = state.packOption === "none"
@@ -17694,7 +17694,7 @@ if (summaryModeEl) {
             : ""}` +
         `Unloading uses total volume ÷ ${state.unloadRate} cuft per man-hour, then adds unload-side specials. ` +
         `Travel is taken from the travel legs added to each planner row, and is deducted before net working time is validated. ` +
-        `Two standard beds and 50 cuft of export wrap are treated as already included before extra special time is added.`;
+       `One standard bed and 50 cuft of export wrap are treated as already included before extra special time is added.`;
 
     const specialTextEl = document.getElementById("specialText");
 if (specialTextEl) {
