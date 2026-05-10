@@ -1667,6 +1667,52 @@ button {
             border-radius: 14px;
             padding: 14px;
         }
+        .customer-responsibility-edit-row {
+    display: grid;
+    grid-template-columns: 1fr 28px;
+    gap: 6px;
+    align-items: start;
+    margin-bottom: 6px;
+}
+
+.customer-responsibility-input {
+    width: 100%;
+    min-height: 48px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    background: #f8fafc;
+    padding: 8px 9px;
+    font-size: 10px;
+    font-weight: 800;
+    color: #0f172a;
+    text-transform: none;
+    line-height: 1.35;
+    resize: vertical;
+}
+
+.customer-responsibility-delete {
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    border: 1px solid #fecaca;
+    background: #fef2f2;
+    color: #b91c1c;
+    font-size: 16px;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.customer-responsibility-add {
+    margin-top: 6px;
+    border: 1px solid #bfdbfe;
+    background: #eff6ff;
+    color: #1d4ed8;
+    border-radius: 999px;
+    padding: 7px 10px;
+    font-size: 9px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
 
         .listed-stat-label {
             font-size: 9px;
@@ -10954,14 +11000,82 @@ function buildListedSummary(items) {
         exclusionNotes: exclusionNotes
     };
 }
-function buildResponsibilitiesSummary(summary) {
+const DEFAULT_CUSTOMER_RESPONSIBILITY_NOTES = [
+    "Customer to bring all loft effects down to an accessible area prior to crew arrival, unless loft handling has been specifically agreed.",
+    "Customer to remove/unscrew wall-mounted items, fixtures and fittings prior to crew arrival, unless handyman service has been specifically agreed.",
+    "Customer to disconnect appliances prior to crew arrival, unless disconnection has been specifically requested and agreed.",
+    "Customer to uncable IT, TV, audio and media equipment prior to crew arrival.",
+    "Customer is responsible for arranging parking, permits, suspensions or access permissions unless this has been specifically requested and agreed.",
+    "Customer is responsible for transporting lithium-ion (Li-ion) batteries and any restricted/prohibited items not accepted for removal."
+];
+
+function ensureCustomerResponsibilityNotes() {
+    if (!currentJob) return [];
+
+    if (!Array.isArray(currentJob.customerResponsibilityNotes)) {
+        currentJob.customerResponsibilityNotes = DEFAULT_CUSTOMER_RESPONSIBILITY_NOTES.slice();
+    }
+
+    return currentJob.customerResponsibilityNotes;
+}
+
+function updateCustomerResponsibilityNote(index, value) {
+    if (!currentJob) return;
+
+    ensureCustomerResponsibilityNotes();
+
+    if (!currentJob.customerResponsibilityNotes[index]) return;
+
+    currentJob.customerResponsibilityNotes[index] = String(value || "");
+    saveToDevice();
+}
+
+function deleteCustomerResponsibilityNote(index) {
+    if (!currentJob) return;
+
+    ensureCustomerResponsibilityNotes();
+
+    currentJob.customerResponsibilityNotes.splice(index, 1);
+    saveToDevice();
+    renderListedInventory();
+}
+
+function addCustomerResponsibilityNote() {
+    if (!currentJob) return;
+
+    ensureCustomerResponsibilityNotes();
+
+    currentJob.customerResponsibilityNotes.push("");
+    saveToDevice();
+    renderListedInventory();
+}
+
+function buildResponsibilitiesSummary(summary, items) {
     const excludedItems = Array.isArray(summary.excludedItems) ? summary.excludedItems : [];
     const exclusionNotes = Array.isArray(summary.exclusionNotes) ? summary.exclusionNotes : [];
+    const editableNotes = ensureCustomerResponsibilityNotes();
+
+    const autoNotes = [];
+
+    const hasHandyman = Array.isArray(items) && items.some(function(entry) {
+        return entry && !entry.excluded && entry.handyman;
+    });
+
+    if (hasHandyman) {
+        autoNotes.push("Handyman required at additional cost, or client to arrange themselves prior to crew arrival.");
+    }
 
     return {
-        hasContent: excludedItems.length > 0 || exclusionNotes.length > 0,
+        hasContent:
+            excludedItems.length > 0 ||
+            exclusionNotes.length > 0 ||
+            autoNotes.length > 0 ||
+            editableNotes.length > 0,
+
         excludedItems: excludedItems,
-        exclusionNotes: exclusionNotes
+        exclusionNotes: exclusionNotes,
+        autoNotes: autoNotes,
+        editableNotes: editableNotes
     };
 }
 function buildCrewInstructionsSummary(items) {
@@ -11053,7 +11167,7 @@ function renderListedSummary(summary, materials, crewInstructions) {
     const footerBar = document.getElementById("listed-footer-summary");
     if (!footerBar) return;
 
-    const responsibilities = buildResponsibilitiesSummary(summary);
+    const responsibilities = buildResponsibilitiesSummary(summary, crewInstructions);
     const crew = buildCrewInstructionsSummary(crewInstructions);
 
     footerBar.innerHTML = `
@@ -11154,41 +11268,72 @@ function renderListedSummary(summary, materials, crewInstructions) {
         </div>
 
         <div class="listed-stat-card">
-            <div class="listed-stat-label">Customer Responsibilities</div>
-            ${
-                responsibilities.hasContent
-                    ? `
-                    <div class="space-y-3 text-[10px] font-black text-slate-900 uppercase leading-5">
-                        <div>
-                            <div class="text-slate-400 pb-1">Excluded Items (${summary.excludedCount})</div>
-                            ${
-                                responsibilities.excludedItems.length
-                                    ? responsibilities.excludedItems.map(function(item) {
-                                        return `<div>${escapeHtml(item)}</div>`;
-                                    }).join("")
-                                    : `<div class="text-slate-400 italic">None</div>`
-                            }
-                        </div>
+    <div class="listed-stat-label">Customer Responsibilities</div>
 
-                        <div>
-                            <div class="text-slate-400 pb-1">Notes / Responsibilities</div>
-                            ${
-                                responsibilities.exclusionNotes.length
-                                    ? responsibilities.exclusionNotes.map(function(note) {
-                                        return `<div>${escapeHtml(note)}</div>`;
-                                    }).join("")
-                                    : `<div class="text-slate-400 italic">None recorded</div>`
-                            }
-                        </div>
-                    </div>
-                    `
-                    : `
-                    <div class="text-[10px] font-black text-slate-400 uppercase italic">
-                        No exclusions or customer responsibility notes recorded
-                    </div>
-                    `
+    <div class="space-y-3 text-[10px] font-black text-slate-900 uppercase leading-5">
+        <div>
+            <div class="text-slate-400 pb-1">Excluded Items (${summary.excludedCount})</div>
+            ${
+                responsibilities.excludedItems.length
+                    ? responsibilities.excludedItems.map(function(item) {
+                        return `<div>${escapeHtml(item)}</div>`;
+                    }).join("")
+                    : `<div class="text-slate-400 italic">None</div>`
             }
         </div>
+
+        <div>
+            <div class="text-slate-400 pb-1">Auto Responsibilities</div>
+            ${
+                responsibilities.autoNotes.length || responsibilities.exclusionNotes.length
+                    ? `
+                        ${responsibilities.autoNotes.map(function(note) {
+                            return `<div>${escapeHtml(note)}</div>`;
+                        }).join("")}
+                        ${responsibilities.exclusionNotes.map(function(note) {
+                            return `<div>${escapeHtml(note)}</div>`;
+                        }).join("")}
+                    `
+                    : `<div class="text-slate-400 italic">None</div>`
+            }
+        </div>
+
+        <div>
+            <div class="text-slate-400 pb-1">Editable Customer Responsibility Notes</div>
+
+            ${
+                responsibilities.editableNotes.length
+                    ? responsibilities.editableNotes.map(function(note, index) {
+                        return `
+                            <div class="customer-responsibility-edit-row">
+                                <textarea
+                                    class="customer-responsibility-input"
+                                    oninput="updateCustomerResponsibilityNote(${index}, this.value)"
+                                >${escapeHtml(note)}</textarea>
+
+                                <button
+                                    type="button"
+                                    class="customer-responsibility-delete"
+                                    onclick="deleteCustomerResponsibilityNote(${index})"
+                                    title="Remove responsibility note"
+                                    aria-label="Remove responsibility note"
+                                >×</button>
+                            </div>
+                        `;
+                    }).join("")
+                    : `<div class="text-slate-400 italic">No editable responsibility notes</div>`
+            }
+
+            <button
+                type="button"
+                class="customer-responsibility-add"
+                onclick="addCustomerResponsibilityNote()"
+            >
+                + Add Responsibility Note
+            </button>
+        </div>
+    </div>
+</div>
 
         <div class="listed-stat-card">
             <div class="listed-stat-label">Crew Instructions / Responsibilities</div>
