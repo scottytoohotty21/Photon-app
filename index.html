@@ -4329,6 +4329,7 @@ Enter as: Surname, First Name
     </div>
 </section>
 <section id="content-quote" class="tab-content hidden bg-white p-5 rounded-2xl shadow-inner">
+    <div id="quote-fringe-warning" class="schedule-fringe-warning"></div>
     <div class="quote-shell">
         <div class="quote-bottom-layout">
             <div class="quote-stack quote-left-rail quote-summary-strip">
@@ -14387,6 +14388,7 @@ function renderQuoteDateMarginPricingPanel(sequenceId) {
     }
 }
 function renderQuoteTab() {
+renderQuoteFringeWarning();
     renderQuoteTabShellOnly();
     bindQuoteShellEvents();
 
@@ -17970,6 +17972,24 @@ function addUniqueFringeReason(reasons, text) {
         reasons.push(text);
     }
 }
+function isGroundFloorAddress(prop) {
+    const floor = String(prop && prop.floor ? prop.floor : "")
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, " ");
+
+    return (
+        floor === "ground" ||
+        floor === "ground floor" ||
+        floor === "ground-floor" ||
+        floor === "ground level" ||
+        floor === "g" ||
+        floor === "g/f" ||
+        floor === "gf" ||
+        floor === "0" ||
+        floor === "0th"
+    );
+}
 
 function getScheduleFringeReasonsFromAddresses() {
     const reasons = [];
@@ -18009,12 +18029,15 @@ function getScheduleFringeReasonsFromAddresses() {
             );
         }
 
-        if (
-            propertyType.includes("apartment") ||
-            propertyType.includes("flat")
-        ) {
-            addUniqueFringeReason(reasons, label + ": apartment access");
-        }
+       if (
+    (
+        propertyType.includes("apartment") ||
+        propertyType.includes("flat")
+    ) &&
+    !isGroundFloorAddress(prop)
+) {
+    addUniqueFringeReason(reasons, label + ": apartment access");
+}
     });
 
     return reasons;
@@ -18059,6 +18082,47 @@ function renderScheduleFringeWarning() {
 
     if (planner) {
         planner.classList.add("schedule-fringe-alert");
+    }
+}
+function renderQuoteFringeWarning() {
+    const warning = document.getElementById("quote-fringe-warning");
+    const quoteShell = document.querySelector(".quote-shell");
+
+    if (!warning) return;
+
+    const reasons = getScheduleFringeReasonsFromAddresses();
+
+    if (!reasons.length) {
+        warning.innerHTML = "";
+        warning.classList.remove("show");
+
+        if (quoteShell) {
+            quoteShell.classList.remove("schedule-fringe-alert");
+        }
+
+        return;
+    }
+
+    warning.innerHTML = `
+        <div class="schedule-fringe-card">
+            <div class="schedule-fringe-title">
+                Manual Review for Schedule and Costings Required — Fringe Case Detected
+            </div>
+            <div class="schedule-fringe-subtitle">
+                Triggered by:
+            </div>
+            <div class="schedule-fringe-list">
+                ${reasons.map(function(reason) {
+                    return `<div class="schedule-fringe-reason">• ${escapeHtml(reason)}</div>`;
+                }).join("")}
+            </div>
+        </div>
+    `;
+
+    warning.classList.add("show");
+
+    if (quoteShell) {
+        quoteShell.classList.add("schedule-fringe-alert");
     }
 }
 function renderScheduleCalculator(){
