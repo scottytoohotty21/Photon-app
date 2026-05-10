@@ -10598,106 +10598,6 @@ String(Array.isArray(raw.wardrobeTypes) ? raw.wardrobeTypes.join("|") : "") === 
     });
 }
 
-function getListedMoveBucket(entry) {
-    if (!entry) return "normal";
-    if (entry.excluded) return "excluded";
-    if (isListedBoxItem(entry.itemName)) return "box";
-    return "normal";
-}
-
-function moveListedEntry(entryKey, direction) {
-    if (!currentJob || !currentJob.inventory || !Array.isArray(currentJob.inventory.items)) return;
-
-    const mergedEntry = window.__listedEntryMap && window.__listedEntryMap[entryKey];
-    if (!mergedEntry) return;
-
-    direction = direction < 0 ? -1 : 1;
-
-    const roomRawItems = currentJob.inventory.items.filter(function(raw) {
-        return (
-            String(raw.sequenceId || "") === String(mergedEntry.sequenceId || "") &&
-            String(raw.deliveryId || "") === String(mergedEntry.deliveryId || "") &&
-            String(raw.roomName || "") === String(mergedEntry.roomName || "") &&
-            String(raw.floorName || "") === String(mergedEntry.floorName || "")
-        );
-    });
-
-    const mergedRoomEntries = sortListedRoomEntries(mergeListedInventoryEntries(roomRawItems));
-    const currentIndex = mergedRoomEntries.findIndex(function(entry) {
-        return getListedEntryMergeKey(entry) === entryKey;
-    });
-
-    if (currentIndex === -1) return;
-
-    const currentBucket = getListedMoveBucket(mergedEntry);
-    let targetIndex = currentIndex + direction;
-
-    while (
-        targetIndex >= 0 &&
-        targetIndex < mergedRoomEntries.length &&
-        getListedMoveBucket(mergedRoomEntries[targetIndex]) !== currentBucket
-    ) {
-        targetIndex += direction;
-    }
-
-    if (targetIndex < 0 || targetIndex >= mergedRoomEntries.length) {
-        updateInventoryDisplay("LISTED LINE CANNOT MOVE FURTHER");
-        return;
-    }
-
-    const targetEntry = mergedRoomEntries[targetIndex];
-
-    const movingRawMatches = getRawEntriesForListedEntry(mergedEntry);
-    const targetRawMatches = getRawEntriesForListedEntry(targetEntry);
-
-    if (!movingRawMatches.length || !targetRawMatches.length) return;
-
-    const movingIds = movingRawMatches.map(function(raw) {
-        return raw.id;
-    });
-
-    const targetIds = targetRawMatches.map(function(raw) {
-        return raw.id;
-    });
-
-    const remainingItems = currentJob.inventory.items.filter(function(raw) {
-        return !movingIds.includes(raw.id);
-    });
-
-    const targetFirstIndex = remainingItems.findIndex(function(raw) {
-        return targetIds.includes(raw.id);
-    });
-
-    let targetLastIndex = -1;
-    remainingItems.forEach(function(raw, index) {
-        if (targetIds.includes(raw.id)) {
-            targetLastIndex = index;
-        }
-    });
-
-    if (targetFirstIndex === -1 || targetLastIndex === -1) return;
-
-    const insertIndex = direction < 0 ? targetFirstIndex : targetLastIndex + 1;
-
-    currentJob.inventory.items = remainingItems
-        .slice(0, insertIndex)
-        .concat(movingRawMatches)
-        .concat(remainingItems.slice(insertIndex));
-
-    setInventoryReturnContextFromEntry(mergedEntry);
-    saveToDevice();
-
-    if (String(activeSeqId || "") === String(mergedEntry.sequenceId || "")) {
-        rebuildLiveInventoryFromSequence(activeSeqId);
-    }
-
-    renderListedInventory();
-    renderActionButtonStates();
-    updateUndoButtonState();
-    saveCalculatorFeedForActiveSequence();
-
-    updateInventoryDisplay(direction < 0 ? "LISTED LINE MOVED UP" : "LISTED LINE MOVED DOWN");
-}
 function deleteListedEntry(entryKey) {
     if (!currentJob || !currentJob.inventory || !Array.isArray(currentJob.inventory.items)) return;
 
@@ -11774,13 +11674,11 @@ if (entry.handyman) tags.push("HANDYMAN");
                         </td>
                         <td class="py-2 pl-1 align-top">
                             <div class="listed-row-actions">
-    <button class="listed-action-btn" onclick="moveListedEntry('${escapeHtml(entryKey)}', -1)">↑</button>
-    <button class="listed-action-btn" onclick="moveListedEntry('${escapeHtml(entryKey)}', 1)">↓</button>
-    <button class="listed-action-btn" onclick="editListedEntryQty('${escapeHtml(entryKey)}')">Qty</button>
-    <button class="listed-action-btn" onclick="editListedEntryFlags('${escapeHtml(entryKey)}')">Flags</button>
-    <button class="listed-action-btn" onclick="editListedEntryNote('${escapeHtml(entryKey)}')">Note</button>
-    <button class="listed-action-btn delete" onclick="deleteListedEntry('${escapeHtml(entryKey)}')">×</button>
-</div>
+                                <button class="listed-action-btn" onclick="editListedEntryQty('${escapeHtml(entryKey)}')">Qty</button>
+                                <button class="listed-action-btn" onclick="editListedEntryFlags('${escapeHtml(entryKey)}')">Flags</button>
+                                <button class="listed-action-btn" onclick="editListedEntryNote('${escapeHtml(entryKey)}')">Note</button>
+                                <button class="listed-action-btn delete" onclick="deleteListedEntry('${escapeHtml(entryKey)}')">×</button>
+                            </div>
                         </td>
                     </tr>
                 `;
