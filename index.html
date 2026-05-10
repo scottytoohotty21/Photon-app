@@ -12531,7 +12531,7 @@ function buildSampleAvailabilityRefreshData() {
     };
 }
 
-function refreshAvailabilityCacheSample() {
+async function refreshAvailabilityCacheSample() {
     const sampleData = buildSampleAvailabilityRefreshData();
 
     saveAvailabilityCache(sampleData);
@@ -12546,7 +12546,7 @@ function refreshAvailabilityCacheSample() {
         updateQuoteCommercialDisplays(String(seq.id));
     }
 
-    alert("Sample availability refreshed.");
+    await appAlert("Sample availability refreshed.", "Availability Refreshed");
 }
 const QUOTE_MANDATORY_LABELS = ["Vans", "Crew", "Mileage", "Consumables", "Cartons", "Export Wrap", "Nights Out"];
 const QUOTE_PRICING_DEFAULTS = [
@@ -13389,7 +13389,7 @@ function updateQuoteAvailabilityDate(sequenceId, dateId, field, value) {
     updateQuoteCommercialDisplays(sequenceId);
 }
 
-function refreshQuoteAvailabilityFromLocalTable(sequenceId) {
+async function refreshQuoteAvailabilityFromLocalTable(sequenceId) {
     const pricing = getAvailabilityPricingState(sequenceId);
     if (!pricing) return;
 
@@ -13409,10 +13409,16 @@ function refreshQuoteAvailabilityFromLocalTable(sequenceId) {
     renderQuoteTab();
 
     if (matchedCount === 0) {
-        alert("No availability matches found in the local table yet. You can still select the bands manually.");
-    } else {
-        alert("Availability refreshed for " + matchedCount + " date row(s).");
-    }
+    await appAlert(
+        "No availability matches found in the local table yet. You can still select the bands manually.",
+        "No Availability Matches"
+    );
+} else {
+    await appAlert(
+        "Availability refreshed for " + matchedCount + " date row(s).",
+        "Availability Refreshed"
+    );
+}
 }
 
 function getHighestAvailabilityBand(dates) {
@@ -14002,7 +14008,7 @@ function handleQuoteNotesChange(value) {
     saveToDevice();
 }
 
-function handleQuoteCreateQuote() {
+async function handleQuoteCreateQuote() {
     const seq = getQuoteSelectedSequence();
     if (!seq) return;
 
@@ -14063,7 +14069,7 @@ QUOTE NOTES
 ${state.quoteNotes || "None"}
 `;
 
-    alert(quoteText);
+    await appAlert(quoteText, "Quote Summary");
 }
 function pulseQuoteActionButton(buttonEl) {
     if (!buttonEl) return;
@@ -14082,7 +14088,7 @@ function pulseQuoteActionButton(buttonEl) {
         buttonEl.classList.remove("quote-action-pulse-hit");
     }, 450);
 }
-function applyAvailabilitySuggestedPrice(sequenceId, suggestedPrice, buttonEl) {
+async function applyAvailabilitySuggestedPrice(sequenceId, suggestedPrice, buttonEl) {
     const state = ensureQuoteSequenceState(sequenceId);
     const availability = getAvailabilityPricingState(sequenceId);
 
@@ -14091,9 +14097,12 @@ function applyAvailabilitySuggestedPrice(sequenceId, suggestedPrice, buttonEl) {
     const cleanPrice = Number(suggestedPrice || 0);
 
     if (!cleanPrice || cleanPrice <= 0) {
-        alert("No suggested price available yet. Check the cost base and availability margin.");
-        return;
-    }
+    await appAlert(
+        "No suggested price available yet. Check the cost base and availability margin.",
+        "Suggested Price Unavailable"
+    );
+    return;
+}
 
     state.customerPrice = cleanPrice;
     availability.appliedSuggestedPrice = cleanPrice;
@@ -14118,7 +14127,7 @@ function applyAvailabilitySuggestedPrice(sequenceId, suggestedPrice, buttonEl) {
     pulseQuoteActionButton(buttonEl);
 }
 
-function handleQuoteSavePricing() {
+async function handleQuoteSavePricing() {
     const seq = getQuoteSelectedSequence();
     if (!seq) return;
 
@@ -14129,7 +14138,7 @@ function handleQuoteSavePricing() {
     saveToDevice();
     updateQuoteCommercialDisplays(sequenceId);
 
-    alert("Pricing saved.");
+    await appAlert("Pricing saved.", "Pricing Saved");
 }
 
 function bindQuoteShellEvents() {
