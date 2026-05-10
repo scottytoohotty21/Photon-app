@@ -11024,7 +11024,12 @@ function updateCustomerResponsibilityNote(index, value) {
 
     ensureCustomerResponsibilityNotes();
 
-    if (!currentJob.customerResponsibilityNotes[index]) return;
+    if (
+        index < 0 ||
+        index >= currentJob.customerResponsibilityNotes.length
+    ) {
+        return;
+    }
 
     currentJob.customerResponsibilityNotes[index] = String(value || "");
     saveToDevice();
@@ -11057,13 +11062,34 @@ function buildResponsibilitiesSummary(summary, items) {
 
     const autoNotes = [];
 
-    const hasHandyman = Array.isArray(items) && items.some(function(entry) {
-        return entry && !entry.excluded && entry.handyman;
-    });
+    const handymanItems = [];
 
-    if (hasHandyman) {
-        autoNotes.push("Handyman required at additional cost, or client to arrange themselves prior to crew arrival.");
-    }
+if (Array.isArray(items)) {
+    items.forEach(function(entry) {
+        if (!entry || entry.excluded || !entry.handyman) return;
+
+        const qty = Number(entry.qty || 0);
+        const itemName = String(entry.itemName || "Item").trim();
+
+        const roomName =
+            entry.roomName ||
+            entry.room ||
+            entry.location ||
+            "";
+
+        const line =
+            (roomName ? roomName + ": " : "") +
+            (qty ? qty + " x " : "") +
+            itemName;
+
+        handymanItems.push(line);
+    });
+}
+
+if (handymanItems.length) {
+    autoNotes.push("Handyman required at additional cost, or client to arrange themselves prior to crew arrival.");
+    autoNotes.push("Handyman required for: " + handymanItems.join(", ") + ".");
+}
 
     return {
         hasContent:
