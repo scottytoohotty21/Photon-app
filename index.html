@@ -5483,10 +5483,10 @@ async function handleAddressPhotoSelected(event, propId) {
     ensurePropertyPhotoShape(prop);
 
     if (prop.photos.access.length >= 4) {
-        alert("Maximum 4 access photos per address.");
-        input.value = "";
-        return;
-    }
+    await appAlert("Maximum 4 access photos per address.", "Photo Limit");
+    input.value = "";
+    return;
+}
 
     try {
         const fullImage = await compressImageFile(file, 1600, 0.78);
@@ -5517,8 +5517,8 @@ async function handleAddressPhotoSelected(event, propId) {
         saveToDevice();
         renderAddressUI();
     } catch (err) {
-        alert("Photo could not be saved. Please try again.");
-    }
+    await appAlert("Photo could not be saved. Please try again.", "Photo Error");
+}
 
     input.value = "";
 }
@@ -5535,9 +5535,9 @@ async function openPhotoViewModal(photoId, title) {
         const photoRecord = await getPhotoBlobFromIndexedDb(photoId);
 
         if (!photoRecord || !photoRecord.blob) {
-            alert("Photo could not be loaded on this device.");
-            return;
-        }
+    await appAlert("Photo could not be loaded on this device.", "Photo Missing");
+    return;
+}
 
         if (activePhotoObjectUrl) {
             URL.revokeObjectURL(activePhotoObjectUrl);
@@ -5554,8 +5554,8 @@ async function openPhotoViewModal(photoId, title) {
 
         overlay.style.display = "flex";
     } catch (err) {
-        alert("Photo could not be opened.");
-    }
+    await appAlert("Photo could not be opened.", "Photo Error");
+}
 }
 
 function closePhotoViewModal() {
@@ -9182,13 +9182,13 @@ function parseConditionReportValue(value) {
 }
 let activeInventoryPhotoRawEntryId = "";
 
-function openInventoryPhotosModal() {
+async function openInventoryPhotosModal() {
     const rawEntry = getLastRawInventoryEntry();
 
     if (!rawEntry || rawEntry.kind === "note") {
-        alert("Add or select an inventory item before adding photos.");
-        return;
-    }
+    await appAlert("Add or select an inventory item before adding photos.", "Item Required");
+    return;
+}
 
     activeInventoryPhotoRawEntryId = rawEntry.id;
 
@@ -9280,19 +9280,18 @@ async function handleInventoryPhotoSelected(event) {
     const rawEntry = getRawInventoryEntryById(activeInventoryPhotoRawEntryId);
 
     if (!rawEntry) {
-        alert("Selected inventory item could not be found.");
-        input.value = "";
-        return;
-    }
+    await appAlert("Selected inventory item could not be found.", "Item Missing");
+    input.value = "";
+    return;
+}
 
     ensureRawEntryPhotoShape(rawEntry);
 
     if (rawEntry.photos.item.length >= 4) {
-        alert("Maximum 4 photos per inventory item.");
-        input.value = "";
-        return;
-    }
-
+    await appAlert("Maximum 4 photos per inventory item.", "Photo Limit");
+    input.value = "";
+    return;
+}
     try {
         const fullImage = await compressImageFile(file, 1600, 0.78);
         const thumbImage = await compressImageFile(file, 320, 0.72);
@@ -9327,8 +9326,8 @@ async function handleInventoryPhotoSelected(event) {
 
         renderInventoryPhotoList(rawEntry);
     } catch (err) {
-        alert("Photo could not be saved. Please try again.");
-    }
+    await appAlert("Photo could not be saved. Please try again.", "Photo Error");
+}
 
     input.value = "";
 }
@@ -9336,9 +9335,9 @@ async function deleteInventoryItemPhoto(rawEntryId, photoId) {
     const rawEntry = getRawInventoryEntryById(rawEntryId);
 
     if (!rawEntry) {
-        alert("Selected inventory item could not be found.");
-        return;
-    }
+    await appAlert("Selected inventory item could not be found.", "Item Missing");
+    return;
+}
 
     ensureRawEntryPhotoShape(rawEntry);
 
