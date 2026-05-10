@@ -6683,12 +6683,100 @@ function handleFloorChange(value) {
     saveInventoryContext();
     saveToDevice();
 }
+let inventoryButtonReorderMode = false;
+
+function getInventoryButtonOrderKey(category) {
+    return `movepilot_inventory_button_order_${category || "Full List"}`;
+}
+
+function getOrderedInventoryButtons(category) {
+    const defaultItems = inventoryCategories[category] || [];
+    const storageKey = getInventoryButtonOrderKey(category);
+
+    let savedOrder = [];
+
+    try {
+        savedOrder = JSON.parse(localStorage.getItem(storageKey) || "[]");
+    } catch (err) {
+        savedOrder = [];
+    }
+
+    if (!Array.isArray(savedOrder) || !savedOrder.length) {
+        return defaultItems.slice();
+    }
+
+    const defaultSet = new Set(defaultItems);
+
+    const savedStillValid = savedOrder.filter(function(itemName) {
+        return defaultSet.has(itemName);
+    });
+
+    const newDefaultItems = defaultItems.filter(function(itemName) {
+        return !savedStillValid.includes(itemName);
+    });
+
+    return savedStillValid.concat(newDefaultItems);
+}
+
+function saveInventoryButtonOrder(category, orderedItems) {
+    const storageKey = getInventoryButtonOrderKey(category);
+
+    try {
+        localStorage.setItem(storageKey, JSON.stringify(orderedItems));
+    } catch (err) {
+        console.warn("Could not save inventory button order", err);
+    }
+}
+
+function moveInventoryButton(itemName, direction) {
+    const category = currentInventoryCategory || "Full List";
+    const orderedItems = getOrderedInventoryButtons(category);
+    const currentIndex = orderedItems.indexOf(itemName);
+
+    if (currentIndex === -1) return;
+
+    const newIndex = currentIndex + direction;
+
+    if (newIndex < 0 || newIndex >= orderedItems.length) {
+        updateInventoryDisplay("BUTTON CANNOT MOVE FURTHER");
+        return;
+    }
+
+    const movedItem = orderedItems.splice(currentIndex, 1)[0];
+    orderedItems.splice(newIndex, 0, movedItem);
+
+    saveInventoryButtonOrder(category, orderedItems);
+    renderInventoryButtons();
+
+    updateInventoryDisplay(direction < 0 ? "BUTTON MOVED UP" : "BUTTON MOVED DOWN");
+}
+
+function toggleInventoryButtonReorderMode() {
+    inventoryButtonReorderMode = !inventoryButtonReorderMode;
+    renderInventoryButtons();
+
+    updateInventoryDisplay(
+        inventoryButtonReorderMode
+            ? "BUTTON REORDER MODE ON"
+            : "BUTTON REORDER MODE OFF"
+    );
+}
+
+function resetInventoryButtonOrder() {
+    const category = currentInventoryCategory || "Full List";
+    const storageKey = getInventoryButtonOrderKey(category);
+
+    localStorage.removeItem(storageKey);
+    renderInventoryButtons();
+
+    updateInventoryDisplay("BUTTON ORDER RESET");
+}
     function renderInventoryButtons() {
     const grid = document.getElementById('inventory-button-grid');
     const countEl = document.getElementById('inventory-search-count');
     if (!grid) return;
 
-    const itemsToShow = inventoryCategories[currentInventoryCategory] || [];
+    const itemsToShow = getOrderedInventoryButtons(currentInventoryCategory);
     const search = (inventorySearchText || "").trim().toLowerCase();
 
     const filteredItems = !search
@@ -6714,9 +6802,59 @@ function handleFloorChange(value) {
         return;
     }
 
-    grid.innerHTML = filteredItems.map(function(itemName) {
-        return `<button class="item-btn" onclick="addInventoryItem('${itemName.replace(/'/g, "\\'")}')">${itemName}</button>`;
+    const reorderToolsHtml = `
+        <div class="col-span-4 flex gap-2 mb-2">
+            <button
+                class="inv-tool-btn ${inventoryButtonReorderMode ? 'active' : ''}"
+                onclick="toggleInventoryButtonReorderMode()"
+                type="button"
+            >
+                ${inventoryButtonReorderMode ? 'Done Reordering' : 'Reorder Buttons'}
+            </button>
+
+            <button
+                class="inv-tool-btn"
+                onclick="resetInventoryButtonOrder()"
+                type="button"
+            >
+                Reset Order
+            </button>
+        </div>
+    `;
+
+    const itemButtonsHtml = filteredItems.map(function(itemName) {
+        const safeItemName = itemName.replace(/'/g, "\\'");
+
+        if (!inventoryButtonReorderMode) {
+            return `<button class="item-btn" onclick="addInventoryItem('${safeItemName}')">${itemName}</button>`;
+        }
+
+        return `
+            <div class="item-btn flex flex-col gap-1" style="height:auto; min-height:74px;">
+                <div>${itemName}</div>
+                <div class="flex gap-1 justify-center">
+                    <button
+                        class="inv-tool-btn"
+                        style="min-height:26px; padding:4px 8px;"
+                        onclick="moveInventoryButton('${safeItemName}', -1)"
+                        type="button"
+                    >
+                        ↑
+                    </button>
+                    <button
+                        class="inv-tool-btn"
+                        style="min-height:26px; padding:4px 8px;"
+                        onclick="moveInventoryButton('${safeItemName}', 1)"
+                        type="button"
+                    >
+                        ↓
+                    </button>
+                </div>
+            </div>
+        `;
     }).join('');
+
+    grid.innerHTML = reorderToolsHtml + itemButtonsHtml;
 }
 
 function setInventoryCategory(category, btn) {
