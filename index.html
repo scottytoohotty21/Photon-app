@@ -12432,6 +12432,7 @@ const QUOTE_CORE_COST_CHOICES = [
     "Overtime",
     "Nights Out",
     "Crates",
+    "Admin Fee",
     "Custom"
 ];
 
@@ -12957,6 +12958,46 @@ function buildDefaultQuotePricingLines(sequenceId) {
         };
     });
 }
+function syncQuoteAdminFeeCoreLine(sequenceId) {
+    const state = ensureQuoteSequenceState(sequenceId);
+    if (!state) return;
+
+    if (!Array.isArray(state.pricingLines)) {
+        state.pricingLines = [];
+    }
+
+    let adminLine = state.pricingLines.find(function(line) {
+        return line.autoCoreCost === "adminFee";
+    });
+
+    if (!adminLine) {
+        adminLine = state.pricingLines.find(function(line) {
+            return String(line.label || "") === "Admin Fee";
+        });
+    }
+
+    if (adminLine) {
+        adminLine.label = "Admin Fee";
+        adminLine.customLabel = "";
+        adminLine.qty = 1;
+        adminLine.unitCost = 25;
+        adminLine.autoCoreCost = "adminFee";
+        adminLine.locked = true;
+        adminLine.needsCostEntry = false;
+        return;
+    }
+
+    state.pricingLines.push({
+        id: createQuoteLineId(),
+        label: "Admin Fee",
+        customLabel: "",
+        qty: 1,
+        unitCost: 25,
+        autoCoreCost: "adminFee",
+        locked: true,
+        needsCostEntry: false
+    });
+}
 
 function getQuotePricingLines(sequenceId) {
     const state = ensureQuoteSequenceState(sequenceId);
@@ -12967,6 +13008,8 @@ function getQuotePricingLines(sequenceId) {
     }
 
     syncQuotePricingFromSchedule(sequenceId);
+    syncQuoteAdminFeeCoreLine(sequenceId);
+
     return state.pricingLines;
 }
 
@@ -14538,15 +14581,23 @@ function deleteQuoteLine(sequenceId, lineId, lineType) {
     const state = ensureQuoteSequenceState(sequenceId);
     if (!state) return;
 
-    if (lineType === "additional") {
-        state.additionalCostLines = state.additionalCostLines.filter(function(line) {
-            return line.id !== lineId;
-        });
-    } else {
-        state.pricingLines = state.pricingLines.filter(function(line) {
-            return line.id !== lineId;
-        });
+   if (lineType === "additional") {
+    state.additionalCostLines = state.additionalCostLines.filter(function(line) {
+        return line.id !== lineId;
+    });
+} else {
+    const lineToDelete = state.pricingLines.find(function(line) {
+        return line.id === lineId;
+    });
+
+    if (lineToDelete && lineToDelete.autoCoreCost === "adminFee") {
+        return;
     }
+
+    state.pricingLines = state.pricingLines.filter(function(line) {
+        return line.id !== lineId;
+    });
+}
 
     quotePricingSaved = false;
     saveToDevice();
@@ -14563,15 +14614,20 @@ function renderQuotePricingGrid(sequenceId) {
         <div class="space-y-3">
             ${lines.map(function(line) {
                 const total = calcQuoteLineTotal(line);
-                const isCustom = line.label === "Custom";
-                const needsCostEntry = !!line.needsCostEntry && Number(line.unitCost || 0) <= 0;
+const isCustom = line.label === "Custom";
+const isAdminFee = line.autoCoreCost === "adminFee";
+const needsCostEntry = !!line.needsCostEntry && Number(line.unitCost || 0) <= 0;
 
                 return `
                     <div class="pricing-row ${isCustom ? "pricing-row-custom" : ""}">
                         <div class="quote-line-grid">
                             <div class="quote-type-wrap">
                                 <label class="mini-label">Cost Type</label>
-                                <select class="field" onchange="updateQuoteLine('${sequenceId}','${line.id}','label',this.value,'core',true)">
+                                <select
+    class="field"
+    ${isAdminFee ? "disabled" : ""}
+    onchange="updateQuoteLine('${sequenceId}','${line.id}','label',this.value,'core',true)"
+>
                                     ${QUOTE_CORE_COST_CHOICES.map(function(choice) {
                                         return `<option value="${choice}" ${line.label === choice ? "selected" : ""}>${choice}</option>`;
                                     }).join("")}
@@ -14593,26 +14649,28 @@ function renderQuotePricingGrid(sequenceId) {
                             <div class="quote-qty-wrap">
                                 <label class="mini-label">Qty</label>
                                 <input
-                                    type="number"
-                                    min="0"
-                                    step="1"
-                                    class="field quote-cost-editable-field"
-value="${Number(line.qty || 0)}"
-oninput="updateQuoteLine('${sequenceId}','${line.id}','qty',this.value,'core',false)"
-                                >
+    type="number"
+    min="0"
+    step="1"
+    class="field quote-cost-editable-field"
+    value="${Number(line.qty || 0)}"
+    ${isAdminFee ? "disabled" : ""}
+    oninput="updateQuoteLine('${sequenceId}','${line.id}','qty',this.value,'core',false)"
+>
                             
                             </div>
 
                             <div class="quote-unit-wrap">
     <label class="mini-label">Unit Cost</label>
     <input
-        type="number"
-        min="0"
-        step="1"
-        class="field quote-cost-editable-field ${needsCostEntry ? 'quote-cost-needs-entry' : ''}"
-        value="${Number(line.unitCost || 0)}"
-        oninput="updateQuoteLine('${sequenceId}','${line.id}','unitCost',this.value,'core',false)"
-    >
+    type="number"
+    min="0"
+    step="1"
+    class="field quote-cost-editable-field ${needsCostEntry ? 'quote-cost-needs-entry' : ''}"
+    value="${Number(line.unitCost || 0)}"
+    ${isAdminFee ? "disabled" : ""}
+    oninput="updateQuoteLine('${sequenceId}','${line.id}','unitCost',this.value,'core',false)"
+>
     ${
         needsCostEntry
             ? `<div class="quote-cost-required-note">Cost required</div>`
@@ -14629,16 +14687,20 @@ oninput="updateQuoteLine('${sequenceId}','${line.id}','qty',this.value,'core',fa
                             </div>
 
                             <div class="quote-del-wrap">
-                                <button
-    type="button"
-    class="quote-delete-x-btn"
-    title="Delete this cost row"
-    aria-label="Delete this cost row"
-    onclick="deleteQuoteLine('${sequenceId}','${line.id}','core')"
->
-    ×
-</button>
-                            </div>
+    ${
+        isAdminFee
+            ? ""
+            : `<button
+                type="button"
+                class="quote-delete-x-btn"
+                title="Delete this cost row"
+                aria-label="Delete this cost row"
+                onclick="deleteQuoteLine('${sequenceId}','${line.id}','core')"
+            >
+                ×
+            </button>`
+    }
+</div>
                         </div>
                     </div>
                 `;
