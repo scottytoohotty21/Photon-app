@@ -4325,8 +4325,7 @@ Enter as: Surname, First Name
 </div>
 
     <button class="schedule-btn" onclick="autoBuildScheduleDays()">Auto Build</button>
-    <button class="schedule-btn" onclick="testAppModalSystem()">Test Modal</button>
-    <button class="schedule-btn" onclick="addScheduleDay()">Add Day</button>
+        <button class="schedule-btn" onclick="addScheduleDay()">Add Day</button>
     <button class="schedule-btn" onclick="fetchMileageFromRoute()">Build Route</button>
 </div>
 </div>
@@ -4538,14 +4537,14 @@ Enter as: Surname, First Name
 ];
 const BRANCH_DEPOTS = {
     Aylesbury: "Smeaton Cl, Aylesbury HP19 8UN",
-    Crawley: "",
+    Crawley: "5 Kelvin Way, Crawley RH10 9SP",
     Edinburgh: "4 Eastfield Farm Rd, Penicuik EH26 8EZ",
-    Ely: "",
-    Exeter: "",
+    Ely: "Unit 40, Lancaster Way Business Park, ELY CB6 3NW",
+    Exeter: "Windsor Court, Manaton Close, Matford Business Park, Exeter, Devon, EX2 8PF.",
     Guildford: "Slyfield Industrial Estate, Unit 4b, Opus Park, Moorfield Rd, Guildford GU1 1SZ",
     London: "",
-    Solent: "",
-    York: ""
+    Solent: "Unit 8, Voyager Park, Portfield Rd, Portsmouth PO3 5GF",
+    York: "Old Office Block Moor Lane Trading Estate, Sherburn in Elmet, Leeds LS25 6ES"
 };
         const PACK_OPTIONS = ["Owner Pack", "Fragile (china & Glassware) pack", "Full Packing", "Full Export Pack and Wrap", "Fragile & Kitchenware Pack"];
         const SALUTATIONS = ["Mr", "Miss", "Mrs", "Ms", "Other"];
@@ -16170,17 +16169,7 @@ function appPrompt(message, defaultValue, title) {
         ]
     });
 }
-async function testAppModalSystem() {
-    await appAlert("This is an in-app message modal.", "Modal Test");
 
-    const confirmed = await appConfirm("Does this confirm modal work?", "Confirm Test");
-
-    if (confirmed) {
-        await appAlert("You clicked OK.", "Confirm Result");
-    } else {
-        await appAlert("You clicked Cancel.", "Confirm Result");
-    }
-}
 function formatHoursAndMinutes(hours) {
     const totalMinutes = Math.round(Number(hours || 0) * 60);
     const hrs = Math.floor(totalMinutes / 60);
