@@ -12098,17 +12098,21 @@ function getPrintableMaterialsHtml(materials) {
         </div>
     `;
 }
-function getPrintableResponsibilitiesHtml(summary) {
-    const responsibilities = buildResponsibilitiesSummary(summary);
+function getPrintableResponsibilitiesHtml(summary, items) {
+    const responsibilities = buildResponsibilitiesSummary(summary, items);
 
     if (!responsibilities.hasContent) {
         return `<div class="pdf-small-note">No exclusions or customer responsibility notes recorded</div>`;
     }
 
+    const editableNotes = responsibilities.editableNotes.filter(function(note) {
+        return String(note || "").trim();
+    });
+
     return `
         <div class="pdf-materials-grid">
             <div>
-                <div class="pdf-mini-head">Excluded Items (${summary.excludedCount})</div>
+                <div class="pdf-mini-head">Excluded Items (${summary.excludedCount || 0})</div>
                 ${
                     responsibilities.excludedItems.length
                         ? responsibilities.excludedItems.map(function(item) {
@@ -12116,13 +12120,27 @@ function getPrintableResponsibilitiesHtml(summary) {
                         }).join("")
                         : `<div>None</div>`
                 }
+
+                <div class="pdf-mini-head space-top">Auto Responsibilities</div>
+                ${
+                    responsibilities.autoNotes.length || responsibilities.exclusionNotes.length
+                        ? `
+                            ${responsibilities.autoNotes.map(function(note) {
+                                return `<div>${escapeHtml(note)}</div>`;
+                            }).join("")}
+                            ${responsibilities.exclusionNotes.map(function(note) {
+                                return `<div>${escapeHtml(note)}</div>`;
+                            }).join("")}
+                        `
+                        : `<div>None</div>`
+                }
             </div>
 
             <div>
-                <div class="pdf-mini-head">Notes / Responsibilities</div>
+                <div class="pdf-mini-head">Customer Responsibility Notes</div>
                 ${
-                    responsibilities.exclusionNotes.length
-                        ? responsibilities.exclusionNotes.map(function(note) {
+                    editableNotes.length
+                        ? editableNotes.map(function(note) {
                             return `<div>${escapeHtml(note)}</div>`;
                         }).join("")
                         : `<div>None recorded</div>`
@@ -12130,7 +12148,7 @@ function getPrintableResponsibilitiesHtml(summary) {
             </div>
         </div>
     `;
-}
+}}
 
 function getPrintableCrewInstructionsHtml(items) {
     const crew = buildCrewInstructionsSummary(items);
@@ -12582,7 +12600,7 @@ async function printListedInventoryPdf() {
 
     <div class="pdf-card">
         <div class="pdf-card-title">Customer Responsibilities</div>
-        ${getPrintableResponsibilitiesHtml(listedSummary)}
+        ${getPrintableResponsibilitiesHtml(listedSummary, filteredItems)}
     </div>
 
     <div class="pdf-card">
