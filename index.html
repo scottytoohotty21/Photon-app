@@ -5580,8 +5580,8 @@ async function deleteAddressAccessPhoto(propId, photoId) {
 
     ensurePropertyPhotoShape(prop);
 
-    const confirmed = confirm("Delete this access photo?");
-    if (!confirmed) return;
+    const confirmed = await appConfirm("Delete this access photo?", "Delete Photo");
+if (!confirmed) return;
 
     prop.photos.access = prop.photos.access.filter(function(photoRef) {
         return String(photoRef.id) !== String(photoId);
@@ -9341,8 +9341,8 @@ async function deleteInventoryItemPhoto(rawEntryId, photoId) {
 
     ensureRawEntryPhotoShape(rawEntry);
 
-    const confirmed = confirm("Delete this item photo?");
-    if (!confirmed) return;
+    const confirmed = await appConfirm("Delete this item photo?", "Delete Photo");
+if (!confirmed) return;
 
     rawEntry.photos.item = rawEntry.photos.item.filter(function(photoRef) {
         return String(photoRef.id) !== String(photoId);
