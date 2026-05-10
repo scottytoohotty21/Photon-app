@@ -2745,6 +2745,7 @@ button {
     text-transform: uppercase;
     margin-top: 5px;
     color: #b91c1c;
+    line-height: 1.35;
 }
 
 .schedule-fringe-list {
@@ -18068,8 +18069,8 @@ function renderScheduleFringeWarning() {
                 Manual Review for Schedule and Costings Required — Fringe Case Detected
             </div>
             <div class="schedule-fringe-subtitle">
-                Triggered by:
-            </div>
+    Review triggered by:
+</div>
             <div class="schedule-fringe-list">
                 ${reasons.map(function(reason) {
                     return `<div class="schedule-fringe-reason">• ${escapeHtml(reason)}</div>`;
@@ -18106,12 +18107,15 @@ function renderQuoteFringeWarning() {
     warning.innerHTML = `
         <div class="schedule-fringe-card">
             <div class="schedule-fringe-title">
-                Manual Review for Schedule and Costings Required — Fringe Case Detected
-            </div>
-            <div class="schedule-fringe-subtitle">
-                Triggered by:
-            </div>
-            <div class="schedule-fringe-list">
+    Manual Review for Schedule and Costings Required — Fringe Case Detected
+</div>
+<div class="schedule-fringe-subtitle">
+    Manual review required before sending quote.
+</div>
+<div class="schedule-fringe-subtitle">
+    Review triggered by:
+</div>
+<div class="schedule-fringe-list">
                 ${reasons.map(function(reason) {
                     return `<div class="schedule-fringe-reason">• ${escapeHtml(reason)}</div>`;
                 }).join("")}
