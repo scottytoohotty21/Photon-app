@@ -7528,15 +7528,15 @@ function buildGoogleMapsLegUrl(fromAddress, toAddress) {
     return url;
 }
 
-function openScheduleLegInGoogleMaps(dayId, legId) {
+async function openScheduleLegInGoogleMaps(dayId, legId) {
     const day = manualSchedule.find(function(row) {
         return String(row.id) === String(dayId);
     });
 
     if (!day) {
-        alert("Could not find this schedule row.");
-        return;
-    }
+    await appAlert("Could not find this schedule row.", "Schedule Row Missing");
+    return;
+}
 
     ensureScheduleRowShape(day);
 
@@ -7545,31 +7545,37 @@ function openScheduleLegInGoogleMaps(dayId, legId) {
     });
 
     if (!leg) {
-        alert("Could not find this travel leg.");
-        return;
-    }
+    await appAlert("Could not find this travel leg.", "Travel Leg Missing");
+    return;
+}
 
     const branch = String(day.operatingBranch || "").trim();
 
 if (!branch) {
-    alert("Select an Operating Branch on this schedule row before opening Google Maps.");
+    await appAlert(
+        "Select an Operating Branch on this schedule row before opening Google Maps.",
+        "Operating Branch Required"
+    );
     return;
 }
 
     const fromAddress = getScheduleLocationAddress(leg.from, branch);
     const toAddress = getScheduleLocationAddress(leg.to, branch);
 
-    if (!fromAddress || !toAddress) {
-        alert("Add both From and To addresses before opening Google Maps.");
-        return;
-    }
+   if (!fromAddress || !toAddress) {
+    await appAlert(
+        "Add both From and To addresses before opening Google Maps.",
+        "Route Addresses Required"
+    );
+    return;
+}
 
     const url = buildGoogleMapsLegUrl(fromAddress, toAddress);
 
     if (!url) {
-        alert("Could not build Google Maps route.");
-        return;
-    }
+    await appAlert("Could not build Google Maps route.", "Route Error");
+    return;
+}
 
     window.open(url, "_blank");
 }
