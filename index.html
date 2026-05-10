@@ -3977,8 +3977,43 @@ button {
     </style>
 </head>
 <body class="p-4 pb-12">
+    <section id="activation-screen" class="bg-white rounded-2xl shadow-xl border border-slate-200 p-6" style="max-width:520px;margin:40px auto;">
+    <div class="text-center mb-6">
+        <img src="./movepilot-logo.png" alt="MovePilot" class="app-logo-image" style="margin:0 auto 18px;">
+        <div class="text-xl font-black text-slate-900 uppercase">Activation Required</div>
+        <div class="text-sm font-bold text-slate-500 mt-2">
+            Enter your MovePilot activation code to unlock this tablet.
+        </div>
+    </div>
 
-    <main id="view-dashboard">
+    <label class="mini-label">Activation Code</label>
+    <input
+        id="activation-code-input"
+        class="input-field"
+        type="text"
+        autocomplete="off"
+        autocapitalize="characters"
+        placeholder="Example: MOVE-TEST-14"
+        style="text-transform:uppercase;"
+    >
+
+    <div id="activation-message" class="text-[10px] font-black uppercase text-red-600 mt-3 hidden"></div>
+
+    <button
+        class="dashboard-action-btn btn-add-file mt-4"
+        style="width:100%;"
+        onclick="submitMovePilotActivation()"
+        type="button"
+    >
+        Activate MovePilot
+    </button>
+
+    <div class="text-[10px] font-bold text-slate-500 mt-4 text-center" style="line-height:1.45;">
+        This activation is stored locally on this device. Clearing browser storage may remove activation.
+    </div>
+</section>
+
+    <main id="view-dashboard" class="hidden">
         <div class="flex items-center justify-between mb-8">
             <div class="flex items-center gap-3">
     <img src="./movepilot-logo.png" alt="MovePilot" class="app-logo-image">
@@ -18856,11 +18891,130 @@ function normalizeJobsShape() {
         return safeJob;
     });
 }
-document.addEventListener('DOMContentLoaded', function () {
+const MOVEPILOT_ACTIVATION_STORAGE_KEY = "movepilot_activation_v1";
+
+const MOVEPILOT_ACTIVATION_CODES = {
+    "MOVE-TEST-7": {
+        days: 7,
+        label: "7 day test"
+    },
+    "MOVE-TEST-14": {
+        days: 14,
+        label: "14 day test"
+    },
+    "MOVE-TEST-30": {
+        days: 30,
+        label: "30 day test"
+    },
+    "MOVE-FULL-2026": {
+        days: 365,
+        label: "Full access"
+    }
+};
+
+function normaliseMovePilotActivationCode(code) {
+    return String(code || "")
+        .trim()
+        .toUpperCase()
+        .replace(/\s+/g, "");
+}
+
+function getMovePilotActivationState() {
+    let activation = null;
+
+    try {
+        activation = JSON.parse(localStorage.getItem(MOVEPILOT_ACTIVATION_STORAGE_KEY) || "null");
+    } catch (err) {
+        activation = null;
+    }
+
+    if (!activation || !activation.expiresAt) {
+        return null;
+    }
+
+    const expiresAtMs = new Date(activation.expiresAt).getTime();
+
+    if (!expiresAtMs || Date.now() > expiresAtMs) {
+        localStorage.removeItem(MOVEPILOT_ACTIVATION_STORAGE_KEY);
+        return null;
+    }
+
+    return activation;
+}
+
+function setActivationMessage(message, isGood) {
+    const messageEl = document.getElementById("activation-message");
+    if (!messageEl) return;
+
+    messageEl.innerText = message || "";
+    messageEl.classList.remove("hidden");
+    messageEl.classList.toggle("text-red-600", !isGood);
+    messageEl.classList.toggle("text-blue-600", !!isGood);
+}
+
+function bootMovePilotApp() {
     normalizeJobsShape();
     ensureScheduleDataShape();
     saveToDevice();
     renderDashboard();
+}
+
+function showMovePilotApp() {
+    const activationScreen = document.getElementById("activation-screen");
+    const dashboard = document.getElementById("view-dashboard");
+
+    if (activationScreen) activationScreen.classList.add("hidden");
+    if (dashboard) dashboard.classList.remove("hidden");
+
+    bootMovePilotApp();
+}
+
+function showMovePilotActivationScreen() {
+    const activationScreen = document.getElementById("activation-screen");
+    const dashboard = document.getElementById("view-dashboard");
+
+    if (activationScreen) activationScreen.classList.remove("hidden");
+    if (dashboard) dashboard.classList.add("hidden");
+}
+
+function submitMovePilotActivation() {
+    const input = document.getElementById("activation-code-input");
+    const code = normaliseMovePilotActivationCode(input ? input.value : "");
+    const activationCode = MOVEPILOT_ACTIVATION_CODES[code];
+
+    if (!activationCode) {
+        setActivationMessage("Activation code not recognised.", false);
+        return;
+    }
+
+    const activatedAt = new Date();
+    const expiresAt = new Date(activatedAt.getTime() + (activationCode.days * 24 * 60 * 60 * 1000));
+
+    const activation = {
+        code: code,
+        label: activationCode.label,
+        activatedAt: activatedAt.toISOString(),
+        expiresAt: expiresAt.toISOString()
+    };
+
+    localStorage.setItem(MOVEPILOT_ACTIVATION_STORAGE_KEY, JSON.stringify(activation));
+
+    setActivationMessage("Activation successful.", true);
+    showMovePilotApp();
+}
+
+function clearMovePilotActivationForTesting() {
+    localStorage.removeItem(MOVEPILOT_ACTIVATION_STORAGE_KEY);
+    location.reload();
+}
+document.addEventListener('DOMContentLoaded', function () {
+    const activation = getMovePilotActivationState();
+
+    if (activation) {
+        showMovePilotApp();
+    } else {
+        showMovePilotActivationScreen();
+    }
 });
 </script>
 <!-- WARDROBE MODAL -->
