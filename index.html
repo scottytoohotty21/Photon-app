@@ -4325,6 +4325,7 @@ Enter as: Surname, First Name
 </div>
 
     <button class="schedule-btn" onclick="autoBuildScheduleDays()">Auto Build</button>
+    <button class="schedule-btn" onclick="testAppModalSystem()">Test Modal</button>
     <button class="schedule-btn" onclick="addScheduleDay()">Add Day</button>
     <button class="schedule-btn" onclick="fetchMileageFromRoute()">Build Route</button>
 </div>
@@ -16151,6 +16152,17 @@ function appPrompt(message, defaultValue, title) {
             }
         ]
     });
+}
+async function testAppModalSystem() {
+    await appAlert("This is an in-app message modal.", "Modal Test");
+
+    const confirmed = await appConfirm("Does this confirm modal work?", "Confirm Test");
+
+    if (confirmed) {
+        await appAlert("You clicked OK.", "Confirm Result");
+    } else {
+        await appAlert("You clicked Cancel.", "Confirm Result");
+    }
 }
 function formatHoursAndMinutes(hours) {
     const totalMinutes = Math.round(Number(hours || 0) * 60);
