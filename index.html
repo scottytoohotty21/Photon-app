@@ -2680,6 +2680,14 @@ button {
     line-height: 1.45;
     margin-top: 4px;
 }
+.special-rhs-line-accent {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    color: #1d4ed8;
+    font-weight: 700;
+    padding: 6px 8px;
+    border-radius: 8px;
+}
 
 .special-rhs-empty {
     font-size: 10px;
@@ -17816,8 +17824,8 @@ if (
                 <div class="special-rhs-title">Time Breakdown</div>
                 <div class="special-rhs-subtitle">Split between collection-side and delivery-side labour</div>
 
-               <div class="special-rhs-line">Collection-side labour: ${formatHoursAndMinutes(special.collectionSideHours || special.loadSideHours)}</div>
-<div class="special-rhs-line">Delivery-side labour: ${formatHoursAndMinutes(special.deliverySideHours || special.unloadSideHours)}</div>
+               <div class="special-rhs-line special-rhs-line-accent">Collection-side labour: ${formatHoursAndMinutes(special.collectionSideHours || special.loadSideHours)}</div>
+<div class="special-rhs-line special-rhs-line-accent special-rhs-line-accent-last">Delivery-side labour: ${formatHoursAndMinutes(special.deliverySideHours || special.unloadSideHours)}</div>
 
 <div class="special-rhs-line">Beds: ${formatHoursAndMinutes(special.breakdown.frameBeds + special.breakdown.ottomanBeds + special.breakdown.divanBeds + special.breakdown.bunkBeds + special.breakdown.cots)}</div>
 <div class="special-rhs-line">Wardrobes: ${formatHoursAndMinutes(special.breakdown.wardrobes)}</div>
