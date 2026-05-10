@@ -10185,11 +10185,11 @@ const depotAddress = BRANCH_DEPOTS[branch] || "";
     };
 }
 
-function fetchMileageFromRoute() {
+async function fetchMileageFromRoute() {
     const routeData = getMileageRouteData();
 
     if (!routeData) {
-        alert("No active sequence found.");
+        await appAlert("No active sequence found.", "Sequence Required");
         return;
     }
 
@@ -12069,16 +12069,16 @@ ${
         </div>
     `;
 }
-function printListedInventoryPdf() {
+async function printListedInventoryPdf() {
     if (!currentJob) return;
 
     const allItems = getListedInventoryItems();
     const filteredItems = filterListedInventoryItems(allItems);
 
     if (!filteredItems.length) {
-        alert("No listed inventory to export.");
-        return;
-    }
+    await appAlert("No listed inventory to export.", "Export Unavailable");
+    return;
+}
 
     const listedSummary = buildListedSummary(filteredItems);
     const materialsSummary = buildMaterialsSummary(filteredItems);
@@ -12115,9 +12115,12 @@ function printListedInventoryPdf() {
     const printWindow = window.open("", "_blank");
 
     if (!printWindow) {
-        alert("Popup blocked. Please allow popups and try again.");
-        return;
-    }
+    await appAlert(
+        "The print window could not be opened. Please allow pop-ups for this app and try again.",
+        "Print Window Blocked"
+    );
+    return;
+}
 
     printWindow.document.write(`
         <!DOCTYPE html>
