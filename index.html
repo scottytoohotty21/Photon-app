@@ -17878,11 +17878,13 @@ document.getElementById("summaryUnloadCompletion").textContent = unloading.compl
         `Total volume is furniture volume plus calculated box volume. ` +
         `Loft effects volume is used for extra loft labour only and does not change total move volume. ` +
         `${state.loadingScenario === "exStore"
-            ? "This move type is treated as delivery only, so loading hours are not applied. "
+            ? "This move type is treated as delivery only, so loading hours are not applied. Ex-store unloading uses the main unload rate in AM and the reduced PM unload rate where applicable. "
             : state.loadingScenario === "intoStore"
                 ? "This move type is treated as loading into store only, using the selected loading profile. "
                 : "Direct loading uses the selected loading profile. AM loading uses the main loading rate, and PM loading is validated using the reduced after-AM rate where applicable. "}` +
-        `Unloading uses total volume ÷ ${state.unloadRate} cuft per man-hour, then adds unload-side specials. ` +
+        `${state.loadingScenario === "exStore"
+            ? "Unloading capacity is validated against the ex-store AM/PM unloading profile. "
+            : "Unloading uses total volume ÷ " + state.unloadRate + " cuft per man-hour, then adds unload-side specials. "}` +
         `Travel is taken from the travel legs added to each planner row, and is deducted before net working time is validated. ` +
         `On completion-day direct moves, loading must be completed by 1pm after depot-to-collection travel is deducted. ` +
         `One standard bed and 50 cuft of export wrap are treated as already included before extra special time is added.`;
