@@ -1891,6 +1891,91 @@ button {
     font-weight: 900;
     text-transform: uppercase;
 }
+/* --- APP MESSAGE / CONFIRM MODAL --- */
+.app-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(3px);
+    align-items: center;
+    justify-content: center;
+    z-index: 3000;
+    padding: 18px;
+}
+
+.app-modal-overlay.show {
+    display: flex;
+}
+
+.app-modal-panel {
+    width: 94%;
+    max-width: 420px;
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 18px;
+    box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.35);
+    border: 1px solid #e2e8f0;
+}
+
+.app-modal-title {
+    font-size: 13px;
+    font-weight: 900;
+    text-transform: uppercase;
+    color: #0f172a;
+    margin-bottom: 8px;
+}
+
+.app-modal-message {
+    font-size: 12px;
+    font-weight: 700;
+    color: #475569;
+    line-height: 1.45;
+    white-space: pre-wrap;
+}
+
+.app-modal-input {
+    width: 100%;
+    margin-top: 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
+    padding: 10px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #0f172a;
+    background: #f8fafc;
+}
+
+.app-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.app-modal-btn {
+    min-width: 86px;
+    min-height: 36px;
+    border-radius: 999px;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    color: #334155;
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.app-modal-btn.primary {
+    border-color: #bfdbfe;
+    background: #2563eb;
+    color: #ffffff;
+}
+
+.app-modal-btn.danger {
+    border-color: #fecaca;
+    background: #dc2626;
+    color: #ffffff;
+}
         /* --- PHOTO VIEW MODAL --- */
 .photo-view-overlay {
     display: none;
@@ -15922,6 +16007,151 @@ function round2(value){
 function round1(value){
     return Math.round((Number(value || 0) + Number.EPSILON) * 10) / 10;
 }
+let appModalResolve = null;
+
+function closeAppModal(result) {
+    const overlay = document.getElementById("app-modal-overlay");
+    const input = document.getElementById("app-modal-input");
+
+    if (overlay) {
+        overlay.classList.remove("show");
+    }
+
+    if (input) {
+        input.style.display = "none";
+        input.value = "";
+    }
+
+    if (typeof appModalResolve === "function") {
+        appModalResolve(result);
+    }
+
+    appModalResolve = null;
+}
+
+function showAppModal(options) {
+    options = options || {};
+
+    const overlay = document.getElementById("app-modal-overlay");
+    const titleEl = document.getElementById("app-modal-title");
+    const messageEl = document.getElementById("app-modal-message");
+    const actionsEl = document.getElementById("app-modal-actions");
+    const inputEl = document.getElementById("app-modal-input");
+
+    if (!overlay || !titleEl || !messageEl || !actionsEl || !inputEl) {
+        // Emergency fallback only if modal HTML is missing.
+        return Promise.resolve(null);
+    }
+
+    titleEl.textContent = options.title || "Message";
+    messageEl.textContent = options.message || "";
+
+    actionsEl.innerHTML = "";
+
+    if (options.showInput) {
+        inputEl.style.display = "block";
+        inputEl.value = options.defaultValue || "";
+        inputEl.placeholder = options.placeholder || "";
+    } else {
+        inputEl.style.display = "none";
+        inputEl.value = "";
+    }
+
+    const buttons = Array.isArray(options.buttons) && options.buttons.length
+        ? options.buttons
+        : [
+            {
+                label: "OK",
+                value: true,
+                className: "primary"
+            }
+        ];
+
+    buttons.forEach(function(button) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "app-modal-btn " + (button.className || "");
+        btn.textContent = button.label || "OK";
+
+        btn.onclick = function() {
+            if (options.showInput && button.value === "input") {
+                closeAppModal(inputEl.value);
+                return;
+            }
+
+            closeAppModal(button.value);
+        };
+
+        actionsEl.appendChild(btn);
+    });
+
+    overlay.classList.add("show");
+
+    if (options.showInput) {
+        setTimeout(function() {
+            inputEl.focus();
+            inputEl.select();
+        }, 0);
+    }
+
+    return new Promise(function(resolve) {
+        appModalResolve = resolve;
+    });
+}
+
+function appAlert(message, title) {
+    return showAppModal({
+        title: title || "Message",
+        message: message || "",
+        buttons: [
+            {
+                label: "OK",
+                value: true,
+                className: "primary"
+            }
+        ]
+    });
+}
+
+function appConfirm(message, title) {
+    return showAppModal({
+        title: title || "Confirm",
+        message: message || "",
+        buttons: [
+            {
+                label: "Cancel",
+                value: false,
+                className: ""
+            },
+            {
+                label: "OK",
+                value: true,
+                className: "primary"
+            }
+        ]
+    });
+}
+
+function appPrompt(message, defaultValue, title) {
+    return showAppModal({
+        title: title || "Enter Value",
+        message: message || "",
+        showInput: true,
+        defaultValue: defaultValue || "",
+        buttons: [
+            {
+                label: "Cancel",
+                value: null,
+                className: ""
+            },
+            {
+                label: "Save",
+                value: "input",
+                className: "primary"
+            }
+        ]
+    });
+}
 function formatHoursAndMinutes(hours) {
     const totalMinutes = Math.round(Number(hours || 0) * 60);
     const hrs = Math.floor(totalMinutes / 60);
@@ -18447,6 +18677,22 @@ document.addEventListener('DOMContentLoaded', function () {
     </div>
 </div>
 
+<!-- APP MESSAGE / CONFIRM MODAL -->
+<div id="app-modal-overlay" class="app-modal-overlay">
+    <div class="app-modal-panel" onclick="event.stopPropagation()">
+        <div id="app-modal-title" class="app-modal-title">Message</div>
+        <div id="app-modal-message" class="app-modal-message"></div>
+
+        <input
+            id="app-modal-input"
+            class="app-modal-input"
+            type="text"
+            style="display:none;"
+        >
+
+        <div id="app-modal-actions" class="app-modal-actions"></div>
+    </div>
+</div>
 <!-- PHOTO VIEW MODAL -->
 <div id="photo-view-overlay" class="photo-view-overlay" onclick="closePhotoViewModal()">
     <div class="photo-view-panel" onclick="event.stopPropagation()">
