@@ -15938,26 +15938,26 @@ function calcSpecialLabour(state) {
 
     let includedBedsRemaining = includedBedDismantleCount;
 
-const frameBedCount = Math.max(0, Number(state.special.frameBeds || 0));
-const ottomanBedCount = Math.max(0, Number(state.special.ottomanBeds || 0));
-const bunkBedCount = Math.max(0, Number(state.special.bunkBeds || 0));
-const cotCount = Math.max(0, Number(state.special.cots || 0));
+    const frameBedCount = Math.max(0, Number(state.special.frameBeds || 0));
+    const ottomanBedCount = Math.max(0, Number(state.special.ottomanBeds || 0));
+    const bunkBedCount = Math.max(0, Number(state.special.bunkBeds || 0));
+    const cotCount = Math.max(0, Number(state.special.cots || 0));
 
-const billableFrameBeds = Math.max(0, frameBedCount - includedBedsRemaining);
-includedBedsRemaining = Math.max(0, includedBedsRemaining - frameBedCount);
+    const billableFrameBeds = Math.max(0, frameBedCount - includedBedsRemaining);
+    includedBedsRemaining = Math.max(0, includedBedsRemaining - frameBedCount);
 
-const billableOttomanBeds = Math.max(0, ottomanBedCount - includedBedsRemaining);
-includedBedsRemaining = Math.max(0, includedBedsRemaining - ottomanBedCount);
+    const billableOttomanBeds = Math.max(0, ottomanBedCount - includedBedsRemaining);
+    includedBedsRemaining = Math.max(0, includedBedsRemaining - ottomanBedCount);
 
-const billableBunkBeds = Math.max(0, bunkBedCount - includedBedsRemaining);
-includedBedsRemaining = Math.max(0, includedBedsRemaining - bunkBedCount);
+    const billableBunkBeds = Math.max(0, bunkBedCount - includedBedsRemaining);
+    includedBedsRemaining = Math.max(0, includedBedsRemaining - bunkBedCount);
 
-const billableCots = Math.max(0, cotCount - includedBedsRemaining);
+    const billableCots = Math.max(0, cotCount - includedBedsRemaining);
 
-const frameBedMinutes = billableFrameBeds * 15;
-const ottomanBedMinutes = billableOttomanBeds * 30;
-const bunkBedMinutes = billableBunkBeds * 30;
-const cotMinutes = billableCots * 10;
+    const frameBedMinutes = billableFrameBeds * 15;
+    const ottomanBedMinutes = billableOttomanBeds * 30;
+    const bunkBedMinutes = billableBunkBeds * 30;
+    const cotMinutes = billableCots * 10;
     const diningTableMinutes = Number(state.special.diningTables || 0) * 15;
     const wardrobeMinutes = Number(state.special.wardrobes || 0) * 20;
     const uprightPianoMinutes = Number(state.special.upright || 0) * 10;
@@ -15970,7 +15970,11 @@ const cotMinutes = billableCots * 10;
     const loftMinutes = loftVol > 0 ? (loftVol / 200) * 60 : 0;
     const exportWrapMinutes = extraExportWrapVol > 0 ? (extraExportWrapVol / 30) * 60 : 0;
 
-    const loadMinutes =
+    /*
+        Collection-side special labour:
+        Things that happen at collection / loading side.
+    */
+    const collectionMinutes =
         frameBedMinutes +
         ottomanBedMinutes +
         bunkBedMinutes +
@@ -15986,7 +15990,12 @@ const cotMinutes = billableCots * 10;
         loftMinutes +
         exportWrapMinutes;
 
-    const unloadMinutes =
+    /*
+        Delivery-side special labour:
+        Things that happen at delivery / unloading side.
+        Appliance disconnect, loft effects and export wrap are collection-side only for now.
+    */
+    const deliveryMinutes =
         frameBedMinutes +
         ottomanBedMinutes +
         bunkBedMinutes +
@@ -15997,18 +16006,25 @@ const cotMinutes = billableCots * 10;
         uprightPianoMinutes +
         grandPianoMinutes +
         grandfatherClockMinutes +
-        applianceMinutes +
         crateMinutes;
 
-    const totalHours = (loadMinutes + unloadMinutes) / 60;
+    const totalHours = (collectionMinutes + deliveryMinutes) / 60;
 
     return {
         specialHours: round2(totalHours),
-        loadSideHours: round2(loadMinutes / 60),
-        unloadSideHours: round2(unloadMinutes / 60),
+
+        // Existing names retained so calcLoading/calcUnloading keep working.
+        loadSideHours: round2(collectionMinutes / 60),
+        unloadSideHours: round2(deliveryMinutes / 60),
+
+        // New clearer names for display and future logic.
+        collectionSideHours: round2(collectionMinutes / 60),
+        deliverySideHours: round2(deliveryMinutes / 60),
+
         depotToCollectionHours: round2(depotToCollectionMinutes / 60),
         collectionToDeliveryHours: round2(collectionToDeliveryMinutes / 60),
         deliveryToDepotHours: round2(deliveryToDepotMinutes / 60),
+
         breakdown: {
             frameBeds: round2((frameBedMinutes * 2) / 60),
             ottomanBeds: round2((ottomanBedMinutes * 2) / 60),
@@ -16022,10 +16038,20 @@ const cotMinutes = billableCots * 10;
             upright: round2((uprightPianoMinutes * 2) / 60),
             grand: round2((grandPianoMinutes * 2) / 60),
             clock: round2((grandfatherClockMinutes * 2) / 60),
-            appliance: round2((applianceMinutes * 2) / 60),
+
+            // Appliance is collection-side only.
+            appliance: round2(applianceMinutes / 60),
+
+            // Crating is currently treated as both sides.
             crate: round2((crateMinutes * 2) / 60),
+
+            // Loft and export wrap are collection-side only.
             loft: round2(loftMinutes / 60),
             exportWrap: round2(exportWrapMinutes / 60),
+
+            collectionSide: round2(collectionMinutes / 60),
+            deliverySide: round2(deliveryMinutes / 60),
+
             transit: 0,
             includedExportWrapVol: includedExportWrapVol
         }
@@ -17788,9 +17814,12 @@ if (
 
             <div class="special-rhs-card">
                 <div class="special-rhs-title">Time Breakdown</div>
-                <div class="special-rhs-subtitle">Calculated from inventory and manual extras</div>
+                <div class="special-rhs-subtitle">Split between collection-side and delivery-side labour</div>
 
-                <div class="special-rhs-line">Beds: ${formatHoursAndMinutes(special.breakdown.frameBeds + special.breakdown.ottomanBeds + special.breakdown.divanBeds + special.breakdown.bunkBeds + special.breakdown.cots)}</div>
+               <div class="special-rhs-line">Collection-side labour: ${formatHoursAndMinutes(special.collectionSideHours || special.loadSideHours)}</div>
+<div class="special-rhs-line">Delivery-side labour: ${formatHoursAndMinutes(special.deliverySideHours || special.unloadSideHours)}</div>
+
+<div class="special-rhs-line">Beds: ${formatHoursAndMinutes(special.breakdown.frameBeds + special.breakdown.ottomanBeds + special.breakdown.divanBeds + special.breakdown.bunkBeds + special.breakdown.cots)}</div>
 <div class="special-rhs-line">Wardrobes: ${formatHoursAndMinutes(special.breakdown.wardrobes)}</div>
 <div class="special-rhs-line">Pianos: ${formatHoursAndMinutes(special.breakdown.upright + special.breakdown.grand)}</div>
 <div class="special-rhs-line">Grandfather clocks: ${formatHoursAndMinutes(special.breakdown.clock)}</div>
@@ -17887,7 +17916,7 @@ document.getElementById("summaryUnloadCompletion").textContent = unloading.compl
             : "Unloading uses total volume ÷ " + state.unloadRate + " cuft per man-hour, then adds unload-side specials. "}` +
         `Travel is taken from the travel legs added to each planner row, and is deducted before net working time is validated. ` +
         `On completion-day direct moves, loading must be completed by 1pm after depot-to-collection travel is deducted. ` +
-        `One standard bed and 50 cuft of export wrap are treated as already included before extra special time is added.`;
+        `One standard bed and 30 cuft of export wrap are treated as already included before extra special time is added.`;
 
     const specialTextEl = document.getElementById("specialText");
 if (specialTextEl) {
