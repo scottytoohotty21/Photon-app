@@ -2714,6 +2714,56 @@ button {
     }
 }
 .footer-note{margin-top:12px;font-size:10px;font-weight:800;text-transform:uppercase;color:var(--slate-400);line-height:1.45;}
+/* --- SCHEDULE FRINGE CASE WARNING --- */
+.schedule-fringe-warning {
+    display: none;
+    margin-bottom: 12px;
+}
+
+.schedule-fringe-warning.show {
+    display: block;
+}
+
+.schedule-fringe-card {
+    border: 1.5px solid #fecaca;
+    background: #fef2f2;
+    color: #991b1b;
+    border-radius: 14px;
+    padding: 12px 14px;
+}
+
+.schedule-fringe-title {
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.schedule-fringe-subtitle {
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    margin-top: 5px;
+    color: #b91c1c;
+}
+
+.schedule-fringe-list {
+    margin-top: 8px;
+    display: grid;
+    gap: 4px;
+}
+
+.schedule-fringe-reason {
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #7f1d1d;
+}
+
+.schedule-shell.schedule-fringe-alert {
+    border: 2px solid #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.10);
+}
 .schedule-shell{
     margin-top:0;
     border:2px solid var(--blue);
@@ -4156,7 +4206,8 @@ Enter as: Surname, First Name
                 <div class="panel-subtitle">Three rows: packing, loading, then unloading</div>
             </div>
             <div class="panel-body">
-    <div class="schedule-shell">
+    <div id="schedule-fringe-warning" class="schedule-fringe-warning"></div>
+                <div class="schedule-shell">
         <div class="schedule-toolbar">
     <div class="schedule-title-row">
         <div class="schedule-title">Manual Schedule Planner</div>
@@ -17906,6 +17957,110 @@ if (
         </div>
     `;
 }
+const FRINGE_LONG_CARRY_METRES = 30;
+
+function addUniqueFringeReason(reasons, text) {
+    if (!text) return;
+
+    const alreadyExists = reasons.some(function(reason) {
+        return String(reason) === String(text);
+    });
+
+    if (!alreadyExists) {
+        reasons.push(text);
+    }
+}
+
+function getScheduleFringeReasonsFromAddresses() {
+    const reasons = [];
+
+    if (!currentJob || !Array.isArray(currentJob.properties)) {
+        return reasons;
+    }
+
+    currentJob.properties.forEach(function(prop) {
+        if (!prop) return;
+
+        const label = toTitleCase(prop.label || "Address");
+        const access = String(prop.access || "").toLowerCase();
+        const propertyType = String(prop.type || "").toLowerCase();
+        const distance = Number(prop.distance || 0);
+
+        if (access.includes("shuttle")) {
+            addUniqueFringeReason(reasons, label + ": shuttle van access");
+        }
+
+        if (access.includes("transit")) {
+            addUniqueFringeReason(reasons, label + ": transit van access");
+        }
+
+        if (
+            access.includes("low loader") ||
+            access.includes("low-loader") ||
+            access.includes("luton")
+        ) {
+            addUniqueFringeReason(reasons, label + ": low loader / luton access");
+        }
+
+        if (distance >= FRINGE_LONG_CARRY_METRES) {
+            addUniqueFringeReason(
+                reasons,
+                label + ": long carry " + distance + "m"
+            );
+        }
+
+        if (
+            propertyType.includes("apartment") ||
+            propertyType.includes("flat")
+        ) {
+            addUniqueFringeReason(reasons, label + ": apartment access");
+        }
+    });
+
+    return reasons;
+}
+
+function renderScheduleFringeWarning() {
+    const warning = document.getElementById("schedule-fringe-warning");
+    const planner = document.querySelector(".schedule-shell");
+
+    if (!warning) return;
+
+    const reasons = getScheduleFringeReasonsFromAddresses();
+
+    if (!reasons.length) {
+        warning.innerHTML = "";
+        warning.classList.remove("show");
+
+        if (planner) {
+            planner.classList.remove("schedule-fringe-alert");
+        }
+
+        return;
+    }
+
+    warning.innerHTML = `
+        <div class="schedule-fringe-card">
+            <div class="schedule-fringe-title">
+                Manual Review for Schedule and Costings Required — Fringe Case Detected
+            </div>
+            <div class="schedule-fringe-subtitle">
+                Triggered by:
+            </div>
+            <div class="schedule-fringe-list">
+                ${reasons.map(function(reason) {
+                    return `<div class="schedule-fringe-reason">• ${escapeHtml(reason)}</div>`;
+                }).join("")}
+            </div>
+        </div>
+    `;
+
+    warning.classList.add("show");
+
+    if (planner) {
+        planner.classList.add("schedule-fringe-alert");
+    }
+}
 function renderScheduleCalculator(){
     const state = getState();
 
@@ -17993,7 +18148,8 @@ if (specialTextEl) {
     specialTextEl.innerHTML = buildScheduleSpecialRhsHtml(state, special);
 }
 
-    renderSchedulePlanner();
+    renderScheduleFringeWarning();
+renderSchedulePlanner();
 renderValidation(packing, loading, unloading, special, state);
 }
 function normalizeJobsShape() {
