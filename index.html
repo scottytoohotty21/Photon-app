@@ -1647,6 +1647,37 @@ button {
             white-space: nowrap;
         }
 
+        .job-header-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.job-header-mini-btn {
+    background: #ffffff;
+    border: 1px solid #bfdbfe;
+    color: #1d4ed8;
+    border-radius: 999px;
+    padding: 6px 10px;
+    font-size: 8px;
+    font-weight: 900;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.job-header-mini-btn.active {
+    background: #2563eb;
+    border-color: #60a5fa;
+    color: #ffffff;
+}
+
+.job-header-mini-btn.reset {
+    border-color: #cbd5e1;
+    color: #475569;
+}
+
         /* --- LISTED INVENTORY --- */
         .listed-filter-select {
             width: 100%;
@@ -4077,9 +4108,28 @@ Enter as: Surname, First Name
         <div class="job-subline">REF: <span id="hdr-ref">---</span></div>
     </div>
 
+    <div class="job-header-actions">
+    <button
+        id="inventory-reorder-header-btn"
+        class="job-header-mini-btn"
+        onclick="toggleInventoryButtonReorderMode()"
+        type="button"
+    >
+        Reorder Buttons
+    </button>
+
+    <button
+        class="job-header-mini-btn reset"
+        onclick="resetInventoryButtonOrder()"
+        type="button"
+    >
+        Reset Order
+    </button>
+
     <div class="job-status-pill">
         Survey Live
     </div>
+</div>
 </div>
 
         <nav class="nav-container">
@@ -6794,8 +6844,17 @@ function moveInventoryButton(itemName, direction) {
     updateInventoryDisplay(direction < 0 ? "BUTTON MOVED UP" : "BUTTON MOVED DOWN");
 }
 
+function updateInventoryReorderHeaderButton() {
+    const btn = document.getElementById("inventory-reorder-header-btn");
+    if (!btn) return;
+
+    btn.innerText = inventoryButtonReorderMode ? "Done Reordering" : "Reorder Buttons";
+    btn.classList.toggle("active", inventoryButtonReorderMode);
+}
+
 function toggleInventoryButtonReorderMode() {
     inventoryButtonReorderMode = !inventoryButtonReorderMode;
+    updateInventoryReorderHeaderButton();
     renderInventoryButtons();
 
     updateInventoryDisplay(
@@ -6810,6 +6869,9 @@ function resetInventoryButtonOrder() {
     const storageKey = getInventoryButtonOrderKey(category);
 
     localStorage.removeItem(storageKey);
+    inventoryButtonReorderMode = false;
+
+    updateInventoryReorderHeaderButton();
     renderInventoryButtons();
 
     updateInventoryDisplay("BUTTON ORDER RESET");
@@ -6845,26 +6907,7 @@ function resetInventoryButtonOrder() {
         return;
     }
 
-    const reorderToolsHtml = `
-        <div class="col-span-4 flex gap-2 mb-2">
-            <button
-                class="inv-tool-btn ${inventoryButtonReorderMode ? 'active' : ''}"
-                onclick="toggleInventoryButtonReorderMode()"
-                type="button"
-            >
-                ${inventoryButtonReorderMode ? 'Done Reordering' : 'Reorder Buttons'}
-            </button>
-
-            <button
-                class="inv-tool-btn"
-                onclick="resetInventoryButtonOrder()"
-                type="button"
-            >
-                Reset Order
-            </button>
-        </div>
-    `;
-
+    
     const itemButtonsHtml = filteredItems.map(function(itemName) {
         const safeItemName = itemName.replace(/'/g, "\\'");
 
@@ -6897,7 +6940,8 @@ function resetInventoryButtonOrder() {
         `;
     }).join('');
 
-    grid.innerHTML = reorderToolsHtml + itemButtonsHtml;
+    grid.innerHTML = itemButtonsHtml;
+updateInventoryReorderHeaderButton();
 }
 
 function setInventoryCategory(category, btn) {
