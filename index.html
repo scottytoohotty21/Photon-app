@@ -1654,6 +1654,9 @@ button {
     gap: 6px;
     flex-wrap: wrap;
 }
+.inventory-reorder-header-actions-hidden {
+    display: none !important;
+}
 
 .job-header-mini-btn {
     background: #ffffff;
@@ -4109,7 +4112,7 @@ Enter as: Surname, First Name
     </div>
 
     <div class="job-header-actions">
-    <div id="inventory-reorder-header-actions" class="job-header-actions hidden">
+    <div id="inventory-reorder-header-actions" class="job-header-actions inventory-reorder-header-actions-hidden">
         <button
             id="inventory-reorder-header-btn"
             class="job-header-mini-btn"
@@ -6853,11 +6856,12 @@ function updateInventoryHeaderReorderVisibility(activeTabName) {
 
     const shouldShow = activeTabName === "inventory";
 
-    headerActions.classList.toggle("hidden", !shouldShow);
+    headerActions.classList.toggle("inventory-reorder-header-actions-hidden", !shouldShow);
 
     if (!shouldShow && inventoryButtonReorderMode) {
         inventoryButtonReorderMode = false;
         updateInventoryReorderHeaderButton();
+        renderInventoryButtons();
     }
 }
 function updateInventoryReorderHeaderButton() {
