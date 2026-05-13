@@ -4312,6 +4312,9 @@ Enter as: Surname, First Name
         <button class="item-btn item-btn-blue" onclick="addBox('BOOK')">BOOK</button>
         <button class="item-btn item-btn-blue" onclick="addBox('LINEN')">LINEN</button>
         <button class="item-btn item-btn-blue" onclick="addBox('WR')">WR</button>
+        <button class="item-btn item-btn-blue" onclick="addBox('PICTURE')">PICTURE<br>PACK</button>
+        <button class="item-btn item-btn-blue" onclick="addBox('BLUE_EDGING')">BLUE<br>EDGING</button>
+        <button class="item-btn item-btn-blue" onclick="addBox('POLY_CHIPS')">POLY<br>CHIPS</button>
 
         <button class="item-btn item-btn-blue" onclick="addVolume(1)">1 CUFT</button>
         <button class="item-btn item-btn-blue" onclick="addVolume(5)">5 CUFT</button>
@@ -4727,7 +4730,10 @@ const BOX_VOLUMES = {
     books: 2,
     linen: 5,
     wr: 10
-};
+    PICTURE: 0,
+    BLUE_EDGING: 0,
+    POLY_CHIPS: 0
+    };
 
 const furnitureDB = [
     {item:"AC Unit / Humidifier", volume:10},
@@ -9098,12 +9104,15 @@ function addBox(boxCode) {
     const qty = getInventoryAddQty();
 
     const itemNameMap = {
-        "AP": "AP BOX",
-        "CG": "CG BOX",
-        "BOOK": "BOOK BOX",
-        "LINEN": "LINEN BOX",
-        "WR": "WR BOX"
-    };
+    "AP": "AP BOX",
+    "CG": "CG BOX",
+    "BOOK": "BOOK BOX",
+    "LINEN": "LINEN BOX",
+    "WR": "WR BOX",
+    "PICTURE": "PICTURE PACK",
+    "BLUE_EDGING": "BLUE EDGING",
+    "POLY_CHIPS": "POLY-CHIPS"
+};
 
     const itemName = itemNameMap[boxCode] || (boxCode + " BOX");
 
@@ -11818,7 +11827,10 @@ function buildMaterialsSummary(items) {
         sofa4Covers: 0,
 
         mirrorPicturePacks: 0,
-        wineDividers: 0
+picturePacks: 0,
+blueEdging: 0,
+polyChips: 0,
+wineDividers: 0
     };
 
     if (!Array.isArray(items)) return summary;
@@ -11839,9 +11851,13 @@ function buildMaterialsSummary(items) {
         // derived mattress bag requirements from beds and mattresses
 else if (
     itemName === "BED (SINGLE)" ||
+    itemName === "BED (CABIN BED)" ||
     itemName === "MATTRESS (SINGLE)"
 ) {
     summary.singleMattressBags += qty;
+}
+else if (itemName === "BUNK BED") {
+    summary.singleMattressBags += (qty * 2);
 }
 else if (
     itemName === "BED (DOUBLE)" ||
@@ -11867,7 +11883,10 @@ else if (
 
         // optional future direct material items
         else if (itemName === "MIRROR / PICTURE PACK") summary.mirrorPicturePacks += qty;
-        else if (itemName === "WINE DIVIDERS") summary.wineDividers += qty;
+else if (itemName === "PICTURE PACK") summary.picturePacks += qty;
+else if (itemName === "BLUE EDGING") summary.blueEdging += qty;
+else if (itemName === "POLY-CHIPS") summary.polyChops += qty;
+else if (itemName === "WINE DIVIDERS") summary.wineDividers += qty;
     });
 
     return summary;
@@ -12393,6 +12412,9 @@ function getListedBoxOrder(itemName) {
     if (name === "BOOK BOX") return 3;
     if (name === "LINEN BOX") return 4;
     if (name === "WR BOX") return 5;
+    if (name === "PICTURE PACK") return 6;
+    if (name === "BLUE EDGING") return 7;
+    if (name === "POLY-CHIPS") return 8;
 
     return 999;
 }
