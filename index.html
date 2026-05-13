@@ -11836,12 +11836,28 @@ function buildMaterialsSummary(items) {
         else if (itemName === "LINEN BOX") summary.linenBoxes += qty;
         else if (itemName === "WR BOX") summary.wrBoxes += qty;
 
-        // derived mattress bag requirements from beds
-        else if (itemName === "BED (SINGLE)") summary.singleMattressBags += qty;
-else if (itemName === "BED (DOUBLE)") summary.doubleMattressBags += qty;
-else if (itemName === "BED (QUEENSIZE)") summary.doubleMattressBags += qty;
-else if (itemName === "BED (KINGSIZE)") summary.kingMattressBags += qty;
-else if (itemName === "BED (SUPERKING)") summary.kingMattressBags += qty;
+        // derived mattress bag requirements from beds and mattresses
+else if (
+    itemName === "BED (SINGLE)" ||
+    itemName === "MATTRESS (SINGLE)"
+) {
+    summary.singleMattressBags += qty;
+}
+else if (
+    itemName === "BED (DOUBLE)" ||
+    itemName === "BED (QUEENSIZE)" ||
+    itemName === "MATTRESS (DOUBLE)" ||
+    itemName === "MATTRESS (QUEENSIZE)"
+) {
+    summary.doubleMattressBags += qty;
+}
+else if (
+    itemName === "BED (KINGSIZE)" ||
+    itemName === "BED (SUPERKING)" ||
+    itemName === "MATTRESS (KINGSIZE)"
+) {
+    summary.kingMattressBags += qty;
+}
 
         // derived sofa cover requirements from seating
         else if (itemName === "ARMCHAIR") summary.armchairCovers += qty;
