@@ -9097,7 +9097,10 @@ function getInventoryAddQty() {
 }
 function addBox(boxCode) {
     const boxVolume = BOX_VOLUMES[boxCode];
-    if (!boxVolume) return;
+
+if (boxVolume === undefined || boxVolume === null) {
+    return;
+}
 
     const clickedBtn = event && event.currentTarget ? event.currentTarget : null;
     const qtyInput = document.getElementById("inv-qty");
