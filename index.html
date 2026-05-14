@@ -18914,15 +18914,31 @@ function buildLoadDebugLine(day, taskMode, men, taskHours, equivalentLoadHours, 
 }
 function calcScheduleValidation(packing, loading, unloading, special, state){
     const loadingProfile = getLoadingProfile(state.loadingVariant, state.loadingScenario);
-    const seq = getActiveSequenceRecord();
-    const moveMode = getAutoBuildMoveMode(seq ? seq.moveType : "");
-    const effectiveLoadHours = state.loadingScenario === "exStore" ? 0 : round2(loading.hours);
+const seq = getActiveSequenceRecord();
+const moveMode = getAutoBuildMoveMode(seq ? seq.moveType : "");
 
-    const required = {
-        Pack: packing.packHours,
-        Load: moveMode === "exStore" ? 0 : effectiveLoadHours,
-        Unload: moveMode === "intoStore" ? 0 : unloading.hours
-    };
+/*
+    Planner validation:
+    Special labour is deducted from the available loading/unloading allocation,
+    rather than being treated as extra volume work.
+*/
+const collectionSpecialHours = Number(
+    special.collectionSideHours !== undefined
+        ? special.collectionSideHours
+        : special.loadSideHours || 0
+);
+
+const deliverySpecialHours = Number(
+    special.deliverySideHours !== undefined
+        ? special.deliverySideHours
+        : special.unloadSideHours || 0
+);
+
+const required = {
+    Pack: packing.packHours,
+    Load: moveMode === "exStore" ? 0 : Number(loading.volumeHours || 0),
+    Unload: moveMode === "intoStore" ? 0 : Number(unloading.volumeHours || 0)
+};
 
     const allocated = {
         Pack: 0,
@@ -19026,12 +19042,18 @@ return;
         });
     });
 
+const effectiveAllocated = {
+    Pack: allocated.Pack,
+    Load: Math.max(0, allocated.Load - collectionSpecialHours),
+    Unload: Math.max(0, allocated.Unload - deliverySpecialHours)
+};
+
 const loadingMorningRate = Number(
     loadingProfile.morningEquivalentRate || state.loadRate || 0
 );
 
 const loadingVolumeCapacity = loadingMorningRate > 0
-    ? round2(allocated.Load * loadingMorningRate)
+    ? round2(effectiveAllocated.Load * loadingMorningRate)
     : 0;
 
 const requiredLoadingVolume = loadingMorningRate > 0
@@ -19041,7 +19063,7 @@ const requiredLoadingVolume = loadingMorningRate > 0
 const unloadingRate = Number(state.unloadRate || 0);
 
 const unloadingVolumeCapacity = unloadingRate > 0
-    ? round2(allocated.Unload * unloadingRate)
+    ? round2(effectiveAllocated.Unload * unloadingRate)
     : 0;
 
 const requiredUnloadingVolume = unloadingRate > 0
@@ -19058,7 +19080,7 @@ const taskLabels = {
 
 const results = Object.keys(required).map(task => {
     const req = required[task] || 0;
-    const cap = allocated[task] || 0;
+    const cap = effectiveAllocated[task] || 0;
     const diff = round2(cap - req);
     const label = taskLabels[task] || task;
 
@@ -19100,6 +19122,16 @@ results.push({
         Math.round(requiredUnloadingVolume).toLocaleString("en-GB") +
         " cuft"
 });
+if (collectionSpecialHours || deliverySpecialHours) {
+    results.push({
+        type: "warn",
+        text:
+            "Special labour deducted from capacity — Collection: " +
+            formatHoursAndMinutes(collectionSpecialHours) +
+            ", Delivery: " +
+            formatHoursAndMinutes(deliverySpecialHours)
+    });
+}
 
 if (loadDebugLines.length) {
     results.push({
