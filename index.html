@@ -18941,11 +18941,35 @@ const required = {
 };
 
     const allocated = {
-        Pack: 0,
-        Load: 0,
-        Unload: 0
-    };
-    const loadDebugLines = [];
+    Pack: 0,
+    Load: 0,
+    Unload: 0
+};
+
+let remainingCollectionSpecialHours = collectionSpecialHours;
+let remainingDeliverySpecialHours = deliverySpecialHours;
+
+function deductSpecialFromRow(rowHours, side) {
+    const hours = Number(rowHours || 0);
+
+    if (hours <= 0) return 0;
+
+    if (side === "collection") {
+        const deduction = Math.min(hours, remainingCollectionSpecialHours);
+        remainingCollectionSpecialHours = Math.max(0, remainingCollectionSpecialHours - deduction);
+        return Math.max(0, hours - deduction);
+    }
+
+    if (side === "delivery") {
+        const deduction = Math.min(hours, remainingDeliverySpecialHours);
+        remainingDeliverySpecialHours = Math.max(0, remainingDeliverySpecialHours - deduction);
+        return Math.max(0, hours - deduction);
+    }
+
+    return hours;
+}
+
+const loadDebugLines = [];
 
     const groups = {};
 
@@ -18967,7 +18991,8 @@ const required = {
 
             if (taskMode === "load") {
     const equivalentLoadHours = getPlannerLoadEquivalentHours(day, taskHours, state);
-    const rowLoadAllocation = men * equivalentLoadHours;
+    const rawRowLoadAllocation = men * equivalentLoadHours;
+    const rowLoadAllocation = deductSpecialFromRow(rawRowLoadAllocation, "collection");
 
     allocated.Load += rowLoadAllocation;
 
@@ -18980,7 +19005,10 @@ const required = {
 
             if (taskMode === "unload") {
     const equivalentUnloadHours = getPlannerUnloadEquivalentHours(day, taskHours, state);
-    allocated.Unload += men * equivalentUnloadHours;
+    const rawRowUnloadAllocation = men * equivalentUnloadHours;
+    const rowUnloadAllocation = deductSpecialFromRow(rawRowUnloadAllocation, "delivery");
+
+    allocated.Unload += rowUnloadAllocation;
     return;
 }
 
@@ -18999,7 +19027,8 @@ const required = {
         ? equivalentLoadHoursForWholeRow / rowManHours
         : 1;
 
-    const rowLoadAllocation = remainingRawManHours * loadEquivalentRatio;
+    const rawRowLoadAllocation = remainingRawManHours * loadEquivalentRatio;
+const rowLoadAllocation = deductSpecialFromRow(rawRowLoadAllocation, "collection");
 
 allocated.Pack += toPack;
 allocated.Load += rowLoadAllocation;
@@ -19021,14 +19050,16 @@ return;
         men * getCompletionAdjustedCapacity(day, "unload", taskHours, state);
 
     const loadShortfall = Math.max(0, required.Load - allocated.Load);
-    const toLoad = Math.min(loadShortfall, maxLoadEquivalentHours);
+   const rawToLoad = Math.min(loadShortfall, maxLoadEquivalentHours);
+const toLoad = deductSpecialFromRow(rawToLoad, "collection");
 
     const rawLoadHoursUsed = maxLoadEquivalentHours > 0
         ? Math.min(totalRowManHours, totalRowManHours * (toLoad / maxLoadEquivalentHours))
         : 0;
 
     const remainingAfterLoad = Math.max(0, totalRowManHours - rawLoadHoursUsed);
-    const toUnload = Math.min(maxUnloadManHours, remainingAfterLoad);
+    const rawToUnload = Math.min(maxUnloadManHours, remainingAfterLoad);
+const toUnload = deductSpecialFromRow(rawToUnload, "delivery");
 
     allocated.Load += toLoad;
 allocated.Unload += toUnload;
@@ -19044,8 +19075,8 @@ return;
 
 const effectiveAllocated = {
     Pack: allocated.Pack,
-    Load: Math.max(0, allocated.Load - collectionSpecialHours),
-    Unload: Math.max(0, allocated.Unload - deliverySpecialHours)
+    Load: allocated.Load,
+    Unload: allocated.Unload
 };
 
 const loadingMorningRate = Number(
