@@ -12136,10 +12136,38 @@ if (Array.isArray(items)) {
 
     const entryNote = String(entry.note || "").trim();
 
+let modalDetail = "";
+
+if (entry.bedType) {
+    modalDetail = String(entry.bedType).trim();
+}
+
+if (isWardrobeInventoryItem(itemName)) {
+    const wardrobeDetail = String(formatWardrobeTypes(entry) || "").trim();
+
+    if (wardrobeDetail && wardrobeDetail !== "Type not set") {
+        modalDetail = wardrobeDetail;
+    }
+}
+
+if (
+    itemUpper === "PIANO (UPRIGHT)" ||
+    itemUpper === "PIANO (ELECTRIC)" ||
+    itemUpper === "PIANO (BABY GRAND)" ||
+    itemUpper === "PIANO (GRAND)"
+) {
+    const pianoDetail = String(getPianoDetailsListedTag(entry.pianoDetails) || "").trim();
+
+    if (pianoDetail) {
+        modalDetail = pianoDetail;
+    }
+}
+
 const line =
     (roomName ? roomName + ": " : "") +
     (qty ? qty + " x " : "") +
     itemName +
+    (modalDetail ? " — " + modalDetail : "") +
     (entryNote ? " — " + entryNote : "");
 
     if (entry.handyman) {
