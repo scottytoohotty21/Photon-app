@@ -11990,32 +11990,49 @@ function buildResponsibilitiesSummary(summary, items) {
     const autoNotes = [];
 
     const handymanItems = [];
+    const pianoItems = [];
 
 if (Array.isArray(items)) {
     items.forEach(function(entry) {
-        if (!entry || entry.excluded || !entry.handyman) return;
+    if (!entry || entry.excluded) return;
 
-        const qty = Number(entry.qty || 0);
-        const itemName = String(entry.itemName || "Item").trim();
+    const qty = Number(entry.qty || 0);
+    const itemName = String(entry.itemName || "Item").trim();
+    const itemUpper = itemName.toUpperCase();
 
-        const roomName =
-            entry.roomName ||
-            entry.room ||
-            entry.location ||
-            "";
+    const roomName =
+        entry.roomName ||
+        entry.room ||
+        entry.location ||
+        "";
 
-        const line =
-            (roomName ? roomName + ": " : "") +
-            (qty ? qty + " x " : "") +
-            itemName;
+    const line =
+        (roomName ? roomName + ": " : "") +
+        (qty ? qty + " x " : "") +
+        itemName;
 
+    if (entry.handyman) {
         handymanItems.push(line);
-    });
+    }
+
+    if (
+        itemUpper === "PIANO (UPRIGHT)" ||
+        itemUpper === "PIANO (ELECTRIC)" ||
+        itemUpper === "PIANO (BABY GRAND)" ||
+        itemUpper === "PIANO (GRAND)"
+    ) {
+        pianoItems.push(line);
+    }
+});
 }
 
 if (handymanItems.length) {
     autoNotes.push("Handyman required at additional cost, or client to arrange themselves prior to crew arrival.");
     autoNotes.push("Handyman required for: " + handymanItems.join(", ") + ".");
+}
+if (pianoItems.length) {
+    autoNotes.push("Piano specialist required at additional cost, or client to arrange themselves prior to crew arrival.");
+    autoNotes.push("Piano specialist required for: " + pianoItems.join(", ") + ".");
 }
 
     return {
@@ -13050,7 +13067,16 @@ function getPrintableResponsibilitiesHtml(summary, items) {
                     : `<div>None</div>`
             }
 
-            <div class="pdf-mini-head space-top">Auto Responsibilities</div>
+            <div class="pdf-mini-head space-top">Customer Responsibility Notes</div>
+            ${
+                editableNotes.length
+                    ? editableNotes.map(function(note) {
+                        return `<div>${escapeHtml(note)}</div>`;
+                    }).join("")
+                    : `<div>None recorded</div>`
+            }
+
+            <div class="pdf-mini-head space-top">Additional Responsibilities</div>
             ${
                 responsibilities.autoNotes.length || responsibilities.exclusionNotes.length
                     ? `
@@ -13062,15 +13088,6 @@ function getPrintableResponsibilitiesHtml(summary, items) {
                         }).join("")}
                     `
                     : `<div>None</div>`
-            }
-
-            <div class="pdf-mini-head space-top">Customer Responsibility Notes</div>
-            ${
-                editableNotes.length
-                    ? editableNotes.map(function(note) {
-                        return `<div>${escapeHtml(note)}</div>`;
-                    }).join("")
-                    : `<div>None recorded</div>`
             }
         </div>
     `;
@@ -13142,27 +13159,11 @@ ${
                         : `<div>None</div>`
                 }
 
-                <div class="pdf-mini-head space-top">Piano Specialist</div>
-                ${
-                    crew.pianos.length
-                        ? crew.pianos.map(function(item) {
-                            return `<div>${escapeHtml(item)}</div>`;
-                        }).join("")
-                        : `<div>None</div>`
-                }
-            </div>
+                            </div>
 
             <div>
-                <div class="pdf-mini-head">Handyman</div>
-                ${
-                    crew.handyman.length
-                        ? crew.handyman.map(function(item) {
-                            return `<div>${escapeHtml(item)}</div>`;
-                        }).join("")
-                        : `<div>None</div>`
-                }
-
-                <div class="pdf-mini-head space-top">Condition</div>
+                            <div>
+                <div class="pdf-mini-head">Condition</div>
 ${
     crew.damage.length
         ? crew.damage.map(function(item) {
