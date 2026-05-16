@@ -12088,10 +12088,13 @@ if (Array.isArray(items)) {
         entry.location ||
         "";
 
-    const line =
-        (roomName ? roomName + ": " : "") +
-        (qty ? qty + " x " : "") +
-        itemName;
+    const entryNote = String(entry.note || "").trim();
+
+const line =
+    (roomName ? roomName + ": " : "") +
+    (qty ? qty + " x " : "") +
+    itemName +
+    (entryNote ? " — " + entryNote : "");
 
     if (entry.handyman) {
         handymanItems.push(line);
