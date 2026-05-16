@@ -12250,9 +12250,17 @@ function buildCrewInstructionsSummary(items) {
             summary.damage.push(`${baseLine} — ${String(entry.damage).trim()}`);
         }
 
-        if (entry.note && String(entry.note).trim()) {
-            summary.notes.push(`${baseLine} — ${String(entry.note).trim()}`);
-        }
+        const noteBelongsToCustomerResponsibilities =
+    entry.handyman ||
+    entryRequiresPianoSpecialist(entry);
+
+if (
+    entry.note &&
+    String(entry.note).trim() &&
+    !noteBelongsToCustomerResponsibilities
+) {
+    summary.notes.push(`${baseLine} — ${String(entry.note).trim()}`);
+}
     });
 
     return summary;
