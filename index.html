@@ -13275,6 +13275,20 @@ function getPrintableCrewInstructionsHtml(items) {
         </div>
     `;
 }
+let movePilotPrintWindowWatcher = null;
+function runPostPrintCleanup() {
+    closeAllMovePilotModals();
+
+    if (typeof resetSimpleInputModalHard === "function") {
+        resetSimpleInputModalHard();
+    }
+
+    try {
+        window.focus();
+    } catch (err) {
+        // Some browsers/tablets ignore this.
+    }
+}
 async function printListedInventoryPdf() {
     closeAllMovePilotModals();
     if (!currentJob) return;
@@ -13328,6 +13342,18 @@ async function printListedInventoryPdf() {
     );
     return;
 }
+if (movePilotPrintWindowWatcher) {
+    clearInterval(movePilotPrintWindowWatcher);
+    movePilotPrintWindowWatcher = null;
+}
+
+movePilotPrintWindowWatcher = setInterval(function() {
+    if (printWindow.closed) {
+        clearInterval(movePilotPrintWindowWatcher);
+        movePilotPrintWindowWatcher = null;
+        runPostPrintCleanup();
+    }
+}, 500);
 
     printWindow.document.write(`
         <!DOCTYPE html>
@@ -13645,42 +13671,18 @@ async function printListedInventoryPdf() {
     printWindow.document.close();
 
     printWindow.onafterprint = function() {
+    runPostPrintCleanup();
+
     try {
         printWindow.close();
     } catch (err) {
-        // Some browsers may block this, but it is safe to try.
-    }
-
-    closeAllMovePilotModals();
-    resetSimpleInputModalHard();
-
-    try {
-        window.focus();
-    } catch (err) {
-        // Some browsers/tablets ignore this, but it is safe to try.
+        // Some browsers may block this.
     }
 };
 
 setTimeout(function() {
     printWindow.focus();
     printWindow.print();
-
-    setTimeout(function() {
-        try {
-            printWindow.close();
-        } catch (err) {
-            // Some browsers may block this, but it is safe to try.
-        }
-
-        closeAllMovePilotModals();
-        resetSimpleInputModalHard();
-
-        try {
-            window.focus();
-        } catch (err) {
-            // Some browsers/tablets ignore this, but it is safe to try.
-        }
-    }, 1500);
 }, 400);
 }
 /* =========================
@@ -19960,6 +19962,9 @@ function clearMovePilotActivationForTesting() {
     localStorage.removeItem(MOVEPILOT_ACTIVATION_STORAGE_KEY);
     location.reload();
 }
+window.addEventListener("focus", function() {
+    runPostPrintCleanup();
+});
 document.addEventListener('DOMContentLoaded', function () {
     const activation = getMovePilotActivationState();
 
