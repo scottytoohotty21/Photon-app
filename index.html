@@ -7654,12 +7654,37 @@ function openScheduleNumberModal(rowId, fieldName, currentValue) {
         inputMode: "numeric"
     });
 }
+function closeAllMovePilotModals(exceptId) {
+    [
+        "simple-input-overlay",
+        "note-overlay",
+        "misc-overlay",
+        "piano-overlay",
+        "listed-flags-overlay",
+        "crate-overlay",
+        "damage-overlay",
+        "bed-overlay",
+        "wardrobe-overlay",
+        "app-modal-overlay",
+        "inventory-photo-overlay",
+        "photo-view-overlay"
+    ].forEach(function(id) {
+        if (id === exceptId) return;
+
+        const el = document.getElementById(id);
+        if (!el) return;
+
+        el.style.display = "none";
+        el.classList.remove("show");
+    });
+}
 function openSimpleInputModal(config) {
     const overlay = document.getElementById("simple-input-overlay");
     const title = document.getElementById("simple-input-title");
     const subtitle = document.getElementById("simple-input-subtitle");
     const label = document.getElementById("simple-input-label");
     const input = document.getElementById("simple-input-field");
+    closeAllMovePilotModals("simple-input-overlay");
 
     if (!overlay || !title || !subtitle || !label || !input) return;
 
@@ -8021,30 +8046,39 @@ if (simpleInputMode === "schedule-number") {
     return;
 }
     if (simpleInputMode === "listed-edit-note") {
-        const entryKey = simpleInputMeta && simpleInputMeta.entryKey;
-        const mergedEntry = window.__listedEntryMap && window.__listedEntryMap[entryKey];
-        if (!mergedEntry) return;
+    const entryKey = simpleInputMeta && simpleInputMeta.entryKey;
+    const mergedEntry = window.__listedEntryMap && window.__listedEntryMap[entryKey];
 
-        const rawMatches = getRawEntriesForListedEntry(mergedEntry);
-        if (!rawMatches.length) return;
-
-        rawMatches.forEach(function(raw) {
-            raw.note = rawValue;
-        });
-
-        saveToDevice();
-
-if (String(activeSeqId || "") === String(mergedEntry.sequenceId || "")) {
-    rebuildLiveInventoryFromSequence(activeSeqId);
-}
-
-renderListedInventory();
-renderActionButtonStates();
-updateUndoButtonState();
-saveCalculatorFeedForActiveSequence();
-closeSimpleInputModal();
-return;
+    if (!entryKey || !mergedEntry) {
+        setModalErrorText("simple-input-error-text", "Could not find this inventory line. Close and try again.");
+        return;
     }
+
+    const rawMatches = getRawEntriesForListedEntry(mergedEntry);
+
+    if (!rawMatches.length) {
+        setModalErrorText("simple-input-error-text", "Could not find the original item. Close and try again.");
+        return;
+    }
+
+    rawMatches.forEach(function(raw) {
+        raw.note = rawValue;
+    });
+
+    saveToDevice();
+
+    if (String(activeSeqId || "") === String(mergedEntry.sequenceId || "")) {
+        rebuildLiveInventoryFromSequence(activeSeqId);
+    }
+
+    renderListedInventory();
+    renderActionButtonStates();
+    updateUndoButtonState();
+    saveCalculatorFeedForActiveSequence();
+
+    closeSimpleInputModal();
+    return;
+}
 }
 
 function getMileageRouteMissingStops(routeData) {
@@ -9332,6 +9366,7 @@ function getPianoFloorLabel(value) {
 }
 
 function openPianoModalForInventoryItem(itemName) {
+    closeAllMovePilotModals("piano-overlay");
     const overlay = document.getElementById("piano-overlay");
     const subtitle = document.getElementById("piano-subtitle");
 
@@ -9561,6 +9596,7 @@ if (isWardrobeInventoryItem(item.item)) {
 }
 }
 function addMiscItem() {
+    closeAllMovePilotModals("misc-overlay");
     const overlay = document.getElementById("misc-overlay");
     const nameInput = document.getElementById("misc-name-input");
     const volumeInput = document.getElementById("misc-volume-input");
