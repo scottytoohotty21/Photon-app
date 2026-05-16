@@ -9429,13 +9429,8 @@ function readPianoModalDetails() {
     pendingPianoDetails.collection.floor = collectionFloorEl ? collectionFloorEl.value : "ground";
 pendingPianoDetails.delivery.floor = deliveryFloorEl ? deliveryFloorEl.value : "ground";
 
-if (pendingPianoDetails.collection.floor !== "ground") {
-    pendingPianoDetails.collection.specialistRequired = true;
-}
-
-if (pendingPianoDetails.delivery.floor !== "ground") {
-    pendingPianoDetails.delivery.specialistRequired = true;
-}
+// Specialist is auto-selected when a non-ground floor is chosen,
+// but the user can manually deselect it before saving.
 
 return JSON.parse(JSON.stringify(pendingPianoDetails));
 }
@@ -11982,6 +11977,17 @@ function addCustomerResponsibilityNote() {
     renderListedInventory();
 }
 
+function entryRequiresPianoSpecialist(entry) {
+    if (!entry || !entry.pianoDetails) return false;
+
+    const collection = entry.pianoDetails.collection || {};
+    const delivery = entry.pianoDetails.delivery || {};
+
+    return !!(
+        collection.specialistRequired ||
+        delivery.specialistRequired
+    );
+}
 function buildResponsibilitiesSummary(summary, items) {
     const excludedItems = Array.isArray(summary.excludedItems) ? summary.excludedItems : [];
     const exclusionNotes = Array.isArray(summary.exclusionNotes) ? summary.exclusionNotes : [];
@@ -12016,13 +12022,16 @@ if (Array.isArray(items)) {
     }
 
     if (
+    (
         itemUpper === "PIANO (UPRIGHT)" ||
         itemUpper === "PIANO (ELECTRIC)" ||
         itemUpper === "PIANO (BABY GRAND)" ||
         itemUpper === "PIANO (GRAND)"
-    ) {
-        pianoItems.push(line);
-    }
+    ) &&
+    entryRequiresPianoSpecialist(entry)
+) {
+    pianoItems.push(line);
+}
 });
 }
 
