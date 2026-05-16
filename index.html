@@ -2124,14 +2124,16 @@ button {
             z-index: 2300;
         }
 
-        .simple-input-panel {
-            width: 92%;
+       .simple-input-panel {
+    width: 92%;
     max-width: 420px;
     background: white;
     border-radius: 20px;
     padding: 24px;
     box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
-        }
+    position: relative;
+    z-index: 2301;
+}
 
         .simple-input-title {
     font-size: 16px;
@@ -7678,6 +7680,28 @@ function closeAllMovePilotModals(exceptId) {
         el.classList.remove("show");
     });
 }
+function resetSimpleInputModalHard() {
+    const overlay = document.getElementById("simple-input-overlay");
+    const input = document.getElementById("simple-input-field");
+
+    if (overlay) {
+        overlay.style.display = "none";
+        overlay.classList.remove("show");
+    }
+
+    if (input) {
+        input.disabled = false;
+        input.readOnly = false;
+        input.removeAttribute("disabled");
+        input.removeAttribute("readonly");
+        input.style.pointerEvents = "auto";
+        input.style.userSelect = "text";
+        input.blur();
+    }
+
+    simpleInputMode = "";
+    simpleInputMeta = null;
+}
 function openSimpleInputModal(config) {
     const overlay = document.getElementById("simple-input-overlay");
     const title = document.getElementById("simple-input-title");
@@ -7695,9 +7719,16 @@ function openSimpleInputModal(config) {
     subtitle.innerText = config.subtitle || "";
     label.innerText = config.label || "Value";
     input.value = config.value || "";
-    input.placeholder = config.placeholder || "";
-    input.type = config.inputType || "text";
-    input.inputMode = config.inputMode || "text";
+input.placeholder = config.placeholder || "";
+input.type = config.inputType || "text";
+input.inputMode = config.inputMode || "text";
+
+input.disabled = false;
+input.readOnly = false;
+input.removeAttribute("disabled");
+input.removeAttribute("readonly");
+input.style.pointerEvents = "auto";
+input.style.userSelect = "text";
 
 input.oninput = function () {
     setModalErrorText("simple-input-error-text", "");
@@ -7706,14 +7737,19 @@ input.oninput = function () {
 setModalErrorText("simple-input-error-text", "");
 overlay.style.display = "flex";
 
-    setTimeout(function () {
+   setTimeout(function () {
     input.focus();
     input.select();
 }, 50);
 
 setTimeout(function () {
     input.focus();
+    input.click();
 }, 250);
+
+setTimeout(function () {
+    input.focus();
+}, 600);
 }
 
 function closeSimpleInputModal() {
@@ -13614,6 +13650,7 @@ async function printListedInventoryPdf() {
 
     setTimeout(function() {
         closeAllMovePilotModals();
+        resetSimpleInputModalHard();
 
         try {
             window.focus();
@@ -13621,6 +13658,11 @@ async function printListedInventoryPdf() {
             // Some browsers/tablets ignore this, but it is safe to try.
         }
     }, 800);
+
+    setTimeout(function() {
+        closeAllMovePilotModals();
+        resetSimpleInputModalHard();
+    }, 1800);
 }, 400);
 }
 /* =========================
