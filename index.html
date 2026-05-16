@@ -13225,7 +13225,7 @@ function getPrintableResponsibilitiesHtml(summary, items) {
                     : `<div>None recorded</div>`
             }
 
-            <div class="pdf-mini-head space-top">Additional Responsibilities</div>
+            <div class="pdf-mini-head space-top">Additional Customer Responsibilities</div>
             ${
                 responsibilities.autoNotes.length || responsibilities.exclusionNotes.length
                     ? `
@@ -13524,17 +13524,19 @@ movePilotPrintWindowWatcher = setInterval(function() {
     color: #64748b;
 }
 
-                .item-cell {
+               .item-cell {
     width: 55%;
-    font-weight: 600;
+    font-weight: 500;
     text-transform: uppercase;
+    color: #334155;
 }
 
                 .num-cell {
     width: 15%;
     text-align: center;
-    font-weight: 600;
+    font-weight: 500;
     text-transform: uppercase;
+    color: #334155;
 }
 
                 .excluded {
@@ -13602,23 +13604,32 @@ movePilotPrintWindowWatcher = setInterval(function() {
     font-weight: 500;
     text-transform: uppercase;
     line-height: 1.45;
+    color: #334155;
 }
                 .pdf-responsibility-list {
     font-size: 10.5px;
     font-weight: 500;
     text-transform: none;
     line-height: 1.45;
+    color: #334155;
 }
 
 .pdf-responsibility-list .pdf-mini-head {
+    color: #0f172a;
+    font-size: 10.5px;
+    font-weight: 900;
     text-transform: uppercase;
+    letter-spacing: 0.03em;
 }
 
                 .pdf-mini-head {
-                    color: #64748b;
-                    font-size: 10px;
-                    margin-bottom: 4px;
-                }
+    color: #0f172a;
+    font-size: 10.5px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-bottom: 5px;
+}
 
                 .space-top {
                     margin-top: 12px;
