@@ -7707,9 +7707,13 @@ setModalErrorText("simple-input-error-text", "");
 overlay.style.display = "flex";
 
     setTimeout(function () {
-        input.focus();
-        input.select();
-    }, 50);
+    input.focus();
+    input.select();
+}, 50);
+
+setTimeout(function () {
+    input.focus();
+}, 250);
 }
 
 function closeSimpleInputModal() {
@@ -13236,6 +13240,7 @@ function getPrintableCrewInstructionsHtml(items) {
     `;
 }
 async function printListedInventoryPdf() {
+    closeAllMovePilotModals();
     if (!currentJob) return;
 
     const allItems = getListedInventoryItems();
@@ -13604,9 +13609,19 @@ async function printListedInventoryPdf() {
     printWindow.document.close();
 
     setTimeout(function() {
-        printWindow.focus();
-        printWindow.print();
-    }, 400);
+    printWindow.focus();
+    printWindow.print();
+
+    setTimeout(function() {
+        closeAllMovePilotModals();
+
+        try {
+            window.focus();
+        } catch (err) {
+            // Some browsers/tablets ignore this, but it is safe to try.
+        }
+    }, 800);
+}, 400);
 }
 /* =========================
    COSTING & QUOTING STATE
