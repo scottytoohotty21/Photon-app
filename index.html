@@ -13644,11 +13644,34 @@ async function printListedInventoryPdf() {
 
     printWindow.document.close();
 
-    setTimeout(function() {
+    printWindow.onafterprint = function() {
+    try {
+        printWindow.close();
+    } catch (err) {
+        // Some browsers may block this, but it is safe to try.
+    }
+
+    closeAllMovePilotModals();
+    resetSimpleInputModalHard();
+
+    try {
+        window.focus();
+    } catch (err) {
+        // Some browsers/tablets ignore this, but it is safe to try.
+    }
+};
+
+setTimeout(function() {
     printWindow.focus();
     printWindow.print();
 
     setTimeout(function() {
+        try {
+            printWindow.close();
+        } catch (err) {
+            // Some browsers may block this, but it is safe to try.
+        }
+
         closeAllMovePilotModals();
         resetSimpleInputModalHard();
 
@@ -13657,12 +13680,7 @@ async function printListedInventoryPdf() {
         } catch (err) {
             // Some browsers/tablets ignore this, but it is safe to try.
         }
-    }, 800);
-
-    setTimeout(function() {
-        closeAllMovePilotModals();
-        resetSimpleInputModalHard();
-    }, 1800);
+    }, 1500);
 }, 400);
 }
 /* =========================
