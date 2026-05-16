@@ -13040,45 +13040,41 @@ function getPrintableResponsibilitiesHtml(summary, items) {
     });
 
     return `
-        <div class="pdf-materials-grid">
-            <div>
-                <div class="pdf-mini-head">Excluded Items (${summary.excludedCount || 0})</div>
-                ${
-                    responsibilities.excludedItems.length
-                        ? responsibilities.excludedItems.map(function(item) {
-                            return `<div>${escapeHtml(item)}</div>`;
-                        }).join("")
-                        : `<div>None</div>`
-                }
+        <div class="pdf-responsibility-list">
+            <div class="pdf-mini-head">Excluded Items (${summary.excludedCount || 0})</div>
+            ${
+                responsibilities.excludedItems.length
+                    ? responsibilities.excludedItems.map(function(item) {
+                        return `<div>${escapeHtml(item)}</div>`;
+                    }).join("")
+                    : `<div>None</div>`
+            }
 
-                <div class="pdf-mini-head space-top">Auto Responsibilities</div>
-                ${
-                    responsibilities.autoNotes.length || responsibilities.exclusionNotes.length
-                        ? `
-                            ${responsibilities.autoNotes.map(function(note) {
-                                return `<div>${escapeHtml(note)}</div>`;
-                            }).join("")}
-                            ${responsibilities.exclusionNotes.map(function(note) {
-                                return `<div>${escapeHtml(note)}</div>`;
-                            }).join("")}
-                        `
-                        : `<div>None</div>`
-                }
-            </div>
-
-            <div>
-                <div class="pdf-mini-head">Customer Responsibility Notes</div>
-                ${
-                    editableNotes.length
-                        ? editableNotes.map(function(note) {
+            <div class="pdf-mini-head space-top">Auto Responsibilities</div>
+            ${
+                responsibilities.autoNotes.length || responsibilities.exclusionNotes.length
+                    ? `
+                        ${responsibilities.autoNotes.map(function(note) {
                             return `<div>${escapeHtml(note)}</div>`;
-                        }).join("")
-                        : `<div>None recorded</div>`
-                }
-            </div>
+                        }).join("")}
+                        ${responsibilities.exclusionNotes.map(function(note) {
+                            return `<div>${escapeHtml(note)}</div>`;
+                        }).join("")}
+                    `
+                    : `<div>None</div>`
+            }
+
+            <div class="pdf-mini-head space-top">Customer Responsibility Notes</div>
+            ${
+                editableNotes.length
+                    ? editableNotes.map(function(note) {
+                        return `<div>${escapeHtml(note)}</div>`;
+                    }).join("")
+                    : `<div>None recorded</div>`
+            }
         </div>
     `;
-}
+}}
 
 function getPrintableCrewInstructionsHtml(items) {
     const crew = buildCrewInstructionsSummary(items);
@@ -13245,7 +13241,7 @@ async function printListedInventoryPdf() {
         <html lang="en">
         <head>
             <meta charset="UTF-8">
-            <title>Photon Listed Inventory PDF</title>
+            <title>MovePilot Listed Inventory PDF</title>
             <style>
                 body {
                     font-family: Arial, sans-serif;
@@ -13453,6 +13449,16 @@ async function printListedInventoryPdf() {
                     text-transform: uppercase;
                     line-height: 1.6;
                 }
+                .pdf-responsibility-list {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: none;
+    line-height: 1.55;
+}
+
+.pdf-responsibility-list .pdf-mini-head {
+    text-transform: uppercase;
+}
 
                 .pdf-mini-head {
                     color: #64748b;
@@ -13495,7 +13501,7 @@ async function printListedInventoryPdf() {
         <body>
             <div class="pdf-topbar">
                 <div>
-                    <div class="pdf-title">Photon Listed Inventory</div>
+                    <div class="pdf-title">MovePilot Listed Inventory</div>
                     <div class="pdf-sub">Customer: ${escapeHtml(customerName)}</div>
                     <div class="pdf-sub">Ref: ${escapeHtml(reference)}</div>
                 </div>
@@ -13530,13 +13536,13 @@ async function printListedInventoryPdf() {
     </div>
 
     <div class="pdf-card pdf-card-full">
-    <div class="pdf-card-title">Customer Responsibilities</div>
-    ${getPrintableResponsibilitiesHtml(listedSummary, filteredItems)}
+    <div class="pdf-card-title">Crew Instructions / Responsibilities</div>
+    ${crewSummaryHtml}
 </div>
 
 <div class="pdf-card pdf-card-full">
-    <div class="pdf-card-title">Crew Instructions / Responsibilities</div>
-    ${crewSummaryHtml}
+    <div class="pdf-card-title">Customer Responsibilities</div>
+    ${getPrintableResponsibilitiesHtml(listedSummary, filteredItems)}
 </div>
 </div>
         </body>
