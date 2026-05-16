@@ -11977,7 +11977,7 @@ function addCustomerResponsibilityNote() {
 
     ensureCustomerResponsibilityNotes();
 
-    currentJob.customerResponsibilityNotes.push("");
+    currentJob.customerResponsibilityNotes.unshift("");
     saveToDevice();
     renderListedInventory();
 }
@@ -13097,16 +13097,14 @@ function getPrintableCrewInstructionsHtml(items) {
     const crew = buildCrewInstructionsSummary(items);
 
     const hasContent =
-    crew.dismantle.length ||
-    crew.exportWrap.length ||
-    crew.crate.length ||
-    crew.disconnect.length ||
-    crew.handyman.length ||
-    crew.damage.length ||
-    crew.notes.length ||
-    crew.beds.length ||
-    crew.wardrobes.length ||
-    crew.pianos.length;
+        crew.dismantle.length ||
+        crew.exportWrap.length ||
+        crew.crate.length ||
+        crew.disconnect.length ||
+        crew.damage.length ||
+        crew.notes.length ||
+        crew.beds.length ||
+        crew.wardrobes.length;
 
     if (!hasContent) {
         return `<div class="pdf-small-note">No crew instructions or responsibilities recorded</div>`;
@@ -13115,18 +13113,28 @@ function getPrintableCrewInstructionsHtml(items) {
     return `
         <div class="pdf-materials-grid">
             <div>
-               <div class="pdf-mini-head">Beds</div>
-${
-    crew.beds.length
-        ? crew.beds.map(function(item) {
-            return `<div>${escapeHtml(item)}</div>`;
-        }).join("")
-        : `<div>None</div>`
-}
-                <div class="pdf-mini-head">Dismantle</div>
+                <div class="pdf-mini-head">Beds</div>
+                ${
+                    crew.beds.length
+                        ? crew.beds.map(function(item) {
+                            return `<div>${escapeHtml(item)}</div>`;
+                        }).join("")
+                        : `<div>None</div>`
+                }
+
+                <div class="pdf-mini-head space-top">Dismantle</div>
                 ${
                     crew.dismantle.length
                         ? crew.dismantle.map(function(item) {
+                            return `<div>${escapeHtml(item)}</div>`;
+                        }).join("")
+                        : `<div>None</div>`
+                }
+
+                <div class="pdf-mini-head space-top">Wardrobes</div>
+                ${
+                    crew.wardrobes.length
+                        ? crew.wardrobes.map(function(item) {
                             return `<div>${escapeHtml(item)}</div>`;
                         }).join("")
                         : `<div>None</div>`
@@ -13150,7 +13158,7 @@ ${
                         : `<div>None</div>`
                 }
 
-                                <div class="pdf-mini-head space-top">Disconnect</div>
+                <div class="pdf-mini-head space-top">Disconnect</div>
                 ${
                     crew.disconnect.length
                         ? crew.disconnect.map(function(item) {
@@ -13158,19 +13166,17 @@ ${
                         }).join("")
                         : `<div>None</div>`
                 }
-
-                            </div>
+            </div>
 
             <div>
-                            <div>
                 <div class="pdf-mini-head">Condition</div>
-${
-    crew.damage.length
-        ? crew.damage.map(function(item) {
-            return `<div>${escapeHtml(item)}</div>`;
-        }).join("")
-        : `<div>None</div>`
-}
+                ${
+                    crew.damage.length
+                        ? crew.damage.map(function(item) {
+                            return `<div>${escapeHtml(item)}</div>`;
+                        }).join("")
+                        : `<div>None</div>`
+                }
 
                 <div class="pdf-mini-head space-top">Notes</div>
                 ${
