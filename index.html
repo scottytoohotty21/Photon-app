@@ -13118,14 +13118,16 @@ const photoCount = getInventoryEntryPhotoCount(entry);
 if (photoCount > 0) tags.push("PHOTOS: " + photoCount);
 
 if (entry.excluded) tags.push("EXCLUDED");
-if (entry.note) tags.push("NOTE: " + entry.note.toUpperCase());
+const noteTagHtml = entry.note && String(entry.note).trim()
+    ? ` <span class="pdf-inline-note">[NOTE: ${escapeHtml(String(entry.note).trim().toUpperCase())}]</span>`
+    : "";
                 const tagText = tags.length ? " [" + tags.join("] [") + "]" : "";
                 const isExcluded = !!entry.excluded;
 
                 return `
                     <tr>
                         <td class="item-cell ${isExcluded ? 'excluded' : ''}">
-                            ${escapeHtml(entry.itemName || "-")}${escapeHtml(tagText)}
+                            ${escapeHtml(entry.itemName || "-")}${escapeHtml(tagText)}${noteTagHtml}
                         </td>
                         <td class="num-cell ${isExcluded ? 'excluded' : ''}">${entry.qty || 0}</td>
                         <td class="num-cell ${isExcluded ? 'excluded' : ''}">${isExcluded ? "" : (entry.unitVolume || 0)}</td>
@@ -13544,6 +13546,10 @@ movePilotPrintWindowWatcher = setInterval(function() {
     font-weight: 500;
     text-transform: uppercase;
     color: #334155;
+}
+.pdf-inline-note {
+    font-style: italic;
+    font-weight: 400;
 }
 
                 .num-cell {
