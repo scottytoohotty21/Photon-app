@@ -12053,6 +12053,51 @@ function addCustomerResponsibilityNote() {
     saveToDevice();
     renderListedInventory();
 }
+function ensureCrewInstructionNotes() {
+    if (!currentJob) return [];
+
+    if (!Array.isArray(currentJob.crewInstructionNotes)) {
+        currentJob.crewInstructionNotes = [];
+    }
+
+    return currentJob.crewInstructionNotes;
+}
+
+function updateCrewInstructionNote(index, value) {
+    if (!currentJob) return;
+
+    ensureCrewInstructionNotes();
+
+    if (
+        index < 0 ||
+        index >= currentJob.crewInstructionNotes.length
+    ) {
+        return;
+    }
+
+    currentJob.crewInstructionNotes[index] = String(value || "");
+    saveToDevice();
+}
+
+function deleteCrewInstructionNote(index) {
+    if (!currentJob) return;
+
+    ensureCrewInstructionNotes();
+
+    currentJob.crewInstructionNotes.splice(index, 1);
+    saveToDevice();
+    renderListedInventory();
+}
+
+function addCrewInstructionNote() {
+    if (!currentJob) return;
+
+    ensureCrewInstructionNotes();
+
+    currentJob.crewInstructionNotes.unshift("");
+    saveToDevice();
+    renderListedInventory();
+}
 
 function entryRequiresPianoSpecialist(entry) {
     if (!entry || !entry.pianoDetails) return false;
@@ -12139,17 +12184,25 @@ if (pianoItems.length) {
 }
 function buildCrewInstructionsSummary(items) {
     const summary = {
-    dismantle: [],
-    exportWrap: [],
-    crate: [],
-    disconnect: [],
-    handyman: [],
-    damage: [],
-    notes: [],
-    beds: [],
-    wardrobes: [],
-    pianos: []
-};
+        dismantle: [],
+        exportWrap: [],
+        crate: [],
+        disconnect: [],
+        handyman: [],
+        damage: [],
+        notes: [],
+        beds: [],
+        wardrobes: [],
+        pianos: []
+    };
+
+    const manualCrewNotes = ensureCrewInstructionNotes().filter(function(note) {
+        return String(note || "").trim();
+    });
+
+    manualCrewNotes.forEach(function(note) {
+        summary.notes.push(String(note).trim());
+    });
 
     if (!Array.isArray(items)) return summary;
 
@@ -12159,33 +12212,20 @@ function buildCrewInstructionsSummary(items) {
         const qty = Number(entry.qty || 0);
         const itemName = String(entry.itemName || "-").toUpperCase();
 
-        const bedSuffix = entry.bedType ? ` — ${String(entry.bedType).toUpperCase()}` : "";
-const baseLine = `${qty} x ${itemName}${bedSuffix}`;
+        const bedSuffix = entry.bedType
+            ? ` — ${String(entry.bedType).toUpperCase()}`
+            : "";
 
-if (entry.bedType) {
-    summary.beds.push(baseLine);
-}
-if (Array.isArray(entry.wardrobeTypes) && entry.wardrobeTypes.length) {
-    summary.wardrobes.push(
-        baseLine + " — " + entry.wardrobeTypes.join(", ").toUpperCase()
-    );
-}
-const pianoListedTag = getPianoDetailsListedTag(entry.pianoDetails);
-const pianoNeedsSpecialist = !!(
-    entry.pianoDetails &&
-    (
-        (entry.pianoDetails.collection && entry.pianoDetails.collection.specialistRequired) ||
-        (entry.pianoDetails.delivery && entry.pianoDetails.delivery.specialistRequired)
-    )
-);
-
-if (pianoNeedsSpecialist) {
-    summary.pianos.push(baseLine + " — " + pianoListedTag);
-}
-
+        const baseLine = `${qty} x ${itemName}${bedSuffix}`;
 
         if (entry.dismantle) {
-            summary.dismantle.push(baseLine);
+            if (isWardrobeInventoryItem(entry.itemName)) {
+                summary.dismantle.push(
+                    `${qty} x ${itemName} — ${String(formatWardrobeTypes(entry)).toUpperCase()}`
+                );
+            } else {
+                summary.dismantle.push(baseLine);
+            }
         }
 
         if (entry.expWrap) {
@@ -12204,10 +12244,6 @@ if (pianoNeedsSpecialist) {
 
         if (entry.disconnect) {
             summary.disconnect.push(baseLine);
-        }
-
-        if (entry.handyman) {
-            summary.handyman.push(baseLine);
         }
 
         if (entry.damage) {
@@ -12405,42 +12441,12 @@ function renderListedSummary(summary, materials, crewInstructions) {
     </div>
 </div>
 
-        <div class="listed-stat-card">
+                <div class="listed-stat-card">
             <div class="listed-stat-label">Crew Instructions / Responsibilities</div>
 
             <div class="space-y-3 text-[10px] font-black text-slate-900 uppercase leading-5">
                 <div>
-    <div class="text-slate-400 pb-1">Wardrobes</div>
-    ${
-        crew.wardrobes.length
-            ? crew.wardrobes.map(function(item) {
-                return `<div>${escapeHtml(item)}</div>`;
-            }).join("")
-            : `<div class="text-slate-400 italic">None</div>`
-    }
-</div>
-                <div>
-    <div class="text-slate-400 pb-1">Beds</div>
-    ${
-        crew.beds.length
-            ? crew.beds.map(function(item) {
-                return `<div>${escapeHtml(item)}</div>`;
-            }).join("")
-            : `<div class="text-slate-400 italic">None</div>`
-    }
-</div>
-<div>
-    <div class="text-slate-400 pb-1">Piano Specialist</div>
-    ${
-        crew.pianos.length
-            ? crew.pianos.map(function(item) {
-                return `<div>${escapeHtml(item)}</div>`;
-            }).join("")
-            : `<div class="text-slate-400 italic">None</div>`
-    }
-</div>
-                <div>
-                    <div class="text-slate-400 pb-1">Dismantle</div>
+                    <div class="text-slate-400 pb-1">Dismantle / Reassemble</div>
                     ${
                         crew.dismantle.length
                             ? crew.dismantle.map(function(item) {
@@ -12462,7 +12468,7 @@ function renderListedSummary(summary, materials, crewInstructions) {
                 </div>
 
                 <div>
-                    <div class="text-slate-400 pb-1">Crate</div>
+                    <div class="text-slate-400 pb-1">Crates</div>
                     ${
                         crew.crate.length
                             ? crew.crate.map(function(item) {
@@ -12470,6 +12476,51 @@ function renderListedSummary(summary, materials, crewInstructions) {
                             }).join("")
                             : `<div class="text-slate-400 italic">None</div>`
                     }
+                </div>
+
+                <div>
+                    <div class="text-slate-400 pb-1">Notes</div>
+
+                    ${
+                        crew.notes.length
+                            ? crew.notes.map(function(item) {
+                                return `<div>${escapeHtml(item)}</div>`;
+                            }).join("")
+                            : `<div class="text-slate-400 italic">None</div>`
+                    }
+
+                    <div class="mt-2">
+                        ${
+                            ensureCrewInstructionNotes().length
+                                ? ensureCrewInstructionNotes().map(function(note, index) {
+                                    return `
+                                        <div class="customer-responsibility-edit-row">
+                                            <textarea
+                                                class="customer-responsibility-input"
+                                                oninput="updateCrewInstructionNote(${index}, this.value)"
+                                            >${escapeHtml(note)}</textarea>
+
+                                            <button
+                                                type="button"
+                                                class="customer-responsibility-delete"
+                                                onclick="deleteCrewInstructionNote(${index})"
+                                                title="Remove crew instruction note"
+                                                aria-label="Remove crew instruction note"
+                                            >×</button>
+                                        </div>
+                                    `;
+                                }).join("")
+                                : ``
+                        }
+
+                        <button
+                            type="button"
+                            class="customer-responsibility-add"
+                            onclick="addCrewInstructionNote()"
+                        >
+                            + Add Crew Note
+                        </button>
+                    </div>
                 </div>
 
                 <div>
@@ -12484,32 +12535,10 @@ function renderListedSummary(summary, materials, crewInstructions) {
                 </div>
 
                 <div>
-                    <div class="text-slate-400 pb-1">Handyman</div>
+                    <div class="text-slate-400 pb-1">Condition</div>
                     ${
-                        crew.handyman.length
-                            ? crew.handyman.map(function(item) {
-                                return `<div>${escapeHtml(item)}</div>`;
-                            }).join("")
-                            : `<div class="text-slate-400 italic">None</div>`
-                    }
-                </div>
-
-                <div>
-    <div class="text-slate-400 pb-1">Condition</div>
-    ${
-        crew.damage.length
-            ? crew.damage.map(function(item) {
-                return `<div>${escapeHtml(item)}</div>`;
-            }).join("")
-            : `<div class="text-slate-400 italic">None</div>`
-    }
-</div>
-
-                <div>
-                    <div class="text-slate-400 pb-1">Notes</div>
-                    ${
-                        crew.notes.length
-                            ? crew.notes.map(function(item) {
+                        crew.damage.length
+                            ? crew.damage.map(function(item) {
                                 return `<div>${escapeHtml(item)}</div>`;
                             }).join("")
                             : `<div class="text-slate-400 italic">None</div>`
@@ -13208,45 +13237,13 @@ function getPrintableResponsibilitiesHtml(summary, items) {
 function getPrintableCrewInstructionsHtml(items) {
     const crew = buildCrewInstructionsSummary(items);
 
-    const hasContent =
-        crew.dismantle.length ||
-        crew.exportWrap.length ||
-        crew.crate.length ||
-        crew.disconnect.length ||
-        crew.damage.length ||
-        crew.notes.length ||
-        crew.beds.length ||
-        crew.wardrobes.length;
-
-    if (!hasContent) {
-        return `<div class="pdf-small-note">No crew instructions or responsibilities recorded</div>`;
-    }
-
     return `
         <div class="pdf-materials-grid">
             <div>
-                <div class="pdf-mini-head">Beds</div>
-                ${
-                    crew.beds.length
-                        ? crew.beds.map(function(item) {
-                            return `<div>${escapeHtml(item)}</div>`;
-                        }).join("")
-                        : `<div>None</div>`
-                }
-
-                <div class="pdf-mini-head space-top">Dismantle</div>
+                <div class="pdf-mini-head">Dismantle / Reassemble</div>
                 ${
                     crew.dismantle.length
                         ? crew.dismantle.map(function(item) {
-                            return `<div>${escapeHtml(item)}</div>`;
-                        }).join("")
-                        : `<div>None</div>`
-                }
-
-                <div class="pdf-mini-head space-top">Wardrobes</div>
-                ${
-                    crew.wardrobes.length
-                        ? crew.wardrobes.map(function(item) {
                             return `<div>${escapeHtml(item)}</div>`;
                         }).join("")
                         : `<div>None</div>`
@@ -13261,10 +13258,21 @@ function getPrintableCrewInstructionsHtml(items) {
                         : `<div>None</div>`
                 }
 
-                <div class="pdf-mini-head space-top">Crate</div>
+                <div class="pdf-mini-head space-top">Crates</div>
                 ${
                     crew.crate.length
                         ? crew.crate.map(function(item) {
+                            return `<div>${escapeHtml(item)}</div>`;
+                        }).join("")
+                        : `<div>None</div>`
+                }
+            </div>
+
+            <div>
+                <div class="pdf-mini-head">Notes</div>
+                ${
+                    crew.notes.length
+                        ? crew.notes.map(function(item) {
                             return `<div>${escapeHtml(item)}</div>`;
                         }).join("")
                         : `<div>None</div>`
@@ -13278,22 +13286,11 @@ function getPrintableCrewInstructionsHtml(items) {
                         }).join("")
                         : `<div>None</div>`
                 }
-            </div>
 
-            <div>
-                <div class="pdf-mini-head">Condition</div>
+                <div class="pdf-mini-head space-top">Condition</div>
                 ${
                     crew.damage.length
                         ? crew.damage.map(function(item) {
-                            return `<div>${escapeHtml(item)}</div>`;
-                        }).join("")
-                        : `<div>None</div>`
-                }
-
-                <div class="pdf-mini-head space-top">Notes</div>
-                ${
-                    crew.notes.length
-                        ? crew.notes.map(function(item) {
                             return `<div>${escapeHtml(item)}</div>`;
                         }).join("")
                         : `<div>None</div>`
