@@ -4315,8 +4315,9 @@ Enter as: Surname, First Name
         <button class="item-btn item-btn-blue" onclick="addBox('LINEN')">LINEN</button>
         <button class="item-btn item-btn-blue" onclick="addBox('WR')">WR</button>
         <button class="item-btn item-btn-blue" onclick="addBox('PICTURE')">PICTURE<br>PACK</button>
-        <button class="item-btn item-btn-blue" onclick="addBox('BLUE_EDGING')">BLUE<br>EDGING</button>
-        <button class="item-btn item-btn-blue" onclick="addBox('POLY_CHIPS')">POLY<br>CHIPS</button>
+<button class="item-btn item-btn-blue" onclick="addBox('WINE_DIVIDERS')">WINE<br>DIVIDERS</button>
+<button class="item-btn item-btn-blue" onclick="addBox('BLUE_EDGING')">BLUE<br>EDGING</button>
+<button class="item-btn item-btn-blue" onclick="addBox('POLY_CHIPS')">POLY<br>CHIPS</button>
 
         <button class="item-btn item-btn-blue" onclick="addVolume(1)">1 CUFT</button>
         <button class="item-btn item-btn-blue" onclick="addVolume(5)">5 CUFT</button>
@@ -4733,8 +4734,9 @@ const BOX_VOLUMES = {
     linen: 5,
     wr: 10,
     PICTURE: 0,
-    BLUE_EDGING: 0,
-    POLY_CHIPS: 0
+WINE_DIVIDERS: 0,
+BLUE_EDGING: 0,
+POLY_CHIPS: 0,
     };
 
 const furnitureDB = [
@@ -9187,8 +9189,9 @@ if (boxVolume === undefined || boxVolume === null) {
     "LINEN": "LINEN BOX",
     "WR": "WR BOX",
     "PICTURE": "PICTURE PACK",
-    "BLUE_EDGING": "BLUE EDGING",
-    "POLY_CHIPS": "POLY-CHIPS"
+"WINE_DIVIDERS": "WINE DIVIDERS",
+"BLUE_EDGING": "BLUE EDGING",
+"POLY_CHIPS": "POLY CHIPS"
 };
 
     const itemName = itemNameMap[boxCode] || (boxCode + " BOX");
@@ -11900,8 +11903,7 @@ function buildMaterialsSummary(items) {
         sofa3Covers: 0,
         sofa4Covers: 0,
 
-        mirrorPicturePacks: 0,
-picturePacks: 0,
+        picturePacks: 0,
 blueEdging: 0,
 polyChips: 0,
 wineDividers: 0
@@ -11956,8 +11958,7 @@ else if (
         else if (itemName === "SOFA 4 SEAT") summary.sofa4Covers += qty;
 
         // optional future direct material items
-        else if (itemName === "MIRROR / PICTURE PACK") summary.mirrorPicturePacks += qty;
-else if (itemName === "PICTURE PACK") summary.picturePacks += qty;
+       else if (itemName === "PICTURE PACK") summary.picturePacks += qty;
 else if (itemName === "BLUE EDGING") summary.blueEdging += qty;
 else if (itemName === "POLY-CHIPS") summary.polyChops += qty;
 else if (itemName === "WINE DIVIDERS") summary.wineDividers += qty;
@@ -12318,9 +12319,20 @@ function renderListedSummary(summary, materials, crewInstructions) {
                     <div>3-Seater: ${materials.sofa3Covers}</div>
                     <div>4-Seater: ${materials.sofa4Covers}</div>
 
-                    <div class="pt-2 text-slate-400">Special Packs</div>
-                    <div>Mirror / Picture: ${materials.mirrorPicturePacks}</div>
-                    <div>Wine Dividers: ${materials.wineDividers}</div>
+                    ${
+    materials.picturePacks ||
+    materials.wineDividers ||
+    materials.blueEdging ||
+    materials.polyChips
+        ? `
+            <div class="pt-2 text-slate-400">Special Packs / Materials</div>
+            ${materials.picturePacks ? `<div>Picture Packs: ${materials.picturePacks}</div>` : ""}
+            ${materials.wineDividers ? `<div>Wine Dividers: ${materials.wineDividers}</div>` : ""}
+            ${materials.blueEdging ? `<div>Blue Edging: ${materials.blueEdging}</div>` : ""}
+            ${materials.polyChips ? `<div>Poly Chips: ${materials.polyChips}</div>` : ""}
+        `
+        : ""
+}
                 </div>
             </div>
         </div>
@@ -12521,8 +12533,9 @@ function getListedBoxOrder(itemName) {
     if (name === "LINEN BOX") return 4;
     if (name === "WR BOX") return 5;
     if (name === "PICTURE PACK") return 6;
-    if (name === "BLUE EDGING") return 7;
-    if (name === "POLY-CHIPS") return 8;
+if (name === "WINE DIVIDERS") return 7;
+if (name === "BLUE EDGING") return 8;
+if (name === "POLY CHIPS") return 9;
 
     return 999;
 }
@@ -13126,9 +13139,20 @@ function getPrintableMaterialsHtml(materials) {
                 <div>3-Seater: ${materials.sofa3Covers}</div>
                 <div>4-Seater: ${materials.sofa4Covers}</div>
 
-                <div class="pdf-mini-head space-top">Special Packs</div>
-                <div>Mirror / Picture: ${materials.mirrorPicturePacks}</div>
-                <div>Wine Dividers: ${materials.wineDividers}</div>
+                ${
+    materials.picturePacks ||
+    materials.wineDividers ||
+    materials.blueEdging ||
+    materials.polyChips
+        ? `
+            <div class="pdf-mini-head space-top">Special Packs / Materials</div>
+            ${materials.picturePacks ? `<div>Picture Packs: ${materials.picturePacks}</div>` : ""}
+            ${materials.wineDividers ? `<div>Wine Dividers: ${materials.wineDividers}</div>` : ""}
+            ${materials.blueEdging ? `<div>Blue Edging: ${materials.blueEdging}</div>` : ""}
+            ${materials.polyChips ? `<div>Poly Chips: ${materials.polyChips}</div>` : ""}
+        `
+        : ""
+}
             </div>
         </div>
     `;
