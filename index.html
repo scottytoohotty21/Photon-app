@@ -13426,24 +13426,11 @@ movePilotPrintWindowWatcher = setInterval(function() {
                     margin-top: 2px;
                 }
 
-                .pdf-filter-bar {
-                    margin-bottom: 20px;
-                    padding: 12px;
-                    background: #f8fafc;
-                    border: 1px solid #e2e8f0;
-                }
-
-                .pdf-filter-line {
-                    margin-bottom: 4px;
-                    font-size: 11px;
-                    text-transform: uppercase;
-                }
-
-                .pdf-section {
-                    border: 1px solid #cbd5e1;
-                    margin-bottom: 18px;
-                    page-break-inside: avoid;
-                }
+                                .pdf-section {
+    border: 1px solid #cbd5e1;
+    margin-bottom: 14px;
+    page-break-inside: auto;
+}
 
                 .pdf-section-head {
                     background: #0f172a;
@@ -13558,8 +13545,8 @@ movePilotPrintWindowWatcher = setInterval(function() {
                 .pdf-footer-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-top: 24px;
+    gap: 14px;
+    margin-top: 12px;
     page-break-inside: avoid;
     align-items: start;
 }
@@ -13676,13 +13663,7 @@ movePilotPrintWindowWatcher = setInterval(function() {
                 </div>
             </div>
 
-            <div class="pdf-filter-bar">
-                <div class="pdf-filter-line"><strong>Sequence View:</strong> ${escapeHtml(seqLabel)}</div>
-                <div class="pdf-filter-line"><strong>Delivery View:</strong> ${escapeHtml(deliveryLabel)}</div>
-                <div class="pdf-filter-line"><strong>Search Filter:</strong> ${escapeHtml(listedTextFilter || "None")}</div>
-            </div>
-
-            ${sectionsHtml}
+                    ${sectionsHtml}
 
             <div class="pdf-footer-grid">
     <div class="pdf-card">
