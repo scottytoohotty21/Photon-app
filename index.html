@@ -13550,6 +13550,14 @@ movePilotPrintWindowWatcher = setInterval(function() {
     page-break-inside: avoid;
     align-items: start;
 }
+.pdf-responsibilities-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-top: 14px;
+    page-break-inside: auto;
+    align-items: start;
+}
 
 .pdf-card-full {
     grid-column: span 2;
@@ -13680,16 +13688,18 @@ movePilotPrintWindowWatcher = setInterval(function() {
             ${getPrintableMaterialsHtml(materialsSummary)}
         </div>
     </div>
+</div>
+
+<div class="pdf-responsibilities-grid">
+    <div class="pdf-card pdf-card-full">
+        <div class="pdf-card-title">Crew Instructions / Responsibilities</div>
+        ${crewSummaryHtml}
+    </div>
 
     <div class="pdf-card pdf-card-full">
-    <div class="pdf-card-title">Crew Instructions / Responsibilities</div>
-    ${crewSummaryHtml}
-</div>
-
-<div class="pdf-card pdf-card-full">
-    <div class="pdf-card-title">Customer Responsibilities</div>
-    ${getPrintableResponsibilitiesHtml(listedSummary, filteredItems)}
-</div>
+        <div class="pdf-card-title">Customer Responsibilities</div>
+        ${getPrintableResponsibilitiesHtml(listedSummary, filteredItems)}
+    </div>
 </div>
         </body>
         </html>
