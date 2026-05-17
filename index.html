@@ -11970,7 +11970,7 @@ function getSafeDetailsListedTag(safeDetails) {
     }
 
     if (safeRequiresHeavyLiftReviewFromDetails(safeDetails)) {
-        text += " — HEAVY LIFT REVIEW REQUIRED";
+        text += " — HEAVY LIFTING TEAM REQUIRED";
     }
 
     return text;
@@ -12392,8 +12392,8 @@ if (pianoItems.length) {
     autoNotes.push("Piano specialist required for: " + pianoItems.join(", ") + ".");
 }
 if (safeItems.length) {
-    autoNotes.push("Safe / heavy lifting specialist review required at additional cost, or client to arrange themselves prior to crew arrival.");
-    autoNotes.push("Safe / heavy lifting specialist review required for: " + safeItems.join(", ") + ".");
+    autoNotes.push("Heavy lifting team required at additional cost, or client to arrange themselves prior to crew arrival.");
+    autoNotes.push("Heavy lifting team required for: " + safeItems.join(", ") + ".");
 }
 
     return {
