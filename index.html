@@ -12212,17 +12212,18 @@ if (pianoItems.length) {
 }
 function buildCrewInstructionsSummary(items) {
     const summary = {
-        dismantle: [],
-        exportWrap: [],
-        crate: [],
-        disconnect: [],
-        handyman: [],
-        damage: [],
-        notes: [],
-        beds: [],
-        wardrobes: [],
-        pianos: []
-    };
+    dismantle: [],
+    exportWrap: [],
+    crate: [],
+    disconnect: [],
+    handyman: [],
+    damage: [],
+    notes: [],
+    specialHandling: [],
+    beds: [],
+    wardrobes: [],
+    pianos: []
+};
 
     const manualCrewNotes = ensureCrewInstructionNotes().filter(function(note) {
         return String(note || "").trim();
@@ -12245,6 +12246,24 @@ function buildCrewInstructionsSummary(items) {
             : "";
 
         const baseLine = `${qty} x ${itemName}${bedSuffix}`;
+        const isPianoItem =
+    itemName === "PIANO (UPRIGHT)" ||
+    itemName === "PIANO (ELECTRIC)" ||
+    itemName === "PIANO (BABY GRAND)" ||
+    itemName === "PIANO (GRAND)";
+
+if (isPianoItem) {
+    const pianoListedTag = getPianoDetailsListedTag(entry.pianoDetails);
+    summary.specialHandling.push(
+        pianoListedTag
+            ? `${baseLine} — ${pianoListedTag}`
+            : baseLine
+    );
+}
+
+if (itemName === "SAFE") {
+    summary.specialHandling.push(baseLine);
+}
 
         if (entry.dismantle) {
             if (isWardrobeInventoryItem(entry.itemName)) {
@@ -12558,6 +12577,16 @@ function renderListedSummary(summary, materials, crewInstructions) {
                         </button>
                     </div>
                 </div>
+                <div>
+    <div class="text-slate-400 pb-1">Special Handling</div>
+    ${
+        crew.specialHandling.length
+            ? crew.specialHandling.map(function(item) {
+                return `<div>${escapeHtml(item)}</div>`;
+            }).join("")
+            : `<div class="text-slate-400 italic">None</div>`
+    }
+</div>
 
                 <div>
                     <div class="text-slate-400 pb-1">Disconnect</div>
@@ -13308,15 +13337,24 @@ function getPrintableCrewInstructionsHtml(items) {
 
             <div>
                 <div class="pdf-mini-head">Notes</div>
-                ${
-                    crew.notes.length
-                        ? crew.notes.map(function(item) {
-                            return `<div>${escapeHtml(item)}</div>`;
-                        }).join("")
-                        : `<div>None</div>`
-                }
+${
+    crew.notes.length
+        ? crew.notes.map(function(item) {
+            return `<div>${escapeHtml(item)}</div>`;
+        }).join("")
+        : `<div>None</div>`
+}
 
-                <div class="pdf-mini-head space-top">Disconnect</div>
+<div class="pdf-mini-head space-top">Special Handling</div>
+${
+    crew.specialHandling.length
+        ? crew.specialHandling.map(function(item) {
+            return `<div>${escapeHtml(item)}</div>`;
+        }).join("")
+        : `<div>None</div>`
+}
+
+<div class="pdf-mini-head space-top">Disconnect</div>
                 ${
                     crew.disconnect.length
                         ? crew.disconnect.map(function(item) {
