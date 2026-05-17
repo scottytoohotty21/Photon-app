@@ -6594,7 +6594,8 @@ function buildRawInventoryEntry(entryData) {
         damage: entryData.damage || "",
     bedType: entryData.bedType || "",
     wardrobeTypes: Array.isArray(entryData.wardrobeTypes) ? entryData.wardrobeTypes : [],
-    pianoDetails: entryData.pianoDetails || null
+pianoDetails: entryData.pianoDetails || null,
+safeDetails: entryData.safeDetails || null
 };
 }
 
@@ -11638,6 +11639,9 @@ function getRawEntriesForListedEntry(entry) {
             entry.crateDims.unit || ""
         ].join("|")
         : "";
+        const safeText = entry.safeDetails
+    ? JSON.stringify(entry.safeDetails)
+    : "";
 
     return currentJob.inventory.items.filter(function(raw) {
         const rawCrateText = raw.crated && raw.crateDims
@@ -11648,6 +11652,9 @@ function getRawEntriesForListedEntry(entry) {
                 raw.crateDims.unit || ""
             ].join("|")
             : "";
+            const rawSafeText = raw.safeDetails
+    ? JSON.stringify(raw.safeDetails)
+    : "";
 
         return (
             String(raw.sequenceId || "") === String(entry.sequenceId || "") &&
@@ -11666,7 +11673,8 @@ String(raw.damage || "") === String(entry.damage || "") &&
 String(raw.bedType || "") === String(entry.bedType || "") &&
 String(Array.isArray(raw.wardrobeTypes) ? raw.wardrobeTypes.join("|") : "") === String(Array.isArray(entry.wardrobeTypes) ? entry.wardrobeTypes.join("|") : "") &&
 !!raw.crated === !!entry.crated &&
-            rawCrateText === crateText
+            rawCrateText === crateText &&
+rawSafeText === safeText
         );
     });
 }
@@ -12028,6 +12036,7 @@ entry.damage || "",
 entry.bedType || "",
 Array.isArray(entry.wardrobeTypes) ? entry.wardrobeTypes.join("|") : "",
 entry.pianoDetails ? JSON.stringify(entry.pianoDetails) : "",
+entry.safeDetails ? JSON.stringify(entry.safeDetails) : "",
 !!entry.crated,
         crateText
     ].join("||");
