@@ -731,6 +731,18 @@ button {
     transition: transform 0.08s ease, box-shadow 0.08s ease, border-color 0.08s ease;
 }
 
+.inventory-furniture-btn {
+    background: #ffffff;
+    border-color: #cbd5e1;
+    color: #0f172a;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+}
+
+.inventory-furniture-btn:hover {
+    border-color: #94a3b8;
+    background: #f8fafc;
+}
+
 .item-btn:active {
     transform: scale(0.98);
 }
@@ -4332,9 +4344,8 @@ Enter as: Surname, First Name
         </div>
     </div>
 
-    <div class="col-span-1 grid grid-cols-1 gap-1 inventory-side-column">
-        <button class="item-btn bg-red-50 text-red-500 border-red-100 flex-col">
-           <div class="col-span-1 grid grid-cols-1 gap-1 inventory-side-column">
+   
+        <div class="col-span-1 grid grid-cols-1 gap-1 inventory-side-column">
     <button class="item-btn item-btn-carton" onclick="addBox('AP')">AP</button>
     <button class="item-btn item-btn-carton" onclick="addBox('CG')">CG</button>
     <button class="item-btn item-btn-carton" onclick="addBox('BOOK')">BOOK</button>
@@ -7614,11 +7625,11 @@ function resetInventoryButtonOrder() {
         const safeItemName = itemName.replace(/'/g, "\\'");
 
         if (!inventoryButtonReorderMode) {
-            return `<button class="item-btn" onclick="addInventoryItem('${safeItemName}')">${itemName}</button>`;
+            return `<button class="item-btn inventory-furniture-btn" onclick="addInventoryItem('${safeItemName}')">${itemName}</button>`;
         }
 
         return `
-            <div class="item-btn flex flex-col gap-1" style="height:auto; min-height:74px;">
+            <div class="item-btn inventory-furniture-btn flex flex-col gap-1" style="height:auto; min-height:74px;">
                 <div>${itemName}</div>
                 <div class="flex gap-1 justify-center">
                     <button
