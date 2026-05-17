@@ -7664,6 +7664,7 @@ function closeAllMovePilotModals(exceptId) {
         "note-overlay",
         "misc-overlay",
         "piano-overlay",
+        "safe-overlay",
         "listed-flags-overlay",
         "crate-overlay",
         "damage-overlay",
@@ -9407,6 +9408,96 @@ function getPianoFloorLabel(value) {
 
     return labels[value] || "Ground";
 }
+let pendingSafeItemName = "";
+let pendingSafeDetails = null;
+
+function openSafeModalForInventoryItem(itemName) {
+    closeAllMovePilotModals("safe-overlay");
+
+    const overlay = document.getElementById("safe-overlay");
+    const subtitle = document.getElementById("safe-subtitle");
+
+    if (!overlay) return;
+
+    pendingSafeItemName = itemName;
+    pendingSafeDetails = createDefaultSafeDetails();
+
+    if (subtitle) {
+        subtitle.innerText = "Set safe access and weight details for " + itemName;
+    }
+
+    resetSafeModalFields();
+
+    overlay.style.display = "flex";
+}
+
+function closeSafeModal() {
+    const overlay = document.getElementById("safe-overlay");
+
+    if (overlay) {
+        overlay.style.display = "none";
+    }
+
+    setModalErrorText("safe-error-text", "");
+
+    pendingSafeItemName = "";
+    pendingSafeDetails = null;
+}
+
+function resetSafeModalFields() {
+    const collectionFloorEl = document.getElementById("safe-collection-floor");
+    const deliveryFloorEl = document.getElementById("safe-delivery-floor");
+    const weightEl = document.getElementById("safe-weight-kg");
+
+    if (collectionFloorEl) collectionFloorEl.value = "ground";
+    if (deliveryFloorEl) deliveryFloorEl.value = "ground";
+    if (weightEl) weightEl.value = "";
+}
+
+function readSafeModalDetails() {
+    if (!pendingSafeDetails) {
+        pendingSafeDetails = createDefaultSafeDetails();
+    }
+
+    const collectionFloorEl = document.getElementById("safe-collection-floor");
+    const deliveryFloorEl = document.getElementById("safe-delivery-floor");
+    const weightEl = document.getElementById("safe-weight-kg");
+
+    pendingSafeDetails.collection.floor = collectionFloorEl ? collectionFloorEl.value : "ground";
+    pendingSafeDetails.delivery.floor = deliveryFloorEl ? deliveryFloorEl.value : "ground";
+    pendingSafeDetails.weightKg = weightEl ? String(weightEl.value || "").trim() : "";
+
+    return JSON.parse(JSON.stringify(pendingSafeDetails));
+}
+
+function saveSafeModal() {
+    const itemName = pendingSafeItemName;
+    const safeDetails = readSafeModalDetails();
+
+    if (!itemName) {
+        setModalErrorText("safe-error-text", "No safe item selected.");
+        return;
+    }
+
+    const weightText = String(safeDetails.weightKg || "").trim();
+
+    if (weightText) {
+        const weightNumber = Number(weightText);
+
+        if (isNaN(weightNumber) || weightNumber < 0) {
+            setModalErrorText("safe-error-text", "Enter a valid weight in kg, or leave blank if unknown.");
+            return;
+        }
+    }
+
+    setModalErrorText("safe-error-text", "");
+
+    closeSafeModal();
+
+    addInventoryItem(itemName, {
+        safeDetails: safeDetails
+    });
+}
 
 function openPianoModalForInventoryItem(itemName) {
     closeAllMovePilotModals("piano-overlay");
@@ -9541,6 +9632,10 @@ function addInventoryItem(itemName, extraData) {
         openPianoModalForInventoryItem(item.item);
         return;
     }
+    if (isSafeInventoryItem(item.item) && !extraData.safeDetails) {
+    openSafeModalForInventoryItem(item.item);
+    return;
+}
 
     const clickedBtn = event && event.currentTarget ? event.currentTarget : null;
     const qtyInput = document.getElementById("inv-qty");
@@ -9562,8 +9657,9 @@ function addInventoryItem(itemName, extraData) {
     note: "",
     damage: "",
     pianoDetails: extraData.pianoDetails || null,
-    crated: false,
-    crateDims: null
+safeDetails: extraData.safeDetails || null,
+crated: false,
+crateDims: null
 });
 
     lastAddedItemName = itemName;
@@ -9592,7 +9688,8 @@ function addInventoryItem(itemName, extraData) {
             damage: "",
             crated: false,
             crateDims: null,
-            pianoDetails: extraData.pianoDetails || null
+            pianoDetails: extraData.pianoDetails || null,
+safeDetails: extraData.safeDetails || null
         });
     }
 
@@ -9606,7 +9703,8 @@ function addInventoryItem(itemName, extraData) {
         unitVolume: item.volume,
         totalVolume: item.volume * qty,
         kind: "item",
-        pianoDetails: extraData.pianoDetails || null
+        pianoDetails: extraData.pianoDetails || null,
+safeDetails: extraData.safeDetails || null
     });
 
     inventoryHistory.push({
@@ -11795,6 +11893,80 @@ function getPianoDetailsListedTag(pianoDetails) {
 
     return "PIANO: COL " + collectionText + " → DEL " + deliveryText;
 }
+function isSafeInventoryItem(itemName) {
+    return String(itemName || "").trim().toUpperCase() === "SAFE";
+}
+
+function createDefaultSafeDetails() {
+    return {
+        collection: {
+            floor: "ground"
+        },
+        delivery: {
+            floor: "ground"
+        },
+        weightKg: ""
+    };
+}
+
+function getSafeFloorDisplayText(floor) {
+    const clean = String(floor || "ground").trim();
+
+    if (clean === "basement") return "BASEMENT";
+    if (clean === "ground") return "GROUND";
+    if (clean === "first") return "1ST";
+    if (clean === "second") return "2ND";
+    if (clean === "above_second") return "ABOVE 2ND";
+
+    return clean.toUpperCase();
+}
+
+function safeRequiresHeavyLiftReviewFromDetails(safeDetails) {
+    if (!safeDetails) return false;
+
+    const collectionFloor = String(safeDetails.collection && safeDetails.collection.floor || "ground");
+    const deliveryFloor = String(safeDetails.delivery && safeDetails.delivery.floor || "ground");
+    const weightKg = Number(safeDetails.weightKg || 0);
+
+    return (
+        weightKg > 100 ||
+        collectionFloor !== "ground" ||
+        deliveryFloor !== "ground"
+    );
+}
+
+function entryRequiresSafeHeavyLiftReview(entry) {
+    if (!entry || !entry.safeDetails) return false;
+    return safeRequiresHeavyLiftReviewFromDetails(entry.safeDetails);
+}
+
+function getSafeDetailsListedTag(safeDetails) {
+    if (!safeDetails) return "";
+
+    const collectionFloor = getSafeFloorDisplayText(
+        safeDetails.collection && safeDetails.collection.floor
+    );
+
+    const deliveryFloor = getSafeFloorDisplayText(
+        safeDetails.delivery && safeDetails.delivery.floor
+    );
+
+    const weightKg = String(safeDetails.weightKg || "").trim();
+
+    let text = "SAFE: COL " + collectionFloor + " → DEL " + deliveryFloor;
+
+    if (weightKg) {
+        text += " / WEIGHT: " + weightKg + "KG";
+    } else {
+        text += " / WEIGHT: NOT KNOWN";
+    }
+
+    if (safeRequiresHeavyLiftReviewFromDetails(safeDetails)) {
+        text += " — HEAVY LIFT REVIEW REQUIRED";
+    }
+
+    return text;
+}
 function getInventoryEntryPhotoCount(entry) {
     if (!entry || !entry.photos || !Array.isArray(entry.photos.item)) {
         return 0;
@@ -12118,7 +12290,8 @@ function buildResponsibilitiesSummary(summary, items) {
     const autoNotes = [];
 
     const handymanItems = [];
-    const pianoItems = [];
+const pianoItems = [];
+const safeItems = [];
 
 if (Array.isArray(items)) {
     items.forEach(function(entry) {
@@ -12162,6 +12335,13 @@ if (
         modalDetail = pianoDetail;
     }
 }
+if (itemUpper === "SAFE") {
+    const safeDetail = String(getSafeDetailsListedTag(entry.safeDetails) || "").trim();
+
+    if (safeDetail) {
+        modalDetail = safeDetail;
+    }
+}
 
 const line =
     (roomName ? roomName + ": " : "") +
@@ -12185,6 +12365,12 @@ const line =
 ) {
     pianoItems.push(line);
 }
+if (
+    itemUpper === "SAFE" &&
+    entryRequiresSafeHeavyLiftReview(entry)
+) {
+    safeItems.push(line);
+}
 });
 }
 
@@ -12195,6 +12381,10 @@ if (handymanItems.length) {
 if (pianoItems.length) {
     autoNotes.push("Piano specialist required at additional cost, or client to arrange themselves prior to crew arrival.");
     autoNotes.push("Piano specialist required for: " + pianoItems.join(", ") + ".");
+}
+if (safeItems.length) {
+    autoNotes.push("Safe / heavy lifting specialist review required at additional cost, or client to arrange themselves prior to crew arrival.");
+    autoNotes.push("Safe / heavy lifting specialist review required for: " + safeItems.join(", ") + ".");
 }
 
     return {
@@ -12262,7 +12452,13 @@ if (isPianoItem) {
 }
 
 if (itemName === "SAFE") {
-    summary.specialHandling.push(baseLine);
+    const safeListedTag = getSafeDetailsListedTag(entry.safeDetails);
+
+    summary.specialHandling.push(
+        safeListedTag
+            ? `${baseLine} — ${safeListedTag}`
+            : baseLine
+    );
 }
 
         if (entry.dismantle) {
@@ -20209,6 +20405,65 @@ document.addEventListener('DOMContentLoaded', function () {
         <div class="piano-actions">
             <button type="button" class="piano-cancel-btn" onclick="closePianoModal()">Cancel</button>
             <button type="button" class="piano-save-btn" onclick="savePianoModal()">Confirm Piano Details</button>
+        </div>
+    </div>
+</div>
+
+<!-- SAFE MODAL -->
+<div id="safe-overlay" class="piano-overlay" onclick="closeSafeModal()">
+    <div class="piano-panel" onclick="event.stopPropagation()">
+        <div class="piano-title">Safe Details</div>
+        <div id="safe-subtitle" class="piano-subtitle">Set safe access and weight details</div>
+
+        <div class="piano-side-card">
+            <div class="piano-side-title">Collection</div>
+
+            <label class="piano-label" for="safe-collection-floor">Floor</label>
+            <select id="safe-collection-floor" class="piano-select">
+                <option value="basement">Basement</option>
+                <option value="ground" selected>Ground</option>
+                <option value="first">1st</option>
+                <option value="second">2nd</option>
+                <option value="above_second">Above 2nd</option>
+            </select>
+        </div>
+
+        <div class="piano-side-card">
+            <div class="piano-side-title">Delivery</div>
+
+            <label class="piano-label" for="safe-delivery-floor">Floor</label>
+            <select id="safe-delivery-floor" class="piano-select">
+                <option value="basement">Basement</option>
+                <option value="ground" selected>Ground</option>
+                <option value="first">1st</option>
+                <option value="second">2nd</option>
+                <option value="above_second">Above 2nd</option>
+            </select>
+        </div>
+
+        <div class="piano-side-card">
+            <div class="piano-side-title">Weight</div>
+
+            <label class="piano-label" for="safe-weight-kg">Approx weight in kg</label>
+            <input
+                id="safe-weight-kg"
+                class="simple-input-field"
+                type="number"
+                inputmode="decimal"
+                min="0"
+                placeholder="e.g. 120"
+            >
+
+            <div class="piano-subtitle" style="margin-top:10px; text-align:left;">
+                If weight not known, add dims in notes.
+            </div>
+        </div>
+
+        <div id="safe-error-text" class="modal-error-text"></div>
+
+        <div class="piano-actions">
+            <button type="button" class="piano-cancel-btn" onclick="closeSafeModal()">Cancel</button>
+            <button type="button" class="piano-save-btn" onclick="saveSafeModal()">Confirm Safe Details</button>
         </div>
     </div>
 </div>
