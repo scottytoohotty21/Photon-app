@@ -11932,15 +11932,9 @@ function getSafeFloorDisplayText(floor) {
 function safeRequiresHeavyLiftReviewFromDetails(safeDetails) {
     if (!safeDetails) return false;
 
-    const collectionFloor = String(safeDetails.collection && safeDetails.collection.floor || "ground");
-    const deliveryFloor = String(safeDetails.delivery && safeDetails.delivery.floor || "ground");
     const weightKg = Number(safeDetails.weightKg || 0);
 
-    return (
-        weightKg > 100 ||
-        collectionFloor !== "ground" ||
-        deliveryFloor !== "ground"
-    );
+    return weightKg > 100;
 }
 
 function entryRequiresSafeHeavyLiftReview(entry) {
