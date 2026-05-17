@@ -14149,6 +14149,7 @@ const QUOTE_ADDITIONAL_SERVICE_CHOICES = [
     "Custom",
     "Handyman",
     "Piano Specialist",
+    "Heavy Lifting Team",
     "Parking Admin",
     "Hoist / Crane",
     "Ferry",
@@ -14733,6 +14734,18 @@ function getQuoteAdditionalCostLines(sequenceId) {
     return state.additionalCostLines;
 }
 
+function sequenceNeedsHeavyLiftingTeamCost(sequenceId) {
+    const rawItems = getRawInventoryItemsForSequence(sequenceId).filter(function(entry) {
+        return !entry.excluded;
+    });
+
+    return rawItems.some(function(entry) {
+        return (
+            String(entry.itemName || "").trim().toUpperCase() === "SAFE" &&
+            entryRequiresSafeHeavyLiftReview(entry)
+        );
+    });
+}
 function syncQuoteTriggeredCostRows(sequenceId) {
     const state = ensureQuoteSequenceState(sequenceId);
     if (!state) return;
@@ -14751,6 +14764,7 @@ function syncQuoteTriggeredCostRows(sequenceId) {
     const hasHandyman = rawItems.some(function(entry) {
         return !!entry.handyman;
     });
+    const needsHeavyLiftingTeam = sequenceNeedsHeavyLiftingTeamCost(sequenceId);
 
     const existingCratesLine = state.pricingLines.find(function(line) {
         return line.label === "Crates";
@@ -14783,6 +14797,30 @@ function syncQuoteTriggeredCostRows(sequenceId) {
             needsCostEntry: true
         });
     }
+    const existingHeavyLiftingLine = state.additionalCostLines.find(function(line) {
+    return line.autoFromInventory === "heavyLiftingTeam";
+});
+
+if (needsHeavyLiftingTeam && !existingHeavyLiftingLine) {
+    state.additionalCostLines.push({
+        id: createQuoteLineId(),
+        label: "Heavy Lifting Team",
+        customLabel: "",
+        qty: 1,
+        unitCost: 0,
+        autoFromInventory: "heavyLiftingTeam",
+        needsCostEntry: true
+    });
+}
+
+if (needsHeavyLiftingTeam && existingHeavyLiftingLine) {
+    existingHeavyLiftingLine.label = "Heavy Lifting Team";
+    existingHeavyLiftingLine.customLabel = "";
+    existingHeavyLiftingLine.qty = Number(existingHeavyLiftingLine.qty || 0) > 0
+        ? Number(existingHeavyLiftingLine.qty || 0)
+        : 1;
+    existingHeavyLiftingLine.needsCostEntry = Number(existingHeavyLiftingLine.unitCost || 0) <= 0;
+}
 }
 function syncQuotePricingFromSchedule(sequenceId) {
     const state = ensureQuoteSequenceState(sequenceId);
