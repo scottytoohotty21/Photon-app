@@ -716,19 +716,75 @@ button {
     background: #fff;
     border: 1px solid #e2e8f0;
     border-radius: 10px;
-    height: 74px;
+    height: 68px;
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 800;
     text-transform: uppercase;
     color: #0f172a;
-    padding: 8px;
-    line-height: 1.25;
+    padding: 7px;
+    line-height: 1.2;
+    letter-spacing: 0.01em;
+    transition: transform 0.08s ease, box-shadow 0.08s ease, border-color 0.08s ease;
 }
-        .item-btn-blue { background: #f0f9ff; color: #0f172a; border: 1px solid #e0f2fe; }
+
+.item-btn:active {
+    transform: scale(0.98);
+}
+
+.item-btn-blue {
+    background: #f0f9ff;
+    color: #0f172a;
+    border: 1px solid #e0f2fe;
+}
+.inventory-side-column {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.inventory-side-group {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 4px;
+    padding: 6px;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    background: #f8fafc;
+}
+
+
+.inventory-side-heading {
+    font-size: 8px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #64748b;
+    text-align: center;
+    padding: 2px 0 3px;
+}
+
+.item-btn-carton {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+    color: #1e3a8a;
+}
+
+.item-btn-material {
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+    color: #14532d;
+}
+
+.item-btn-volume {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    color: #334155;
+}
+
         .log-bar {
     background: #e2e8f0;
     border: 1.5px solid #94a3b8;
@@ -4305,27 +4361,35 @@ Enter as: Surname, First Name
 
     <div class="col-span-1 grid grid-cols-1 gap-1 inventory-side-column">
         <button class="item-btn bg-red-50 text-red-500 border-red-100 flex-col">
-            VOICE
-            <span class="text-[7px] opacity-60">0 CLIPS</span>
-        </button>
-
-        <button class="item-btn item-btn-blue" onclick="addBox('AP')">AP</button>
-        <button class="item-btn item-btn-blue" onclick="addBox('CG')">CG</button>
-        <button class="item-btn item-btn-blue" onclick="addBox('BOOK')">BOOK</button>
-        <button class="item-btn item-btn-blue" onclick="addBox('LINEN')">LINEN</button>
-        <button class="item-btn item-btn-blue" onclick="addBox('WR')">WR</button>
-        <button class="item-btn item-btn-blue" onclick="addBox('PICTURE')">PICTURE<br>PACK</button>
-<button class="item-btn item-btn-blue" onclick="addBox('WINE_DIVIDERS')">WINE<br>DIVIDERS</button>
-<button class="item-btn item-btn-blue" onclick="addBox('BLUE_EDGING')">BLUE<br>EDGING</button>
-<button class="item-btn item-btn-blue" onclick="addBox('POLY_CHIPS')">POLY<br>CHIPS</button>
-
-        <button class="item-btn item-btn-blue" onclick="addVolume(1)">1 CUFT</button>
-        <button class="item-btn item-btn-blue" onclick="addVolume(5)">5 CUFT</button>
-        <button class="item-btn item-btn-blue" onclick="addVolume(10)">10 CUFT</button>
-        <button class="item-btn item-btn-blue" onclick="addVolume(20)">20 CUFT</button>
-        <button class="item-btn item-btn-blue" onclick="addVolume(50)">50 CUFT</button>
-        <button class="item-btn item-btn-blue" onclick="addVolume(100)">100 CUFT</button>
+           <div class="col-span-1 inventory-side-column">
+    
+    <div class="inventory-side-group">
+        <div class="inventory-side-heading">Cartons</div>
+        <button class="item-btn item-btn-carton" onclick="addBox('AP')">AP</button>
+        <button class="item-btn item-btn-carton" onclick="addBox('CG')">CG</button>
+        <button class="item-btn item-btn-carton" onclick="addBox('BOOK')">BOOK</button>
+        <button class="item-btn item-btn-carton" onclick="addBox('LINEN')">LINEN</button>
+        <button class="item-btn item-btn-carton" onclick="addBox('WR')">WR</button>
     </div>
+
+    <div class="inventory-side-group">
+        <div class="inventory-side-heading">Materials</div>
+        <button class="item-btn item-btn-material" onclick="addBox('PICTURE')">PICTURE<br>PACK</button>
+        <button class="item-btn item-btn-material" onclick="addBox('WINE_DIVIDERS')">WINE<br>DIVIDERS</button>
+        <button class="item-btn item-btn-material" onclick="addBox('BLUE_EDGING')">BLUE<br>EDGING</button>
+        <button class="item-btn item-btn-material" onclick="addBox('POLY_CHIPS')">POLY<br>CHIPS</button>
+    </div>
+
+    <div class="inventory-side-group">
+        <div class="inventory-side-heading">Quick Volume</div>
+        <button class="item-btn item-btn-volume" onclick="addVolume(1)">1 CUFT</button>
+        <button class="item-btn item-btn-volume" onclick="addVolume(5)">5 CUFT</button>
+        <button class="item-btn item-btn-volume" onclick="addVolume(10)">10 CUFT</button>
+        <button class="item-btn item-btn-volume" onclick="addVolume(20)">20 CUFT</button>
+        <button class="item-btn item-btn-volume" onclick="addVolume(50)">50 CUFT</button>
+        <button class="item-btn item-btn-volume" onclick="addVolume(100)">100 CUFT</button>
+    </div>
+</div>
 </div>
         </section>
         
