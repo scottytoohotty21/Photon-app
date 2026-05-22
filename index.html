@@ -1742,26 +1742,36 @@ button {
 }
 
 .job-header-mini-btn {
-    background: #ffffff;
-    border: 1px solid #bfdbfe;
-    color: #1d4ed8;
-    border-radius: 999px;
-    padding: 6px 10px;
+    background: #eff6ff;
+    border: 1.5px solid #bfdbfe;
+    border-bottom-color: #93c5fd;
+    color: #1e3a8a;
+    border-radius: 9px;
+    padding: 7px 10px;
     font-size: 8px;
     font-weight: 900;
     text-transform: uppercase;
     white-space: nowrap;
+    letter-spacing: 0.02em;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
 }
 
 .job-header-mini-btn.active {
     background: #2563eb;
-    border-color: #60a5fa;
+    border-color: #1d4ed8;
+    border-bottom-color: #1e40af;
     color: #ffffff;
+    box-shadow: 0 2px 5px rgba(37, 99, 235, 0.25);
 }
 
 .job-header-mini-btn.reset {
+    background: #ffffff;
     border-color: #cbd5e1;
+    border-bottom-color: #94a3b8;
     color: #475569;
+}
+.job-header-mini-btn:active {
+    transform: scale(0.98);
 }
 
         /* --- LISTED INVENTORY --- */
@@ -2672,7 +2682,7 @@ button {
 
 .inventory-search-row {
     display: grid;
-    grid-template-columns: 88px 88px 1fr;
+    grid-template-columns: 104px 104px 1fr;
     gap: 6px;
     align-items: stretch;
 }
@@ -2685,7 +2695,7 @@ button {
 
 .inventory-search-box {
     display: grid;
-    grid-template-columns: 1fr 64px;
+    grid-template-columns: 1fr 76px;
     gap: 6px;
 }
 
@@ -2772,6 +2782,19 @@ button {
     top: 0;
     align-self: start;
     background: #ffffff;
+    max-height: 52vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 4px;
+}
+
+.inventory-side-column::-webkit-scrollbar {
+    width: 8px;
+}
+
+.inventory-side-column::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 999px;
 }
 /* SCHEDULE CALCULATOR LAYOUT */
 .layout{display:grid;grid-template-columns:430px 1fr;gap:16px;align-items:start;}
@@ -4359,7 +4382,7 @@ Enter as: Surname, First Name
     <div class="flex-grow log-bar">2 X SOFA 3 SEAT [EXC]</div>
     <div
         id="inv-current-volume"
-        class="w-20 vol-box"
+        class="w-24 vol-box"
         onclick="openVolumeOverride()"
     >
         <span class="mini-label !mb-0 text-red-600">Vol</span>
@@ -4368,7 +4391,7 @@ Enter as: Surname, First Name
     <button
         id="undo-btn"
         onclick="undoLastInventoryAction()"
-        class="w-20 undo-btn-style font-black text-xs uppercase"
+        class="w-24 undo-btn-style font-black text-xs uppercase"
     >
         Undo
     </button>
