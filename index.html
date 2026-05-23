@@ -848,6 +848,68 @@ button {
     color: #1e293b;
     line-height: 1.35;
 }
+.inventory-live-row {
+    display: grid;
+    grid-template-columns: 98px 98px minmax(0, 1fr) 110px 98px;
+    gap: 8px;
+    align-items: stretch;
+}
+
+.inventory-live-stat {
+    min-height: 58px;
+    border: 1.5px solid #bfdbfe;
+    border-bottom-color: #2563eb;
+    border-radius: 10px;
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+    cursor: pointer;
+}
+
+.inventory-live-label {
+    font-size: 9px;
+    font-weight: 900;
+    color: #1d4ed8;
+    text-transform: uppercase;
+    line-height: 1;
+    margin-bottom: 5px;
+    letter-spacing: 0.04em;
+}
+
+.inventory-live-input {
+    width: 100%;
+    border: none;
+    background: transparent;
+    color: #0f172a;
+    text-align: center;
+    font-size: 1.125rem;
+    font-weight: 900;
+    line-height: 1;
+    padding: 0;
+    outline: none;
+}
+
+.inventory-live-value {
+    font-size: 1.125rem;
+    font-weight: 900;
+    color: #0f172a;
+    line-height: 1;
+}
+
+.inventory-live-log {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+}
+
+.inventory-live-undo {
+    width: 100%;
+    min-height: 58px;
+}
         .vol-box {
     background: #ffffff;
     border: 2.5px solid #dc2626;
@@ -4350,39 +4412,23 @@ Enter as: Surname, First Name
           <div class="grid grid-cols-12 gap-2 mb-3">
     <div class="col-span-3">
         <label class="mini-label">Seq</label>
-       <select id="inv-seq-select" onchange="handleInventorySequenceChange(this.value)" class="inv-header-select inv-top-field"></select>
+        <select id="inv-seq-select" onchange="handleInventorySequenceChange(this.value)" class="inv-header-select inv-top-field"></select>
     </div>
-    <div class="col-span-3">
+
+    <div class="col-span-4">
         <label class="mini-label">Delivery To</label>
         <select id="inv-delivery-select" onchange="handleInventoryDeliveryChange(this.value)" class="inv-header-select inv-top-field"></select>
     </div>
+
     <div class="col-span-2">
         <label class="mini-label">Floor</label>
         <select id="inv-floor-select" onchange="handleFloorChange(this.value)" class="inv-header-select inv-top-field"></select>
     </div>
-    <div class="col-span-2">
+
+    <div class="col-span-3">
         <label class="mini-label">Room</label>
         <select id="inv-room-select" onchange="handleRoomChange(this.value)" class="inv-header-select inv-top-field"></select>
     </div>
-<div class="col-span-1 inventory-stat-col">
-    <div class="inventory-stat-box">
-        <div class="inventory-stat-mini">Item Qty</div>
-      <input
-    type="text"
-    id="inv-qty"
-    class="inventory-stat-input"
-    value="1"
-    readonly
-    onclick="openQtyOverride()"
->
-    </div>
-</div>
-<div class="col-span-1 inventory-stat-col">
-    <div class="inventory-stat-box">
-        <div class="inventory-stat-mini">Total Vol</div>
-        <div id="inv-total-volume" class="inventory-stat-value">0</div>
-    </div>
-</div>
 </div>
 
 
@@ -4405,20 +4451,38 @@ Enter as: Surname, First Name
     <button id="tool-photos" class="inv-tool-btn" onclick="openInventoryPhotosModal()">Photos</button>
 </div>
 
-            <div class="flex gap-2 mb-4">
-    <div class="flex-grow log-bar">2 X SOFA 3 SEAT [EXC]</div>
+            <div class="inventory-live-row mb-4">
+    <div class="inventory-live-stat" onclick="openQtyOverride()">
+        <div class="inventory-live-label">Item Qty</div>
+        <input
+            type="text"
+            id="inv-qty"
+            class="inventory-live-input"
+            value="1"
+            readonly
+        >
+    </div>
+
     <div
         id="inv-current-volume"
-        class="w-24 vol-box"
+        class="inventory-live-stat"
         onclick="openVolumeOverride()"
     >
-        <span class="mini-label !mb-0 text-red-600">Vol</span>
-        <span class="text-sm font-black">50</span>
+        <div class="inventory-live-label">Item Vol</div>
+        <div class="inventory-live-value">50</div>
     </div>
+
+    <div class="log-bar inventory-live-log">2 X SOFA 3 SEAT [EXC]</div>
+
+    <div class="inventory-live-stat">
+        <div class="inventory-live-label">Total Vol</div>
+        <div id="inv-total-volume" class="inventory-live-value">0</div>
+    </div>
+
     <button
         id="undo-btn"
         onclick="undoLastInventoryAction()"
-        class="w-24 undo-btn-style font-black text-xs uppercase"
+        class="inventory-live-undo undo-btn-style font-black text-xs uppercase"
     >
         Undo
     </button>
