@@ -4405,21 +4405,29 @@ Enter as: Surname, First Name
     <div class="job-header-actions">
     <div id="inventory-reorder-header-actions" class="job-header-actions inventory-reorder-header-actions-hidden">
         <button
-            id="inventory-reorder-header-btn"
-            class="job-header-mini-btn"
-            onclick="toggleInventoryButtonReorderMode()"
-            type="button"
-        >
-            Reorder Buttons
-        </button>
+    id="inventory-reorder-header-btn"
+    class="job-header-mini-btn"
+    onclick="toggleInventoryButtonReorderMode()"
+    type="button"
+>
+    Reorder Buttons
+</button>
 
-        <button
-            class="job-header-mini-btn reset"
-            onclick="resetInventoryButtonOrder()"
-            type="button"
-        >
-            Reset Order
-        </button>
+<button
+    class="job-header-mini-btn"
+    onclick="sortInventoryButtonsByMostUsed()"
+    type="button"
+>
+    Sort Most Used
+</button>
+
+<button
+    class="job-header-mini-btn reset"
+    onclick="resetInventoryButtonOrder()"
+    type="button"
+>
+    Reset Order
+</button>
     </div>
 
     <div class="job-status-pill">
@@ -7841,6 +7849,78 @@ function saveInventoryButtonOrder(category, orderedItems) {
         console.warn("Could not save inventory button order", err);
     }
 }
+function getInventoryButtonUsageKey(category) {
+    return "movePilot_inventory_button_usage_" + String(category || "Full List");
+}
+
+function getInventoryButtonUsageMap(category) {
+    const storageKey = getInventoryButtonUsageKey(category);
+
+    try {
+        const parsed = JSON.parse(localStorage.getItem(storageKey) || "{}");
+        return parsed && typeof parsed === "object" ? parsed : {};
+    } catch (err) {
+        return {};
+    }
+}
+
+function saveInventoryButtonUsageMap(category, usageMap) {
+    const storageKey = getInventoryButtonUsageKey(category);
+
+    try {
+        localStorage.setItem(storageKey, JSON.stringify(usageMap || {}));
+    } catch (err) {
+        console.warn("Could not save inventory button usage", err);
+    }
+}
+
+function recordInventoryButtonUse(itemName) {
+    const category = currentInventoryCategory || "Full List";
+    const usageMap = getInventoryButtonUsageMap(category);
+
+    usageMap[itemName] = Number(usageMap[itemName] || 0) + 1;
+
+    saveInventoryButtonUsageMap(category, usageMap);
+}
+
+function handleInventoryButtonClick(itemName) {
+    recordInventoryButtonUse(itemName);
+    addInventoryItem(itemName);
+}
+
+function sortInventoryButtonsByMostUsed() {
+    const category = currentInventoryCategory || "Full List";
+    const orderedItems = getOrderedInventoryButtons(category);
+    const usageMap = getInventoryButtonUsageMap(category);
+
+    const hasAnyUsage = orderedItems.some(function(itemName) {
+        return Number(usageMap[itemName] || 0) > 0;
+    });
+
+    if (!hasAnyUsage) {
+        updateInventoryDisplay("NO USAGE DATA YET");
+        return;
+    }
+
+    orderedItems.sort(function(a, b) {
+        const usageA = Number(usageMap[a] || 0);
+        const usageB = Number(usageMap[b] || 0);
+
+        if (usageB !== usageA) {
+            return usageB - usageA;
+        }
+
+        return a.localeCompare(b);
+    });
+
+    saveInventoryButtonOrder(category, orderedItems);
+    inventoryButtonReorderMode = false;
+
+    updateInventoryReorderHeaderButton();
+    renderInventoryButtons();
+
+    updateInventoryDisplay("SORTED BY MOST USED");
+}
 
 function moveInventoryButton(itemName, direction) {
     const category = currentInventoryCategory || "Full List";
@@ -7947,7 +8027,7 @@ function resetInventoryButtonOrder() {
         const safeItemName = itemName.replace(/'/g, "\\'");
 
         if (!inventoryButtonReorderMode) {
-            return `<button class="item-btn inventory-furniture-btn" onclick="addInventoryItem('${safeItemName}')">${itemName}</button>`;
+            return `<button class="item-btn inventory-furniture-btn" onclick="handleInventoryButtonClick('${safeItemName}')">${itemName}</button>`;
         }
 
         return `
