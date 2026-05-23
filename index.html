@@ -3927,6 +3927,17 @@ body {
 
 }
 
+/* --- COSTING NUMBER INPUT CLEANUP --- */
+.quote-cost-editable-field[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+.quote-cost-editable-field[type="number"]::-webkit-outer-spin-button,
+.quote-cost-editable-field[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
 .pricing-row {
     border: 1px solid #e2e8f0;
     border-radius: 12px;
