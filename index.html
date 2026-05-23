@@ -14604,11 +14604,11 @@ function createEmptyQuoteSequenceState() {
         pricingLines: [],
         additionalCostLines: [],
         competition: {
-            competitorName: "",
-            competitorPrice: 0,
-            partnerCrewSuitable: false,
-            notes: ""
-        },
+    partnerCrewUnsuitable: false,
+    competitorName: "",
+    competitorPrice: 0,
+    notes: ""
+},
         availabilityPricing: {
             moveDate: "",
             band: "",
@@ -14636,7 +14636,7 @@ function ensureQuoteSequenceState(sequenceId) {
     state.competition = {
         competitorName: "",
         competitorPrice: 0,
-        partnerCrewSuitable: false,
+        partnerCrewUnsuitable: false,
         notes: ""
     };
 }
@@ -14647,7 +14647,11 @@ if (typeof state.competition.competitorName !== "string") {
 
 state.competition.competitorPrice = Number(state.competition.competitorPrice || 0);
 
-state.competition.partnerCrewSuitable = !!state.competition.partnerCrewSuitable;
+if (state.competition.partnerCrewUnsuitable === undefined) {
+    state.competition.partnerCrewUnsuitable = false;
+}
+
+state.competition.partnerCrewUnsuitable = !!state.competition.partnerCrewUnsuitable;
 
 if (typeof state.competition.notes !== "string") {
     state.competition.notes = "";
@@ -16123,54 +16127,54 @@ function renderQuoteCompetitionCard(sequenceId) {
     const competition = state.competition || {
         competitorName: "",
         competitorPrice: 0,
-        partnerCrewSuitable: false,
+        partnerCrewUnsuitable: false,
         notes: ""
     };
 
     target.innerHTML = `
-        <div class="space-y-3">
-            <div>
-                <label class="mini-label">Competitor Name</label>
-                <input
-                    type="text"
-                    class="field quote-cost-editable-field"
-                    value="${escapeHtml(competition.competitorName || "")}"
-                    oninput="updateQuoteCompetitionField('${sequenceId}', 'competitorName', this.value)"
-                    placeholder="e.g. Local mover"
-                >
-            </div>
+    <div class="space-y-3">
+        <label class="quote-competition-check">
+            <input
+                type="checkbox"
+                ${competition.partnerCrewUnsuitable ? "checked" : ""}
+                onchange="updateQuoteCompetitionField('${sequenceId}', 'partnerCrewUnsuitable', this.checked)"
+            >
+            <span>Partner Crew unsuitable for this client / job</span>
+        </label>
 
-            <div>
-                <label class="mini-label">Competitor Price (£)</label>
-                <input
-                    type="number"
-                    min="0"
-                    step="1"
-                    class="field quote-cost-editable-field"
-                    value="${Number(competition.competitorPrice || 0)}"
-                    oninput="updateQuoteCompetitionField('${sequenceId}', 'competitorPrice', this.value)"
-                >
-            </div>
-
-            <label class="quote-competition-check">
-                <input
-                    type="checkbox"
-                    ${competition.partnerCrewSuitable ? "checked" : ""}
-                    onchange="updateQuoteCompetitionField('${sequenceId}', 'partnerCrewSuitable', this.checked)"
-                >
-                <span>Partner Crew Suitable</span>
-            </label>
-
-            <div>
-                <label class="mini-label">Competition Notes</label>
-                <textarea
-                    class="field quote-competition-notes"
-                    oninput="updateQuoteCompetitionField('${sequenceId}', 'notes', this.value)"
-                    placeholder="What are they offering? Any inclusions/exclusions?"
-                >${escapeHtml(competition.notes || "")}</textarea>
-            </div>
+        <div>
+            <label class="mini-label">Competitor Name</label>
+            <input
+                type="text"
+                class="field quote-cost-editable-field"
+                value="${escapeHtml(competition.competitorName || "")}"
+                oninput="updateQuoteCompetitionField('${sequenceId}', 'competitorName', this.value)"
+                placeholder="e.g. Local mover"
+            >
         </div>
-    `;
+
+        <div>
+            <label class="mini-label">Competitor Price (£)</label>
+            <input
+                type="number"
+                min="0"
+                step="1"
+                class="field quote-cost-editable-field"
+                value="${Number(competition.competitorPrice || 0)}"
+                oninput="updateQuoteCompetitionField('${sequenceId}', 'competitorPrice', this.value)"
+            >
+        </div>
+
+        <div>
+            <label class="mini-label">Competition Notes</label>
+            <textarea
+                class="field quote-competition-notes"
+                oninput="updateQuoteCompetitionField('${sequenceId}', 'notes', this.value)"
+                placeholder="What are they offering? Any inclusions/exclusions?"
+            >${escapeHtml(competition.notes || "")}</textarea>
+        </div>
+    </div>
+`;
 }
 
 function updateQuoteCompetitionField(sequenceId, fieldName, value) {
@@ -16181,7 +16185,7 @@ function updateQuoteCompetitionField(sequenceId, fieldName, value) {
         state.competition = {
             competitorName: "",
             competitorPrice: 0,
-            partnerCrewSuitable: false,
+            partnerCrewUnsuitable: false,
             notes: ""
         };
     }
@@ -16194,9 +16198,9 @@ function updateQuoteCompetitionField(sequenceId, fieldName, value) {
         state.competition.competitorPrice = Number(value || 0);
     }
 
-    if (fieldName === "partnerCrewSuitable") {
-        state.competition.partnerCrewSuitable = !!value;
-    }
+    if (fieldName === "partnerCrewUnsuitable") {
+    state.competition.partnerCrewUnsuitable = !!value;
+}
 
     if (fieldName === "notes") {
         state.competition.notes = String(value || "");
