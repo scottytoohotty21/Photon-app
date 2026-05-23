@@ -13953,9 +13953,17 @@ function runPostPrintCleanup() {
     }
 }
 async function saveListedInventoryPdfToDevice() {
+    if (typeof html2pdf === "undefined") {
+        await appAlert(
+            "html2pdf is NOT loaded. Check the script tag and make sure html2pdf.bundle.min.js is beside index.html.",
+            "PDF Library Missing"
+        );
+        return;
+    }
+
     await appAlert(
-        "Save PDF to Device is the next PDF upgrade. For now, use Preview / Print PDF.",
-        "PDF Save Coming Next"
+        "html2pdf is loaded successfully. Ready to build Save PDF to Device.",
+        "PDF Library Ready"
     );
 }
 async function printListedInventoryPdf() {
