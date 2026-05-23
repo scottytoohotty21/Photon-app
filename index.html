@@ -13963,15 +13963,15 @@ function makeSafePdfFilenamePart(value) {
 function getListedInventoryDownloadCss() {
     return `
         .pdf-download-doc {
-            width: 794px;
-            background: #ffffff;
-            color: #0f172a;
-            font-family: Arial, sans-serif;
-            font-size: 12px;
-            line-height: 1.4;
-            padding: 24px;
-            box-sizing: border-box;
-        }
+    width: 740px;
+    background: #ffffff;
+    color: #0f172a;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    line-height: 1.4;
+    padding: 22px;
+    box-sizing: border-box;
+}
 
         .pdf-topbar {
             display: flex;
@@ -14119,13 +14119,14 @@ function getListedInventoryDownloadCss() {
         }
 
         .pdf-footer-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 14px;
-            margin-top: 12px;
-            page-break-inside: avoid;
-            align-items: start;
-        }
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-top: 8px;
+    break-inside: auto;
+    page-break-inside: auto;
+    align-items: start;
+}
 
         .pdf-responsibilities-grid {
             display: grid;
@@ -14340,23 +14341,22 @@ async function saveListedInventoryPdfToDevice() {
                 margin: [8, 8, 8, 8],
                 filename: fileName,
                 image: {
-                    type: "jpeg",
-                    quality: 0.98
-                },
-                html2canvas: {
-                    scale: 2,
-                    useCORS: true,
-                    backgroundColor: "#ffffff"
-                },
+    type: "png"
+},
+html2canvas: {
+    scale: 3,
+    useCORS: true,
+    backgroundColor: "#ffffff"
+},
                 jsPDF: {
                     unit: "mm",
                     format: "a4",
                     orientation: "portrait"
                 },
-                pagebreak: {
-                    mode: ["css", "legacy"],
-                    avoid: [".pdf-room-block", ".pdf-card"]
-                }
+               pagebreak: {
+    mode: ["css", "legacy"],
+    avoid: [".pdf-room-block"]
+}
             })
             .from(pdfElement)
             .save();
