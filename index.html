@@ -259,9 +259,10 @@ button {
         /* --- LOGO --- */
 .app-logo-image {
     display: block;
-    width: 300px;
-    max-width: 100%;
-    height: auto;
+    width: auto;
+    height: 42px;
+    max-width: 220px;
+    object-fit: contain;
 }
 
         /* --- GLOBAL UI --- */
@@ -3951,6 +3952,34 @@ button {
     text-transform: uppercase;
     letter-spacing: 0.04em;
 }
+.quote-competition-check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1.5px solid #cbd5e1;
+    border-bottom-color: #94a3b8;
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+    color: #334155;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+}
+
+.quote-competition-check input {
+    width: 16px;
+    height: 16px;
+    accent-color: #2563eb;
+}
+
+.quote-competition-notes {
+    min-height: 76px;
+    resize: vertical;
+    line-height: 1.35;
+    padding-top: 10px;
+}
 .quote-cost-needs-entry {
     background: #f0fdf4 !important;
     border: 2px solid #22c55e !important;
@@ -4241,7 +4270,7 @@ button {
 <body class="p-4 pb-12">
     <section id="activation-screen" class="bg-white rounded-2xl shadow-xl border border-slate-200 p-6" style="max-width:520px;margin:40px auto;">
     <div class="text-center mb-6">
-        <img src="./movepilot-logo.png" alt="MovePilot" class="app-logo-image" style="margin:0 auto 18px;">
+        <img src="./movepilot-logo.png?v=3" alt="MovePilot" class="app-logo-image" style="margin:0 auto 18px;">
         <div class="text-xl font-black text-slate-900 uppercase">Activation Required</div>
         <div class="text-sm font-bold text-slate-500 mt-2">
             Enter your MovePilot activation code to unlock this tablet.
@@ -4286,7 +4315,7 @@ button {
     <main id="view-dashboard" class="hidden">
         <div class="flex items-center justify-between mb-8">
             <div class="flex items-center gap-3">
-    <img src="./movepilot-logo.png" alt="MovePilot" class="app-logo-image">
+    <img src="./movepilot-logo.png?v=3" alt="MovePilot" class="app-logo-image">
 </div>
             <div class="flex gap-2">
     <button onclick="handleDashboardImportClick(event)" class="dashboard-action-btn btn-crm-upload">
@@ -4857,6 +4886,15 @@ Enter as: Surname, First Name
             <div id="quote-commercialSummaryCard"></div>
         </div>
     </div>
+    <div class="panel">
+    <div class="panel-head">
+        <div class="panel-title">Competition / Market Check</div>
+        <div class="panel-subtitle">Internal sales notes only</div>
+    </div>
+    <div class="panel-body">
+        <div id="quote-competitionCard"></div>
+    </div>
+</div>
 
 </div>
             <div class="quote-stack quote-main-workspace">
@@ -14565,6 +14603,12 @@ function createEmptyQuoteSequenceState() {
         quoteNotes: "",
         pricingLines: [],
         additionalCostLines: [],
+        competition: {
+            competitorName: "",
+            competitorPrice: 0,
+            partnerCrewSuitable: false,
+            notes: ""
+        },
         availabilityPricing: {
             moveDate: "",
             band: "",
@@ -14588,6 +14632,26 @@ function ensureQuoteSequenceState(sequenceId) {
     if (!Array.isArray(state.additionalCostLines)) state.additionalCostLines = [];
     if (typeof state.quoteNotes !== "string") state.quoteNotes = "";
     if (typeof state.customerPrice !== "number") state.customerPrice = Number(state.customerPrice || 0);
+    if (!state.competition || typeof state.competition !== "object") {
+    state.competition = {
+        competitorName: "",
+        competitorPrice: 0,
+        partnerCrewSuitable: false,
+        notes: ""
+    };
+}
+
+if (typeof state.competition.competitorName !== "string") {
+    state.competition.competitorName = "";
+}
+
+state.competition.competitorPrice = Number(state.competition.competitorPrice || 0);
+
+state.competition.partnerCrewSuitable = !!state.competition.partnerCrewSuitable;
+
+if (typeof state.competition.notes !== "string") {
+    state.competition.notes = "";
+}
    if (!state.availabilityPricing || typeof state.availabilityPricing !== "object") {
     state.availabilityPricing = {
         moveDate: "",
@@ -15780,6 +15844,7 @@ function updateQuoteCommercialDisplays(sequenceId) {
     }
 
     renderQuoteCommercialSummary(sequenceId);
+renderQuoteCompetitionCard(sequenceId);
 renderQuoteAdditionalBreakdown(sequenceId);
 renderAvailabilityPricingPanel(sequenceId);
 }
@@ -16048,7 +16113,98 @@ function renderQuoteCommercialSummary(sequenceId) {
         </div>
     `;
 }
+function renderQuoteCompetitionCard(sequenceId) {
+    const target = document.getElementById("quote-competitionCard");
+    if (!target) return;
 
+    const state = ensureQuoteSequenceState(sequenceId);
+    if (!state) return;
+
+    const competition = state.competition || {
+        competitorName: "",
+        competitorPrice: 0,
+        partnerCrewSuitable: false,
+        notes: ""
+    };
+
+    target.innerHTML = `
+        <div class="space-y-3">
+            <div>
+                <label class="mini-label">Competitor Name</label>
+                <input
+                    type="text"
+                    class="field quote-cost-editable-field"
+                    value="${escapeHtml(competition.competitorName || "")}"
+                    oninput="updateQuoteCompetitionField('${sequenceId}', 'competitorName', this.value)"
+                    placeholder="e.g. Local mover"
+                >
+            </div>
+
+            <div>
+                <label class="mini-label">Competitor Price (£)</label>
+                <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    class="field quote-cost-editable-field"
+                    value="${Number(competition.competitorPrice || 0)}"
+                    oninput="updateQuoteCompetitionField('${sequenceId}', 'competitorPrice', this.value)"
+                >
+            </div>
+
+            <label class="quote-competition-check">
+                <input
+                    type="checkbox"
+                    ${competition.partnerCrewSuitable ? "checked" : ""}
+                    onchange="updateQuoteCompetitionField('${sequenceId}', 'partnerCrewSuitable', this.checked)"
+                >
+                <span>Partner Crew Suitable</span>
+            </label>
+
+            <div>
+                <label class="mini-label">Competition Notes</label>
+                <textarea
+                    class="field quote-competition-notes"
+                    oninput="updateQuoteCompetitionField('${sequenceId}', 'notes', this.value)"
+                    placeholder="What are they offering? Any inclusions/exclusions?"
+                >${escapeHtml(competition.notes || "")}</textarea>
+            </div>
+        </div>
+    `;
+}
+
+function updateQuoteCompetitionField(sequenceId, fieldName, value) {
+    const state = ensureQuoteSequenceState(sequenceId);
+    if (!state) return;
+
+    if (!state.competition || typeof state.competition !== "object") {
+        state.competition = {
+            competitorName: "",
+            competitorPrice: 0,
+            partnerCrewSuitable: false,
+            notes: ""
+        };
+    }
+
+    if (fieldName === "competitorName") {
+        state.competition.competitorName = String(value || "");
+    }
+
+    if (fieldName === "competitorPrice") {
+        state.competition.competitorPrice = Number(value || 0);
+    }
+
+    if (fieldName === "partnerCrewSuitable") {
+        state.competition.partnerCrewSuitable = !!value;
+    }
+
+    if (fieldName === "notes") {
+        state.competition.notes = String(value || "");
+    }
+
+    quotePricingSaved = false;
+    saveToDevice();
+}
 
 function getAvailabilityPricingState(sequenceId) {
     const state = ensureQuoteSequenceState(sequenceId);
