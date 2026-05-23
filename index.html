@@ -6328,6 +6328,14 @@ renderScheduleSequenceDropdown();
 loadManualScheduleFromActiveSequence();
 rebuildLiveInventoryFromSequence(activeSeqId);
 saveCalculatorFeedForActiveSequence();
+
+/*
+    Always open a customer on the Addresses tab.
+    This prevents stale Listed Inventory / Inventory screens from showing
+    the previous customer's data when moving between jobs from the dashboard.
+*/
+switchTab("address");
+
 saveToDevice();
 }
 
