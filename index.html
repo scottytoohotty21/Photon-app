@@ -6028,6 +6028,27 @@ let signatureLocked = false;
 let inventoryReturnContext = null;
 let mileageTargetSequenceId = "";
 let currentMileageRouteData = null;
+function resetLiveInventorySessionState() {
+    inventoryItems = [];
+    currentItemVolume = 0;
+    totalVolume = 0;
+    currentInventoryCategory = "Full List";
+    inventorySearchText = "";
+    lastAddedItemName = null;
+    lastAddedRawEntryId = null;
+    inventoryHistory = [];
+    inventoryReturnContext = null;
+
+    listedSequenceFilter = "__all__";
+    listedDeliveryFilter = "__all__";
+    listedTextFilter = "";
+
+    if (window.__listedEntryMap) {
+        window.__listedEntryMap = {};
+    }
+
+    updateInventoryDisplay("No items added");
+}
 
 function getDefaultSequenceId() {
     if (!currentJob || !Array.isArray(currentJob.sequences) || currentJob.sequences.length === 0) {
@@ -6188,8 +6209,12 @@ function getLockButtonContent(isLocked) {
         }
 
         function openJob(id) {
+    resetLiveInventorySessionState();
+
     currentJob = jobs.find(j => j.id === id);
     if (!currentJob) return;
+
+    currentJob.properties = Array.isArray(currentJob.properties)
 
     currentJob.properties = Array.isArray(currentJob.properties)
         ? currentJob.properties
@@ -14356,7 +14381,6 @@ movePilotPrintWindowWatcher = setInterval(function() {
 
 setTimeout(function() {
     printWindow.focus();
-    printWindow.print();
 }, 400);
 }
 /* =========================
