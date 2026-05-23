@@ -4625,26 +4625,27 @@ Enter as: Surname, First Name
         
 <section id="content-listed" class="tab-content hidden bg-white p-5 rounded-2xl shadow-inner">
     <div class="flex items-center justify-between mb-4">
-    <div>
-        <div class="text-sm font-black text-slate-900 uppercase">Listed Inventory</div>
-        <div class="text-[10px] font-bold text-slate-400 uppercase">Saved inventory records grouped for quick review</div>
+        <div>
+            <div class="text-sm font-black text-slate-900 uppercase">Listed Inventory</div>
+            <div class="text-[10px] font-bold text-slate-400 uppercase">Saved inventory records grouped for quick review</div>
+        </div>
+
+        <div class="listed-pdf-actions">
+            <button
+                onclick="printListedInventoryPdf()"
+                class="listed-pdf-btn listed-pdf-preview-btn"
+            >
+                Preview / Print PDF
+            </button>
+
+            <button
+                onclick="saveListedInventoryPdfToDevice()"
+                class="listed-pdf-btn listed-pdf-save-btn"
+            >
+                Save PDF to Device
+            </button>
+        </div>
     </div>
-
-    <div class="listed-pdf-actions">
-    <button
-        onclick="printListedInventoryPdf()"
-        class="listed-pdf-btn listed-pdf-preview-btn"
-    >
-        Preview / Print PDF
-    </button>
-
-    <button
-        onclick="saveListedInventoryPdfToDevice()"
-        class="listed-pdf-btn listed-pdf-save-btn"
-    >
-        Save PDF to Device
-    </button>
-</div>
 
     <div class="grid grid-cols-12 gap-3 mb-4">
         <div class="col-span-4">
