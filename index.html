@@ -13952,19 +13952,424 @@ function runPostPrintCleanup() {
         // Some browsers/tablets ignore this.
     }
 }
+function makeSafePdfFilenamePart(value) {
+    return String(value || "")
+        .trim()
+        .replace(/[<>:"/\\|?*\x00-\x1F]/g, "")
+        .replace(/\s+/g, "_")
+        .slice(0, 50) || "MovePilot";
+}
+
+function getListedInventoryDownloadCss() {
+    return `
+        .pdf-download-doc {
+            width: 794px;
+            background: #ffffff;
+            color: #0f172a;
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            line-height: 1.4;
+            padding: 24px;
+            box-sizing: border-box;
+        }
+
+        .pdf-topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 20px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #cbd5e1;
+            padding-bottom: 12px;
+        }
+
+        .pdf-title {
+            font-size: 22px;
+            font-weight: 800;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .pdf-sub {
+            font-size: 11px;
+            color: #475569;
+            text-transform: uppercase;
+            margin-top: 2px;
+        }
+
+        .pdf-section {
+            border: 1px solid #cbd5e1;
+            margin-bottom: 14px;
+            page-break-inside: auto;
+        }
+
+        .pdf-section-head {
+            background: #0f172a;
+            color: white;
+            padding: 10px 12px;
+        }
+
+        .pdf-section-title {
+            font-size: 13px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .pdf-section-subtitle {
+            font-size: 10px;
+            margin-top: 4px;
+            text-transform: uppercase;
+            color: #cbd5e1;
+        }
+
+        .pdf-section-body {
+            padding: 12px;
+        }
+
+        .pdf-room-block {
+            margin-bottom: 10px;
+            border: 1px solid #e2e8f0;
+            page-break-inside: avoid;
+        }
+
+        .pdf-room-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            background: #f8fafc;
+            padding: 6px 8px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .pdf-room-title {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .pdf-room-floor {
+            font-size: 10px;
+            color: #64748b;
+            text-transform: uppercase;
+            margin-top: 2px;
+        }
+
+        .pdf-room-total {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .pdf-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .pdf-table th,
+        .pdf-table td {
+            border-bottom: 1px solid #e2e8f0;
+            padding: 5px 6px;
+            vertical-align: top;
+            font-size: 10px;
+            line-height: 1.25;
+        }
+
+        .pdf-table th {
+            text-align: left;
+            font-size: 9px;
+            text-transform: uppercase;
+            color: #64748b;
+        }
+
+        .item-cell {
+            width: 55%;
+            font-weight: 500;
+            text-transform: uppercase;
+            color: #334155;
+        }
+
+        .pdf-inline-note {
+            font-style: italic;
+            font-weight: 400;
+        }
+
+        .num-cell {
+            width: 15%;
+            text-align: center;
+            font-weight: 500;
+            text-transform: uppercase;
+            color: #334155;
+        }
+
+        .excluded {
+            color: #94a3b8;
+            font-style: italic;
+        }
+
+        .pdf-section-total {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            padding-top: 10px;
+            margin-top: 10px;
+            border-top: 1px solid #cbd5e1;
+            text-transform: uppercase;
+            font-size: 11px;
+        }
+
+        .pdf-footer-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-top: 12px;
+            page-break-inside: avoid;
+            align-items: start;
+        }
+
+        .pdf-responsibilities-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-top: 14px;
+            page-break-inside: auto;
+            align-items: start;
+        }
+
+        .pdf-card-full {
+            grid-column: span 2;
+        }
+
+        .pdf-card {
+            border: 1px solid #cbd5e1;
+            padding: 14px;
+            background: #f8fafc;
+            page-break-inside: avoid;
+        }
+
+        .pdf-card-title {
+            font-size: 11px;
+            font-weight: 750;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            color: #475569;
+        }
+
+        .pdf-big-stat {
+            font-size: 28px;
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: 6px;
+        }
+
+        .pdf-small-note {
+            font-size: 10px;
+            color: #64748b;
+            text-transform: uppercase;
+        }
+
+        .pdf-materials-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            font-size: 10px;
+            font-weight: 500;
+            text-transform: uppercase;
+            line-height: 1.45;
+            color: #334155;
+        }
+
+        .pdf-responsibility-list {
+            font-size: 10.5px;
+            font-weight: 500;
+            text-transform: none;
+            line-height: 1.45;
+            color: #334155;
+        }
+
+        .pdf-responsibility-list .pdf-mini-head,
+        .pdf-mini-head {
+            color: #0f172a;
+            font-size: 10.5px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            margin-bottom: 5px;
+        }
+
+        .space-top {
+            margin-top: 12px;
+        }
+
+        .pdf-signature-image {
+            width: 100%;
+            max-height: 140px;
+            object-fit: contain;
+            display: block;
+            background: white;
+            border: 1px solid #cbd5e1;
+        }
+
+        .pdf-signature-empty {
+            height: 140px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border: 1px dashed #cbd5e1;
+            color: #94a3b8;
+            text-transform: uppercase;
+            font-size: 11px;
+        }
+    `;
+}
+
 async function saveListedInventoryPdfToDevice() {
+    closeAllMovePilotModals();
+
+    if (!currentJob) return;
+
     if (typeof html2pdf === "undefined") {
         await appAlert(
-            "html2pdf is NOT loaded. Check the script tag and make sure html2pdf.bundle.min.js is beside index.html.",
+            "The local PDF generator is not loaded. Check html2pdf.bundle.min.js is beside index.html and the script tag has been added.",
             "PDF Library Missing"
         );
         return;
     }
 
-    await appAlert(
-        "html2pdf is loaded successfully. Ready to build Save PDF to Device.",
-        "PDF Library Ready"
-    );
+    const allItems = getListedInventoryItems();
+    const filteredItems = filterListedInventoryItems(allItems);
+
+    if (!filteredItems.length) {
+        await appAlert("No listed inventory to save.", "Export Unavailable");
+        return;
+    }
+
+    const listedSummary = buildListedSummary(filteredItems);
+    const materialsSummary = buildMaterialsSummary(filteredItems);
+    const crewSummaryHtml = getPrintableCrewInstructionsHtml(filteredItems);
+    const sectionsHtml = getPrintableListedSections(filteredItems);
+
+    const customerName =
+        (currentJob.customer && currentJob.customer.displayName) ||
+        currentJob.name ||
+        "---";
+
+    const reference = currentJob.ref || "---";
+
+    const signedAt =
+        currentJob.signature && currentJob.signature.signedAt
+            ? new Date(currentJob.signature.signedAt).toLocaleString("en-GB")
+            : "Not signed";
+
+    const signatureHtml =
+        currentJob.signature && currentJob.signature.image
+            ? `<img src="${currentJob.signature.image}" class="pdf-signature-image" alt="Signature">`
+            : `<div class="pdf-signature-empty">No signature saved</div>`;
+
+    const fileName =
+        "MovePilot_Listed_Inventory_" +
+        makeSafePdfFilenamePart(customerName) +
+        "_" +
+        makeSafePdfFilenamePart(reference) +
+        ".pdf";
+
+    const wrapper = document.createElement("div");
+    wrapper.style.position = "fixed";
+    wrapper.style.left = "-10000px";
+    wrapper.style.top = "0";
+    wrapper.style.background = "#ffffff";
+    wrapper.style.zIndex = "-1";
+
+    wrapper.innerHTML = `
+        <style>${getListedInventoryDownloadCss()}</style>
+
+        <div class="pdf-download-doc">
+            <div class="pdf-topbar">
+                <div>
+                    <div class="pdf-title">MovePilot Listed Inventory</div>
+                    <div class="pdf-sub">Customer: ${escapeHtml(customerName)}</div>
+                    <div class="pdf-sub">Ref: ${escapeHtml(reference)}</div>
+                </div>
+
+                <div>
+                    <div class="pdf-sub">Exported: ${new Date().toLocaleString("en-GB")}</div>
+                </div>
+            </div>
+
+            ${sectionsHtml}
+
+            <div class="pdf-footer-grid">
+                <div class="pdf-card">
+                    <div class="pdf-card-title">Customer Signature</div>
+                    ${signatureHtml}
+                    <div class="pdf-small-note" style="margin-top: 8px;">Signed: ${escapeHtml(signedAt)}</div>
+                </div>
+
+                <div class="pdf-card">
+                    <div class="pdf-card-title">Included Volume & Materials Summary</div>
+                    <div class="pdf-big-stat">${listedSummary.includedVolume}</div>
+                    <div class="pdf-small-note">Cuft counted</div>
+                    <div style="margin-top:12px;">
+                        ${getPrintableMaterialsHtml(materialsSummary)}
+                    </div>
+                </div>
+            </div>
+
+            <div class="pdf-responsibilities-grid">
+                <div class="pdf-card pdf-card-full">
+                    <div class="pdf-card-title">Crew Instructions / Responsibilities</div>
+                    ${crewSummaryHtml}
+                </div>
+
+                <div class="pdf-card pdf-card-full">
+                    <div class="pdf-card-title">Customer Responsibilities</div>
+                    ${getPrintableResponsibilitiesHtml(listedSummary, filteredItems)}
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(wrapper);
+
+    const pdfElement = wrapper.querySelector(".pdf-download-doc");
+
+    try {
+        await html2pdf()
+            .set({
+                margin: [8, 8, 8, 8],
+                filename: fileName,
+                image: {
+                    type: "jpeg",
+                    quality: 0.98
+                },
+                html2canvas: {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: "#ffffff"
+                },
+                jsPDF: {
+                    unit: "mm",
+                    format: "a4",
+                    orientation: "portrait"
+                },
+                pagebreak: {
+                    mode: ["css", "legacy"],
+                    avoid: [".pdf-room-block", ".pdf-card"]
+                }
+            })
+            .from(pdfElement)
+            .save();
+    } catch (err) {
+        console.error("Save PDF to device failed:", err);
+
+        await appAlert(
+            "The PDF could not be saved on this device. Please use Preview / Print PDF as a fallback.",
+            "PDF Save Failed"
+        );
+    } finally {
+        wrapper.remove();
+    }
 }
 async function printListedInventoryPdf() {
     closeAllMovePilotModals();
