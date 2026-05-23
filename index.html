@@ -14242,6 +14242,56 @@ movePilotPrintWindowWatcher = setInterval(function() {
                     font-size: 11px;
                 }
 
+.pdf-screen-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    background: #eff6ff;
+    border: 1.5px solid #bfdbfe;
+    border-bottom-color: #93c5fd;
+    border-radius: 12px;
+    padding: 10px 12px;
+    margin-bottom: 14px;
+    color: #1e3a8a;
+    font-size: 12px;
+    font-weight: 800;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+}
+
+.pdf-screen-actions-text {
+    line-height: 1.35;
+}
+
+.pdf-screen-actions-buttons {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.pdf-screen-btn {
+    border: 1.5px solid #2563eb;
+    border-bottom-color: #1e40af;
+    background: #2563eb;
+    color: white;
+    border-radius: 10px;
+    padding: 9px 12px;
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
+.pdf-screen-btn.secondary {
+    background: white;
+    color: #334155;
+    border-color: #cbd5e1;
+    border-bottom-color: #94a3b8;
+}
+
+.pdf-screen-btn:active {
+    transform: scale(0.98);
+}
                 @media screen {
     html {
         background: #e2e8f0;
@@ -14318,6 +14368,10 @@ movePilotPrintWindowWatcher = setInterval(function() {
 }
 
 @media print {
+    .pdf-screen-actions {
+        display: none !important;
+    }
+
     body {
         margin: 12mm;
         font-size: 12px;
@@ -14340,6 +14394,16 @@ movePilotPrintWindowWatcher = setInterval(function() {
                     <div class="pdf-sub">Exported: ${new Date().toLocaleString("en-GB")}</div>
                 </div>
             </div>
+            <div class="pdf-screen-actions">
+    <div class="pdf-screen-actions-text">
+        <strong>Review Copy:</strong> Check this with the customer. Use Print / Save PDF when ready.
+    </div>
+
+    <div class="pdf-screen-actions-buttons">
+        <button type="button" class="pdf-screen-btn" onclick="window.print()">Print / Save PDF</button>
+        <button type="button" class="pdf-screen-btn secondary" onclick="window.close()">Close Preview</button>
+    </div>
+</div>
 
                     ${sectionsHtml}
 
