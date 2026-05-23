@@ -4463,14 +4463,14 @@ Enter as: Surname, First Name
         >
     </div>
 
-    <div
-        id="inv-current-volume"
-        class="inventory-live-stat"
-        onclick="openVolumeOverride()"
-    >
-        <div class="inventory-live-label">Item Vol</div>
-        <div class="inventory-live-value">50</div>
-    </div>
+   <div
+    id="inv-current-volume"
+    class="inventory-live-stat"
+    onclick="openVolumeOverride()"
+>
+    <div class="inventory-live-label">Item Vol</div>
+    <div id="inv-current-volume-value" class="inventory-live-value">0</div>
+</div>
 
     <div class="log-bar inventory-live-log">2 X SOFA 3 SEAT [EXC]</div>
 
@@ -11283,16 +11283,19 @@ if (rawEntry.handyman) tags.push("[HANDYMAN]");
     saveCalculatorFeedForActiveSequence();
 }
 function updateInventoryDisplay(logText = "No items added") {
-    let log = document.querySelector(".log-bar");
-    let volValue = document.querySelector(".vol-box span:last-child");
-    let totalVolBox = document.getElementById("inv-total-volume");
+    const log = document.querySelector(".log-bar");
+    const newCurrentVolValue = document.getElementById("inv-current-volume-value");
+    const oldCurrentVolValue = document.querySelector(".vol-box span:last-child");
+    const totalVolBox = document.getElementById("inv-total-volume");
 
     if (log) {
         log.innerText = logText;
     }
 
-    if (volValue) {
-        volValue.innerText = currentItemVolume;
+    if (newCurrentVolValue) {
+        newCurrentVolValue.innerText = currentItemVolume;
+    } else if (oldCurrentVolValue) {
+        oldCurrentVolValue.innerText = currentItemVolume;
     }
 
     if (totalVolBox) {
