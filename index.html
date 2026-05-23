@@ -265,6 +265,16 @@ button {
     object-fit: contain;
 }
 
+/* --- TABLET APP SCROLL CONTROL --- */
+html,
+body {
+    overscroll-behavior-y: none;
+    overscroll-behavior-x: none;
+}
+
+body {
+    touch-action: pan-y;
+}
         /* --- GLOBAL UI --- */
         .header-bar { 
             background: #0f172a; padding: 12px; border-radius: 14px; 
@@ -4640,11 +4650,11 @@ Enter as: Surname, First Name
 
         <div class="listed-pdf-actions">
             <button
-                onclick="printListedInventoryPdf()"
-                class="listed-pdf-btn listed-pdf-preview-btn"
-            >
-                Preview / Print PDF
-            </button>
+    onclick="printListedInventoryPdf()"
+    class="listed-pdf-btn listed-pdf-preview-btn"
+>
+    Review / Print PDF
+</button>
 
             <button
                 onclick="saveListedInventoryPdfToDevice()"
