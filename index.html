@@ -4929,18 +4929,30 @@ const BRANCH_DEPOTS = {
         const PACK_OPTIONS = ["Owner Pack", "Fragile (china & Glassware) pack", "Full Packing", "Full Export Pack and Wrap", "Fragile & Kitchenware Pack"];
         const SALUTATIONS = ["Mr", "Miss", "Mrs", "Ms", "Other"];
         const DEFAULT_ROOMS = [
-    "Hallway",
     "Lounge",
     "Dining Room",
     "Kitchen",
+    "Utility Room",
+    "Study",
+    "Hallway",
+    "Loft",
     "Main Bedroom",
     "Bedroom 2",
     "Bedroom 3",
+    "Bedroom 4",
     "Bathroom",
-    "Utility",
+    "Dressing Room",
+    "Garden",
     "Garage",
-    "Loft",
-    "Garden"
+    "Shed",
+    "Conservatory",
+    "Landing",
+    "Eaves Cupboards",
+    "Understairs Cupboard",
+    "Playroom",
+    "Snug",
+    "TV Room",
+    "Office"
 ];
 const DEFAULT_FLOORS = [
     "Basement",
@@ -7522,9 +7534,13 @@ function renderInventoryRoomDropdown() {
     const currentRoom = currentJob.inventory.activeRoomName || "Hallway";
     const roomOptions = getRoomOptions();
 
-    dropdown.innerHTML = roomOptions.map(room => {
+    const addCustomOption = `<option value="__add_custom_room__">+ Add Custom Room</option>`;
+
+    const roomOptionsHtml = roomOptions.map(function(room) {
         return `<option value="${room}" ${room === currentRoom ? 'selected' : ''}>${room}</option>`;
-    }).join('') + `<option value="__add_custom_room__">+ Add Custom Room</option>`;
+    }).join('');
+
+    dropdown.innerHTML = addCustomOption + roomOptionsHtml;
 
     dropdown.value = roomOptions.includes(currentRoom) ? currentRoom : "Hallway";
 }
