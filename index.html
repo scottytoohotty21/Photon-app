@@ -7888,7 +7888,7 @@ function handleInventoryButtonClick(itemName) {
     addInventoryItem(itemName);
 }
 
-function sortInventoryButtonsByMostUsed() {
+async function sortInventoryButtonsByMostUsed() {
     const category = currentInventoryCategory || "Full List";
     const orderedItems = getOrderedInventoryButtons(category);
     const usageMap = getInventoryButtonUsageMap(category);
@@ -7901,6 +7901,13 @@ function sortInventoryButtonsByMostUsed() {
         updateInventoryDisplay("NO USAGE DATA YET");
         return;
     }
+
+    const confirmed = await appConfirm(
+        "This will replace your current saved button order for " + category + " with your most-used order. Continue?",
+        "Sort By Most Used"
+    );
+
+    if (!confirmed) return;
 
     orderedItems.sort(function(a, b) {
         const usageA = Number(usageMap[a] || 0);
@@ -7979,8 +7986,16 @@ function toggleInventoryButtonReorderMode() {
     );
 }
 
-function resetInventoryButtonOrder() {
+async function resetInventoryButtonOrder() {
     const category = currentInventoryCategory || "Full List";
+
+    const confirmed = await appConfirm(
+        "This will reset your saved button order for " + category + " back to default. Continue?",
+        "Reset Button Order"
+    );
+
+    if (!confirmed) return;
+
     const storageKey = getInventoryButtonOrderKey(category);
 
     localStorage.removeItem(storageKey);
