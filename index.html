@@ -14419,31 +14419,39 @@ async function testSavePdfClick() {
     saveListedInventoryPdfToDevice();
 }
 async function saveListedInventoryPdfToDevice() {
-await appAlert("Save PDF function started.", "PDF Debug");
+    await appAlert("Save PDF function started.", "PDF Debug 1");
+
     closeAllMovePilotModals();
 
-    if (!currentJob) return;
-
-    if (typeof html2pdf === "undefined") {
-    await appAlert(
-        "PDF library is NOT loaded on this tablet. The file html2pdf.bundle.min.js must be copied beside index.html, or we need to embed the library into index.html.",
-        "PDF Library Missing"
-    );
-    return;
-}
-
-await appAlert(
-    "PDF library IS loaded on this tablet. The issue is the tablet download/save behaviour, not the missing file.",
-    "PDF Library Loaded"
-);
-
-    const allItems = getListedInventoryItems();
-    const filteredItems = filterListedInventoryItems(allItems);
-
-    if (!filteredItems.length) {
-        await appAlert("No listed inventory to save.", "Export Unavailable");
+    if (!currentJob) {
+        await appAlert("No current job is active, so PDF save stopped.", "PDF Debug 2");
         return;
     }
+
+    await appAlert("Current job found: " + (currentJob.name || currentJob.ref || "Unnamed job"), "PDF Debug 2");
+
+    if (typeof html2pdf === "undefined") {
+        await appAlert(
+            "PDF library is NOT loaded on this device. html2pdf.bundle.min.js is missing or not accessible.",
+            "PDF Debug 3"
+        );
+        return;
+    }
+
+    await appAlert("PDF library loaded. Checking inventory items next.", "PDF Debug 3");
+
+    const allItems = getListedInventoryItems();
+const filteredItems = filterListedInventoryItems(allItems);
+
+await appAlert(
+    "Inventory items found: " + allItems.length + ". Filtered items: " + filteredItems.length + ".",
+    "PDF Debug 4"
+);
+
+if (!filteredItems.length) {
+    await appAlert("No listed inventory to save.", "Export Unavailable");
+    return;
+}
 
     const listedSummary = buildListedSummary(filteredItems);
     const materialsSummary = buildMaterialsSummary(filteredItems);
