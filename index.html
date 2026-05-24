@@ -4736,7 +4736,7 @@ Enter as: Surname, First Name
 </button>
 
             <button
-    onclick="saveListedInventoryPdfToDevice()"
+    onclick="testSavePdfClick()"
     class="listed-pdf-btn listed-pdf-save-btn"
 >
     Save PDF to Device
@@ -14408,7 +14408,16 @@ function getListedInventoryDownloadCss() {
 }
     `;
 }
+async function testSavePdfClick() {
+    await appAlert("Save PDF button reached test wrapper.", "Button Test");
 
+    if (typeof saveListedInventoryPdfToDevice !== "function") {
+        await appAlert("saveListedInventoryPdfToDevice is not available as a function.", "PDF Function Missing");
+        return;
+    }
+
+    saveListedInventoryPdfToDevice();
+}
 async function saveListedInventoryPdfToDevice() {
 await appAlert("Save PDF function started.", "PDF Debug");
     closeAllMovePilotModals();
