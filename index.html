@@ -1851,6 +1851,21 @@ body {
             border-radius: 999px;
             white-space: nowrap;
         }
+        .job-status-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 3px;
+}
+
+.build-label {
+    font-size: 8px;
+    font-weight: 900;
+    text-transform: uppercase;
+    color: #64748b;
+    letter-spacing: 0.04em;
+    line-height: 1;
+}
 
         .job-header-actions {
     display: flex;
@@ -4554,9 +4569,14 @@ Enter as: Surname, First Name
 </button>
     </div>
 
+    <div class="job-status-stack">
     <div class="job-status-pill">
         Survey Live
     </div>
+    <div class="build-label">
+        Build: Sun PM Dev
+    </div>
+</div>
 </div>
 </div>
 
@@ -21476,6 +21496,7 @@ function normalizeJobsShape() {
         return safeJob;
     });
 }
+const MOVEPILOT_DEV_SKIP_ACTIVATION = true;
 const MOVEPILOT_ACTIVATION_STORAGE_KEY = "movepilot_activation_v1";
 
 const MOVEPILOT_ACTIVATION_CODES = {
@@ -21596,6 +21617,11 @@ window.addEventListener("focus", function() {
     runPostPrintCleanup();
 });
 document.addEventListener('DOMContentLoaded', function () {
+    if (MOVEPILOT_DEV_SKIP_ACTIVATION) {
+        showMovePilotApp();
+        return;
+    }
+
     const activation = getMovePilotActivationState();
 
     if (activation) {
