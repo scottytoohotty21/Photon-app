@@ -259,13 +259,14 @@ button {
         /* --- LOGO --- */
 .app-logo-image {
     display: block;
-    width: auto;
-    height: 68px;
-    max-width: 340px;
+    width: 320px;
+    height: 78px;
+    max-width: 100%;
     object-fit: contain;
     object-position: center center;
     margin-left: auto;
     margin-right: auto;
+    transform: translateX(8px);
 }
 
 /* --- TABLET APP SCROLL CONTROL --- */
@@ -3987,69 +3988,60 @@ body {
 }
 @media (max-width: 1180px) {
     .quote-line-grid {
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(104px, 0.8fr) 48px;
-        gap: 8px;
+        grid-template-columns: minmax(132px, 1.2fr) minmax(96px, 0.8fr) 58px 82px 92px 38px;
+        gap: 6px;
         align-items: end;
     }
 
     .pricing-row {
-        padding: 10px;
+        padding: 8px;
     }
 
-    .quote-type-wrap {
-        grid-column: 1 / span 2;
-    }
-
-    .quote-custom-label-wrap {
-        grid-column: 3 / span 2;
-    }
-
-    .quote-qty-wrap {
-        grid-column: 1;
-    }
-
-    .quote-unit-wrap {
-        grid-column: 2;
-    }
-
-    .quote-total-wrap {
-        grid-column: 3;
-    }
-
+    .quote-type-wrap,
+    .quote-custom-label-wrap,
+    .quote-qty-wrap,
+    .quote-unit-wrap,
+    .quote-total-wrap,
     .quote-del-wrap {
-        grid-column: 4;
-        align-items: end;
-        justify-content: center;
+        grid-column: auto;
+        min-width: 0;
     }
 
     .quote-line-grid .mini-label {
-        font-size: 8px;
+        font-size: 7.5px;
         margin-bottom: 3px;
+        letter-spacing: 0.01em;
     }
 
     .quote-line-grid .field {
-        height: 40px;
-        font-size: 10px;
-        padding-left: 8px;
-        padding-right: 8px;
-    }
-
-    .quote-line-total {
-        min-height: 40px;
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 10px;
+        height: 38px;
+        font-size: 9.5px;
         padding-left: 6px;
         padding-right: 6px;
     }
 
+    .quote-line-total {
+        min-height: 38px;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 9.5px;
+        padding-left: 4px;
+        padding-right: 4px;
+    }
+
+    .quote-del-wrap {
+        display: flex;
+        align-items: end;
+        justify-content: center;
+    }
+
     .quote-delete-x-btn {
-        width: 40px;
-        min-width: 40px;
-        height: 40px;
-        min-height: 40px;
+        width: 36px;
+        min-width: 36px;
+        height: 38px;
+        min-height: 38px;
         padding: 0;
     }
 }
@@ -4744,7 +4736,7 @@ Enter as: Surname, First Name
 </button>
 
             <button
-    onclick="appAlert('Save PDF button clicked.', 'Button Test')"
+    onclick="saveListedInventoryPdfToDevice()"
     class="listed-pdf-btn listed-pdf-save-btn"
 >
     Save PDF to Device
