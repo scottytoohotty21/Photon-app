@@ -14988,72 +14988,21 @@ movePilotPrintWindowWatcher = setInterval(function() {
     }
 
     body {
-        max-width: 980px;
+        width: 210mm;
+        min-height: 297mm;
         margin: 16px auto;
-        padding: 18px;
-        background: white;
-        font-size: 14px;
-        line-height: 1.45;
+        padding: 12mm;
+        background: #ffffff;
+        font-size: 12px;
+        line-height: 1.4;
         box-shadow: 0 12px 30px rgba(15, 23, 42, 0.18);
+        box-sizing: border-box;
     }
 
-    .pdf-title {
-        font-size: 26px;
-    }
-
-    .pdf-sub {
-        font-size: 12px;
-    }
-
-    .pdf-section-title {
-        font-size: 15px;
-    }
-
-    .pdf-section-subtitle {
-        font-size: 11.5px;
-    }
-
-    .pdf-room-title,
-    .pdf-room-total {
-        font-size: 12.5px;
-    }
-
-    .pdf-room-floor {
-        font-size: 11px;
-    }
-
-    .pdf-table th,
-    .pdf-table td {
-        font-size: 12px;
-        padding: 7px 8px;
-        line-height: 1.35;
-    }
-
-    .pdf-table th {
-        font-size: 10.5px;
-    }
-
-    .pdf-section-total {
-        font-size: 12px;
-    }
-
-    .pdf-card-title {
-        font-size: 12px;
-    }
-
-    .pdf-small-note {
-        font-size: 11px;
-    }
-
-    .pdf-materials-grid,
-    .pdf-responsibility-list {
-        font-size: 12px;
-        line-height: 1.5;
-    }
-
-    .pdf-mini-head,
-    .pdf-responsibility-list .pdf-mini-head {
-        font-size: 12px;
+    .pdf-screen-actions {
+        position: sticky;
+        top: 10px;
+        z-index: 50;
     }
 }
 
