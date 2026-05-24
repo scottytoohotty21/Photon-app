@@ -260,8 +260,8 @@ button {
 .app-logo-image {
     display: block;
     width: auto;
-    height: 42px;
-    max-width: 220px;
+    height: 56px;
+    max-width: 280px;
     object-fit: contain;
 }
 
@@ -4020,36 +4020,7 @@ body {
         padding: 0;
     }
 }
-@media (max-width: 980px) {
-    .quote-line-grid {
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 72px 88px;
-        gap: 8px;
-    }
 
-    .quote-type-wrap {
-        grid-column: span 1;
-    }
-
-    .quote-custom-label-wrap {
-        grid-column: span 1;
-    }
-
-    .quote-qty-wrap {
-        grid-column: span 1;
-    }
-
-    .quote-unit-wrap {
-        grid-column: span 1;
-    }
-
-    .quote-total-wrap {
-        grid-column: span 3;
-    }
-
-    .quote-del-wrap {
-        grid-column: span 1;
-    }
-}
 
 .quote-type-wrap,
 .quote-custom-label-wrap,
@@ -14419,12 +14390,17 @@ async function saveListedInventoryPdfToDevice() {
     if (!currentJob) return;
 
     if (typeof html2pdf === "undefined") {
-        await appAlert(
-            "The local PDF generator is not loaded. Check html2pdf.bundle.min.js is beside index.html and the script tag has been added.",
-            "PDF Library Missing"
-        );
-        return;
-    }
+    await appAlert(
+        "PDF library is NOT loaded on this tablet. The file html2pdf.bundle.min.js must be copied beside index.html, or we need to embed the library into index.html.",
+        "PDF Library Missing"
+    );
+    return;
+}
+
+await appAlert(
+    "PDF library IS loaded on this tablet. The issue is the tablet download/save behaviour, not the missing file.",
+    "PDF Library Loaded"
+);
 
     const allItems = getListedInventoryItems();
     const filteredItems = filterListedInventoryItems(allItems);
