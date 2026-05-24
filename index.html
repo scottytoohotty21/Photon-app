@@ -4346,17 +4346,7 @@ body {
     justify-content: center;
 }
 
-@media (max-width:1180px){
-    .quote-line-grid{
-        grid-template-columns:minmax(0,1.3fr) minmax(0,1.2fr) minmax(82px,.7fr) minmax(100px,.9fr) minmax(125px,1fr) 64px;
-    }
-}
 
-@media (max-width:900px){
-    .quote-line-grid{
-        grid-template-columns:1fr 1fr;
-    }
-}
 .toolbar{
     margin-top:12px;
     display:flex;
@@ -17792,8 +17782,7 @@ function renderQuoteAdditionalCostsGrid(sequenceId) {
                             <div class="quote-custom-label-wrap">
                                 <label class="mini-label">Custom Label</label>
                                 <input
-                                    <input
-    type="text"
+                                        type="text"
     class="field quote-cost-editable-field"
     value="${escapeHtml(line.customLabel || "")}"
                                     ${isCustom ? "" : "disabled"}
