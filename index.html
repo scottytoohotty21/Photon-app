@@ -14419,26 +14419,37 @@ async function testSavePdfClick() {
     saveListedInventoryPdfToDevice();
 }
 async function saveListedInventoryPdfToDevice() {
-    await appAlert("Save PDF function started.", "PDF Debug 1");
-
     closeAllMovePilotModals();
 
-    if (!currentJob) {
-        await appAlert("No current job is active, so PDF save stopped.", "PDF Debug 2");
-        return;
-    }
+    await appAlert("Save PDF function started.", "PDF Debug 1");
 
-    await appAlert("Current job found: " + (currentJob.name || currentJob.ref || "Unnamed job"), "PDF Debug 2");
+    try {
+        if (!currentJob) {
+            await appAlert("No current job is active, so PDF save stopped.", "PDF Debug 2");
+            return;
+        }
 
-    if (typeof html2pdf === "undefined") {
         await appAlert(
-            "PDF library is NOT loaded on this device. html2pdf.bundle.min.js is missing or not accessible.",
-            "PDF Debug 3"
+            "Current job found: " + (currentJob.name || currentJob.ref || "Unnamed job"),
+            "PDF Debug 2"
+        );
+
+        if (typeof html2pdf === "undefined") {
+            await appAlert(
+                "PDF library is NOT loaded on this device. html2pdf.bundle.min.js is missing or not accessible.",
+                "PDF Debug 3"
+            );
+            return;
+        }
+
+        await appAlert("PDF library loaded. Checking inventory items next.", "PDF Debug 3");
+    } catch (debugErr) {
+        await appAlert(
+            "PDF debug stopped with an error: " + (debugErr && debugErr.message ? debugErr.message : debugErr),
+            "PDF Debug Error"
         );
         return;
     }
-
-    await appAlert("PDF library loaded. Checking inventory items next.", "PDF Debug 3");
 
     const allItems = getListedInventoryItems();
 const filteredItems = filterListedInventoryItems(allItems);
