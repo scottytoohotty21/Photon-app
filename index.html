@@ -259,14 +259,28 @@ button {
         /* --- LOGO --- */
 .app-logo-image {
     display: block;
-    width: 320px;
-    height: 78px;
+    width: 380px;
+    height: 96px;
     max-width: 100%;
     object-fit: contain;
     object-position: center center;
     margin-left: auto;
     margin-right: auto;
-    transform: translateX(8px);
+    transform: translateX(0);
+}
+/* Dashboard logo tuning */
+#view-dashboard .app-logo-image {
+    width: 420px;
+    height: 110px;
+    max-width: 92vw;
+    margin-bottom: 10px;
+}
+
+/* Editor/header logo tuning */
+.job-header .app-logo-image {
+    width: 260px;
+    height: 64px;
+    max-width: 260px;
 }
 
 /* --- TABLET APP SCROLL CONTROL --- */
@@ -3988,8 +4002,8 @@ body {
 }
 @media (max-width: 1180px) {
     .quote-line-grid {
-        grid-template-columns: minmax(132px, 1.2fr) minmax(96px, 0.8fr) 58px 82px 92px 38px;
-        gap: 6px;
+        grid-template-columns: minmax(130px, 1.35fr) minmax(82px, 0.75fr) 54px 78px 86px 34px;
+        gap: 5px;
         align-items: end;
     }
 
@@ -4003,32 +4017,34 @@ body {
     .quote-unit-wrap,
     .quote-total-wrap,
     .quote-del-wrap {
-        grid-column: auto;
+        grid-column: auto !important;
         min-width: 0;
     }
 
     .quote-line-grid .mini-label {
-        font-size: 7.5px;
-        margin-bottom: 3px;
-        letter-spacing: 0.01em;
+        font-size: 7px;
+        margin-bottom: 2px;
+        letter-spacing: 0;
+        white-space: nowrap;
     }
 
     .quote-line-grid .field {
-        height: 38px;
-        font-size: 9.5px;
-        padding-left: 6px;
-        padding-right: 6px;
+        height: 36px;
+        font-size: 9px;
+        padding-left: 5px;
+        padding-right: 5px;
     }
 
     .quote-line-total {
-        min-height: 38px;
-        height: 38px;
+        min-height: 36px;
+        height: 36px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 9.5px;
-        padding-left: 4px;
-        padding-right: 4px;
+        font-size: 9px;
+        padding-left: 3px;
+        padding-right: 3px;
+        white-space: nowrap;
     }
 
     .quote-del-wrap {
@@ -4038,11 +4054,12 @@ body {
     }
 
     .quote-delete-x-btn {
-        width: 36px;
-        min-width: 36px;
-        height: 38px;
-        min-height: 38px;
+        width: 32px;
+        min-width: 32px;
+        height: 36px;
+        min-height: 36px;
         padding: 0;
+        font-size: 10px;
     }
 }
 
