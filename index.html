@@ -3225,6 +3225,28 @@ body {
     border: 2px solid #ef4444;
     box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.10);
 }
+.schedule-main-input-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 14px;
+}
+
+.schedule-main-note {
+    margin-top: 12px;
+}
+
+.grid-4 {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+}
+
+@media (max-width: 1180px) {
+    .grid-4 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
 .schedule-shell{
     margin-top:0;
     border:2px solid var(--blue);
@@ -4794,66 +4816,21 @@ Enter as: Surname, First Name
 </section>
    <section id="content-schedule" class="tab-content hidden bg-white p-6 rounded-2xl shadow-inner">
     <div class="layout">
-        <div class="schedule-left-column">
-    <div class="panel schedule-left-sticky">
-            <div class="panel-head">
-                <div class="panel-title">Inputs</div>
-                <div class="panel-subtitle">Sequence, volume and special labour inputs</div>
-            </div>
-
-            <div class="panel-body">
-                             <div class="section-block">
-    <div class="section-title">Sequence</div>
-    <select id="schedule-seq-select" class="field" onchange="handleScheduleSequenceChange(this.value)"></select>
-</div>
-                                      
-                   <div class="section-block">
-                    <div class="section-title">Special Labour Inputs</div>
-                    <div class="grid-2">
-    <div>
-    <label class="mini-label special-labour-label">Custom Item<br>Note</label>
-    <input id="svc_custom_note" type="text" maxlength="40" class="field field-editable-blue" value="" oninput="handleScheduleInputChange()" />
-</div>
-
-<div>
-    <label class="mini-label special-labour-label">Custom Item Minutes<br>Each Side</label>
-    <input id="svc_custom_minutes" type="number" min="0" class="field field-editable-blue" value="0" oninput="handleScheduleInputChange()" />
-</div>
-
-<div>
-    <label class="mini-label special-labour-label">Export Wrap Volume<br>(CUFT)</label>
-    <input id="exportWrapVol" type="number" min="0" class="field field-readonly-soft" value="0" readonly />
-</div>
-
-<div>
-    <label class="mini-label special-labour-label">Loft Effects Volume<br>(CUFT)</label>
-    <input id="loftVol" type="number" min="0" class="field field-editable-blue" value="0" oninput="handleScheduleInputChange()" />
-</div>
-
-  
-    </div>
+                <div class="schedule-left-column">
+            <div class="panel schedule-left-sticky">
+                <div class="panel-head">
+                    <div class="panel-title">Active Schedule</div>
+                    <div class="panel-subtitle">Selected sequence being worked on</div>
                 </div>
 
-                <div class="note-card">
-                    Add custom item labour in minutes per side. Other specialist labour is now fed from inventory and shown in the breakdown..
+                <div class="panel-body">
+                    <div class="section-block">
+                        <div class="section-title">Sequence</div>
+                        <select id="schedule-seq-select" class="field" onchange="handleScheduleSequenceChange(this.value)"></select>
+                    </div>
                 </div>
             </div>
         </div>
-
-                <div class="lhs-rate-grid">
-    <div class="summary-card">
-        <div class="summary-label">Loading Rate</div>
-        <div class="summary-value" id="summaryLoadRate">0</div>
-        <div class="summary-sub">Cuft per man-hour</div>
-    </div>
-
-    <div class="summary-card">
-        <div class="summary-label">Unloading Rate</div>
-        <div class="summary-value" id="summaryUnloadRate">0</div>
-        <div class="summary-sub">Cuft per man-hour</div>
-    </div>
-</div>
-    </div>
         <div class="panel">
             <div class="panel-head">
                 <div class="panel-title">Live Results</div>
@@ -4861,6 +4838,37 @@ Enter as: Surname, First Name
             </div>
             <div class="panel-body">
     <div id="schedule-fringe-warning" class="schedule-fringe-warning"></div>
+        <div class="schedule-main-input-card">
+        <div class="section-title">Special Labour Inputs</div>
+
+        <div class="grid-4">
+            <div>
+                <label class="mini-label special-labour-label">Custom Item<br>Note</label>
+                <input id="svc_custom_note" type="text" maxlength="40" class="field field-editable-blue" value="" oninput="handleScheduleInputChange()" />
+            </div>
+
+            <div>
+                <label class="mini-label special-labour-label">Custom Item Minutes<br>Each Side</label>
+                <input id="svc_custom_minutes" type="number" min="0" class="field field-editable-blue" value="0" oninput="handleScheduleInputChange()" />
+            </div>
+
+            <div>
+                <label class="mini-label special-labour-label">Export Wrap Volume<br>(CUFT)</label>
+                <input id="exportWrapVol" type="number" min="0" class="field field-readonly-soft" value="0" readonly />
+            </div>
+
+            <div>
+                <label class="mini-label special-labour-label">Loft Effects Volume<br>(CUFT)</label>
+                <input id="loftVol" type="number" min="0" class="field field-editable-blue" value="0" oninput="handleScheduleInputChange()" />
+            </div>
+        </div>
+
+        <div class="note-card schedule-main-note">
+            Add custom item labour in minutes per side. Other specialist labour is now fed from inventory and shown in the breakdown.
+        </div>
+    </div>
+
+    <div style="height:12px"></div>
                 <div class="schedule-shell">
         <div class="schedule-toolbar">
     <div class="schedule-title-row">
@@ -4911,7 +4919,19 @@ Enter as: Surname, First Name
 <div style="height:12px"></div>
 
 
-    <div class="summary-grid">
+       <div class="summary-grid">
+
+        <div class="summary-card">
+            <div class="summary-label">Loading Rate</div>
+            <div class="summary-value" id="summaryLoadRate">0</div>
+            <div class="summary-sub">Cuft per man-hour</div>
+        </div>
+
+        <div class="summary-card">
+            <div class="summary-label">Unloading Rate</div>
+            <div class="summary-value" id="summaryUnloadRate">0</div>
+            <div class="summary-sub">Cuft per man-hour</div>
+        </div>
         
         <div class="summary-card">
             <div class="summary-label">Total Volume</div>
