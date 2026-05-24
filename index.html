@@ -4735,8 +4735,8 @@ Enter as: Surname, First Name
     Review / Print PDF
 </button>
 
-            <button
-    onclick="appAlert('Save PDF button clicked.', 'Button Test')"
+           <button
+    onclick="saveListedInventoryPdfToDevice()"
     class="listed-pdf-btn listed-pdf-save-btn"
 >
     Save PDF to Device
@@ -14410,7 +14410,13 @@ function getListedInventoryDownloadCss() {
 }
 
 async function saveListedInventoryPdfToDevice() {
-    closeAllMovePilotModals();
+    try {
+        if (typeof closeAllMovePilotModals === "function") {
+            closeAllMovePilotModals();
+        }
+    } catch (modalErr) {
+        console.warn("Could not close modals before PDF save:", modalErr);
+    }
 
     if (!currentJob) {
         await appAlert("No active job is open, so the PDF cannot be saved.", "PDF Save Unavailable");
