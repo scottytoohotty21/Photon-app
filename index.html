@@ -14410,6 +14410,7 @@ function getListedInventoryDownloadCss() {
 }
 
 async function saveListedInventoryPdfToDevice() {
+await appAlert("Save PDF function started.", "PDF Debug");
     closeAllMovePilotModals();
 
     if (!currentJob) return;
