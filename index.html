@@ -4736,7 +4736,7 @@ Enter as: Surname, First Name
 </button>
 
             <button
-    onclick="testSavePdfClick()"
+    onclick="saveListedInventoryPdfToDevice()"
     class="listed-pdf-btn listed-pdf-save-btn"
 >
     Save PDF to Device
@@ -14408,61 +14408,30 @@ function getListedInventoryDownloadCss() {
 }
     `;
 }
-async function testSavePdfClick() {
-    await appAlert("Save PDF button reached test wrapper.", "Button Test");
 
-    if (typeof saveListedInventoryPdfToDevice !== "function") {
-        await appAlert("saveListedInventoryPdfToDevice is not available as a function.", "PDF Function Missing");
-        return;
-    }
-
-    saveListedInventoryPdfToDevice();
-}
 async function saveListedInventoryPdfToDevice() {
     closeAllMovePilotModals();
 
-    await appAlert("Save PDF function started.", "PDF Debug 1");
+    if (!currentJob) {
+        await appAlert("No active job is open, so the PDF cannot be saved.", "PDF Save Unavailable");
+        return;
+    }
 
-    try {
-        if (!currentJob) {
-            await appAlert("No current job is active, so PDF save stopped.", "PDF Debug 2");
-            return;
-        }
-
+    if (typeof html2pdf === "undefined") {
         await appAlert(
-            "Current job found: " + (currentJob.name || currentJob.ref || "Unnamed job"),
-            "PDF Debug 2"
-        );
-
-        if (typeof html2pdf === "undefined") {
-            await appAlert(
-                "PDF library is NOT loaded on this device. html2pdf.bundle.min.js is missing or not accessible.",
-                "PDF Debug 3"
-            );
-            return;
-        }
-
-        await appAlert("PDF library loaded. Checking inventory items next.", "PDF Debug 3");
-    } catch (debugErr) {
-        await appAlert(
-            "PDF debug stopped with an error: " + (debugErr && debugErr.message ? debugErr.message : debugErr),
-            "PDF Debug Error"
+            "PDF generator is not loaded. The file html2pdf.bundle.min.js may not be available on this device.",
+            "PDF Library Missing"
         );
         return;
     }
 
     const allItems = getListedInventoryItems();
-const filteredItems = filterListedInventoryItems(allItems);
+    const filteredItems = filterListedInventoryItems(allItems);
 
-await appAlert(
-    "Inventory items found: " + allItems.length + ". Filtered items: " + filteredItems.length + ".",
-    "PDF Debug 4"
-);
-
-if (!filteredItems.length) {
-    await appAlert("No listed inventory to save.", "Export Unavailable");
-    return;
-}
+    if (!filteredItems.length) {
+        await appAlert("No listed inventory to save.", "Export Unavailable");
+        return;
+    }
 
     const listedSummary = buildListedSummary(filteredItems);
     const materialsSummary = buildMaterialsSummary(filteredItems);
@@ -14554,55 +14523,69 @@ if (!filteredItems.length) {
     const pdfElement = wrapper.querySelector(".pdf-download-doc");
 
     try {
+        await appAlert("Creating PDF now. This may take a few seconds on older tablets.", "PDF Save");
+
         const pdfBlob = await html2pdf()
-    .set({
-        margin: [8, 8, 8, 8],
-        filename: fileName,
-        image: {
-            type: "jpeg",
-            quality: 0.88
-        },
-        html2canvas: {
-            scale: 1.75,
-            useCORS: true,
-            backgroundColor: "#ffffff"
-        },
-        jsPDF: {
-            unit: "mm",
-            format: "a4",
-            orientation: "portrait"
-        },
-        pagebreak: {
-            mode: ["css", "legacy"],
-            avoid: [".pdf-room-block"]
+            .set({
+                margin: [8, 8, 8, 8],
+                filename: fileName,
+                image: {
+                    type: "jpeg",
+                    quality: 0.84
+                },
+                html2canvas: {
+                    scale: 1.35,
+                    useCORS: true,
+                    backgroundColor: "#ffffff"
+                },
+                jsPDF: {
+                    unit: "mm",
+                    format: "a4",
+                    orientation: "portrait"
+                },
+                pagebreak: {
+                    mode: ["css", "legacy"],
+                    avoid: [".pdf-room-block"]
+                }
+            })
+            .from(pdfElement)
+            .outputPdf("blob");
+
+        const pdfUrl = URL.createObjectURL(pdfBlob);
+
+        const downloadLink = document.createElement("a");
+        downloadLink.href = pdfUrl;
+        downloadLink.download = fileName;
+        downloadLink.style.display = "none";
+
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        downloadLink.remove();
+
+        let openedFallback = false;
+
+        try {
+            const fallbackWindow = window.open(pdfUrl, "_blank");
+            openedFallback = !!fallbackWindow;
+        } catch (openErr) {
+            openedFallback = false;
         }
-    })
-    .from(pdfElement)
-    .outputPdf("blob");
 
-const pdfUrl = URL.createObjectURL(pdfBlob);
+        setTimeout(function() {
+            URL.revokeObjectURL(pdfUrl);
+        }, 120000);
 
-const downloadLink = document.createElement("a");
-downloadLink.href = pdfUrl;
-downloadLink.download = fileName;
-downloadLink.style.display = "none";
-
-document.body.appendChild(downloadLink);
-downloadLink.click();
-downloadLink.remove();
-
-setTimeout(function() {
-    URL.revokeObjectURL(pdfUrl);
-}, 60000);
-
-await appAlert(
-    "PDF created. If it did not appear in Downloads, use Review / Print PDF as a fallback on this tablet.",
-    "PDF Save Complete"
-);    } catch (err) {
+        await appAlert(
+            openedFallback
+                ? "PDF created. If it did not save automatically, use the opened PDF tab to save or share it."
+                : "PDF created. If it did not appear in Downloads, use Review / Print PDF as a fallback on this tablet.",
+            "PDF Save Complete"
+        );
+    } catch (err) {
         console.error("Save PDF to device failed:", err);
 
         await appAlert(
-            "The PDF could not be saved on this device. Please use Preview / Print PDF as a fallback.",
+            "The PDF could not be saved on this device. Please use Review / Print PDF as a fallback.",
             "PDF Save Failed"
         );
     } finally {
