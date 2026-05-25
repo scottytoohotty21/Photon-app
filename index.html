@@ -478,6 +478,73 @@ body {
             display: flex; justify-content: space-between; align-items: center;
             background: #f8fafc; padding: 6px 10px; border-radius: 8px; margin-top: 5px; border: 1px solid #e2e8f0;
         }
+        .dashboard-job-ref {
+    margin-top: 6px;
+    font-size: 11px;
+    font-weight: 900;
+    color: #334155;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.dashboard-job-ref span {
+    color: #0f172a;
+    font-weight: 950;
+}
+
+.dashboard-seq-head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 82px 82px;
+    gap: 8px;
+    padding: 0 2px 6px;
+    font-size: 8px;
+    font-weight: 950;
+    text-transform: uppercase;
+    color: #94a3b8;
+    letter-spacing: 0.04em;
+}
+
+.dashboard-seq-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 82px 82px;
+    gap: 8px;
+    align-items: center;
+}
+
+.dashboard-seq-main {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.dashboard-seq-title {
+    font-size: 9px;
+    font-weight: 950;
+    text-transform: uppercase;
+    color: #0f172a;
+    line-height: 1.05;
+}
+
+.dashboard-seq-sub {
+    font-size: 8px;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #94a3b8;
+    margin-top: 2px;
+}
+
+.dashboard-seq-volume,
+.dashboard-seq-price {
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 9px;
+    padding: 6px 7px;
+    font-size: 9px;
+    font-weight: 950;
+    text-align: center;
+    color: #0f172a;
+    white-space: nowrap;
+}
 
         /* --- GRID SYSTEM --- */
         .prop-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 10px; }
@@ -3074,6 +3141,37 @@ min-height: 48px;
     position: static !important;
     top: auto !important;
 }
+@media (max-width: 1180px) {
+    #content-schedule .layout {
+        display: block;
+    }
+
+    #content-schedule .schedule-left-column {
+        width: 100%;
+        max-width: none;
+        margin-bottom: 12px;
+    }
+
+    #content-schedule .schedule-left-sticky {
+        position: sticky;
+        top: 8px;
+        z-index: 30;
+        width: 100%;
+        max-width: none;
+    }
+
+    #content-schedule .schedule-left-sticky .panel-head {
+        padding-bottom: 8px;
+    }
+
+    #content-schedule .schedule-left-sticky .panel-body {
+        padding-top: 10px;
+    }
+
+    #content-schedule #schedule-seq-select {
+        width: 100%;
+    }
+}
 .lhs-rate-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -3348,18 +3446,23 @@ min-height: 48px;
 }
 
 .schedule-volume-badge {
+    background: #ffffff;
+    border: 1.5px solid #cbd5e1;
+    border-bottom-color: #94a3b8;
+    color: #0f172a;
+    border-radius: 12px;
+    padding: 10px 14px;
+    min-height: 42px;
     display: inline-flex;
     align-items: center;
-    min-height: 28px;
-    padding: 6px 10px;
-    border-radius: 999px;
-    background: #eff6ff;
-    border: 1px solid #bfdbfe;
-    color: #1d4ed8;
+    justify-content: center;
     font-size: 10px;
     font-weight: 900;
     text-transform: uppercase;
     line-height: 1;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
 }
 .schedule-title{font-size:10px;font-weight:900;text-transform:uppercase;color:var(--slate-400);}
 .schedule-btn{height:38px;border-radius:10px;border:1px solid var(--slate-300);background:#fff;color:var(--slate-700);padding:0 14px;font-size:11px;font-weight:900;text-transform:uppercase;cursor:pointer;}
@@ -9450,6 +9553,56 @@ document.getElementById('seq-switcher').innerHTML = currentJob.sequences.map((s,
     });
 }
 
+function getDashboardSequenceVolume(job, sequenceId) {
+    if (!job || !job.inventory || !Array.isArray(job.inventory.items)) {
+        return 0;
+    }
+
+    return job.inventory.items.reduce(function(total, entry) {
+        if (!entry || entry.excluded) return total;
+
+        const entrySequenceId = String(entry.sequenceId || "");
+        const targetSequenceId = String(sequenceId || "");
+
+        if (entrySequenceId !== targetSequenceId) {
+            return total;
+        }
+
+        return total + Number(entry.totalVolume || 0);
+    }, 0);
+}
+
+function getDashboardSequencePrice(job, sequenceId) {
+    const previousJob = currentJob;
+
+    try {
+        currentJob = job;
+
+        const totals = getQuoteCommercialTotals(sequenceId);
+
+        return totals && totals.customerPrice
+            ? Number(totals.customerPrice || 0)
+            : 0;
+    } catch (err) {
+        console.warn("Could not calculate dashboard sequence price", err);
+        return 0;
+    } finally {
+        currentJob = previousJob;
+    }
+}
+
+function formatDashboardMoney(value) {
+    const amount = Number(value || 0);
+
+    if (!amount) {
+        return "£---";
+    }
+
+    return "£" + amount.toLocaleString("en-GB", {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+    });
+}
 function renderDashboard() {
     const isDevMode =
         typeof MOVEPILOT_DEV_SKIP_ACTIVATION !== "undefined" &&
@@ -9459,16 +9612,31 @@ function renderDashboard() {
         const safeSequences = Array.isArray(j.sequences) ? j.sequences : [];
 
         let seqBreakdown = safeSequences.length > 0
-            ? safeSequences.map(s => `
-                <div class="seq-row">
-                    <div class="flex flex-col">
-                        <span class="text-[9px] font-black uppercase italic leading-none">${s.moveType || 'New Seq'}</span>
-                        <span class="text-[8px] font-bold text-slate-400 uppercase mt-0.5">${s.packOption || 'No Packing Set'}</span>
+    ? `
+        <div class="dashboard-seq-head">
+            <span>Sequence</span>
+            <span>Volume</span>
+            <span>Price</span>
+        </div>
+
+        ${safeSequences.map(function(s, index) {
+            const seqVolume = getDashboardSequenceVolume(j, s.id);
+            const seqPrice = getDashboardSequencePrice(j, s.id);
+
+            return `
+                <div class="seq-row dashboard-seq-row">
+                    <div class="dashboard-seq-main">
+                        <span class="dashboard-seq-title">Seq ${index + 1}: ${s.moveType || 'New Seq'}</span>
+                        <span class="dashboard-seq-sub">${s.packOption || 'No Packing Set'}</span>
                     </div>
-                    <span class="text-[10px] font-black text-blue-600">${s.vol || 0} ft³</span>
-                </div>`
-            ).join('')
-            : `<div class="text-[8px] text-slate-300 italic mt-2 uppercase font-bold">No sequences</div>`;
+
+                    <span class="dashboard-seq-volume">${seqVolume} ft³</span>
+                    <span class="dashboard-seq-price">${formatDashboardMoney(seqPrice)}</span>
+                </div>
+            `;
+        }).join('')}
+    `
+    : `<div class="text-[8px] text-slate-300 italic mt-2 uppercase font-bold">No sequences</div>`;
 
         return `
             <div class="job-card status-${j.status || 'pending'}" onclick="openJob(${j.id})">
@@ -9478,7 +9646,7 @@ function renderDashboard() {
                         ${j.isManual ? '<span class="pill pill-manual">Manual</span>' : ''}
                         ${j.isNew ? '<span class="pill pill-new">New</span>' : ''}
                         <h3 class="text-xl font-black text-slate-800 uppercase leading-none mt-1">${j.name || 'Unnamed Job'}</h3>
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Ref: ${j.ref || '---'}</p>
+                        <p class="dashboard-job-ref">REF: <span>${j.ref || '---'}</span></p>
                         ${j.notes ? `<div class="notes-preview">${j.notes}</div>` : ''}
                         <div class="mt-4 border-t pt-2">${seqBreakdown}</div>
                     </div>
