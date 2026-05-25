@@ -4751,16 +4751,13 @@ Enter as: Surname, First Name
 
    
         <div class="col-span-1 grid grid-cols-1 gap-1 inventory-side-column">
+    <div class="col-span-1 grid grid-cols-1 gap-1 inventory-side-column">
     <button class="item-btn item-btn-carton" onclick="addBox('AP')">AP</button>
     <button class="item-btn item-btn-carton" onclick="addBox('CG')">CG</button>
     <button class="item-btn item-btn-carton" onclick="addBox('BOOK')">BOOK</button>
     <button class="item-btn item-btn-carton" onclick="addBox('LINEN')">LINEN</button>
     <button class="item-btn item-btn-carton" onclick="addBox('WR')">WR</button>
-
     <button class="item-btn item-btn-material" onclick="addBox('PICTURE')">PICTURE<br>PACK</button>
-    <button class="item-btn item-btn-material" onclick="addBox('WINE_DIVIDERS')">WINE<br>DIVIDERS</button>
-    <button class="item-btn item-btn-material" onclick="addBox('BLUE_EDGING')">BLUE<br>EDGING</button>
-    <button class="item-btn item-btn-material" onclick="addBox('POLY_CHIPS')">POLY<br>CHIPS</button>
 
     <button class="item-btn item-btn-volume" onclick="addVolume(1)">1 CUFT</button>
     <button class="item-btn item-btn-volume" onclick="addVolume(5)">5 CUFT</button>
@@ -4768,6 +4765,20 @@ Enter as: Surname, First Name
     <button class="item-btn item-btn-volume" onclick="addVolume(20)">20 CUFT</button>
     <button class="item-btn item-btn-volume" onclick="addVolume(50)">50 CUFT</button>
     <button class="item-btn item-btn-volume" onclick="addVolume(100)">100 CUFT</button>
+
+    <button class="item-btn item-btn-material" onclick="addBox('TV_CARTON')">TV<br>CARTON</button>
+    <button class="item-btn item-btn-material" onclick="addBox('WINE_DIVIDERS')">WINE<br>DIVIDERS</button>
+    <button class="item-btn item-btn-material" onclick="addBox('BLUE_EDGING')">BLUE<br>EDGING</button>
+    <button class="item-btn item-btn-material" onclick="addBox('POLY_CHIPS')">POLY<br>CHIPS</button>
+    <button class="item-btn item-btn-material" onclick="addBox('GOLF_CLUB')">GOLF<br>CLUB</button>
+    <button class="item-btn item-btn-material" onclick="addBox('BIKE_BOX')">BIKE<br>BOX</button>
+    <button class="item-btn item-btn-material" onclick="addBox('MATTRESS_BAG_SINGLE')">MATTRESS<br>BAG S</button>
+    <button class="item-btn item-btn-material" onclick="addBox('MATTRESS_BAG_DOUBLE')">MATTRESS<br>BAG D</button>
+    <button class="item-btn item-btn-material" onclick="addBox('MATTRESS_BAG_KINGSIZE')">MATTRESS<br>BAG K</button>
+    <button class="item-btn item-btn-material" onclick="addBox('ARMCHAIR_COVER')">ARMCHAIR<br>COVER</button>
+    <button class="item-btn item-btn-material" onclick="addBox('SOFA_COVER_2')">2-SEATER<br>COVER</button>
+    <button class="item-btn item-btn-material" onclick="addBox('SOFA_COVER_3')">3-SEATER<br>COVER</button>
+    <button class="item-btn item-btn-material" onclick="addBox('SOFA_COVER_4')">4-SEATER<br>COVER</button>
 </div>
 </div>
 </div>
@@ -9773,27 +9784,47 @@ function getInventoryAddQty() {
     return (Number.isFinite(qty) && qty > 0) ? qty : 1;
 }
 function addBox(boxCode) {
-    const boxVolume = BOX_VOLUMES[boxCode];
-
-if (boxVolume === undefined || boxVolume === null) {
-    return;
-}
-
-    const clickedBtn = event && event.currentTarget ? event.currentTarget : null;
-    const qtyInput = document.getElementById("inv-qty");
-    const qty = getInventoryAddQty();
+    const materialOnlyMap = {
+        "TV_CARTON": "TV CARTON",
+        "WINE_DIVIDERS": "WINE DIVIDERS",
+        "BLUE_EDGING": "BLUE EDGING",
+        "POLY_CHIPS": "POLY CHIPS",
+        "GOLF_CLUB": "GOLF CLUB",
+        "BIKE_BOX": "BIKE BOX",
+        "MATTRESS_BAG_SINGLE": "MATTRESS BAG SINGLE",
+        "MATTRESS_BAG_DOUBLE": "MATTRESS BAG DOUBLE",
+        "MATTRESS_BAG_KINGSIZE": "MATTRESS BAG KINGSIZE",
+        "ARMCHAIR_COVER": "ARMCHAIR COVER",
+        "SOFA_COVER_2": "2-SEATER COVER",
+        "SOFA_COVER_3": "3-SEATER COVER",
+        "SOFA_COVER_4": "4-SEATER COVER"
+    };
 
     const itemNameMap = {
-    "AP": "AP BOX",
-    "CG": "CG BOX",
-    "BOOK": "BOOK BOX",
-    "LINEN": "LINEN BOX",
-    "WR": "WR BOX",
-    "PICTURE": "PICTURE PACK",
-"WINE_DIVIDERS": "WINE DIVIDERS",
-"BLUE_EDGING": "BLUE EDGING",
-"POLY_CHIPS": "POLY CHIPS"
-};
+        "AP": "AP BOX",
+        "CG": "CG BOX",
+        "BOOK": "BOOK BOX",
+        "LINEN": "LINEN BOX",
+        "WR": "WR BOX",
+        "PICTURE": "PICTURE PACK",
+        ...materialOnlyMap
+    };
+
+    const isMaterialOnly = Object.prototype.hasOwnProperty.call(materialOnlyMap, boxCode);
+
+    const boxVolume = isMaterialOnly ? 0 : BOX_VOLUMES[boxCode];
+
+    if (boxVolume === undefined || boxVolume === null) {
+        return;
+    }
+
+    const clickedBtn =
+        typeof event !== "undefined" && event && event.currentTarget
+            ? event.currentTarget
+            : null;
+
+    const qtyInput = document.getElementById("inv-qty");
+    const qty = getInventoryAddQty();
 
     const itemName = itemNameMap[boxCode] || (boxCode + " BOX");
 
@@ -9802,20 +9833,20 @@ if (boxVolume === undefined || boxVolume === null) {
     const floorName = currentJob && currentJob.inventory ? currentJob.inventory.activeFloor : "";
 
     const liveKey = getLiveInventoryGroupKey({
-    itemName: itemName,
-    deliveryId: deliveryId,
-    roomName: roomName,
-    floorName: floorName,
-    unitVolume: boxVolume,
-    excluded: false,
-    dismantle: false,
-    expWrap: false,
-    note: "",
-    damage: "",
-    pianoDetails: null,
-    crated: false,
-    crateDims: null
-});
+        itemName: itemName,
+        deliveryId: deliveryId,
+        roomName: roomName,
+        floorName: floorName,
+        unitVolume: boxVolume,
+        excluded: false,
+        dismantle: false,
+        expWrap: false,
+        note: "",
+        damage: "",
+        pianoDetails: null,
+        crated: false,
+        crateDims: null
+    });
 
     lastAddedItemName = itemName;
 
@@ -9829,23 +9860,24 @@ if (boxVolume === undefined || boxVolume === null) {
         existing.qty += qty;
     } else {
         inventoryItems.push({
-    liveKey: liveKey,
-    item: itemName,
-    displayName: itemName,
-    volume: boxVolume,
-    qty: qty,
-    roomName: roomName,
-    floorName: floorName,
-    deliveryId: deliveryId,
-    dismantle: false,
-    expWrap: false,
-    excluded: false,
-    note: "",
-    damage: "",
-    pianoDetails: null,
-    crated: false,
-    crateDims: null
-});
+            liveKey: liveKey,
+            item: itemName,
+            displayName: itemName,
+            volume: boxVolume,
+            qty: qty,
+            roomName: roomName,
+            floorName: floorName,
+            deliveryId: deliveryId,
+            dismantle: false,
+            expWrap: false,
+            excluded: false,
+            note: isMaterialOnly ? "Material required" : "",
+            damage: "",
+            pianoDetails: null,
+            crated: false,
+            crateDims: null,
+            materialOnly: isMaterialOnly
+        });
     }
 
     const rawEntryId = saveRawInventoryEntry({
@@ -9857,7 +9889,9 @@ if (boxVolume === undefined || boxVolume === null) {
         qty: qty,
         unitVolume: boxVolume,
         totalVolume: boxVolume * qty,
-        kind: "box"
+        kind: isMaterialOnly ? "material" : "box",
+        materialOnly: isMaterialOnly,
+        note: isMaterialOnly ? "Material required" : ""
     });
 
     inventoryHistory.push({
@@ -9872,12 +9906,18 @@ if (boxVolume === undefined || boxVolume === null) {
     currentItemVolume = boxVolume * qty;
     recalculateTotalVolume();
 
-    updateInventoryDisplay(qty + " X " + itemName);
+    updateInventoryDisplay(
+        isMaterialOnly
+            ? qty + " X " + itemName + " - MATERIAL ONLY"
+            : qty + " X " + itemName
+    );
+
     triggerInventoryPulse("qty", "blue");
-    triggerInventoryPulse("total", "blue");
+    triggerInventoryPulse("total", isMaterialOnly ? "green" : "blue");
     pulseInventoryButton(clickedBtn);
 
     if (qtyInput) qtyInput.value = 1;
+
     renderActionButtonStates();
     updateUndoButtonState();
     saveCalculatorFeedForActiveSequence();
