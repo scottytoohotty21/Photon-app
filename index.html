@@ -11883,10 +11883,34 @@ function handleDashboardManualClick(event) {
     triggerHaptic("light");
     toggleManualArea();
 }
-function handleUploadClick(event, jobId) {
-    if (event) event.stopPropagation();
+async function handleUploadClick(event, jobId) {
+    if (event) {
+        event.stopPropagation();
+        event.preventDefault();
+    }
 
     const btn = event && event.currentTarget ? event.currentTarget : null;
+
+    const job = jobs.find(function(j) {
+        return j.id === jobId;
+    });
+
+    if (!job) {
+        await appAlert("This survey file could not be found.", "Upload Unavailable");
+        return;
+    }
+
+    if (dashboardJobHasMissingPrices(job)) {
+        const confirmed = await appConfirm(
+            "One or more sequences has volume but no customer price. Upload anyway?",
+            "Price Missing"
+        );
+
+        if (!confirmed) {
+            return;
+        }
+    }
+
     pulseDashboardButton(btn);
     triggerHaptic("light");
 
@@ -15819,7 +15843,7 @@ const QUOTE_MANDATORY_LABELS = ["Vans", "Crew", "Mileage", "Consumables", "Carto
 const QUOTE_PRICING_DEFAULTS = [
     { label: "Vans", qty: 0, unitCost: 120 },
     { label: "Crew", qty: 0, unitCost: 200 },
-    { label: "Mileage", qty: 0, unitCost: 0.45 },
+    { label: "Mileage", qty: 0, unitCost: 1.20 },
     { label: "Consumables", qty: 1, unitCost: 60 },
     { label: "Cartons", qty: 0, unitCost: 2.5 },
     { label: "Export Wrap", qty: 0, unitCost: 0.3 },
