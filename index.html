@@ -9883,21 +9883,32 @@ function getInventoryAddQty() {
     return (Number.isFinite(qty) && qty > 0) ? qty : 1;
 }
 function addBox(boxCode) {
-    const materialOnlyMap = {
-        "TV_CARTON": "TV CARTON",
-        "WINE_DIVIDERS": "WINE DIVIDERS",
-        "BLUE_EDGING": "BLUE EDGING",
-        "POLY_CHIPS": "POLY CHIPS",
-        "GOLF_CLUB": "GOLF CLUB",
-        "BIKE_BOX": "BIKE BOX",
-        "MATTRESS_BAG_SINGLE": "MATTRESS BAG SINGLE",
-        "MATTRESS_BAG_DOUBLE": "MATTRESS BAG DOUBLE",
-        "MATTRESS_BAG_KINGSIZE": "MATTRESS BAG KINGSIZE",
-        "ARMCHAIR_COVER": "ARMCHAIR COVER",
-        "SOFA_COVER_2": "2-SEATER COVER",
-        "SOFA_COVER_3": "3-SEATER COVER",
-        "SOFA_COVER_4": "4-SEATER COVER"
-    };
+    const materialOnlyCodes = [
+        "TV_CARTON",
+        "WINE_DIVIDERS",
+        "BLUE_EDGING",
+        "POLY_CHIPS",
+        "GOLF_CLUB",
+        "BIKE_BOX",
+        "MATTRESS_BAG_SINGLE",
+        "MATTRESS_BAG_DOUBLE",
+        "MATTRESS_BAG_KINGSIZE",
+        "ARMCHAIR_COVER",
+        "SOFA_COVER_2",
+        "SOFA_COVER_3",
+        "SOFA_COVER_4"
+    ];
+
+    if (materialOnlyCodes.includes(boxCode)) {
+        addInventoryMaterial(boxCode);
+        return;
+    }
+
+    const boxVolume = BOX_VOLUMES[boxCode];
+
+    if (boxVolume === undefined || boxVolume === null) {
+        return;
+    }
 
     const itemNameMap = {
         "AP": "AP BOX",
@@ -9905,18 +9916,8 @@ function addBox(boxCode) {
         "BOOK": "BOOK BOX",
         "LINEN": "LINEN BOX",
         "WR": "WR BOX",
-        "PICTURE": "PICTURE PACK",
-        ...materialOnlyMap
+        "PICTURE": "PICTURE PACK"
     };
-
-    const isMaterialOnly = Object.prototype.hasOwnProperty.call(materialOnlyMap, boxCode);
-
-    const boxVolume = isMaterialOnly ? 0 : BOX_VOLUMES[boxCode];
-
-    if (boxVolume === undefined || boxVolume === null) {
-        return;
-    }
-
     const clickedBtn =
         typeof event !== "undefined" && event && event.currentTarget
             ? event.currentTarget
@@ -12802,6 +12803,68 @@ if (!entry.excluded) {
 
     return Object.values(mergedMap);
 }
+const INVENTORY_MATERIAL_LABELS = {
+    TV_CARTON: "TV Carton",
+    WINE_DIVIDERS: "Wine Dividers",
+    BLUE_EDGING: "Blue Edging",
+    POLY_CHIPS: "Poly Chips",
+    GOLF_CLUB: "Golf Club Carton",
+    BIKE_BOX: "Bike Box",
+    MATTRESS_BAG_SINGLE: "Mattress Bag Single",
+    MATTRESS_BAG_DOUBLE: "Mattress Bag Double",
+    MATTRESS_BAG_KINGSIZE: "Mattress Bag Kingsize",
+    ARMCHAIR_COVER: "Armchair Cover",
+    SOFA_COVER_2: "2-Seater Cover",
+    SOFA_COVER_3: "3-Seater Cover",
+    SOFA_COVER_4: "4-Seater Cover"
+};
+
+function ensureInventoryMaterialsStore() {
+    if (!currentJob) return {};
+
+    if (!currentJob.inventory) {
+        currentJob.inventory = {};
+    }
+
+    if (!currentJob.inventory.materials || typeof currentJob.inventory.materials !== "object") {
+        currentJob.inventory.materials = {};
+    }
+
+    Object.keys(INVENTORY_MATERIAL_LABELS).forEach(function(code) {
+        if (typeof currentJob.inventory.materials[code] !== "number") {
+            currentJob.inventory.materials[code] = 0;
+        }
+    });
+
+    return currentJob.inventory.materials;
+}
+
+function addInventoryMaterial(materialCode) {
+    if (!currentJob) return;
+
+    const materials = ensureInventoryMaterialsStore();
+    const qty = getInventoryAddQty();
+    const label = INVENTORY_MATERIAL_LABELS[materialCode] || materialCode;
+
+    materials[materialCode] = Number(materials[materialCode] || 0) + qty;
+
+    inventoryHistory.push({
+        type: "material",
+        materialCode: materialCode,
+        qtyAdded: qty
+    });
+
+    saveToDevice();
+
+    updateInventoryDisplay(qty + " X " + label.toUpperCase() + " - MATERIALS");
+    triggerInventoryPulse("qty", "green");
+    triggerInventoryPulse("total", "green");
+
+    const qtyInput = document.getElementById("inv-qty");
+    if (qtyInput) qtyInput.value = 1;
+
+    updateUndoButtonState();
+}
 function buildMaterialsSummary(items) {
     const summary = {
         apBoxes: 0,
@@ -12820,65 +12883,84 @@ function buildMaterialsSummary(items) {
         sofa4Covers: 0,
 
         picturePacks: 0,
-blueEdging: 0,
-polyChips: 0,
-wineDividers: 0
+        tvCartons: 0,
+        golfClubCartons: 0,
+        bikeBoxes: 0,
+        blueEdging: 0,
+        polyChips: 0,
+        wineDividers: 0
     };
 
-    if (!Array.isArray(items)) return summary;
+    if (Array.isArray(items)) {
+        items.forEach(function(entry) {
+            if (!entry || entry.excluded) return;
 
-    items.forEach(function(entry) {
-        if (!entry || entry.excluded) return;
+            const itemName = String(entry.itemName || "").trim().toUpperCase();
+            const qty = Number(entry.qty || 0);
 
-        const itemName = String(entry.itemName || "").trim().toUpperCase();
-        const qty = Number(entry.qty || 0);
+            if (itemName === "AP BOX") summary.apBoxes += qty;
+            else if (itemName === "CG BOX") summary.cgBoxes += qty;
+            else if (itemName === "BOOK BOX") summary.bookBoxes += qty;
+            else if (itemName === "LINEN BOX") summary.linenBoxes += qty;
+            else if (itemName === "WR BOX") summary.wrBoxes += qty;
 
-        // carton items
-        if (itemName === "AP BOX") summary.apBoxes += qty;
-        else if (itemName === "CG BOX") summary.cgBoxes += qty;
-        else if (itemName === "BOOK BOX") summary.bookBoxes += qty;
-        else if (itemName === "LINEN BOX") summary.linenBoxes += qty;
-        else if (itemName === "WR BOX") summary.wrBoxes += qty;
+            else if (
+                itemName === "BED (SINGLE)" ||
+                itemName === "BED (CABIN BED)" ||
+                itemName === "MATTRESS (SINGLE)"
+            ) {
+                summary.singleMattressBags += qty;
+            }
+            else if (itemName === "BUNK BED") {
+                summary.singleMattressBags += (qty * 2);
+            }
+            else if (
+                itemName === "BED (DOUBLE)" ||
+                itemName === "BED (QUEENSIZE)" ||
+                itemName === "MATTRESS (DOUBLE)" ||
+                itemName === "MATTRESS (QUEENSIZE)"
+            ) {
+                summary.doubleMattressBags += qty;
+            }
+            else if (
+                itemName === "BED (KINGSIZE)" ||
+                itemName === "BED (SUPERKING)" ||
+                itemName === "MATTRESS (KINGSIZE)"
+            ) {
+                summary.kingMattressBags += qty;
+            }
 
-        // derived mattress bag requirements from beds and mattresses
-else if (
-    itemName === "BED (SINGLE)" ||
-    itemName === "BED (CABIN BED)" ||
-    itemName === "MATTRESS (SINGLE)"
-) {
-    summary.singleMattressBags += qty;
-}
-else if (itemName === "BUNK BED") {
-    summary.singleMattressBags += (qty * 2);
-}
-else if (
-    itemName === "BED (DOUBLE)" ||
-    itemName === "BED (QUEENSIZE)" ||
-    itemName === "MATTRESS (DOUBLE)" ||
-    itemName === "MATTRESS (QUEENSIZE)"
-) {
-    summary.doubleMattressBags += qty;
-}
-else if (
-    itemName === "BED (KINGSIZE)" ||
-    itemName === "BED (SUPERKING)" ||
-    itemName === "MATTRESS (KINGSIZE)"
-) {
-    summary.kingMattressBags += qty;
-}
+            else if (itemName === "ARMCHAIR") summary.armchairCovers += qty;
+            else if (itemName === "SOFA 2 SEAT") summary.sofa2Covers += qty;
+            else if (itemName === "SOFA 3 SEAT") summary.sofa3Covers += qty;
+            else if (itemName === "SOFA 4 SEAT") summary.sofa4Covers += qty;
 
-        // derived sofa cover requirements from seating
-        else if (itemName === "ARMCHAIR") summary.armchairCovers += qty;
-        else if (itemName === "SOFA 2 SEAT") summary.sofa2Covers += qty;
-        else if (itemName === "SOFA 3 SEAT") summary.sofa3Covers += qty;
-        else if (itemName === "SOFA 4 SEAT") summary.sofa4Covers += qty;
+            else if (itemName === "PICTURE PACK") summary.picturePacks += qty;
+        });
+    }
 
-        // optional future direct material items
-       else if (itemName === "PICTURE PACK") summary.picturePacks += qty;
-else if (itemName === "BLUE EDGING") summary.blueEdging += qty;
-else if (itemName === "POLY-CHIPS") summary.polyChops += qty;
-else if (itemName === "WINE DIVIDERS") summary.wineDividers += qty;
-    });
+    const materialStore =
+        currentJob &&
+        currentJob.inventory &&
+        currentJob.inventory.materials
+            ? currentJob.inventory.materials
+            : {};
+
+    summary.tvCartons += Number(materialStore.TV_CARTON || 0);
+    summary.wineDividers += Number(materialStore.WINE_DIVIDERS || 0);
+    summary.blueEdging += Number(materialStore.BLUE_EDGING || 0);
+    summary.polyChips += Number(materialStore.POLY_CHIPS || 0);
+    summary.golfClubCartons += Number(materialStore.GOLF_CLUB || 0);
+    summary.bikeBoxes += Number(materialStore.BIKE_BOX || 0);
+
+    summary.singleMattressBags += Number(materialStore.MATTRESS_BAG_SINGLE || 0);
+    summary.doubleMattressBags += Number(materialStore.MATTRESS_BAG_DOUBLE || 0);
+    summary.kingMattressBags += Number(materialStore.MATTRESS_BAG_KINGSIZE || 0);
+
+    summary.armchairCovers += Number(materialStore.ARMCHAIR_COVER || 0);
+    summary.sofa2Covers += Number(materialStore.SOFA_COVER_2 || 0);
+    summary.sofa3Covers += Number(materialStore.SOFA_COVER_3 || 0);
+    summary.sofa4Covers += Number(materialStore.SOFA_COVER_4 || 0);
 
     return summary;
 }
@@ -14152,6 +14234,15 @@ const noteTagHtml = entry.note && String(entry.note).trim()
 }
 
 function getPrintableMaterialsHtml(materials) {
+    const hasSpecialMaterials =
+        materials.picturePacks ||
+        materials.tvCartons ||
+        materials.wineDividers ||
+        materials.blueEdging ||
+        materials.polyChips ||
+        materials.golfClubCartons ||
+        materials.bikeBoxes;
+
     return `
         <div class="pdf-materials-grid">
             <div>
@@ -14176,19 +14267,19 @@ function getPrintableMaterialsHtml(materials) {
                 <div>4-Seater: ${materials.sofa4Covers}</div>
 
                 ${
-    materials.picturePacks ||
-    materials.wineDividers ||
-    materials.blueEdging ||
-    materials.polyChips
-        ? `
-            <div class="pdf-mini-head space-top">Special Packs / Materials</div>
-            ${materials.picturePacks ? `<div>Picture Packs: ${materials.picturePacks}</div>` : ""}
-            ${materials.wineDividers ? `<div>Wine Dividers: ${materials.wineDividers}</div>` : ""}
-            ${materials.blueEdging ? `<div>Blue Edging: ${materials.blueEdging}</div>` : ""}
-            ${materials.polyChips ? `<div>Poly Chips: ${materials.polyChips}</div>` : ""}
-        `
-        : ""
-}
+                    hasSpecialMaterials
+                        ? `
+                            <div class="pdf-mini-head space-top">Special Packs / Materials</div>
+                            ${materials.picturePacks ? `<div>Picture Packs: ${materials.picturePacks}</div>` : ""}
+                            ${materials.tvCartons ? `<div>TV Cartons: ${materials.tvCartons}</div>` : ""}
+                            ${materials.wineDividers ? `<div>Wine Dividers: ${materials.wineDividers}</div>` : ""}
+                            ${materials.blueEdging ? `<div>Blue Edging: ${materials.blueEdging}</div>` : ""}
+                            ${materials.polyChips ? `<div>Poly Chips: ${materials.polyChips}</div>` : ""}
+                            ${materials.golfClubCartons ? `<div>Golf Club Cartons: ${materials.golfClubCartons}</div>` : ""}
+                            ${materials.bikeBoxes ? `<div>Bike Boxes: ${materials.bikeBoxes}</div>` : ""}
+                        `
+                        : ""
+                }
             </div>
         </div>
     `;
