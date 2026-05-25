@@ -9883,26 +9883,12 @@ function getInventoryAddQty() {
     return (Number.isFinite(qty) && qty > 0) ? qty : 1;
 }
 function addBox(boxCode) {
-    const materialOnlyCodes = [
-        "TV_CARTON",
-        "WINE_DIVIDERS",
-        "BLUE_EDGING",
-        "POLY_CHIPS",
-        "GOLF_CLUB",
-        "BIKE_BOX",
-        "MATTRESS_BAG_SINGLE",
-        "MATTRESS_BAG_DOUBLE",
-        "MATTRESS_BAG_KINGSIZE",
-        "ARMCHAIR_COVER",
-        "SOFA_COVER_2",
-        "SOFA_COVER_3",
-        "SOFA_COVER_4"
-    ];
+   const materialOnlyCodes = Object.keys(INVENTORY_MATERIAL_LABELS);
 
-    if (materialOnlyCodes.includes(boxCode)) {
-        addInventoryMaterial(boxCode);
-        return;
-    }
+if (materialOnlyCodes.includes(boxCode)) {
+    addInventoryMaterial(boxCode);
+    return;
+}
 
     const boxVolume = BOX_VOLUMES[boxCode];
 
