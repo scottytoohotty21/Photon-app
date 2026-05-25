@@ -878,21 +878,27 @@ body {
 }
 
 .item-btn-carton {
-    background: #eff6ff;
-    border-color: #bfdbfe;
+    background: #dbeafe;
+    border: 1.5px solid #60a5fa;
+    border-bottom-color: #2563eb;
     color: #1e3a8a;
+    box-shadow: 0 2px 4px rgba(15, 23, 42, 0.12);
 }
 
 .item-btn-material {
-    background: #f0fdf4;
-    border-color: #bbf7d0;
-    color: #14532d;
+    background: #dbeafe;
+    border: 1.5px solid #60a5fa;
+    border-bottom-color: #2563eb;
+    color: #1e3a8a;
+    box-shadow: 0 2px 4px rgba(15, 23, 42, 0.12);
 }
 
 .item-btn-volume {
-    background: #eef2ff;
-    border-color: #c7d2fe;
-    color: #3730a3;
+    background: #dbeafe;
+    border: 1.5px solid #60a5fa;
+    border-bottom-color: #2563eb;
+    color: #1e3a8a;
+    box-shadow: 0 2px 4px rgba(15, 23, 42, 0.12);
 }
         .log-bar {
     background: #e2e8f0;
@@ -12889,6 +12895,11 @@ function ensureInventoryMaterialsStore() {
 function addInventoryMaterial(materialCode) {
     if (!currentJob) return;
 
+    const clickedBtn =
+        typeof event !== "undefined" && event && event.currentTarget
+            ? event.currentTarget
+            : null;
+
     const materials = ensureInventoryMaterialsStore();
     const qty = getInventoryAddQty();
     const label = INVENTORY_MATERIAL_LABELS[materialCode] || materialCode;
@@ -12904,8 +12915,10 @@ function addInventoryMaterial(materialCode) {
     saveToDevice();
 
     updateInventoryDisplay(qty + " X " + label.toUpperCase() + " - MATERIALS");
-    triggerInventoryPulse("qty", "green");
-    triggerInventoryPulse("total", "green");
+
+    triggerInventoryPulse("qty", "blue");
+    triggerInventoryPulse("total", "blue");
+    pulseInventoryButton(clickedBtn);
 
     const qtyInput = document.getElementById("inv-qty");
     if (qtyInput) qtyInput.value = 1;
