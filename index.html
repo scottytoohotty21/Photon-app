@@ -545,6 +545,28 @@ body {
     color: #0f172a;
     white-space: nowrap;
 }
+.dashboard-price-warning {
+    display: inline-flex;
+    align-items: center;
+    margin-top: 7px;
+    padding: 7px 10px;
+    border-radius: 10px;
+    background: #fff7ed;
+    border: 1.5px solid #fed7aa;
+    border-bottom-color: #fb923c;
+    color: #9a3412;
+    font-size: 9px;
+    font-weight: 950;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.dashboard-seq-price.missing {
+    background: #fff7ed;
+    border-color: #fed7aa;
+    border-bottom-color: #fb923c;
+    color: #9a3412;
+}
 
         /* --- GRID SYSTEM --- */
         .prop-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 10px; }
@@ -5074,7 +5096,6 @@ Enter as: Surname, First Name
 
     <button class="schedule-btn" onclick="autoBuildScheduleDays()">Auto Build</button>
         <button class="schedule-btn" onclick="addScheduleDay()">Add Day</button>
-    <button class="schedule-btn" onclick="fetchMileageFromRoute()">Build Route</button>
 </div>
 </div>
         <div class="schedule-list" id="scheduleList"></div>
@@ -9603,6 +9624,16 @@ function formatDashboardMoney(value) {
         maximumFractionDigits: 0
     });
 }
+function dashboardJobHasMissingPrices(job) {
+    const sequences = Array.isArray(job.sequences) ? job.sequences : [];
+
+    return sequences.some(function(seq) {
+        const volume = getDashboardSequenceVolume(job, seq.id);
+        const price = getDashboardSequencePrice(job, seq.id);
+
+        return volume > 0 && Number(price || 0) <= 0;
+    });
+}
 function renderDashboard() {
     const isDevMode =
         typeof MOVEPILOT_DEV_SKIP_ACTIVATION !== "undefined" &&
@@ -9631,13 +9662,16 @@ function renderDashboard() {
                     </div>
 
                     <span class="dashboard-seq-volume">${seqVolume} ft³</span>
-                    <span class="dashboard-seq-price">${formatDashboardMoney(seqPrice)}</span>
+                    <span class="dashboard-seq-price ${Number(seqPrice || 0) <= 0 && seqVolume > 0 ? "missing" : ""}">
+    ${Number(seqPrice || 0) <= 0 && seqVolume > 0 ? "Price missing" : formatDashboardMoney(seqPrice)}
+</span>
                 </div>
             `;
         }).join('')}
     `
     : `<div class="text-[8px] text-slate-300 italic mt-2 uppercase font-bold">No sequences</div>`;
 
+        const hasMissingPrices = dashboardJobHasMissingPrices(j);
         return `
             <div class="job-card status-${j.status || 'pending'}" onclick="openJob(${j.id})">
                 <div class="flex justify-between items-start">
@@ -9647,6 +9681,11 @@ function renderDashboard() {
                         ${j.isNew ? '<span class="pill pill-new">New</span>' : ''}
                         <h3 class="text-xl font-black text-slate-800 uppercase leading-none mt-1">${j.name || 'Unnamed Job'}</h3>
                         <p class="dashboard-job-ref">REF: <span>${j.ref || '---'}</span></p>
+                        ${
+    hasMissingPrices
+        ? `<div class="dashboard-price-warning">Price missing on one or more sequences</div>`
+        : ""
+}
                         ${j.notes ? `<div class="notes-preview">${j.notes}</div>` : ''}
                         <div class="mt-4 border-t pt-2">${seqBreakdown}</div>
                     </div>
