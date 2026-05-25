@@ -455,6 +455,24 @@ body {
     box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
 }
+.btn-dashboard-delete {
+    background: #fef2f2;
+    border: 1.5px solid #fecaca;
+    border-bottom-color: #f87171;
+    color: #991b1b;
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-size: 9px;
+    font-weight: 900;
+    text-transform: uppercase;
+    line-height: 1;
+    min-width: 82px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+}
+
+.btn-dashboard-delete:active {
+    transform: scale(0.98);
+}
 
         .seq-row {
             display: flex; justify-content: space-between; align-items: center;
@@ -9426,6 +9444,10 @@ document.getElementById('seq-switcher').innerHTML = currentJob.sequences.map((s,
 }
 
 function renderDashboard() {
+    const isDevMode =
+        typeof MOVEPILOT_DEV_SKIP_ACTIVATION !== "undefined" &&
+        MOVEPILOT_DEV_SKIP_ACTIVATION;
+
     document.getElementById('job-list').innerHTML = jobs.map(j => {
         const safeSequences = Array.isArray(j.sequences) ? j.sequences : [];
 
@@ -9453,8 +9475,15 @@ function renderDashboard() {
                         ${j.notes ? `<div class="notes-preview">${j.notes}</div>` : ''}
                         <div class="mt-4 border-t pt-2">${seqBreakdown}</div>
                     </div>
+
                     <div class="flex flex-col gap-2 items-end">
                         <button onclick="handleUploadClick(event, ${j.id})" class="btn-upload-flat">Upload ↑</button>
+
+                        ${
+                            isDevMode
+                                ? `<button onclick="deleteDashboardJob(event, ${j.id})" class="btn-dashboard-delete">Delete</button>`
+                                : ""
+                        }
                     </div>
                 </div>
             </div>`;
@@ -9462,7 +9491,46 @@ function renderDashboard() {
 
     filterFiles();
 }
+async function deleteDashboardJob(event, jobId) {
+    if (event) {
+        event.stopPropagation();
+        event.preventDefault();
+    }
 
+    const job = jobs.find(function(j) {
+        return j.id === jobId;
+    });
+
+    if (!job) {
+        await appAlert("This survey file could not be found.", "Delete Unavailable");
+        return;
+    }
+
+    const jobName =
+        (job.customer && job.customer.displayName) ||
+        job.name ||
+        "this survey";
+
+    const confirmed = await appConfirm(
+        "Delete " + jobName + "? This removes the survey from this device.",
+        "Delete Survey File"
+    );
+
+    if (!confirmed) return;
+
+    jobs = jobs.filter(function(j) {
+        return j.id !== jobId;
+    });
+
+    if (currentJob && currentJob.id === jobId) {
+        currentJob = null;
+    }
+
+    saveToDevice();
+    renderDashboard();
+
+    await appAlert("Survey file deleted from this device.", "Deleted");
+}
  function addSequence() {
     const id = Date.now();
     currentJob.sequences.push({
@@ -13413,15 +13481,21 @@ function renderListedSummary(summary, materials, crewInstructions) {
 
                     ${
     materials.picturePacks ||
+    materials.tvCartons ||
     materials.wineDividers ||
     materials.blueEdging ||
-    materials.polyChips
+    materials.polyChips ||
+    materials.golfClubCartons ||
+    materials.bikeBoxes
         ? `
             <div class="pt-2 text-slate-400">Special Packs / Materials</div>
             ${materials.picturePacks ? `<div>Picture Packs: ${materials.picturePacks}</div>` : ""}
+            ${materials.tvCartons ? `<div>TV Cartons: ${materials.tvCartons}</div>` : ""}
             ${materials.wineDividers ? `<div>Wine Dividers: ${materials.wineDividers}</div>` : ""}
             ${materials.blueEdging ? `<div>Blue Edging: ${materials.blueEdging}</div>` : ""}
             ${materials.polyChips ? `<div>Poly Chips: ${materials.polyChips}</div>` : ""}
+            ${materials.golfClubCartons ? `<div>Golf Club Cartons: ${materials.golfClubCartons}</div>` : ""}
+            ${materials.bikeBoxes ? `<div>Bike Boxes: ${materials.bikeBoxes}</div>` : ""}
         `
         : ""
 }
