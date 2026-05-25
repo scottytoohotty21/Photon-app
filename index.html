@@ -761,10 +761,10 @@ body {
     gap: 4px;
 }
 
+#tool-photos,
 #tool-disconnect,
 #tool-handyman {
     min-width: 88px;
-    height: 50px;
 }
         .inv-tool-btn.active {
     background: #2563eb;
@@ -4662,7 +4662,7 @@ Enter as: Surname, First Name
     <button id="tool-exclude" class="inv-tool-btn" onclick="toggleItemAction('excluded')">Exclude</button>
     <button class="inv-tool-btn" onclick="addInventoryNote()">Note</button>
     <button class="inv-tool-btn" onclick="addMiscItem()">Misc</button>
-    <button id="tool-photos" class="inv-tool-btn" onclick="openInventoryPhotosModal()">Photos</button>
+    <button id="tool-packed-zero" class="inv-tool-btn" onclick="markLastInventoryItemPackedNoVolume()">Packed<br>0 Vol</button>
 </div>
 
             <div class="inventory-live-row mb-4">
@@ -4704,6 +4704,13 @@ Enter as: Surname, First Name
 
                        <div class="inventory-search-panel mb-3">
     <div class="inventory-search-row">
+        <button
+    id="tool-photos"
+    class="inv-tool-btn inventory-search-tool"
+    onclick="openInventoryPhotosModal()"
+>
+    Photos
+</button>
         <button
             id="tool-disconnect"
             class="inv-tool-btn inventory-search-tool"
@@ -7153,6 +7160,82 @@ function getRawInventoryEntryById(rawEntryId) {
         return String(entry.id) === String(rawEntryId);
     }) || null;
 }
+async function markLastInventoryItemPackedNoVolume() {
+    const rawEntry = getLastRawInventoryEntry();
+
+    if (!rawEntry || rawEntry.kind === "note") {
+        await appAlert("Add an inventory item first, then mark it as Packed / 0 Vol.", "Item Required");
+        return;
+    }
+
+    const oldUnitVolume = Number(rawEntry.unitVolume || rawEntry.volume || 0);
+    const qty = Number(rawEntry.qty || 1);
+
+    rawEntry.packedNoVolume = true;
+    rawEntry.materialOnly = false;
+    rawEntry.unitVolume = 0;
+    rawEntry.volume = 0;
+    rawEntry.totalVolume = 0;
+
+    const packedNote = "Packed / No Volume";
+
+    if (rawEntry.note && !String(rawEntry.note).includes(packedNote)) {
+        rawEntry.note = rawEntry.note + " · " + packedNote;
+    } else if (!rawEntry.note) {
+        rawEntry.note = packedNote;
+    }
+
+    let liveEntry = null;
+
+    if (rawEntry.liveKey) {
+        liveEntry = inventoryItems.find(function(item) {
+            return item.liveKey === rawEntry.liveKey;
+        });
+    }
+
+    if (!liveEntry && inventoryHistory && inventoryHistory.length) {
+        const matchingHistory = inventoryHistory.slice().reverse().find(function(historyItem) {
+            return String(historyItem.rawEntryId) === String(rawEntry.id);
+        });
+
+        if (matchingHistory && matchingHistory.liveKey) {
+            liveEntry = inventoryItems.find(function(item) {
+                return item.liveKey === matchingHistory.liveKey;
+            });
+        }
+    }
+
+    if (!liveEntry && rawEntry.itemName) {
+        liveEntry = inventoryItems.find(function(item) {
+            return item.item === rawEntry.itemName || item.displayName === rawEntry.itemName;
+        });
+    }
+
+    if (liveEntry) {
+        liveEntry.volume = 0;
+        liveEntry.packedNoVolume = true;
+
+        if (liveEntry.note && !String(liveEntry.note).includes(packedNote)) {
+            liveEntry.note = liveEntry.note + " · " + packedNote;
+        } else if (!liveEntry.note) {
+            liveEntry.note = packedNote;
+        }
+    }
+
+    currentItemVolume = 0;
+    recalculateTotalVolume();
+
+    saveToDevice();
+    saveCalculatorFeedForActiveSequence();
+
+    updateInventoryDisplay(
+        (rawEntry.qty || qty) + " X " + (rawEntry.itemName || rawEntry.item || "ITEM") + " - PACKED / 0 VOL"
+    );
+
+    triggerInventoryPulse("total", "green");
+    renderActionButtonStates();
+    updateUndoButtonState();
+}
 function getLiveInventoryEntryForRaw(rawEntryId) {
     const rawEntry = findRawInventoryEntry(rawEntryId);
     if (!rawEntry) return null;
@@ -7198,6 +7281,7 @@ function renderActionButtonStates() {
     const crateBtn = document.getElementById("tool-crate");
 const damageBtn = document.getElementById("tool-damage");
 const photosBtn = document.getElementById("tool-photos");
+const packedZeroBtn = document.getElementById("tool-packed-zero");
 const rawEntry = getLastRawInventoryEntry();
 
     if (dismantleBtn) {
@@ -7227,6 +7311,10 @@ const rawEntry = getLastRawInventoryEntry();
     if (damageBtn) {
         damageBtn.classList.toggle("active", !!(rawEntry && rawEntry.damage));
     }
+    if (packedZeroBtn) {
+    packedZeroBtn.disabled = !(rawEntry && rawEntry.kind !== "note");
+    packedZeroBtn.classList.toggle("active", !!(rawEntry && rawEntry.packedNoVolume));
+}
     if (photosBtn) {
     photosBtn.disabled = !(rawEntry && rawEntry.kind !== "note");
 
