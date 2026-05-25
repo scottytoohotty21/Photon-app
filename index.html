@@ -4785,18 +4785,18 @@ Enter as: Surname, First Name
     <button class="item-btn item-btn-volume" onclick="addVolume(100)">100 CUFT</button>
 
     <button class="item-btn item-btn-material" onclick="addBox('TV_CARTON')">TV<br>CARTON</button>
-    <button class="item-btn item-btn-material" onclick="addBox('WINE_DIVIDERS')">WINE<br>DIVIDERS</button>
-    <button class="item-btn item-btn-material" onclick="addBox('BLUE_EDGING')">BLUE<br>EDGING</button>
-    <button class="item-btn item-btn-material" onclick="addBox('POLY_CHIPS')">POLY<br>CHIPS</button>
-    <button class="item-btn item-btn-material" onclick="addBox('GOLF_CLUB')">GOLF<br>CLUB</button>
-    <button class="item-btn item-btn-material" onclick="addBox('BIKE_BOX')">BIKE<br>BOX</button>
-    <button class="item-btn item-btn-material" onclick="addBox('MATTRESS_BAG_SINGLE')">MATTRESS<br>BAG S</button>
-    <button class="item-btn item-btn-material" onclick="addBox('MATTRESS_BAG_DOUBLE')">MATTRESS<br>BAG D</button>
-    <button class="item-btn item-btn-material" onclick="addBox('MATTRESS_BAG_KINGSIZE')">MATTRESS<br>BAG K</button>
-    <button class="item-btn item-btn-material" onclick="addBox('ARMCHAIR_COVER')">ARMCHAIR<br>COVER</button>
-    <button class="item-btn item-btn-material" onclick="addBox('SOFA_COVER_2')">2-SEATER<br>COVER</button>
-    <button class="item-btn item-btn-material" onclick="addBox('SOFA_COVER_3')">3-SEATER<br>COVER</button>
-    <button class="item-btn item-btn-material" onclick="addBox('SOFA_COVER_4')">4-SEATER<br>COVER</button>
+<button class="item-btn item-btn-material" onclick="addBox('WINE_DIVIDERS')">WINE<br>DIVIDERS</button>
+<button class="item-btn item-btn-material" onclick="addBox('BLUE_EDGING')">BLUE<br>EDGING</button>
+<button class="item-btn item-btn-material" onclick="addBox('POLY_CHIPS')">POLY<br>CHIPS</button>
+<button class="item-btn item-btn-material" onclick="addBox('GOLF_CLUB')">GOLF<br>CLUB</button>
+<button class="item-btn item-btn-material" onclick="addBox('BIKE_BOX')">BIKE<br>BOX</button>
+<button class="item-btn item-btn-material" onclick="addBox('MATTRESS_BAG_SINGLE')">MATTRESS<br>BAG S</button>
+<button class="item-btn item-btn-material" onclick="addBox('MATTRESS_BAG_DOUBLE')">MATTRESS<br>BAG D</button>
+<button class="item-btn item-btn-material" onclick="addBox('MATTRESS_BAG_KINGSIZE')">MATTRESS<br>BAG K</button>
+<button class="item-btn item-btn-material" onclick="addBox('ARMCHAIR_COVER')">ARMCHAIR<br>COVER</button>
+<button class="item-btn item-btn-material" onclick="addBox('SOFA_COVER_2')">2-SEATER<br>COVER</button>
+<button class="item-btn item-btn-material" onclick="addBox('SOFA_COVER_3')">3-SEATER<br>COVER</button>
+<button class="item-btn item-btn-material" onclick="addBox('SOFA_COVER_4')">4-SEATER<br>COVER</button>
 </div>
 </div>
 </div>
@@ -9910,6 +9910,14 @@ function addBox(boxCode) {
         return;
     }
 
+    const clickedBtn =
+        typeof event !== "undefined" && event && event.currentTarget
+            ? event.currentTarget
+            : null;
+
+    const qtyInput = document.getElementById("inv-qty");
+    const qty = getInventoryAddQty();
+
     const itemNameMap = {
         "AP": "AP BOX",
         "CG": "CG BOX",
@@ -9918,13 +9926,6 @@ function addBox(boxCode) {
         "WR": "WR BOX",
         "PICTURE": "PICTURE PACK"
     };
-    const clickedBtn =
-        typeof event !== "undefined" && event && event.currentTarget
-            ? event.currentTarget
-            : null;
-
-    const qtyInput = document.getElementById("inv-qty");
-    const qty = getInventoryAddQty();
 
     const itemName = itemNameMap[boxCode] || (boxCode + " BOX");
 
@@ -9971,12 +9972,11 @@ function addBox(boxCode) {
             dismantle: false,
             expWrap: false,
             excluded: false,
-            note: isMaterialOnly ? "Material required" : "",
+            note: "",
             damage: "",
             pianoDetails: null,
             crated: false,
-            crateDims: null,
-            materialOnly: isMaterialOnly
+            crateDims: null
         });
     }
 
@@ -9989,9 +9989,7 @@ function addBox(boxCode) {
         qty: qty,
         unitVolume: boxVolume,
         totalVolume: boxVolume * qty,
-        kind: isMaterialOnly ? "material" : "box",
-        materialOnly: isMaterialOnly,
-        note: isMaterialOnly ? "Material required" : ""
+        kind: "box"
     });
 
     inventoryHistory.push({
@@ -10006,14 +10004,9 @@ function addBox(boxCode) {
     currentItemVolume = boxVolume * qty;
     recalculateTotalVolume();
 
-    updateInventoryDisplay(
-        isMaterialOnly
-            ? qty + " X " + itemName + " - MATERIAL ONLY"
-            : qty + " X " + itemName
-    );
-
+    updateInventoryDisplay(qty + " X " + itemName);
     triggerInventoryPulse("qty", "blue");
-    triggerInventoryPulse("total", isMaterialOnly ? "green" : "blue");
+    triggerInventoryPulse("total", "blue");
     pulseInventoryButton(clickedBtn);
 
     if (qtyInput) qtyInput.value = 1;
