@@ -11746,6 +11746,25 @@ function undoLastInventoryAction() {
         const label = action.displayName || (action.unitVolume + " CUFT");
         updateInventoryDisplay("UNDO " + action.qtyAdded + " X " + String(label).toUpperCase());
     }
+    else if (action.type === "material") {
+    const materials = ensureInventoryMaterialsStore();
+    const previousValue = Number(materials[action.materialCode] || 0);
+    const qtyToRemove = Number(action.qtyAdded || 0);
+
+    materials[action.materialCode] = Math.max(0, previousValue - qtyToRemove);
+
+    const label =
+        INVENTORY_MATERIAL_LABELS[action.materialCode] ||
+        action.materialCode ||
+        "MATERIAL";
+
+    saveToDevice();
+
+    currentItemVolume = 0;
+    recalculateTotalVolume();
+
+    updateInventoryDisplay("UNDO " + qtyToRemove + " X " + String(label).toUpperCase());
+}
 
     else if (action.type === "qty-edit") {
         if (action.rawEntryId) {
