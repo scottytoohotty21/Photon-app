@@ -3467,6 +3467,35 @@ min-height: 48px;
     border-radius: 16px;
     padding: 14px;
 }
+.schedule-special-input-grid {
+    display: grid;
+    grid-template-columns: minmax(180px, 1fr) 130px 130px;
+    gap: 10px;
+    align-items: end;
+}
+
+.schedule-special-input-grid .field {
+    width: 100%;
+}
+
+@media (max-width: 1180px) {
+    .schedule-special-input-grid {
+        grid-template-columns: minmax(160px, 1fr) 118px 118px;
+        gap: 8px;
+    }
+
+    .schedule-special-input-grid .mini-label {
+        font-size: 8px;
+        line-height: 1.15;
+    }
+
+    .schedule-special-input-grid .field {
+        height: 38px;
+        font-size: 10px;
+        padding-left: 8px;
+        padding-right: 8px;
+    }
+}
 
 .schedule-main-note {
     margin-top: 12px;
@@ -5101,7 +5130,7 @@ Enter as: Surname, First Name
         <div class="schedule-main-input-card">
         <div class="section-title">Special Labour Inputs</div>
 
-        <div class="grid-4">
+        <div class="schedule-special-input-grid">
             <div>
                 <label class="mini-label special-labour-label">Custom Item<br>Note</label>
                 <input id="svc_custom_note" type="text" maxlength="40" class="field field-editable-blue" value="" oninput="handleScheduleInputChange()" />
@@ -5112,12 +5141,7 @@ Enter as: Surname, First Name
                 <input id="svc_custom_minutes" type="number" min="0" class="field field-editable-blue" value="0" oninput="handleScheduleInputChange()" />
             </div>
 
-            <div>
-                <label class="mini-label special-labour-label">Export Wrap Volume<br>(CUFT)</label>
-                <input id="exportWrapVol" type="number" min="0" class="field field-readonly-soft" value="0" readonly />
-            </div>
-
-            <div>
+                       <div>
                 <label class="mini-label special-labour-label">Loft Effects Volume<br>(CUFT)</label>
                 <input id="loftVol" type="number" min="0" class="field field-editable-blue" value="0" oninput="handleScheduleInputChange()" />
             </div>
