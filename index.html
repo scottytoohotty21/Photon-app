@@ -2314,6 +2314,11 @@ body {
             color: #0f172a;
             line-height: 1;
         }
+        .listed-volume-display {
+    font-size: 22px;
+    line-height: 1.12;
+    word-break: normal;
+}
 
         .listed-stat-sub {
             font-size: 9px;
@@ -5668,6 +5673,26 @@ function cuftToVolumetricKg(cuft, kgPerCbm) {
 
 function formatVolumetricKgFromCuft(cuft, kgPerCbm) {
     return Math.round(cuftToVolumetricKg(cuft, kgPerCbm));
+}
+function formatVolumeDisplayFromCuft(cuft) {
+    const settings = getAppSettings();
+    const cleanCuft = Number(cuft || 0);
+    const parts = [cleanCuft + " cuft"];
+
+    if (settings.showCbm) {
+        parts.push(formatCbmFromCuft(cleanCuft) + " cbm");
+    }
+
+    if (settings.showVolumetricWeight) {
+        parts.push(
+            formatVolumetricKgFromCuft(
+                cleanCuft,
+                settings.volumetricKgPerCbm
+            ) + " kg vol weight"
+        );
+    }
+
+    return parts.join(" / ");
 }
 
 function getDefaultAppSettings() {
@@ -14189,8 +14214,8 @@ function renderListedSummary(summary, materials, crewInstructions) {
 
         <div class="listed-stat-card">
             <div class="listed-stat-label">Included Volume & Materials Summary</div>
-            <div class="listed-stat-value">${summary.includedVolume}</div>
-            <div class="listed-stat-sub">Cuft counted</div>
+            <div class="listed-stat-value listed-volume-display">${formatVolumeDisplayFromCuft(summary.includedVolume)}</div>
+<div class="listed-stat-sub">Included volume counted</div>
 
             <div class="grid grid-cols-2 gap-4 text-[10px] font-black text-slate-900 uppercase leading-5 mt-4">
                 <div class="space-y-1">
