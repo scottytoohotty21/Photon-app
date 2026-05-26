@@ -1715,6 +1715,64 @@ body {
 .app-settings-close:active {
     transform: scale(0.98);
 }
+.app-settings-label {
+    display: block;
+    margin: 10px 0 5px;
+    font-size: 9px;
+    font-weight: 950;
+    text-transform: uppercase;
+    color: #334155;
+    letter-spacing: 0.04em;
+}
+
+.app-settings-input {
+    width: 100%;
+    min-height: 42px;
+    border: 1.5px solid #cbd5e1;
+    border-bottom-color: #94a3b8;
+    border-radius: 12px;
+    background: #ffffff;
+    color: #0f172a;
+    font-size: 13px;
+    font-weight: 800;
+    padding: 0 12px;
+    outline: none;
+}
+
+.app-settings-input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+
+.app-settings-help {
+    margin-top: 7px;
+    font-size: 10px;
+    font-weight: 750;
+    line-height: 1.35;
+    color: #64748b;
+}
+
+.app-settings-check-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 42px;
+    margin: 8px 0;
+    padding: 9px 11px;
+    border-radius: 12px;
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    color: #334155;
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.app-settings-check-row input {
+    width: 17px;
+    height: 17px;
+    accent-color: #3b82f6;
+}
         /* --- NOTE MODAL --- */
 .note-overlay {
     display: none;
@@ -5537,6 +5595,7 @@ const BRANCH_DEPOTS = {
 };
         const PACK_OPTIONS = ["Owner Pack", "Fragile (china & Glassware) pack", "Full Packing", "Full Export Pack and Wrap", "Unload Only"];
         const SALUTATIONS = ["Mr", "Miss", "Mrs", "Ms", "Other"];
+        
         const DEFAULT_ROOMS = [
     "Lounge",
     "Dining Room",
@@ -5565,6 +5624,75 @@ const BRANCH_DEPOTS = {
     "TV Room",
     "Office"
 ];
+// --- APP SETTINGS / DISPLAY CONVERSIONS ---
+const MOVEPILOT_APP_SETTINGS_KEY = "movepilot_app_settings_v1";
+const CUFT_PER_CBM = 35.314;
+const DEFAULT_VOLUMETRIC_KG_PER_CBM = 167;
+
+function cuftToCbm(cuft) {
+    return Number(cuft || 0) / CUFT_PER_CBM;
+}
+
+function formatCbmFromCuft(cuft) {
+    return cuftToCbm(cuft).toFixed(2);
+}
+
+function cuftToVolumetricKg(cuft, kgPerCbm) {
+    const cbm = cuftToCbm(cuft);
+    return cbm * Number(kgPerCbm || DEFAULT_VOLUMETRIC_KG_PER_CBM);
+}
+
+function formatVolumetricKgFromCuft(cuft, kgPerCbm) {
+    return Math.round(cuftToVolumetricKg(cuft, kgPerCbm));
+}
+
+function getDefaultAppSettings() {
+    return {
+        activationCode: "",
+        activationStatus: "dev",
+        surveyorName: "",
+        surveyorSignatureDataUrl: "",
+        showCbm: false,
+        showVolumetricWeight: false,
+        volumetricKgPerCbm: DEFAULT_VOLUMETRIC_KG_PER_CBM
+    };
+}
+
+function getAppSettings() {
+    try {
+        const saved = localStorage.getItem(MOVEPILOT_APP_SETTINGS_KEY);
+        const parsed = saved ? JSON.parse(saved) : {};
+
+        return {
+            ...getDefaultAppSettings(),
+            ...(parsed && typeof parsed === "object" ? parsed : {})
+        };
+    } catch (err) {
+        console.warn("Could not load app settings", err);
+        return getDefaultAppSettings();
+    }
+}
+
+function saveAppSettings(settings) {
+    try {
+        localStorage.setItem(
+            MOVEPILOT_APP_SETTINGS_KEY,
+            JSON.stringify({
+                ...getDefaultAppSettings(),
+                ...(settings || {})
+            })
+        );
+    } catch (err) {
+        console.warn("Could not save app settings", err);
+    }
+}
+
+function updateAppSetting(key, value) {
+    const settings = getAppSettings();
+    settings[key] = value;
+    saveAppSettings(settings);
+    return settings;
+}
 const DEFAULT_FLOORS = [
     "Basement",
     "Lower Ground",
@@ -11406,10 +11534,43 @@ function saveListedCrateModal() {
     closeCrateModal();
 }
 function openAppSettingsModal() {
+    populateAppSettingsModal();
+
     const overlay = document.getElementById("app-settings-overlay");
     if (!overlay) return;
 
     overlay.style.display = "flex";
+}
+function populateAppSettingsModal() {
+    const settings = getAppSettings();
+
+    const activationInput = document.getElementById("app-setting-activation-code");
+    const surveyorInput = document.getElementById("app-setting-surveyor-name");
+    const showCbmInput = document.getElementById("app-setting-show-cbm");
+    const showWeightInput = document.getElementById("app-setting-show-weight");
+    const kgInput = document.getElementById("app-setting-kg-per-cbm");
+
+    if (activationInput) activationInput.value = settings.activationCode || "";
+    if (surveyorInput) surveyorInput.value = settings.surveyorName || "";
+    if (showCbmInput) showCbmInput.checked = !!settings.showCbm;
+    if (showWeightInput) showWeightInput.checked = !!settings.showVolumetricWeight;
+    if (kgInput) kgInput.value = Number(settings.volumetricKgPerCbm || DEFAULT_VOLUMETRIC_KG_PER_CBM);
+}
+
+function handleAppSettingInput(key, value) {
+    updateAppSetting(key, String(value || ""));
+}
+
+function handleAppSettingCheckbox(key, checked) {
+    updateAppSetting(key, !!checked);
+}
+
+function handleAppSettingNumber(key, value) {
+    const cleanValue = Number(value || 0);
+
+    if (cleanValue > 0) {
+        updateAppSetting(key, cleanValue);
+    }
 }
 
 function closeAppSettingsModal() {
@@ -22743,25 +22904,73 @@ document.addEventListener('DOMContentLoaded', function () {
         </div>
 
         <div class="app-settings-section">
-            <div class="app-settings-section-title">Activation</div>
-            <div class="app-settings-placeholder">
-                Activation code settings will go here.
-            </div>
-        </div>
+    <div class="app-settings-section-title">Activation</div>
 
-        <div class="app-settings-section">
-            <div class="app-settings-section-title">Surveyor Details</div>
-            <div class="app-settings-placeholder">
-                Surveyor name and signature settings will go here.
-            </div>
-        </div>
+    <label class="app-settings-label">Activation Code</label>
+    <input
+        id="app-setting-activation-code"
+        type="text"
+        class="app-settings-input"
+        placeholder="Activation code will be used later"
+        oninput="handleAppSettingInput('activationCode', this.value)"
+    >
 
-        <div class="app-settings-section">
-            <div class="app-settings-section-title">Units & Display</div>
-            <div class="app-settings-placeholder">
-                CBM and volumetric weight display settings will go here.
-            </div>
-        </div>
+    <div class="app-settings-help">
+        Local placeholder for now. Final licence validation will need cloud/server checking.
+    </div>
+</div>
+
+<div class="app-settings-section">
+    <div class="app-settings-section-title">Surveyor Details</div>
+
+    <label class="app-settings-label">Surveyor Name</label>
+    <input
+        id="app-setting-surveyor-name"
+        type="text"
+        class="app-settings-input"
+        placeholder="Surveyor name"
+        oninput="handleAppSettingInput('surveyorName', this.value)"
+    >
+
+    <div class="app-settings-help">
+        This can later be shown on listed inventory and PDF outputs.
+    </div>
+</div>
+
+<div class="app-settings-section">
+    <div class="app-settings-section-title">Units & Display</div>
+
+    <label class="app-settings-check-row">
+        <input
+            id="app-setting-show-cbm"
+            type="checkbox"
+            onchange="handleAppSettingCheckbox('showCbm', this.checked)"
+        >
+        <span>Show CBM conversion</span>
+    </label>
+
+    <label class="app-settings-check-row">
+        <input
+            id="app-setting-show-weight"
+            type="checkbox"
+            onchange="handleAppSettingCheckbox('showVolumetricWeight', this.checked)"
+        >
+        <span>Show volumetric weight</span>
+    </label>
+
+    <label class="app-settings-label">Volumetric KG per CBM</label>
+    <input
+        id="app-setting-kg-per-cbm"
+        type="number"
+        min="1"
+        class="app-settings-input"
+        oninput="handleAppSettingNumber('volumetricKgPerCbm', this.value)"
+    >
+
+    <div class="app-settings-help">
+        CBM uses cuft ÷ 35.314. Volumetric weight uses CBM × KG per CBM.
+    </div>
+</div>
     </div>
 </div>
 <!-- NOTE MODAL -->
