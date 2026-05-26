@@ -554,6 +554,10 @@ body {
     color: #0f172a;
     white-space: nowrap;
 }
+.dashboard-volume-display {
+    white-space: normal;
+    line-height: 1.15;
+}
 .dashboard-price-warning {
     display: inline-flex;
     align-items: center;
@@ -10205,7 +10209,7 @@ function renderDashboard() {
                         <span class="dashboard-seq-sub">${s.packOption || 'No Packing Set'}</span>
                     </div>
 
-                    <span class="dashboard-seq-volume">${seqVolume} ft³</span>
+                    <span class="dashboard-seq-volume dashboard-volume-display">${formatVolumeDisplayFromCuft(seqVolume)}</span>
                     <span class="dashboard-seq-price ${Number(seqPrice || 0) <= 0 && seqVolume > 0 ? "missing" : ""}">
     ${Number(seqPrice || 0) <= 0 && seqVolume > 0 ? "Price missing" : formatDashboardMoney(seqPrice)}
 </span>
@@ -15952,7 +15956,7 @@ async function saveListedInventoryPdfToDevice() {
                 </div>
 
                 <div class="pdf-card pdf-card-full">
-                    <div class="pdf-card-title">Customer Responsibilities</div>
+                    <div class="pdf-card-title">Exclusions & Customer Responsibilities</div>
                     ${getPrintableResponsibilitiesHtml(listedSummary, filteredItems)}
                 </div>
             </div>
@@ -16556,7 +16560,7 @@ movePilotPrintWindowWatcher = setInterval(function() {
     </div>
 
     <div class="pdf-card pdf-card-full">
-        <div class="pdf-card-title">Customer Responsibilities</div>
+        <div class="pdf-card-title">Exclusions & Customer Responsibilities</div>
         ${getPrintableResponsibilitiesHtml(listedSummary, filteredItems)}
     </div>
 </div>
