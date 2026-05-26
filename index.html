@@ -13562,6 +13562,19 @@ if (safeItems.length) {
         editableNotes: editableNotes
     };
 }
+function activeSequenceShouldCondenseExportWrapSummary() {
+    if (!currentJob || !activeSeqId || !Array.isArray(currentJob.sequences)) {
+        return false;
+    }
+
+    const seq = currentJob.sequences.find(function(sequence) {
+        return String(sequence.id) === String(activeSeqId);
+    });
+
+    if (!seq) return false;
+
+    return String(seq.packOption || "").trim().toLowerCase() === "full export pack and wrap";
+}
 function buildCrewInstructionsSummary(items) {
     const summary = {
     dismantle: [],
@@ -13577,6 +13590,7 @@ function buildCrewInstructionsSummary(items) {
     pianos: []
 };
 
+const condenseExportWrapSummary = activeSequenceShouldCondenseExportWrapSummary();
     const manualCrewNotes = ensureCrewInstructionNotes().filter(function(note) {
         return String(note || "").trim();
     });
@@ -13633,9 +13647,9 @@ if (itemName === "SAFE") {
             }
         }
 
-        if (entry.expWrap) {
-            summary.exportWrap.push(baseLine);
-        }
+        if (entry.expWrap && !condenseExportWrapSummary) {
+    summary.exportWrap.push(baseLine);
+}
 
         if (entry.crated) {
             if (entry.crateDims) {
@@ -13668,6 +13682,17 @@ if (
 }
     });
 
+    if (condenseExportWrapSummary) {
+    const hasExportWrappedItems = items.some(function(entry) {
+        return entry && !entry.excluded && entry.expWrap;
+    });
+
+    if (hasExportWrappedItems) {
+        summary.exportWrap = [
+            "Full export pack and wrap selected — all furniture items to be export wrapped."
+        ];
+    }
+}
     return summary;
 }
 
