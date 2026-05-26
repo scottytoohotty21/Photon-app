@@ -1797,6 +1797,62 @@ body {
 .app-settings-save-btn:active {
     transform: scale(0.98);
 }
+.app-settings-signature-block {
+    margin-top: 14px;
+}
+
+.app-settings-signature-shell {
+    background: #ffffff;
+    border: 1.5px solid #cbd5e1;
+    border-bottom-color: #94a3b8;
+    border-radius: 14px;
+    overflow: hidden;
+    min-height: 120px;
+}
+
+.app-settings-signature-pad {
+    display: block;
+    width: 100%;
+    height: 120px;
+    touch-action: none;
+    background: #ffffff;
+}
+
+.app-settings-signature-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 9px;
+}
+
+.app-settings-signature-clear,
+.app-settings-signature-save {
+    min-height: 38px;
+    border-radius: 10px;
+    font-size: 9px;
+    font-weight: 950;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.app-settings-signature-clear {
+    background: #fef2f2;
+    border: 1.5px solid #fecaca;
+    border-bottom-color: #f87171;
+    color: #991b1b;
+}
+
+.app-settings-signature-save {
+    background: #3b82f6;
+    border: 1.5px solid #2563eb;
+    border-bottom-color: #1d4ed8;
+    color: #ffffff;
+}
+
+.app-settings-signature-clear:active,
+.app-settings-signature-save:active {
+    transform: scale(0.98);
+}
         /* --- NOTE MODAL --- */
 .note-overlay {
     display: none;
@@ -6820,7 +6876,12 @@ let signaturePad = null;
 let scheduleNumberEditMeta = null;
 let signaturePadCtx = null;
 let signatureDrawing = false;
-let signatureLastX = 0;
+
+let surveyorSignaturePad = null;
+let surveyorSignaturePadCtx = null;
+let surveyorSignatureDrawing = false;
+let surveyorSignatureLastX = 0;
+let surveyorSignatureLastY = 0;let signatureLastX = 0;
 let signatureLastY = 0;
 let signatureLocked = false;
 let inventoryReturnContext = null;
@@ -11637,6 +11698,10 @@ function openAppSettingsModal() {
     if (!overlay) return;
 
     overlay.style.display = "flex";
+
+    setTimeout(function() {
+        initSurveyorSignaturePad();
+    }, 0);
 }
 function populateAppSettingsModal() {
     const settings = getAppSettings();
@@ -14843,6 +14908,147 @@ function syncLiveInventoryFromRawForActiveSequence() {
     rebuildLiveInventoryFromSequence(activeSeqId);
 }
 
+function initSurveyorSignaturePad() {
+    const canvas = document.getElementById("surveyor-signature-pad");
+    if (!canvas) return;
+
+    surveyorSignaturePad = canvas;
+    surveyorSignaturePadCtx = canvas.getContext("2d");
+
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width;
+    canvas.height = 120;
+
+    surveyorSignaturePadCtx.lineCap = "round";
+    surveyorSignaturePadCtx.lineJoin = "round";
+    surveyorSignaturePadCtx.lineWidth = 2.5;
+    surveyorSignaturePadCtx.strokeStyle = "#0f172a";
+    surveyorSignaturePadCtx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const settings = getAppSettings();
+
+    if (settings.surveyorSignatureDataUrl) {
+        loadSurveyorSignatureImageToCanvas(settings.surveyorSignatureDataUrl);
+        updateSurveyorSignatureStatus(true);
+    } else {
+        updateSurveyorSignatureStatus(false);
+    }
+
+    canvas.onmousedown = startSurveyorSignatureDraw;
+    canvas.onmousemove = moveSurveyorSignatureDraw;
+    canvas.onmouseup = endSurveyorSignatureDraw;
+    canvas.onmouseleave = endSurveyorSignatureDraw;
+
+    canvas.ontouchstart = startSurveyorSignatureDraw;
+    canvas.ontouchmove = moveSurveyorSignatureDraw;
+    canvas.ontouchend = endSurveyorSignatureDraw;
+}
+
+function getSurveyorSignaturePoint(e) {
+    if (!surveyorSignaturePad) return { x: 0, y: 0 };
+
+    const rect = surveyorSignaturePad.getBoundingClientRect();
+    const source = e.touches && e.touches.length ? e.touches[0] : e;
+
+    return {
+        x: source.clientX - rect.left,
+        y: source.clientY - rect.top
+    };
+}
+
+function startSurveyorSignatureDraw(e) {
+    if (!surveyorSignaturePadCtx) return;
+
+    if (e && e.preventDefault) e.preventDefault();
+
+    const point = getSurveyorSignaturePoint(e);
+    surveyorSignatureDrawing = true;
+    surveyorSignatureLastX = point.x;
+    surveyorSignatureLastY = point.y;
+}
+
+function moveSurveyorSignatureDraw(e) {
+    if (!surveyorSignatureDrawing || !surveyorSignaturePadCtx) return;
+
+    if (e && e.preventDefault) e.preventDefault();
+
+    const point = getSurveyorSignaturePoint(e);
+
+    surveyorSignaturePadCtx.beginPath();
+    surveyorSignaturePadCtx.moveTo(surveyorSignatureLastX, surveyorSignatureLastY);
+    surveyorSignaturePadCtx.lineTo(point.x, point.y);
+    surveyorSignaturePadCtx.stroke();
+
+    surveyorSignatureLastX = point.x;
+    surveyorSignatureLastY = point.y;
+}
+
+function endSurveyorSignatureDraw() {
+    surveyorSignatureDrawing = false;
+}
+
+function saveSurveyorSignaturePad() {
+    if (!surveyorSignaturePad) return;
+
+    const settings = getAppSettings();
+    settings.surveyorSignatureDataUrl = surveyorSignaturePad.toDataURL("image/png");
+    saveAppSettings(settings);
+
+    updateSurveyorSignatureStatus(true);
+    updateInventoryDisplay("SURVEYOR SIGNATURE SAVED");
+}
+
+function clearSurveyorSignaturePad() {
+    if (!surveyorSignaturePad || !surveyorSignaturePadCtx) return;
+
+    surveyorSignaturePadCtx.clearRect(
+        0,
+        0,
+        surveyorSignaturePad.width,
+        surveyorSignaturePad.height
+    );
+
+    const settings = getAppSettings();
+    settings.surveyorSignatureDataUrl = "";
+    saveAppSettings(settings);
+
+    updateSurveyorSignatureStatus(false);
+    updateInventoryDisplay("SURVEYOR SIGNATURE CLEARED");
+}
+
+function loadSurveyorSignatureImageToCanvas(imageData) {
+    if (!surveyorSignaturePadCtx || !surveyorSignaturePad || !imageData) return;
+
+    const img = new Image();
+
+    img.onload = function() {
+        surveyorSignaturePadCtx.clearRect(
+            0,
+            0,
+            surveyorSignaturePad.width,
+            surveyorSignaturePad.height
+        );
+
+        surveyorSignaturePadCtx.drawImage(
+            img,
+            0,
+            0,
+            surveyorSignaturePad.width,
+            surveyorSignaturePad.height
+        );
+    };
+
+    img.src = imageData;
+}
+
+function updateSurveyorSignatureStatus(hasSignature) {
+    const status = document.getElementById("surveyor-signature-status");
+    if (!status) return;
+
+    status.innerText = hasSignature
+        ? "Surveyor signature saved on this device."
+        : "No surveyor signature saved.";
+}
 function initSignaturePad() {
     const canvas = document.getElementById("signature-pad");
     if (!canvas) return;
@@ -23075,6 +23281,36 @@ document.addEventListener('DOMContentLoaded', function () {
 
     <div class="app-settings-help">
         This can later be shown on listed inventory and PDF outputs.
+    </div>
+
+    <div class="app-settings-signature-block">
+        <div class="app-settings-label">Surveyor Signature</div>
+
+        <div class="app-settings-signature-shell">
+            <canvas id="surveyor-signature-pad" class="app-settings-signature-pad"></canvas>
+        </div>
+
+        <div class="app-settings-signature-actions">
+            <button
+                type="button"
+                class="app-settings-signature-clear"
+                onclick="clearSurveyorSignaturePad()"
+            >
+                Clear Signature
+            </button>
+
+            <button
+                type="button"
+                class="app-settings-signature-save"
+                onclick="saveSurveyorSignaturePad()"
+            >
+                Save Signature
+            </button>
+        </div>
+
+        <div id="surveyor-signature-status" class="app-settings-help">
+            No surveyor signature saved.
+        </div>
     </div>
 </div>
 
