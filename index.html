@@ -5314,7 +5314,7 @@ Enter as: Surname, First Name
     <script>
         const PROPERTY_TYPES = ["House", "Apartment", "Bungalow", "Office", "Shop"];
         const VEHICLE_TYPES = ["Shuttle van", "Transit van", "Luton / Low Loader", "7.5 tonne", "12 tonne", "15 tonne", "18 tonne", "20ft container", "40ft container"];
-        const MOVE_TYPES = ["Dom-local", "Dom-Distance", "Dom-To Store", "Dom-Ex Store", "Dom-Direct/Store", "GPG", "LCL", "FCL"];
+        const MOVE_TYPES = ["Dom-local", "Dom-Distance", "Dom-To Store", "Dom-Ex Store", "Euro Part Load", "Euro Direct", "GPG", "LCL", "FCL"];
         const OPERATING_BRANCHES = [
     "Aylesbury",
     "Crawley",
@@ -5337,7 +5337,7 @@ const BRANCH_DEPOTS = {
     Solent: "Unit 8, Voyager Park, Portfield Rd, Portsmouth PO3 5GF",
     York: "Old Office Block Moor Lane Trading Estate, Sherburn in Elmet, Leeds LS25 6ES"
 };
-        const PACK_OPTIONS = ["Owner Pack", "Fragile (china & Glassware) pack", "Full Packing", "Full Export Pack and Wrap", "Fragile & Kitchenware Pack"];
+        const PACK_OPTIONS = ["Owner Pack", "Fragile (china & Glassware) pack", "Full Packing", "Full Export Pack and Wrap", "Unload Only"];
         const SALUTATIONS = ["Mr", "Miss", "Mrs", "Ms", "Other"];
         const DEFAULT_ROOMS = [
     "Lounge",
@@ -9909,7 +9909,15 @@ saveToDevice();
             saveToDevice();
         }
        function updateSeqField(f, v) {
-    currentJob.sequences.find(s => s.id == activeSeqId)[f] = v;
+    const seq = currentJob.sequences.find(s => s.id == activeSeqId);
+    if (!seq) return;
+
+    seq[f] = v;
+
+    if (f === "moveType" && v === "Dom-Ex Store") {
+        seq.packOption = "Unload Only";
+    }
+
     renderSequenceUI();
     renderInventorySequenceDropdown();
     saveToDevice();
@@ -10200,6 +10208,7 @@ if (materialOnlyCodes.includes(boxCode)) {
     const deliveryId = currentJob && currentJob.inventory ? currentJob.inventory.activeDeliveryId : "";
     const roomName = currentJob && currentJob.inventory ? currentJob.inventory.activeRoomName : "";
     const floorName = currentJob && currentJob.inventory ? currentJob.inventory.activeFloor : "";
+    const autoExportWrap = activeSequenceUsesFullExportPackAndWrap();
 
     const liveKey = getLiveInventoryGroupKey({
         itemName: itemName,
@@ -10620,7 +10629,19 @@ function savePianoModal() {
         pianoDetails: pianoDetails
     });
 }
+function activeSequenceUsesFullExportPackAndWrap() {
+    if (!currentJob || !activeSeqId || !Array.isArray(currentJob.sequences)) {
+        return false;
+    }
 
+    const seq = currentJob.sequences.find(function(sequence) {
+        return String(sequence.id) === String(activeSeqId);
+    });
+
+    if (!seq) return false;
+
+    return String(seq.packOption || "").trim().toLowerCase() === "full export pack and wrap";
+}
 function addInventoryItem(itemName, extraData) {
         let item = furnitureDB.find(function(i) {
         return i.item === itemName;
@@ -10654,7 +10675,7 @@ function addInventoryItem(itemName, extraData) {
     unitVolume: item.volume,
     excluded: false,
     dismantle: false,
-    expWrap: false,
+    expWrap: autoExportWrap,
     note: "",
     damage: "",
     pianoDetails: extraData.pianoDetails || null,
@@ -10683,7 +10704,7 @@ crateDims: null
             floorName: floorName,
             deliveryId: deliveryId,
             dismantle: false,
-            expWrap: false,
+            expWrap: autoExportWrap,
             excluded: false,
             note: "",
             damage: "",
@@ -10695,18 +10716,19 @@ safeDetails: extraData.safeDetails || null
     }
 
     const rawEntryId = saveRawInventoryEntry({
-        sequenceId: activeSeqId,
-        deliveryId: deliveryId,
-        roomName: roomName,
-        floorName: floorName,
-        itemName: item.item,
-        qty: qty,
-        unitVolume: item.volume,
-        totalVolume: item.volume * qty,
-        kind: "item",
-        pianoDetails: extraData.pianoDetails || null,
-safeDetails: extraData.safeDetails || null
-    });
+    sequenceId: activeSeqId,
+    deliveryId: deliveryId,
+    roomName: roomName,
+    floorName: floorName,
+    itemName: item.item,
+    qty: qty,
+    unitVolume: item.volume,
+    totalVolume: item.volume * qty,
+    kind: "item",
+    expWrap: autoExportWrap,
+    pianoDetails: extraData.pianoDetails || null,
+    safeDetails: extraData.safeDetails || null
+});
 
     inventoryHistory.push({
         type: "item",
@@ -10720,7 +10742,9 @@ safeDetails: extraData.safeDetails || null
     currentItemVolume = item.volume * qty;
     recalculateTotalVolume();
 
-    updateInventoryDisplay(qty + " X " + item.item.toUpperCase());
+    updateInventoryDisplay(
+    qty + " X " + item.item.toUpperCase() + (autoExportWrap ? " [EXP WRAP]" : "")
+);
     triggerInventoryPulse("qty", "blue");
     triggerInventoryPulse("total", "blue");
     pulseInventoryButton(clickedBtn);
