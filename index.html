@@ -3260,6 +3260,30 @@ body {
 .surveyor-name-line span {
     color: #0f172a;
 }
+.surveyor-signature-display {
+    margin-top: 8px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0;
+}
+
+.surveyor-signature-label {
+    margin-bottom: 5px;
+    font-size: 8px;
+    font-weight: 950;
+    text-transform: uppercase;
+    color: #64748b;
+    letter-spacing: 0.04em;
+}
+
+.surveyor-signature-display img {
+    display: block;
+    width: 100%;
+    max-height: 70px;
+    object-fit: contain;
+    object-position: left center;
+}
 
 .signature-lock-badge {
     display: inline-flex;
@@ -5795,6 +5819,40 @@ function getPrintableSurveyorNameHtml() {
     return `
         <div class="pdf-small-note pdf-surveyor-name">
             Survey completed by: <strong>${escapeHtml(surveyorName)}</strong>
+        </div>
+    `;
+}
+function getSurveyorSignatureDataUrl() {
+    const settings = getAppSettings();
+    return String(settings.surveyorSignatureDataUrl || "").trim();
+}
+
+function getSurveyorSignatureHtml() {
+    const signatureDataUrl = getSurveyorSignatureDataUrl();
+
+    if (!signatureDataUrl) {
+        return "";
+    }
+
+    return `
+        <div class="surveyor-signature-display">
+            <div class="surveyor-signature-label">Surveyor Signature</div>
+            <img src="${signatureDataUrl}" alt="Surveyor signature">
+        </div>
+    `;
+}
+
+function getPrintableSurveyorSignatureHtml() {
+    const signatureDataUrl = getSurveyorSignatureDataUrl();
+
+    if (!signatureDataUrl) {
+        return "";
+    }
+
+    return `
+        <div class="pdf-surveyor-signature">
+            <div class="pdf-small-note">Surveyor Signature</div>
+            <img src="${signatureDataUrl}" alt="Surveyor signature">
         </div>
     `;
 }
@@ -14324,7 +14382,8 @@ function renderListedSummary(summary, materials, crewInstructions) {
                 </div>
                         </div>
 
-            ${getSurveyorNameHtml()}
+                        ${getSurveyorNameHtml()}
+            ${getSurveyorSignatureHtml()}
         </div>
 
         <div class="listed-stat-card">
@@ -15712,6 +15771,19 @@ function getListedInventoryDownloadCss() {
     padding-top: 8px;
     border-top: 1px solid #e2e8f0;
 }
+.pdf-surveyor-signature {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.pdf-surveyor-signature img {
+    display: block;
+    width: 100%;
+    max-height: 58px;
+    object-fit: contain;
+    object-position: left center;
+}
 
         .pdf-materials-grid {
             display: grid;
@@ -15854,12 +15926,13 @@ async function saveListedInventoryPdfToDevice() {
             ${sectionsHtml}
 
             <div class="pdf-footer-grid">
-                <div class="pdf-card">
+                
     <div class="pdf-card">
     <div class="pdf-card-title">Customer Signature</div>
     ${signatureHtml}
     <div class="pdf-small-note" style="margin-top: 8px;">Signed: ${escapeHtml(signedAt)}</div>
     ${getPrintableSurveyorNameHtml()}
+    ${getPrintableSurveyorSignatureHtml()}
 </div>
 
                 <div class="pdf-card">
@@ -16242,6 +16315,19 @@ movePilotPrintWindowWatcher = setInterval(function() {
     padding-top: 8px;
     border-top: 1px solid #e2e8f0;
 }
+.pdf-surveyor-signature {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.pdf-surveyor-signature img {
+    display: block;
+    width: 100%;
+    max-height: 58px;
+    object-fit: contain;
+    object-position: left center;
+}
 
                 .pdf-materials-grid {
     display: grid;
@@ -16450,6 +16536,7 @@ movePilotPrintWindowWatcher = setInterval(function() {
     ${signatureHtml}
     <div class="pdf-small-note" style="margin-top: 8px;">Signed: ${escapeHtml(signedAt)}</div>
     ${getPrintableSurveyorNameHtml()}
+    ${getPrintableSurveyorSignatureHtml()}
 </div>
 
     <div class="pdf-card">
