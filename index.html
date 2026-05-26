@@ -2829,6 +2829,52 @@ body {
     text-transform: uppercase;
     line-height: 1;
 }
+.listed-action-btn {
+    white-space: nowrap;
+    overflow: visible;
+    text-overflow: clip;
+}
+
+.listed-action-qty {
+    min-width: 58px;
+    width: 58px;
+}
+
+.listed-action-flags {
+    min-width: 74px;
+    width: 74px;
+}
+
+.listed-action-note {
+    min-width: 68px;
+    width: 68px;
+}
+
+.listed-action-delete {
+    min-width: 42px;
+    width: 42px;
+}
+@media (max-width: 1180px) {
+    .listed-action-qty {
+        min-width: 62px;
+        width: 62px;
+    }
+
+    .listed-action-flags {
+        min-width: 82px;
+        width: 82px;
+    }
+
+    .listed-action-note {
+        min-width: 74px;
+        width: 74px;
+    }
+
+    .listed-action-delete {
+        min-width: 44px;
+        width: 44px;
+    }
+}
 
 .listed-action-btn:active {
     transform: scale(0.97);
@@ -14207,10 +14253,10 @@ if (entry.handyman) tags.push("HANDYMAN");
                         </td>
                         <td class="py-2 pl-1 align-top">
                             <div class="listed-row-actions">
-                                <button class="listed-action-btn" onclick="editListedEntryQty('${escapeHtml(entryKey)}')">Qty</button>
-                                <button class="listed-action-btn" onclick="editListedEntryFlags('${escapeHtml(entryKey)}')">Flags</button>
-                                <button class="listed-action-btn" onclick="editListedEntryNote('${escapeHtml(entryKey)}')">Note</button>
-                                <button class="listed-action-btn delete" onclick="deleteListedEntry('${escapeHtml(entryKey)}')">×</button>
+                                <button class="listed-action-btn listed-action-qty" onclick="editListedEntryQty('${escapeHtml(entryKey)}')">Qty</button>
+<button class="listed-action-btn listed-action-flags" onclick="editListedEntryFlags('${escapeHtml(entryKey)}')">Flags</button>
+<button class="listed-action-btn listed-action-note" onclick="editListedEntryNote('${escapeHtml(entryKey)}')">Note</button>
+<button class="listed-action-btn listed-action-delete delete" onclick="deleteListedEntry('${escapeHtml(entryKey)}')">×</button>
                             </div>
                         </td>
                     </tr>
