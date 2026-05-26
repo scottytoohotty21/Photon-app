@@ -1755,6 +1755,22 @@ body {
     line-height: 1.35;
     color: #64748b;
 }
+.app-activation-status {
+    display: inline-flex;
+    align-items: center;
+    min-height: 34px;
+    margin: 2px 0 8px;
+    padding: 8px 11px;
+    border-radius: 10px;
+    background: #f8fafc;
+    border: 1.5px solid #cbd5e1;
+    border-bottom-color: #94a3b8;
+    color: #334155;
+    font-size: 10px;
+    font-weight: 950;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
 
 .app-settings-check-row {
     display: flex;
@@ -11765,16 +11781,36 @@ function openAppSettingsModal() {
         initSurveyorSignaturePad();
     }, 0);
 }
+function getAppActivationStatusLabel(settings) {
+    const cleanCode = String(settings.activationCode || "").trim();
+
+    if (
+        typeof MOVEPILOT_DEV_SKIP_ACTIVATION !== "undefined" &&
+        MOVEPILOT_DEV_SKIP_ACTIVATION
+    ) {
+        return cleanCode
+            ? "Dev Mode · Code Saved Locally"
+            : "Dev Mode";
+    }
+
+    if (cleanCode) {
+        return "Activation Code Saved Locally";
+    }
+
+    return "Not Activated";
+}
 function populateAppSettingsModal() {
     const settings = getAppSettings();
 
     const activationInput = document.getElementById("app-setting-activation-code");
-    const surveyorInput = document.getElementById("app-setting-surveyor-name");
-    const showCbmInput = document.getElementById("app-setting-show-cbm");
-    const showWeightInput = document.getElementById("app-setting-show-weight");
-    const kgInput = document.getElementById("app-setting-kg-per-cbm");
+const activationStatus = document.getElementById("app-activation-status");
+const surveyorInput = document.getElementById("app-setting-surveyor-name");
+const showCbmInput = document.getElementById("app-setting-show-cbm");
+const showWeightInput = document.getElementById("app-setting-show-weight");
+const kgInput = document.getElementById("app-setting-kg-per-cbm");
 
     if (activationInput) activationInput.value = settings.activationCode || "";
+    if (activationStatus) activationStatus.innerText = getAppActivationStatusLabel(settings);
     if (surveyorInput) surveyorInput.value = settings.surveyorName || "";
     if (showCbmInput) showCbmInput.checked = !!settings.showCbm;
     if (showWeightInput) showWeightInput.checked = !!settings.showVolumetricWeight;
@@ -11782,7 +11818,14 @@ function populateAppSettingsModal() {
 }
 
 function handleAppSettingInput(key, value) {
-    updateAppSetting(key, String(value || ""));
+    const settings = updateAppSetting(key, String(value || ""));
+
+    if (key === "activationCode") {
+        const activationStatus = document.getElementById("app-activation-status");
+        if (activationStatus) {
+            activationStatus.innerText = getAppActivationStatusLabel(settings);
+        }
+    }
 }
 
 function handleAppSettingCheckbox(key, checked) {
@@ -23344,12 +23387,16 @@ document.addEventListener('DOMContentLoaded', function () {
         <div class="app-settings-section">
     <div class="app-settings-section-title">Activation</div>
 
+    <div id="app-activation-status" class="app-activation-status">
+        Dev Mode
+    </div>
+
     <label class="app-settings-label">Activation Code</label>
     <input
         id="app-setting-activation-code"
         type="text"
         class="app-settings-input"
-        placeholder="Activation code will be used later"
+        placeholder="Enter activation code"
         oninput="handleAppSettingInput('activationCode', this.value)"
     >
 
