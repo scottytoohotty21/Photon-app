@@ -10666,6 +10666,7 @@ function addInventoryItem(itemName, extraData) {
     const deliveryId = currentJob && currentJob.inventory ? currentJob.inventory.activeDeliveryId : "";
     const roomName = currentJob && currentJob.inventory ? currentJob.inventory.activeRoomName : "";
     const floorName = currentJob && currentJob.inventory ? currentJob.inventory.activeFloor : "";
+    const autoExportWrap = activeSequenceUsesFullExportPackAndWrap();
 
     const liveKey = getLiveInventoryGroupKey({
     itemName: item.item,
