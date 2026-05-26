@@ -1773,6 +1773,30 @@ body {
     height: 17px;
     accent-color: #3b82f6;
 }
+.app-settings-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 14px;
+}
+
+.app-settings-save-btn {
+    min-width: 180px;
+    min-height: 42px;
+    border-radius: 12px;
+    border: 1.5px solid #2563eb;
+    border-bottom-color: #1d4ed8;
+    background: #3b82f6;
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: 950;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
+}
+
+.app-settings-save-btn:active {
+    transform: scale(0.98);
+}
         /* --- NOTE MODAL --- */
 .note-overlay {
     display: none;
@@ -11571,6 +11595,29 @@ function handleAppSettingNumber(key, value) {
     if (cleanValue > 0) {
         updateAppSetting(key, cleanValue);
     }
+}
+async function saveAppSettingsFromModal() {
+    const activationInput = document.getElementById("app-setting-activation-code");
+    const surveyorInput = document.getElementById("app-setting-surveyor-name");
+    const showCbmInput = document.getElementById("app-setting-show-cbm");
+    const showWeightInput = document.getElementById("app-setting-show-weight");
+    const kgInput = document.getElementById("app-setting-kg-per-cbm");
+
+    const settings = getAppSettings();
+
+    settings.activationCode = activationInput ? String(activationInput.value || "") : settings.activationCode;
+    settings.surveyorName = surveyorInput ? String(surveyorInput.value || "") : settings.surveyorName;
+    settings.showCbm = showCbmInput ? !!showCbmInput.checked : !!settings.showCbm;
+    settings.showVolumetricWeight = showWeightInput ? !!showWeightInput.checked : !!settings.showVolumetricWeight;
+
+    const kgValue = kgInput ? Number(kgInput.value || 0) : Number(settings.volumetricKgPerCbm || DEFAULT_VOLUMETRIC_KG_PER_CBM);
+    settings.volumetricKgPerCbm = kgValue > 0 ? kgValue : DEFAULT_VOLUMETRIC_KG_PER_CBM;
+
+    saveAppSettings(settings);
+
+    closeAppSettingsModal();
+
+    await appAlert("Settings saved on this device.", "Settings Saved");
 }
 
 function closeAppSettingsModal() {
@@ -22967,12 +23014,24 @@ document.addEventListener('DOMContentLoaded', function () {
         oninput="handleAppSettingNumber('volumetricKgPerCbm', this.value)"
     >
 
-    <div class="app-settings-help">
+        <div class="app-settings-help">
         CBM uses cuft ÷ 35.314. Volumetric weight uses CBM × KG per CBM.
     </div>
 </div>
+
+<div class="app-settings-actions">
+    <button
+        type="button"
+        class="app-settings-save-btn"
+        onclick="saveAppSettingsFromModal()"
+    >
+        Save Settings
+    </button>
+</div>
+
     </div>
 </div>
+
 <!-- NOTE MODAL -->
 <div id="note-overlay" class="note-overlay" onclick="closeNoteModal()">
     <div class="note-panel" onclick="event.stopPropagation()">
