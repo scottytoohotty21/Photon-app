@@ -15443,6 +15443,11 @@ function getListedInventoryDownloadCss() {
             line-height: 1;
             margin-bottom: 6px;
         }
+        .pdf-volume-display {
+    font-size: 22px;
+    line-height: 1.12;
+    word-break: normal;
+}
 
         .pdf-small-note {
             font-size: 10px;
@@ -15599,8 +15604,8 @@ async function saveListedInventoryPdfToDevice() {
 
                 <div class="pdf-card">
                     <div class="pdf-card-title">Included Volume & Materials Summary</div>
-                    <div class="pdf-big-stat">${listedSummary.includedVolume}</div>
-                    <div class="pdf-small-note">Cuft counted</div>
+                    <div class="pdf-big-stat pdf-volume-display">${formatVolumeDisplayFromCuft(listedSummary.includedVolume)}</div>
+<div class="pdf-small-note">Included volume counted</div>
                     <div style="margin-top:12px;">
                         ${getPrintableMaterialsHtml(materialsSummary)}
                     </div>
@@ -15962,6 +15967,11 @@ movePilotPrintWindowWatcher = setInterval(function() {
                     line-height: 1;
                     margin-bottom: 6px;
                 }
+                .pdf-volume-display {
+    font-size: 22px;
+    line-height: 1.12;
+    word-break: normal;
+}
 
                 .pdf-small-note {
                     font-size: 10px;
@@ -16179,8 +16189,8 @@ movePilotPrintWindowWatcher = setInterval(function() {
 
     <div class="pdf-card">
         <div class="pdf-card-title">Included Volume & Materials Summary</div>
-        <div class="pdf-big-stat">${listedSummary.includedVolume}</div>
-        <div class="pdf-small-note">Cuft counted</div>
+        <div class="pdf-big-stat pdf-volume-display">${formatVolumeDisplayFromCuft(listedSummary.includedVolume)}</div>
+<div class="pdf-small-note">Included volume counted</div>
         <div style="margin-top:12px;">
             ${getPrintableMaterialsHtml(materialsSummary)}
         </div>
