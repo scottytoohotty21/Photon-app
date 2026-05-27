@@ -13335,6 +13335,15 @@ function formatListedLineVolumeDisplay(cuft, showUnitLabel) {
         ? cleanCuft + " CUFT"
         : String(cleanCuft);
 }
+function formatListedSummaryVolumeDisplay(cuft) {
+    const cleanCuft = Number(cuft || 0);
+
+    if (shouldShowListedCbmLineItems()) {
+        return formatCbmFromCuft(cleanCuft) + " CBM";
+    }
+
+    return cleanCuft + " cuft";
+}
 
 function handleListedCbmLineItemsToggle(checked) {
     const options = ensureListedReportOptions();
@@ -14519,7 +14528,7 @@ function renderListedSummary(summary, materials, crewInstructions) {
 
         <div class="listed-stat-card">
             <div class="listed-stat-label">Included Volume & Materials Summary</div>
-            <div class="listed-stat-value listed-volume-display">${formatVolumeDisplayFromCuft(summary.includedVolume)}</div>
+            <div class="listed-stat-value listed-volume-display">${formatListedSummaryVolumeDisplay(summary.includedVolume)}</div>
 <div class="listed-stat-sub">Included volume counted</div>
 
             <div class="grid grid-cols-2 gap-4 text-[10px] font-black text-slate-900 uppercase leading-5 mt-4">
@@ -16068,7 +16077,7 @@ async function saveListedInventoryPdfToDevice() {
 
                 <div class="pdf-card">
                     <div class="pdf-card-title">Included Volume & Materials Summary</div>
-                    <div class="pdf-big-stat pdf-volume-display">${formatVolumeDisplayFromCuft(listedSummary.includedVolume)}</div>
+                    <div class="pdf-big-stat pdf-volume-display">${formatListedSummaryVolumeDisplay(listedSummary.includedVolume)}</div>
 <div class="pdf-small-note">Included volume counted</div>
                     <div style="margin-top:12px;">
                         ${getPrintableMaterialsHtml(materialsSummary)}
@@ -16672,7 +16681,7 @@ movePilotPrintWindowWatcher = setInterval(function() {
 
     <div class="pdf-card">
         <div class="pdf-card-title">Included Volume & Materials Summary</div>
-        <div class="pdf-big-stat pdf-volume-display">${formatVolumeDisplayFromCuft(listedSummary.includedVolume)}</div>
+        <div class="pdf-big-stat pdf-volume-display">${formatListedSummaryVolumeDisplay(listedSummary.includedVolume)}</div>
 <div class="pdf-small-note">Included volume counted</div>
         <div style="margin-top:12px;">
             ${getPrintableMaterialsHtml(materialsSummary)}
