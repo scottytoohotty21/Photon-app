@@ -4035,6 +4035,97 @@ min-height: 48px;
     color: var(--slate-400);
     line-height: 1.45;
 }
+.planner-notes-card {
+    margin-top: 10px;
+    border-radius: 14px;
+    border: 1.5px solid #cbd5e1;
+    border-bottom-color: #94a3b8;
+    background: #ffffff;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+    overflow: hidden;
+}
+
+.planner-notes-card.open {
+    border-color: #bfdbfe;
+    border-bottom-color: #60a5fa;
+}
+
+.planner-notes-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px;
+}
+
+.planner-notes-title {
+    font-size: 11px;
+    font-weight: 950;
+    text-transform: uppercase;
+    color: #0f172a;
+    letter-spacing: 0.04em;
+}
+
+.planner-notes-subtitle {
+    margin-top: 3px;
+    font-size: 9px;
+    font-weight: 850;
+    text-transform: uppercase;
+    color: #64748b;
+    letter-spacing: 0.03em;
+}
+
+.planner-notes-toggle {
+    min-width: 72px;
+    min-height: 34px;
+    border-radius: 10px;
+    border: 1.5px solid #cbd5e1;
+    border-bottom-color: #94a3b8;
+    background: #f8fafc;
+    color: #334155;
+    font-size: 9px;
+    font-weight: 950;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.planner-notes-toggle:active {
+    transform: scale(0.98);
+}
+
+.planner-notes-body {
+    border-top: 1px solid #e2e8f0;
+    padding: 12px 14px 14px;
+    background: #f8fafc;
+}
+
+.planner-notes-section-title {
+    margin-bottom: 7px;
+    font-size: 9px;
+    font-weight: 950;
+    text-transform: uppercase;
+    color: #334155;
+    letter-spacing: 0.04em;
+}
+
+.planner-notes-line {
+    margin-top: 6px;
+    padding: 8px 9px;
+    border-radius: 10px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    color: #334155;
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 1.35;
+}
+
+.planner-notes-empty {
+    color: #94a3b8;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
 
 .schedule-time-breakdown{
     margin-top:8px;
@@ -6990,6 +7081,7 @@ let listedFlagsState = {
 };
 let signaturePad = null;
 let scheduleNumberEditMeta = null;
+let plannerNotesExpanded = false;
 let signaturePadCtx = null;
 let signatureDrawing = false;
 
@@ -22496,18 +22588,99 @@ if (collectionSpecialHours || deliverySpecialHours) {
 if (loadDebugLines.length) {
     results.push({
         type: "note",
-        text: "Planner Notes available"
+        text: "Planner Notes available",
+        lines: loadDebugLines
     });
 }
 
 return results;
 }
 
+function togglePlannerNotesCard() {
+    plannerNotesExpanded = !plannerNotesExpanded;
+
+    if (typeof handleScheduleInputChange === "function") {
+        handleScheduleInputChange();
+    }
+}
+
+function buildPlannerNotesCardHtml(noteItems) {
+    if (!Array.isArray(noteItems) || !noteItems.length) {
+        return "";
+    }
+
+    const allLines = [];
+
+    noteItems.forEach(function(item) {
+        if (Array.isArray(item.lines)) {
+            item.lines.forEach(function(line) {
+                if (String(line || "").trim()) {
+                    allLines.push(String(line).trim());
+                }
+            });
+        }
+    });
+
+    const hasLines = allLines.length > 0;
+
+    return `
+        <div class="planner-notes-card ${plannerNotesExpanded ? "open" : ""}">
+            <div class="planner-notes-head">
+                <div>
+                    <div class="planner-notes-title">Planner Notes</div>
+                    <div class="planner-notes-subtitle">
+                        ${hasLines ? "Schedule allowance explanation available" : "No planner notes available"}
+                    </div>
+                </div>
+
+                <button
+                    type="button"
+                    class="planner-notes-toggle"
+                    onclick="togglePlannerNotesCard()"
+                >
+                    ${plannerNotesExpanded ? "Hide" : "View"}
+                </button>
+            </div>
+
+            ${
+                plannerNotesExpanded
+                    ? `
+                        <div class="planner-notes-body">
+                            <div class="planner-notes-section-title">Current allowance notes</div>
+                            ${
+                                hasLines
+                                    ? allLines.map(function(line) {
+                                        return `<div class="planner-notes-line">${line}</div>`;
+                                    }).join("")
+                                    : `<div class="planner-notes-empty">No detailed notes generated yet.</div>`
+                            }
+                        </div>
+                    `
+                    : ""
+            }
+        </div>
+    `;
+}
 function renderValidation(packing, loading, unloading, special, state){
     const el = document.getElementById("validationList");
     if (!el) return;
+
     const items = calcScheduleValidation(packing, loading, unloading, special, state);
-    el.innerHTML = items.map(item => `<div class="validation-item validation-${item.type}">${item.text}</div>`).join("");
+    const validationItems = items.filter(function(item) {
+        return item.type !== "note";
+    });
+
+    const plannerNoteItems = items.filter(function(item) {
+        return item.type === "note";
+    });
+
+    const validationHtml = validationItems.map(function(item) {
+        return `<div class="validation-item validation-${item.type}">${item.text}</div>`;
+    }).join("");
+
+    const plannerNotesHtml = buildPlannerNotesCardHtml(plannerNoteItems);
+
+    el.innerHTML = validationHtml + plannerNotesHtml;
 }
 
 function isWardrobeInventoryItem(itemName) {
