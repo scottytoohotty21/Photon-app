@@ -21467,9 +21467,10 @@ function autoBuildScheduleDays() {
             nightsOut: false,
             overtimeHours: 0,
             operatingBranch: selectedOperatingBranch,
-            legs: [
-                createEmptyScheduleLeg("Depot", collectionId, 30)
-            ]
+           legs: [
+    createEmptyScheduleLeg("Depot", collectionId, 30),
+    createEmptyScheduleLeg(collectionId, deliveryId, 30)
+]
         });
 
         newRows.push({
@@ -21486,9 +21487,8 @@ function autoBuildScheduleDays() {
             overtimeHours: 0,
             operatingBranch: selectedOperatingBranch,
             legs: [
-                createEmptyScheduleLeg(collectionId, deliveryId, 30),
-                createEmptyScheduleLeg(deliveryId, "Depot", 30)
-            ]
+    createEmptyScheduleLeg(deliveryId, "Depot", 30)
+]
         });
     }
 
