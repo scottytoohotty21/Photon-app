@@ -22386,6 +22386,13 @@ function buildLoadDebugLine(day, taskMode, men, taskHours, equivalentLoadHours, 
     const dayPart = String(day.dayPart || "").trim();
     const taskLabel = String(day.task || taskMode || "Schedule row").trim();
     const completionWindow = String(day.completionWindow || "").trim();
+    const travelHours = typeof getRowLegHours === "function"
+    ? getRowLegHours(day)
+    : 0;
+
+const travelText = travelHours > 0
+    ? formatHoursAndMinutes(travelHours)
+    : "None";
 
     const titleParts = [];
 
@@ -22425,7 +22432,8 @@ const title = titleParts.join(" — ");
     const allowed = [
         "Crew: " + crewText,
         vehicleText,
-        "Task time: " + formatHoursAndMinutes(taskHours),
+        "Travel allowed: " + travelText,
+"Task time available: " + formatHoursAndMinutes(taskHours),
         capacityLabel
     ].filter(Boolean);
 
