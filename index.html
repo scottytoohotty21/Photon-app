@@ -22358,10 +22358,21 @@ function renderSchedulePlanner(){
 
 function buildLoadDebugLine(day, taskMode, men, taskHours, equivalentLoadHours, state) {
     const loadingProfile = state && state.loadingProfile ? state.loadingProfile : {};
-    const morningRate = Number(loadingProfile.morningEquivalentRate || state.loadRate || 0);
 
-    const capacityCuft = morningRate > 0
-        ? Math.round(Number(equivalentLoadHours || 0) * morningRate)
+    const cleanTaskMode = String(taskMode || "").trim();
+    const loadingRate = Number(loadingProfile.morningEquivalentRate || state.loadRate || 0);
+    const unloadingRate = Number(state && state.unloadRate ? state.unloadRate : 0);
+
+    const isUnloadMode = cleanTaskMode === "unload";
+    const isLoadMode =
+        cleanTaskMode === "load" ||
+        cleanTaskMode === "pack_load" ||
+        cleanTaskMode === "load_unload";
+
+    const capacityRate = isUnloadMode ? unloadingRate : loadingRate;
+
+    const capacityCuft = capacityRate > 0 && Number(equivalentLoadHours || 0) > 0
+        ? Math.round(Number(equivalentLoadHours || 0) * capacityRate)
         : 0;
 
     const dayPart = String(day.dayPart || "").trim();
@@ -22389,13 +22400,21 @@ function buildLoadDebugLine(day, taskMode, men, taskHours, equivalentLoadHours, 
             ? vehicleCount + " vehicles"
             : "";
 
+    let capacityLabel = "";
+
+    if (capacityCuft > 0) {
+        if (isUnloadMode) {
+            capacityLabel = "Equivalent unloading capacity: " + capacityCuft.toLocaleString("en-GB") + " cuft";
+        } else if (isLoadMode) {
+            capacityLabel = "Equivalent loading capacity: " + capacityCuft.toLocaleString("en-GB") + " cuft";
+        }
+    }
+
     const allowed = [
         "Crew: " + crewText,
         vehicleText,
         "Task time: " + formatHoursAndMinutes(taskHours),
-        capacityCuft > 0
-            ? "Equivalent loading capacity: " + capacityCuft.toLocaleString("en-GB") + " cuft"
-            : ""
+        capacityLabel
     ].filter(Boolean);
 
     const basedOn = [
@@ -22403,11 +22422,13 @@ function buildLoadDebugLine(day, taskMode, men, taskHours, equivalentLoadHours, 
         completionWindow && completionWindow.toLowerCase() !== "none"
             ? "Completion window: " + completionWindow
             : "",
-        "Loading rate profile: " + String(state.loadingVariant || "Standard")
+        "Rate profile: " + String(state.loadingVariant || "Standard")
     ].filter(Boolean);
 
     const checks = [
-        "Capacity included in planner validation"
+        capacityCuft > 0
+            ? "Capacity is shown in planner validation"
+            : "Time allowance is shown in planner validation"
     ];
 
     return {
@@ -22490,9 +22511,14 @@ const loadDebugLines = [];
             const men = Number(day.men) || 0;
 
             if (taskMode === "pack") {
-                allocated.Pack += men * taskHours;
-                return;
-            }
+    allocated.Pack += men * taskHours;
+
+    loadDebugLines.push(
+        buildLoadDebugLine(day, taskMode, men, taskHours, 0, state)
+    );
+
+    return;
+}
 
             if (taskMode === "load") {
     const equivalentLoadHours = getPlannerLoadEquivalentHours(day, taskHours, state);
@@ -22514,6 +22540,11 @@ const loadDebugLines = [];
     const rowUnloadAllocation = deductSpecialFromRow(rawRowUnloadAllocation, "delivery");
 
     allocated.Unload += rowUnloadAllocation;
+
+    loadDebugLines.push(
+        buildLoadDebugLine(day, taskMode, men, taskHours, rowUnloadAllocation, state)
+    );
+
     return;
 }
 
