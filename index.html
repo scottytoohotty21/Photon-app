@@ -4126,6 +4126,47 @@ min-height: 48px;
     font-weight: 800;
     text-transform: uppercase;
 }
+.planner-note-block {
+    padding: 10px;
+    border-radius: 12px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    margin-top: 10px;
+}
+
+.planner-note-block:first-child {
+    margin-top: 0;
+}
+
+.planner-note-title {
+    font-size: 11px;
+    font-weight: 950;
+    text-transform: uppercase;
+    color: #0f172a;
+    letter-spacing: 0.03em;
+    margin-bottom: 8px;
+}
+
+.planner-note-group {
+    margin-top: 8px;
+}
+
+.planner-note-group-title {
+    font-size: 8px;
+    font-weight: 950;
+    text-transform: uppercase;
+    color: #64748b;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+}
+
+.planner-note-line {
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 1.35;
+    color: #334155;
+    margin-top: 3px;
+}
 
 .schedule-time-breakdown{
     margin-top:8px;
@@ -22318,20 +22359,63 @@ function renderSchedulePlanner(){
 function buildLoadDebugLine(day, taskMode, men, taskHours, equivalentLoadHours, state) {
     const loadingProfile = state && state.loadingProfile ? state.loadingProfile : {};
     const morningRate = Number(loadingProfile.morningEquivalentRate || state.loadRate || 0);
+
     const capacityCuft = morningRate > 0
         ? Math.round(Number(equivalentLoadHours || 0) * morningRate)
         : 0;
 
-    return [
-        "Day Part: " + String(day.dayPart || "-"),
-        "Completion: " + String(day.completionWindow || "None"),
-        "Task: " + String(day.task || "-"),
-        "Mode: " + String(taskMode || "-"),
-        "Men: " + Number(men || 0),
-        "Net Hrs: " + round2(taskHours),
-        "Effective Load Hrs: " + round2(equivalentLoadHours),
-        "Capacity: " + capacityCuft.toLocaleString("en-GB") + " cuft"
-    ].join(" | ");
+    const dayPart = String(day.dayPart || "").trim();
+    const taskLabel = String(day.task || taskMode || "Schedule row").trim();
+    const completionWindow = String(day.completionWindow || "").trim();
+
+    const titleParts = [];
+
+    if (dayPart) {
+        titleParts.push(dayPart);
+    }
+
+    titleParts.push(taskLabel);
+
+    const title = titleParts.join(" — ");
+
+    const crewText = Number(men || 0) === 1
+        ? "1 man"
+        : Number(men || 0) + " men";
+
+    const vehicleCount = Number(day.vans || day.vehicles || 0);
+    const vehicleText = vehicleCount === 1
+        ? "1 vehicle"
+        : vehicleCount > 1
+            ? vehicleCount + " vehicles"
+            : "";
+
+    const allowed = [
+        "Crew: " + crewText,
+        vehicleText,
+        "Task time: " + formatHoursAndMinutes(taskHours),
+        capacityCuft > 0
+            ? "Equivalent loading capacity: " + capacityCuft.toLocaleString("en-GB") + " cuft"
+            : ""
+    ].filter(Boolean);
+
+    const basedOn = [
+        "Planner mode: " + String(taskMode || "-"),
+        completionWindow && completionWindow.toLowerCase() !== "none"
+            ? "Completion window: " + completionWindow
+            : "",
+        "Loading rate profile: " + String(state.loadingVariant || "Standard")
+    ].filter(Boolean);
+
+    const checks = [
+        "Capacity included in planner validation"
+    ];
+
+    return {
+        title: title,
+        allowed: allowed,
+        basedOn: basedOn,
+        checks: checks
+    };
 }
 function calcScheduleValidation(packing, loading, unloading, special, state){
     const loadingProfile = getLoadingProfile(state.loadingVariant, state.loadingScenario);
@@ -22609,19 +22693,26 @@ function buildPlannerNotesCardHtml(noteItems) {
         return "";
     }
 
-    const allLines = [];
+    const allNotes = [];
 
     noteItems.forEach(function(item) {
         if (Array.isArray(item.lines)) {
-            item.lines.forEach(function(line) {
-                if (String(line || "").trim()) {
-                    allLines.push(String(line).trim());
+            item.lines.forEach(function(note) {
+                if (note && typeof note === "object") {
+                    allNotes.push(note);
+                } else if (String(note || "").trim()) {
+                    allNotes.push({
+                        title: "Planner Note",
+                        allowed: [String(note).trim()],
+                        basedOn: [],
+                        checks: []
+                    });
                 }
             });
         }
     });
 
-    const hasLines = allLines.length > 0;
+    const hasNotes = allNotes.length > 0;
 
     return `
         <div class="planner-notes-card ${plannerNotesExpanded ? "open" : ""}">
@@ -22629,7 +22720,7 @@ function buildPlannerNotesCardHtml(noteItems) {
                 <div>
                     <div class="planner-notes-title">Planner Notes</div>
                     <div class="planner-notes-subtitle">
-                        ${hasLines ? "Schedule allowance explanation available" : "No planner notes available"}
+                        ${hasNotes ? "Schedule allowance explanation available" : "No planner notes available"}
                     </div>
                 </div>
 
@@ -22646,11 +22737,43 @@ function buildPlannerNotesCardHtml(noteItems) {
                 plannerNotesExpanded
                     ? `
                         <div class="planner-notes-body">
-                            <div class="planner-notes-section-title">Current allowance notes</div>
                             ${
-                                hasLines
-                                    ? allLines.map(function(line) {
-                                        return `<div class="planner-notes-line">${line}</div>`;
+                                hasNotes
+                                    ? allNotes.map(function(note) {
+                                        return `
+                                            <div class="planner-note-block">
+                                                <div class="planner-note-title">${escapeHtml(note.title || "Planner Note")}</div>
+
+                                                <div class="planner-note-group">
+                                                    <div class="planner-note-group-title">Allowed</div>
+                                                    ${(note.allowed || []).map(function(line) {
+                                                        return `<div class="planner-note-line">• ${escapeHtml(line)}</div>`;
+                                                    }).join("")}
+                                                </div>
+
+                                                <div class="planner-note-group">
+                                                    <div class="planner-note-group-title">Based on</div>
+                                                    ${
+                                                        (note.basedOn || []).length
+                                                            ? (note.basedOn || []).map(function(line) {
+                                                                return `<div class="planner-note-line">• ${escapeHtml(line)}</div>`;
+                                                            }).join("")
+                                                            : `<div class="planner-note-line">• No extra basis notes</div>`
+                                                    }
+                                                </div>
+
+                                                <div class="planner-note-group">
+                                                    <div class="planner-note-group-title">Checks</div>
+                                                    ${
+                                                        (note.checks || []).length
+                                                            ? (note.checks || []).map(function(line) {
+                                                                return `<div class="planner-note-line">• ${escapeHtml(line)}</div>`;
+                                                            }).join("")
+                                                            : `<div class="planner-note-line">• No checks raised</div>`
+                                                    }
+                                                </div>
+                                            </div>
+                                        `;
                                     }).join("")
                                     : `<div class="planner-notes-empty">No detailed notes generated yet.</div>`
                             }
