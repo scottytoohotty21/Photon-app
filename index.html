@@ -4097,6 +4097,9 @@ min-height: 48px;
     border-top: 1px solid #e2e8f0;
     padding: 12px 14px 14px;
     background: #f8fafc;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
 }
 
 .planner-notes-section-title {
@@ -4131,7 +4134,7 @@ min-height: 48px;
     border-radius: 12px;
     background: #ffffff;
     border: 1px solid #e2e8f0;
-    margin-top: 10px;
+    margin-top: 0;
 }
 
 .planner-note-block:first-child {
@@ -4166,6 +4169,11 @@ min-height: 48px;
     line-height: 1.35;
     color: #334155;
     margin-top: 3px;
+}
+@media (max-width: 900px) {
+    .planner-notes-body {
+        grid-template-columns: 1fr;
+    }
 }
 
 .schedule-time-breakdown{
@@ -22356,7 +22364,7 @@ function renderSchedulePlanner(){
     }).join("");
 }
 
-function buildLoadDebugLine(day, taskMode, men, taskHours, equivalentLoadHours, state) {
+function buildLoadDebugLine(day, taskMode, men, taskHours, equivalentLoadHours, state, plannerDayLabel) {
     const loadingProfile = state && state.loadingProfile ? state.loadingProfile : {};
 
     const cleanTaskMode = String(taskMode || "").trim();
@@ -22381,13 +22389,17 @@ function buildLoadDebugLine(day, taskMode, men, taskHours, equivalentLoadHours, 
 
     const titleParts = [];
 
-    if (dayPart) {
-        titleParts.push(dayPart);
-    }
+if (plannerDayLabel) {
+    titleParts.push(plannerDayLabel);
+}
 
-    titleParts.push(taskLabel);
+if (dayPart) {
+    titleParts.push(dayPart);
+}
 
-    const title = titleParts.join(" — ");
+titleParts.push(taskLabel);
+
+const title = titleParts.join(" — ");
 
     const crewText = Number(men || 0) === 1
         ? "1 man"
@@ -22427,8 +22439,8 @@ function buildLoadDebugLine(day, taskMode, men, taskHours, equivalentLoadHours, 
 
     const checks = [
         capacityCuft > 0
-            ? "Capacity is shown in planner validation"
-            : "Time allowance is shown in planner validation"
+            ? "Check against validation cards above"
+            : "Check against validation cards above"
     ];
 
     return {
@@ -22504,7 +22516,8 @@ const loadDebugLines = [];
         groups[day.groupId].push(day);
     });
 
-    Object.values(groups).forEach(rows => {
+    Object.values(groups).forEach(function(rows, groupIndex) {
+    const plannerDayLabel = "Day " + (groupIndex + 1);
         rows.forEach(day => {
             const taskMode = getPlannerTaskMode(day);
             const taskHours = getNetTaskHoursForPlannerRow(day, state);
@@ -22514,7 +22527,7 @@ const loadDebugLines = [];
     allocated.Pack += men * taskHours;
 
     loadDebugLines.push(
-        buildLoadDebugLine(day, taskMode, men, taskHours, 0, state)
+        buildLoadDebugLine(day, taskMode, men, taskHours, 0, state, plannerDayLabel)
     );
 
     return;
@@ -22528,7 +22541,7 @@ const loadDebugLines = [];
     allocated.Load += rowLoadAllocation;
 
     loadDebugLines.push(
-        buildLoadDebugLine(day, taskMode, men, taskHours, rowLoadAllocation, state)
+        buildLoadDebugLine(day, taskMode, men, taskHours, rowLoadAllocation, state, plannerDayLabel)
     );
 
     return;
@@ -22570,7 +22583,7 @@ allocated.Pack += toPack;
 allocated.Load += rowLoadAllocation;
 
 loadDebugLines.push(
-    buildLoadDebugLine(day, taskMode, men, taskHours, rowLoadAllocation, state)
+    buildLoadDebugLine(day, taskMode, men, taskHours, rowLoadAllocation, state, plannerDayLabel)
 );
 
 return;
@@ -22751,7 +22764,7 @@ function buildPlannerNotesCardHtml(noteItems) {
                 <div>
                     <div class="planner-notes-title">Planner Notes</div>
                     <div class="planner-notes-subtitle">
-                        ${hasNotes ? "Schedule allowance explanation available" : "No planner notes available"}
+                        ${hasNotes ? "Current planner interpretation available" : "No planner notes available"}
                     </div>
                 </div>
 
