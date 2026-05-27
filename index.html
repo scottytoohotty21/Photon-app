@@ -4025,15 +4025,15 @@ min-height: 48px;
     transform:scale(0.99);
 }
 
-.schedule-debug-line{
-    margin-top:10px;
-    padding-top:10px;
-    border-top:1px solid var(--slate-200);
-    font-size:10px;
-    font-weight:800;
-    text-transform:uppercase;
-    color:var(--slate-400);
-    line-height:1.45;
+.schedule-planner-notes-line {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--slate-200);
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: var(--slate-400);
+    line-height: 1.45;
 }
 
 .schedule-time-breakdown{
@@ -5440,7 +5440,7 @@ Enter as: Surname, First Name
                 type="checkbox"
                 onchange="handleListedCbmLineItemsToggle(this.checked)"
             >
-            <span>Show CBM on inventory lines / PDF rows</span>
+            <span>Report listed inventory in CBM</span>
         </label>
     </div>
 
@@ -22495,8 +22495,8 @@ if (collectionSpecialHours || deliverySpecialHours) {
 
 if (loadDebugLines.length) {
     results.push({
-        type: "warn",
-        text: "LOAD DEBUG: " + loadDebugLines.join(" || ")
+        type: "note",
+        text: "Planner Notes available"
     });
 }
 
