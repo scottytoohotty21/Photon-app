@@ -2302,6 +2302,33 @@ body {
             outline: none;
             text-transform: uppercase;
         }
+        .listed-report-options-row {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.listed-report-option-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    min-height: 38px;
+    padding: 9px 12px;
+    border-radius: 12px;
+    background: #f8fafc;
+    border: 1.5px solid #cbd5e1;
+    border-bottom-color: #94a3b8;
+    color: #334155;
+    font-size: 9px;
+    font-weight: 950;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.listed-report-option-check input {
+    width: 16px;
+    height: 16px;
+    accent-color: #3b82f6;
+}
 
         .listed-stat-card {
             background: #f8fafc;
@@ -5404,6 +5431,17 @@ Enter as: Surname, First Name
                 oninput="handleListedTextFilterChange(this.value)"
             >
         </div>
+        </div>
+
+    <div class="listed-report-options-row mb-4">
+        <label class="listed-report-option-check">
+            <input
+                id="listed-show-cbm-lines"
+                type="checkbox"
+                onchange="handleListedCbmLineItemsToggle(this.checked)"
+            >
+            <span>Show CBM on inventory lines / PDF rows</span>
+        </label>
     </div>
 
     <div id="listed-inventory-output" class="space-y-4">
@@ -13263,10 +13301,51 @@ function getListedDeliveryFilterOptions(items) {
     return options;
 }
 
+function ensureListedReportOptions() {
+    if (!currentJob) {
+        return {
+            showCbmLineItems: false
+        };
+    }
+
+    if (!currentJob.listedReportOptions || typeof currentJob.listedReportOptions !== "object") {
+        currentJob.listedReportOptions = {};
+    }
+
+    if (typeof currentJob.listedReportOptions.showCbmLineItems !== "boolean") {
+        currentJob.listedReportOptions.showCbmLineItems = false;
+    }
+
+    return currentJob.listedReportOptions;
+}
+
+function shouldShowListedCbmLineItems() {
+    const options = ensureListedReportOptions();
+    return !!options.showCbmLineItems;
+}
+
+function formatListedLineVolumeDisplay(cuft) {
+    const cleanCuft = Number(cuft || 0);
+
+    if (!shouldShowListedCbmLineItems()) {
+        return String(cleanCuft);
+    }
+
+    return cleanCuft + " cuft / " + formatCbmFromCuft(cleanCuft) + " cbm";
+}
+
+function handleListedCbmLineItemsToggle(checked) {
+    const options = ensureListedReportOptions();
+    options.showCbmLineItems = !!checked;
+
+    saveToDevice();
+    renderListedInventory();
+}
 function renderListedInventoryFilters(items) {
     const seqSelect = document.getElementById("listed-sequence-filter");
-    const deliverySelect = document.getElementById("listed-delivery-filter");
-    const textInput = document.getElementById("listed-text-filter");
+const deliverySelect = document.getElementById("listed-delivery-filter");
+const textInput = document.getElementById("listed-text-filter");
+const cbmLineItemsInput = document.getElementById("listed-show-cbm-lines");
 
     if (!seqSelect || !deliverySelect) return;
     const seqOptions = getListedSequenceFilterOptions(items);
@@ -13305,6 +13384,9 @@ function renderListedInventoryFilters(items) {
     if (textInput) {
         textInput.value = listedTextFilter || "";
     }
+    if (cbmLineItemsInput) {
+    cbmLineItemsInput.checked = shouldShowListedCbmLineItems();
+}
 }
 
 function handleListedSequenceFilterChange(value) {
@@ -14865,10 +14947,10 @@ if (entry.handyman) tags.push("HANDYMAN");
                             ${entry.qty || 0}
                         </td>
                         <td class="py-2 px-1 text-[10px] font-black uppercase text-center align-top ${isExcluded ? 'text-slate-300 italic' : 'text-slate-700'}">
-                            ${isExcluded ? '' : (entry.unitVolume || 0)}
+                            ${isExcluded ? '' : formatListedLineVolumeDisplay(entry.unitVolume || 0)}
                         </td>
                         <td class="py-2 px-1 text-[10px] font-black uppercase text-center align-top ${isExcluded ? 'text-slate-300 italic' : 'text-slate-900'}">
-                            ${isExcluded ? '' : (entry.totalVolume || 0)}
+                            ${isExcluded ? '' : formatListedLineVolumeDisplay(entry.totalVolume || 0)}
                         </td>
                         <td class="py-2 pl-1 align-top">
                             <div class="listed-row-actions">
@@ -14889,7 +14971,7 @@ if (entry.handyman) tags.push("HANDYMAN");
                             <div class="listed-room-title">${room.roomName}</div>
                             <div class="text-[9px] font-bold text-slate-400 uppercase mt-1">Floor: ${room.floorName}</div>
                         </div>
-                        <div class="listed-room-total">${room.totalVolume} CUFT</div>
+                        <div class="listed-room-total">${formatListedLineVolumeDisplay(room.totalVolume)}</div>
                     </div>
 
                     <div class="p-4">
@@ -14924,7 +15006,7 @@ if (entry.handyman) tags.push("HANDYMAN");
 
                     <div class="mt-4 pt-3 border-t border-slate-200 text-right">
                         <span class="text-[10px] font-black text-slate-400 uppercase mr-2">Section Total</span>
-                        <span class="text-sm font-black text-blue-600">${section.totalVolume}</span>
+                        <span class="text-sm font-black text-blue-600">${formatListedLineVolumeDisplay(section.totalVolume)}</span>
                     </div>
                 </div>
             </div>
@@ -15356,8 +15438,8 @@ const noteTagHtml = entry.note && String(entry.note).trim()
                             ${escapeHtml(entry.itemName || "-")}${escapeHtml(tagText)}${noteTagHtml}
                         </td>
                         <td class="num-cell ${isExcluded ? 'excluded' : ''}">${entry.qty || 0}</td>
-                        <td class="num-cell ${isExcluded ? 'excluded' : ''}">${isExcluded ? "" : (entry.unitVolume || 0)}</td>
-                        <td class="num-cell ${isExcluded ? 'excluded' : ''}">${isExcluded ? "" : (entry.totalVolume || 0)}</td>
+                        <td class="num-cell ${isExcluded ? 'excluded' : ''}">${isExcluded ? "" : formatListedLineVolumeDisplay(entry.unitVolume || 0)}</td>
+                        <td class="num-cell ${isExcluded ? 'excluded' : ''}">${isExcluded ? "" : formatListedLineVolumeDisplay(entry.totalVolume || 0)}</td>
                     </tr>
                 `;
             }).join("");
@@ -15369,7 +15451,7 @@ const noteTagHtml = entry.note && String(entry.note).trim()
                             <div class="pdf-room-title">${escapeHtml(room.roomName)}</div>
                             <div class="pdf-room-floor">Floor: ${escapeHtml(room.floorName)}</div>
                         </div>
-                        <div class="pdf-room-total">${room.totalVolume} CUFT</div>
+                        <div class="pdf-room-total">${formatListedLineVolumeDisplay(room.totalVolume)}</div>
                     </div>
 
                     <table class="pdf-table">
@@ -15400,7 +15482,7 @@ const noteTagHtml = entry.note && String(entry.note).trim()
                     ${roomBlocks}
                     <div class="pdf-section-total">
                         <span>Section Total</span>
-                        <strong>${section.totalVolume} CUFT</strong>
+                        <strong>${formatListedLineVolumeDisplay(section.totalVolume)}</strong>
                     </div>
                 </div>
             </div>
