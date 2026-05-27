@@ -21577,8 +21577,9 @@ function addScheduleDay() {
         overtimeHours: 0,
         operatingBranch: selectedOperatingBranch,
         legs: [
-            createEmptyScheduleLeg("Depot", collectionId, 30)
-        ]
+    createEmptyScheduleLeg("Depot", collectionId, 30),
+    createEmptyScheduleLeg(collectionId, deliveryId, 30)
+]
     });
 
     manualSchedule.push({
@@ -21595,9 +21596,8 @@ function addScheduleDay() {
         overtimeHours: 0,
         operatingBranch: selectedOperatingBranch,
         legs: [
-            createEmptyScheduleLeg(collectionId, deliveryId, 30),
-            createEmptyScheduleLeg(deliveryId, "Depot", 30)
-        ]
+    createEmptyScheduleLeg(deliveryId, "Depot", 30)
+]
     });
 
     saveManualScheduleToActiveSequence();
@@ -21640,9 +21640,8 @@ manualSchedule.push({
     overtimeHours: 0,
     operatingBranch: row.operatingBranch || "",
     legs: [
-        createEmptyScheduleLeg("Collection Address", "Delivery Address", 0),
-        createEmptyScheduleLeg("Delivery Address", "Depot", 0)
-    ]
+    createEmptyScheduleLeg("Delivery Address", "Depot", 0)
+]
 });
     }
 }
@@ -21701,11 +21700,11 @@ function splitCompletionRowIntoAmPm(row) {
     const legs = Array.isArray(row.legs) ? row.legs.slice() : [];
 
     const amLegs = [];
-    const pmLegs = [];
+const pmLegs = [];
 
-    if (legs[0]) amLegs.push({ ...legs[0] });
-    if (legs[1]) pmLegs.push({ ...legs[1] });
-    if (legs[2]) pmLegs.push({ ...legs[2] });
+if (legs[0]) amLegs.push({ ...legs[0] });
+if (legs[1]) amLegs.push({ ...legs[1] });
+if (legs[2]) pmLegs.push({ ...legs[2] });
 
     const amTask =
         row.task === "Pack, Load & Deliver"
@@ -21816,8 +21815,9 @@ if (value === "AM"){
             nightsOut: false,
             overtimeHours: 0,
             legs: [
-                createEmptyScheduleLeg("Depot", "Collection Address", 0)
-            ]
+    createEmptyScheduleLeg("Depot", "Collection Address", 0),
+    createEmptyScheduleLeg("Collection Address", "Delivery Address", 0)
+]
         });
     }
 }
