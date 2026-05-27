@@ -22364,7 +22364,36 @@ function renderSchedulePlanner(){
     }).join("");
 }
 
-function buildLoadDebugLine(day, taskMode, men, taskHours, equivalentLoadHours, state, plannerDayLabel) {
+function buildPlannerCoverageMeta(kind, rowCapacityHours, remainingBeforeHours, rate) {
+    const cleanKind = String(kind || "").trim();
+    const cleanRowHours = Math.max(0, Number(rowCapacityHours || 0));
+    const cleanRemainingBefore = Math.max(0, Number(remainingBeforeHours || 0));
+    const cleanRate = Math.max(0, Number(rate || 0));
+
+    const capacityCuft = cleanRate > 0
+        ? Math.round(cleanRowHours * cleanRate)
+        : 0;
+
+    const coveredHours = Math.min(cleanRowHours, cleanRemainingBefore);
+
+    const coveredCuft = cleanRate > 0
+        ? Math.round(coveredHours * cleanRate)
+        : 0;
+
+    const remainingAfterHours = Math.max(0, cleanRemainingBefore - cleanRowHours);
+
+    const remainingAfterCuft = cleanRate > 0
+        ? Math.round(remainingAfterHours * cleanRate)
+        : 0;
+
+    return {
+        kind: cleanKind,
+        capacityCuft: capacityCuft,
+        coveredCuft: coveredCuft,
+        remainingAfterCuft: remainingAfterCuft
+    };
+}
+function buildLoadDebugLine(day, taskMode, men, taskHours, equivalentLoadHours, state, plannerDayLabel, coverageMeta) {
     const loadingProfile = state && state.loadingProfile ? state.loadingProfile : {};
 
     const cleanTaskMode = String(taskMode || "").trim();
@@ -22420,14 +22449,57 @@ const title = titleParts.join(" — ");
             : "";
 
     let capacityLabel = "";
+let coverageCheck = "";
 
-    if (capacityCuft > 0) {
-        if (isUnloadMode) {
-            capacityLabel = "Equivalent unloading capacity: " + capacityCuft.toLocaleString("en-GB") + " cuft";
-        } else if (isLoadMode) {
-            capacityLabel = "Equivalent loading capacity: " + capacityCuft.toLocaleString("en-GB") + " cuft";
-        }
+if (coverageMeta && coverageMeta.kind === "loading") {
+    if (coverageMeta.remainingAfterCuft > 0) {
+        capacityLabel =
+            "Loading capacity in this row: " +
+            coverageMeta.capacityCuft.toLocaleString("en-GB") +
+            " cuft";
+
+        coverageCheck =
+            "Remaining loading volume continues onto another row: " +
+            coverageMeta.remainingAfterCuft.toLocaleString("en-GB") +
+            " cuft";
+    } else if (coverageMeta.coveredCuft > 0) {
+        capacityLabel =
+            "Loading covered by this row: " +
+            coverageMeta.coveredCuft.toLocaleString("en-GB") +
+            " cuft";
+
+        coverageCheck = "Loading allowance covers the remaining volume";
     }
+}
+
+if (coverageMeta && coverageMeta.kind === "unloading") {
+    if (coverageMeta.remainingAfterCuft > 0) {
+        capacityLabel =
+            "Unloading capacity in this row: " +
+            coverageMeta.capacityCuft.toLocaleString("en-GB") +
+            " cuft";
+
+        coverageCheck =
+            "Remaining delivery volume continues onto another row: " +
+            coverageMeta.remainingAfterCuft.toLocaleString("en-GB") +
+            " cuft";
+    } else if (coverageMeta.coveredCuft > 0) {
+        capacityLabel =
+            "Unloading covered by this row: " +
+            coverageMeta.coveredCuft.toLocaleString("en-GB") +
+            " cuft";
+
+        coverageCheck = "Unloading allowance covers the remaining delivery volume";
+    }
+}
+
+if (!capacityLabel && capacityCuft > 0) {
+    if (isUnloadMode) {
+        capacityLabel = "Equivalent unloading allowance available";
+    } else if (isLoadMode) {
+        capacityLabel = "Equivalent loading allowance available";
+    }
+}
 
     const allowed = [
         "Crew: " + crewText,
@@ -22446,10 +22518,8 @@ const title = titleParts.join(" — ");
     ].filter(Boolean);
 
     const checks = [
-        capacityCuft > 0
-            ? "Check against validation cards above"
-            : "Check against validation cards above"
-    ];
+    coverageCheck || "Check against validation cards above"
+];
 
     return {
         title: title,
@@ -22516,6 +22586,13 @@ function deductSpecialFromRow(rowHours, side) {
 }
 
 const loadDebugLines = [];
+const plannerLoadingRate = Number(
+    loadingProfile.morningEquivalentRate || state.loadRate || 0
+);
+
+const plannerUnloadingRate = Number(
+    state.unloadRate || loadingProfile.unloadRate || 0
+);
 
     const groups = {};
 
@@ -22546,13 +22623,29 @@ const loadDebugLines = [];
     const rawRowLoadAllocation = men * equivalentLoadHours;
     const rowLoadAllocation = deductSpecialFromRow(rawRowLoadAllocation, "collection");
 
-    allocated.Load += rowLoadAllocation;
+    const loadRemainingBefore = Math.max(0, required.Load - allocated.Load);
 
-    loadDebugLines.push(
-        buildLoadDebugLine(day, taskMode, men, taskHours, rowLoadAllocation, state, plannerDayLabel)
-    );
+allocated.Load += rowLoadAllocation;
 
-    return;
+loadDebugLines.push(
+    buildLoadDebugLine(
+        day,
+        taskMode,
+        men,
+        taskHours,
+        rowLoadAllocation,
+        state,
+        plannerDayLabel,
+        buildPlannerCoverageMeta(
+            "loading",
+            rowLoadAllocation,
+            loadRemainingBefore,
+            plannerLoadingRate
+        )
+    )
+);
+
+return;
 }
 
             if (taskMode === "unload") {
@@ -22560,13 +22653,29 @@ const loadDebugLines = [];
     const rawRowUnloadAllocation = men * equivalentUnloadHours;
     const rowUnloadAllocation = deductSpecialFromRow(rawRowUnloadAllocation, "delivery");
 
-    allocated.Unload += rowUnloadAllocation;
+    const unloadRemainingBefore = Math.max(0, required.Unload - allocated.Unload);
 
-    loadDebugLines.push(
-        buildLoadDebugLine(day, taskMode, men, taskHours, rowUnloadAllocation, state)
-    );
+allocated.Unload += rowUnloadAllocation;
 
-    return;
+loadDebugLines.push(
+    buildLoadDebugLine(
+        day,
+        taskMode,
+        men,
+        taskHours,
+        rowUnloadAllocation,
+        state,
+        plannerDayLabel,
+        buildPlannerCoverageMeta(
+            "unloading",
+            rowUnloadAllocation,
+            unloadRemainingBefore,
+            plannerUnloadingRate
+        )
+    )
+);
+
+return;
 }
 
             if (taskMode === "pack_load") {
@@ -22587,11 +22696,27 @@ const loadDebugLines = [];
     const rawRowLoadAllocation = remainingRawManHours * loadEquivalentRatio;
 const rowLoadAllocation = deductSpecialFromRow(rawRowLoadAllocation, "collection");
 
+const packLoadRemainingBefore = Math.max(0, required.Load - allocated.Load);
+
 allocated.Pack += toPack;
 allocated.Load += rowLoadAllocation;
 
 loadDebugLines.push(
-    buildLoadDebugLine(day, taskMode, men, taskHours, rowLoadAllocation, state, plannerDayLabel)
+    buildLoadDebugLine(
+        day,
+        taskMode,
+        men,
+        taskHours,
+        rowLoadAllocation,
+        state,
+        plannerDayLabel,
+        buildPlannerCoverageMeta(
+            "loading",
+            rowLoadAllocation,
+            packLoadRemainingBefore,
+            plannerLoadingRate
+        )
+    )
 );
 
 return;
@@ -22618,12 +22743,51 @@ const toLoad = deductSpecialFromRow(rawToLoad, "collection");
     const rawToUnload = Math.min(maxUnloadManHours, remainingAfterLoad);
 const toUnload = deductSpecialFromRow(rawToUnload, "delivery");
 
-    allocated.Load += toLoad;
+    const loadUnloadLoadRemainingBefore = Math.max(0, required.Load - allocated.Load);
+const loadUnloadUnloadRemainingBefore = Math.max(0, required.Unload - allocated.Unload);
+
+allocated.Load += toLoad;
 allocated.Unload += toUnload;
 
-loadDebugLines.push(
-    buildLoadDebugLine(day, taskMode, men, taskHours, toLoad, state)
-);
+if (toLoad > 0) {
+    loadDebugLines.push(
+        buildLoadDebugLine(
+            day,
+            "load",
+            men,
+            taskHours,
+            toLoad,
+            state,
+            plannerDayLabel,
+            buildPlannerCoverageMeta(
+                "loading",
+                toLoad,
+                loadUnloadLoadRemainingBefore,
+                plannerLoadingRate
+            )
+        )
+    );
+}
+
+if (toUnload > 0) {
+    loadDebugLines.push(
+        buildLoadDebugLine(
+            day,
+            "unload",
+            men,
+            taskHours,
+            toUnload,
+            state,
+            plannerDayLabel,
+            buildPlannerCoverageMeta(
+                "unloading",
+                toUnload,
+                loadUnloadUnloadRemainingBefore,
+                plannerUnloadingRate
+            )
+        )
+    );
+}
 
 return;
 }
