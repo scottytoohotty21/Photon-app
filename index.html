@@ -13324,14 +13324,16 @@ function shouldShowListedCbmLineItems() {
     return !!options.showCbmLineItems;
 }
 
-function formatListedLineVolumeDisplay(cuft) {
+function formatListedLineVolumeDisplay(cuft, showUnitLabel) {
     const cleanCuft = Number(cuft || 0);
 
-    if (!shouldShowListedCbmLineItems()) {
-        return String(cleanCuft);
+    if (shouldShowListedCbmLineItems()) {
+        return formatCbmFromCuft(cleanCuft) + " CBM";
     }
 
-    return cleanCuft + " cuft / " + formatCbmFromCuft(cleanCuft) + " cbm";
+    return showUnitLabel
+        ? cleanCuft + " CUFT"
+        : String(cleanCuft);
 }
 
 function handleListedCbmLineItemsToggle(checked) {
@@ -14971,7 +14973,7 @@ if (entry.handyman) tags.push("HANDYMAN");
                             <div class="listed-room-title">${room.roomName}</div>
                             <div class="text-[9px] font-bold text-slate-400 uppercase mt-1">Floor: ${room.floorName}</div>
                         </div>
-                        <div class="listed-room-total">${formatListedLineVolumeDisplay(room.totalVolume)}</div>
+                        <div class="listed-room-total">${formatListedLineVolumeDisplay(room.totalVolume, true)}</div>
                     </div>
 
                     <div class="p-4">
@@ -15006,7 +15008,7 @@ if (entry.handyman) tags.push("HANDYMAN");
 
                     <div class="mt-4 pt-3 border-t border-slate-200 text-right">
                         <span class="text-[10px] font-black text-slate-400 uppercase mr-2">Section Total</span>
-                        <span class="text-sm font-black text-blue-600">${formatListedLineVolumeDisplay(section.totalVolume)}</span>
+                        <span class="text-sm font-black text-blue-600">${formatListedLineVolumeDisplay(section.totalVolume, true)}</span>
                     </div>
                 </div>
             </div>
@@ -15451,7 +15453,7 @@ const noteTagHtml = entry.note && String(entry.note).trim()
                             <div class="pdf-room-title">${escapeHtml(room.roomName)}</div>
                             <div class="pdf-room-floor">Floor: ${escapeHtml(room.floorName)}</div>
                         </div>
-                        <div class="pdf-room-total">${formatListedLineVolumeDisplay(room.totalVolume)}</div>
+                        <div class="pdf-room-total">${formatListedLineVolumeDisplay(room.totalVolume, true)}</div>
                     </div>
 
                     <table class="pdf-table">
@@ -15482,7 +15484,7 @@ const noteTagHtml = entry.note && String(entry.note).trim()
                     ${roomBlocks}
                     <div class="pdf-section-total">
                         <span>Section Total</span>
-                        <strong>${formatListedLineVolumeDisplay(section.totalVolume)}</strong>
+                        <strong>${formatListedLineVolumeDisplay(section.totalVolume, true)}</strong>
                     </div>
                 </div>
             </div>
