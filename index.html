@@ -3291,6 +3291,18 @@ body {
     margin-top: 8px;
     flex-wrap: wrap;
 }
+.signature-warning {
+    margin-top: 10px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    background: #fffbeb;
+    border: 1.5px solid #fcd34d;
+    color: #92400e;
+    font-size: 9px;
+    font-weight: 950;
+    text-transform: uppercase;
+    line-height: 1.3;
+}
 .surveyor-name-line {
     margin-top: 10px;
     padding: 8px 10px;
@@ -11566,6 +11578,7 @@ safeDetails: extraData.safeDetails || null
     if (qtyInput) qtyInput.value = 1;
 renderActionButtonStates();
 updateUndoButtonState();
+markCustomerSignatureInventoryChanged();
 
 markScheduleAutoBuildUpdateNeeded(
     "Inventory has changed since this schedule was calculated.",
@@ -13747,6 +13760,7 @@ function deleteListedEntry(entryKey) {
     "Inventory has changed since this schedule was calculated.",
     false
 );
+markCustomerSignatureInventoryChanged();
     saveToDevice();
 
 if (String(activeSeqId || "") === String(mergedEntry.sequenceId || "")) {
@@ -14743,8 +14757,9 @@ function renderListedSummary(summary, materials, crewInstructions) {
                 </div>
                         </div>
 
-                        ${getSurveyorNameHtml()}
-            ${getSurveyorSignatureHtml()}
+                        ${getCustomerSignatureWarningHtml()}
+${getSurveyorNameHtml()}
+${getSurveyorSignatureHtml()}
         </div>
 
         <div class="listed-stat-card">
@@ -15469,6 +15484,61 @@ function updateSurveyorSignatureStatus(hasSignature) {
         ? "Surveyor signature saved on this device."
         : "No surveyor signature saved.";
 }
+function getCustomerSignatureRecord() {
+    if (!currentJob) {
+        return { image: "", signedAt: "", inventoryChangedAfterSigning: false };
+    }
+
+    if (!currentJob.signature || typeof currentJob.signature !== "object") {
+        currentJob.signature = {
+            image: "",
+            signedAt: "",
+            inventoryChangedAfterSigning: false
+        };
+    }
+
+    if (typeof currentJob.signature.inventoryChangedAfterSigning !== "boolean") {
+        currentJob.signature.inventoryChangedAfterSigning = false;
+    }
+
+    return currentJob.signature;
+}
+
+function hasCustomerSignatureSaved() {
+    const signature = getCustomerSignatureRecord();
+    return !!(signature.image && signature.signedAt);
+}
+
+function markCustomerSignatureInventoryChanged() {
+    if (!currentJob) return;
+
+    const signature = getCustomerSignatureRecord();
+
+    if (!signature.image || !signature.signedAt) {
+        return;
+    }
+
+    signature.inventoryChangedAfterSigning = true;
+}
+
+function clearCustomerSignatureInventoryChanged() {
+    const signature = getCustomerSignatureRecord();
+    signature.inventoryChangedAfterSigning = false;
+}
+
+function getCustomerSignatureWarningHtml() {
+    const signature = getCustomerSignatureRecord();
+
+    if (!signature.image || !signature.signedAt || !signature.inventoryChangedAfterSigning) {
+        return "";
+    }
+
+    return `
+        <div class="signature-warning">
+            Inventory changed after signature — customer may need to sign again.
+        </div>
+    `;
+}
 function initSignaturePad() {
     const canvas = document.getElementById("signature-pad");
     if (!canvas) return;
@@ -15572,7 +15642,8 @@ function clearSignaturePad() {
     }
 
     currentJob.signature.image = "";
-    currentJob.signature.signedAt = "";
+currentJob.signature.signedAt = "";
+currentJob.signature.inventoryChangedAfterSigning = false;
 
     signatureLocked = false;
     signaturePad.classList.remove("locked");
@@ -15597,6 +15668,7 @@ function saveSignaturePad() {
 
     currentJob.signature.image = signaturePad.toDataURL("image/png");
     currentJob.signature.signedAt = new Date().toISOString();
+    currentJob.signature.inventoryChangedAfterSigning = false;
 
     signatureLocked = true;
     signaturePad.classList.add("locked");
@@ -22658,7 +22730,7 @@ if (!capacityLabel && capacityCuft > 0) {
         "Crew: " + crewText,
         vehicleText,
         "Travel allowed: " + travelText,
-"Task time available: " + formatHoursAndMinutes(taskHours),
+"Working time available: " + formatHoursAndMinutes(taskHours),
         capacityLabel
     ].filter(Boolean);
 
