@@ -15652,11 +15652,16 @@ currentJob.signature.inventoryChangedAfterSigning = false;
     if (signedAtEl) signedAtEl.innerText = "Not signed";
 
     const lockBadge = document.getElementById("signature-lock-badge");
-    if (lockBadge) {
-        lockBadge.style.display = "none";
-    }
+if (lockBadge) {
+    lockBadge.style.display = "none";
+}
 
-    saveToDevice();
+const signatureWarning = document.querySelector(".signature-warning");
+if (signatureWarning) {
+    signatureWarning.remove();
+}
+
+saveToDevice();
 }
 
 function saveSignaturePad() {
