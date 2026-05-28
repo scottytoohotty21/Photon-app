@@ -9663,7 +9663,10 @@ if (newQty > currentTotalQty) {
         }
     }
 }
-
+markInventoryChangedAfterSignatureAndSchedule(
+    "Inventory quantity has changed since this schedule was calculated.",
+    false
+);
    saveToDevice();
 
 if (String(activeSeqId || "") === String(mergedEntry.sequenceId || "")) {
@@ -9784,7 +9787,10 @@ if (simpleInputMode === "schedule-number") {
     rawMatches.forEach(function(raw) {
         raw.note = rawValue;
     });
-
+markInventoryChangedAfterSignatureAndSchedule(
+    "Inventory notes have changed since this schedule was calculated.",
+    false
+);
     saveToDevice();
 
     if (String(activeSeqId || "") === String(mergedEntry.sequenceId || "")) {
@@ -13906,7 +13912,10 @@ rawMatches.forEach(function(raw) {
         raw.crateDims = null;
     }
 });
-
+markInventoryChangedAfterSignatureAndSchedule(
+    "Inventory flags have changed since this schedule was calculated.",
+    false
+);
     saveToDevice();
 
 if (wantsCrate && !hadCrateBefore) {
@@ -15519,6 +15528,20 @@ function markCustomerSignatureInventoryChanged() {
     }
 
     signature.inventoryChangedAfterSigning = true;
+}
+function markInventoryChangedAfterSignatureAndSchedule(reason, shouldSave) {
+    markCustomerSignatureInventoryChanged();
+
+    if (typeof markScheduleAutoBuildUpdateNeeded === "function") {
+        markScheduleAutoBuildUpdateNeeded(
+            reason || "Inventory has changed since this schedule was calculated.",
+            false
+        );
+    }
+
+    if (shouldSave !== false) {
+        saveToDevice();
+    }
 }
 
 function clearCustomerSignatureInventoryChanged() {
