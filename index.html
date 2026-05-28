@@ -4320,6 +4320,66 @@ min-height: 48px;
     border-color: #fed7aa;
     color: #c2410c;
 }
+.schedule-autobuild-update-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin: 0 0 12px;
+    padding: 13px 14px;
+    border-radius: 14px;
+    background: #fffbeb;
+    border: 1.5px solid #fcd34d;
+    border-bottom-color: #f59e0b;
+    color: #92400e;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+}
+
+.schedule-autobuild-update-title {
+    font-size: 11px;
+    font-weight: 950;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #78350f;
+}
+
+.schedule-autobuild-update-text {
+    margin-top: 3px;
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 1.35;
+    color: #92400e;
+}
+
+.schedule-autobuild-update-btn {
+    flex: 0 0 auto;
+    min-height: 36px;
+    padding: 0 13px;
+    border-radius: 10px;
+    background: #f59e0b;
+    border: 1.5px solid #d97706;
+    border-bottom-color: #b45309;
+    color: #ffffff;
+    font-size: 9px;
+    font-weight: 950;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.schedule-autobuild-update-btn:active {
+    transform: scale(0.98);
+}
+
+@media (max-width: 900px) {
+    .schedule-autobuild-update-card {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .schedule-autobuild-update-btn {
+        width: 100%;
+    }
+}
 
 @media (max-width: 760px) {
     .validation-list {
@@ -5673,10 +5733,13 @@ Enter as: Surname, First Name
     </select>
 </div>
 
-    <button class="schedule-btn" onclick="autoBuildScheduleDays()">Auto Build</button>
+        <button class="schedule-btn" onclick="autoBuildScheduleDays()">Auto Build</button>
         <button class="schedule-btn" onclick="addScheduleDay()">Add Day</button>
 </div>
 </div>
+
+        <div id="schedule-auto-build-update-card"></div>
+
         <div class="schedule-list" id="scheduleList"></div>
         <div class="validation-list" id="validationList"></div>
     </div>
@@ -10661,6 +10724,13 @@ saveToDevice();
         seq.packOption = "Unload Only";
     }
 
+    if (f === "moveType" || f === "packOption") {
+        markScheduleAutoBuildUpdateNeeded(
+            "Move type or packing option has changed since this schedule was calculated.",
+            false
+        );
+    }
+
     renderSequenceUI();
     renderInventorySequenceDropdown();
     saveToDevice();
@@ -11496,6 +11566,12 @@ safeDetails: extraData.safeDetails || null
     if (qtyInput) qtyInput.value = 1;
 renderActionButtonStates();
 updateUndoButtonState();
+
+markScheduleAutoBuildUpdateNeeded(
+    "Inventory has changed since this schedule was calculated.",
+    true
+);
+
 saveCalculatorFeedForActiveSequence();
 
 if (isBedInventoryItem(item.item)) {
@@ -13667,7 +13743,11 @@ function deleteListedEntry(entryKey) {
         return !rawIdsToDelete.includes(raw.id);
     });
 
-   saveToDevice();
+   markScheduleAutoBuildUpdateNeeded(
+    "Inventory has changed since this schedule was calculated.",
+    false
+);
+    saveToDevice();
 
 if (String(activeSeqId || "") === String(mergedEntry.sequenceId || "")) {
     rebuildLiveInventoryFromSequence(activeSeqId);
@@ -21314,6 +21394,70 @@ function getNetTaskHoursForPlannerRow(day, state){
     return Math.max(0, round2(rowHours - travelHours));
 }
 
+function getScheduleAutoBuildStatusSequence() {
+    return getActiveSequenceRecord ? getActiveSequenceRecord() : null;
+}
+
+function markScheduleAutoBuildUpdateNeeded(reason, shouldSave) {
+    const seq = getScheduleAutoBuildStatusSequence();
+    if (!seq) return;
+
+    seq.scheduleAutoBuildUpdateNeeded = true;
+    seq.scheduleAutoBuildUpdateReason = reason || "Inventory or sequence details changed.";
+    seq.scheduleAutoBuildUpdateAt = new Date().toISOString();
+
+    if (shouldSave !== false) {
+        saveToDevice();
+    }
+}
+
+function clearScheduleAutoBuildUpdateNeeded(shouldSave) {
+    const seq = getScheduleAutoBuildStatusSequence();
+    if (!seq) return;
+
+    seq.scheduleAutoBuildUpdateNeeded = false;
+    seq.scheduleAutoBuildUpdateReason = "";
+    seq.scheduleAutoBuildUpdateAt = "";
+
+    if (shouldSave !== false) {
+        saveToDevice();
+    }
+}
+
+function shouldShowScheduleAutoBuildUpdateNeeded() {
+    const seq = getScheduleAutoBuildStatusSequence();
+    return !!(seq && seq.scheduleAutoBuildUpdateNeeded);
+}
+
+function getScheduleAutoBuildUpdateCardHtml() {
+    if (!shouldShowScheduleAutoBuildUpdateNeeded()) {
+        return "";
+    }
+
+    const seq = getScheduleAutoBuildStatusSequence();
+    const reason = seq && seq.scheduleAutoBuildUpdateReason
+        ? seq.scheduleAutoBuildUpdateReason
+        : "Inventory or sequence details changed.";
+
+    return `
+        <div class="schedule-autobuild-update-card">
+            <div>
+                <div class="schedule-autobuild-update-title">Auto Build Update Needed</div>
+                <div class="schedule-autobuild-update-text">
+                    ${escapeHtml(reason)} Run Auto Build again to refresh packing, loading, unloading and travel allowances.
+                </div>
+            </div>
+
+            <button
+                type="button"
+                class="schedule-autobuild-update-btn"
+                onclick="autoBuildScheduleDays()"
+            >
+                Run Auto Build
+            </button>
+        </div>
+    `;
+}
 function autoBuildScheduleDays() {
     const seq = getActiveSequenceRecord();
     if (!seq) return;
@@ -21493,8 +21637,9 @@ function autoBuildScheduleDays() {
     }
 
     manualSchedule = newRows;
-    saveManualScheduleToActiveSequence();
-    renderScheduleCalculator();
+clearScheduleAutoBuildUpdateNeeded(false);
+saveManualScheduleToActiveSequence();
+renderScheduleCalculator();
 }
 
 function handleLoadingVariantToolbarChange(value) {
@@ -23412,7 +23557,12 @@ function renderQuoteFringeWarning() {
 function renderScheduleCalculator(){
     const state = getState();
 
-    renderScheduleSequenceDropdown();
+renderScheduleSequenceDropdown();
+
+const scheduleAutoBuildUpdateCard = document.getElementById("schedule-auto-build-update-card");
+if (scheduleAutoBuildUpdateCard) {
+    scheduleAutoBuildUpdateCard.innerHTML = getScheduleAutoBuildUpdateCardHtml();
+}
 
     const packing = calcPacking(state);
     const loadingProfile = getLoadingProfile(state.loadingVariant, state.loadingScenario);
