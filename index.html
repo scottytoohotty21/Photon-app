@@ -16309,6 +16309,7 @@ function getListedInventoryDownloadCss() {
 }
 
 async function shareListedInventoryPdf() {
+await appAlert("Share PDF button is working.", "Share PDF Test");
     try {
         if (typeof closeAllMovePilotModals === "function") {
             closeAllMovePilotModals();
