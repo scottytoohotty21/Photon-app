@@ -16314,6 +16314,14 @@ async function shareListedInventoryPdf() {
         return;
     }
 
+    if (typeof html2pdf === "undefined") {
+        await appAlert(
+            "PDF generator is not loaded. The file html2pdf.bundle.min.js may not be available on this device.",
+            "PDF Library Missing"
+        );
+        return;
+    }
+
     const allItems = getListedInventoryItems();
     const filteredItems = filterListedInventoryItems(allItems);
 
@@ -16409,19 +16417,51 @@ async function shareListedInventoryPdf() {
 
         const pdfElement = wrapper.querySelector(".pdf-download-doc");
 
-        await appAlert(
-            "PDF wrapper created." +
-            "\nElement found: " + (!!pdfElement ? "yes" : "no") +
-            "\nHTML length: " + String(wrapper.innerHTML || "").length,
-            "Share PDF Test"
-        );
-    } catch (err) {
-        console.error("PDF wrapper test failed:", err);
+        if (!pdfElement) {
+            await appAlert("PDF element could not be found.", "PDF Share Test Failed");
+            return;
+        }
+
+        await appAlert("PDF wrapper ready. Now generating PDF blob.", "PDF Share Test");
+
+        const pdfBlob = await html2pdf()
+            .set({
+                margin: [8, 8, 8, 8],
+                image: {
+                    type: "jpeg",
+                    quality: 0.84
+                },
+                html2canvas: {
+                    scale: 1.35,
+                    useCORS: true,
+                    backgroundColor: "#ffffff"
+                },
+                jsPDF: {
+                    unit: "mm",
+                    format: "a4",
+                    orientation: "portrait"
+                },
+                pagebreak: {
+                    mode: ["css", "legacy"],
+                    avoid: [".pdf-room-block"]
+                }
+            })
+            .from(pdfElement)
+            .outputPdf("blob");
 
         await appAlert(
-            "PDF wrapper failed: " +
+            "PDF blob created." +
+            "\nBlob type: " + pdfBlob.type +
+            "\nBlob size: " + pdfBlob.size + " bytes",
+            "PDF Share Test"
+        );
+    } catch (err) {
+        console.error("PDF blob generation failed:", err);
+
+        await appAlert(
+            "PDF blob generation failed: " +
             (err && err.message ? err.message : err),
-            "Share PDF Test Failed"
+            "PDF Share Test Failed"
         );
     } finally {
         if (wrapper) {
