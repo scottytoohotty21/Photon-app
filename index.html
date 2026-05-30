@@ -16479,8 +16479,21 @@ async function shareListedInventoryPdf() {
             navigator.canShare({ files: [pdfFile] })
         ) {
             await navigator.share(sharePayload);
-            await appAlert("PDF shared successfully.", "PDF Shared");
-            return;
+
+if (typeof saveToDevice === "function") {
+    saveToDevice();
+}
+
+await appAlert(
+    "PDF shared successfully. The app will refresh so another PDF can be shared.",
+    "PDF Shared"
+);
+
+setTimeout(function() {
+    window.location.reload();
+}, 500);
+
+return;
         }
 
         await appAlert(
