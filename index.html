@@ -5615,7 +5615,7 @@ Enter as: Surname, First Name
 
     <button
         type="button"
-        onclick="appAlert('Share button clicked', 'Test')"
+        onclick="shareListedInventoryPdf()"
         class="listed-pdf-btn listed-pdf-preview-btn"
     >
         Share PDF
@@ -16505,6 +16505,9 @@ console.log("Share PDF started");
     } finally {
         wrapper.remove();
     }
+}
+async function shareListedInventoryPdf() {
+    await appAlert("Share function reached.", "Test");
 }
 async function saveListedInventoryPdfToDevice() {
     try {
