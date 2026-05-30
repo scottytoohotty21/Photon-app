@@ -16515,10 +16515,33 @@ async function shareListedInventoryPdf() {
     const allItems = getListedInventoryItems();
     const filteredItems = filterListedInventoryItems(allItems);
 
-    await appAlert(
-        "Share function reached. Listed items found: " + filteredItems.length,
-        "Share PDF Test"
-    );
+    if (!filteredItems.length) {
+        await appAlert("No listed inventory to share.", "Export Unavailable");
+        return;
+    }
+
+    try {
+        const listedSummary = buildListedSummary(filteredItems);
+        const materialsSummary = buildMaterialsSummary(filteredItems);
+        const crewSummaryHtml = getPrintableCrewInstructionsHtml(filteredItems);
+        const sectionsHtml = getPrintableListedSections(filteredItems);
+
+        await appAlert(
+            "PDF content prepared." +
+            "\nSections length: " + String(sectionsHtml || "").length +
+            "\nCrew notes length: " + String(crewSummaryHtml || "").length +
+            "\nIncluded volume: " + listedSummary.includedVolume,
+            "Share PDF Test"
+        );
+    } catch (err) {
+        console.error("Share PDF content build failed:", err);
+
+        await appAlert(
+            "PDF content build failed: " +
+            (err && err.message ? err.message : err),
+            "Share PDF Test Failed"
+        );
+    }
 }
 async function saveListedInventoryPdfToDevice() {
     try {
