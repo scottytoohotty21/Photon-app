@@ -16309,6 +16309,7 @@ function getListedInventoryDownloadCss() {
 }
 
 async function shareListedInventoryPdf() {
+console.log("Share PDF started");
     try {
         if (typeof closeAllMovePilotModals === "function") {
             closeAllMovePilotModals();
@@ -16337,6 +16338,7 @@ async function shareListedInventoryPdf() {
         await appAlert("No listed inventory to share.", "Export Unavailable");
         return;
     }
+    await appAlert("Inventory found. Preparing PDF share file.", "PDF Share Test");
 
     const listedSummary = buildListedSummary(filteredItems);
     const materialsSummary = buildMaterialsSummary(filteredItems);
