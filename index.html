@@ -16310,7 +16310,7 @@ function getListedInventoryDownloadCss() {
 
 async function shareListedInventoryPdf() {
     if (!currentJob) {
-        await appAlert("No active job found.", "Share PDF Test");
+        await appAlert("No active job found.", "Share PDF");
         return;
     }
 
@@ -16354,6 +16354,13 @@ async function shareListedInventoryPdf() {
             currentJob.signature && currentJob.signature.image
                 ? `<img src="${currentJob.signature.image}" class="pdf-signature-image" alt="Signature">`
                 : `<div class="pdf-signature-empty">No signature saved</div>`;
+
+        const fileName =
+            "MovePilot_Listed_Inventory_" +
+            makeSafePdfFilenamePart(customerName) +
+            "_" +
+            makeSafePdfFilenamePart(reference) +
+            ".pdf";
 
         wrapper = document.createElement("div");
         wrapper.style.position = "fixed";
@@ -16418,15 +16425,16 @@ async function shareListedInventoryPdf() {
         const pdfElement = wrapper.querySelector(".pdf-download-doc");
 
         if (!pdfElement) {
-            await appAlert("PDF element could not be found.", "PDF Share Test Failed");
+            await appAlert("PDF element could not be found.", "PDF Share Failed");
             return;
         }
 
-        await appAlert("PDF wrapper ready. Now generating PDF blob.", "PDF Share Test");
+        await appAlert("Creating PDF now. This may take a few seconds on older tablets.", "PDF Share");
 
         const pdfBlob = await html2pdf()
             .set({
                 margin: [8, 8, 8, 8],
+                filename: fileName,
                 image: {
                     type: "jpeg",
                     quality: 0.84
@@ -16449,19 +16457,44 @@ async function shareListedInventoryPdf() {
             .from(pdfElement)
             .outputPdf("blob");
 
-        await appAlert(
-            "PDF blob created." +
-            "\nBlob type: " + pdfBlob.type +
-            "\nBlob size: " + pdfBlob.size + " bytes",
-            "PDF Share Test"
+        const pdfFile = new File(
+            [pdfBlob],
+            fileName,
+            { type: "application/pdf" }
         );
-    } catch (err) {
-        console.error("PDF blob generation failed:", err);
+
+        const sharePayload = {
+            title: "MovePilot Listed Inventory",
+            text: "Listed inventory PDF for " + customerName,
+            files: [pdfFile]
+        };
+
+        if (
+            navigator.share &&
+            navigator.canShare &&
+            navigator.canShare({ files: [pdfFile] })
+        ) {
+            await navigator.share(sharePayload);
+            await appAlert("PDF shared successfully.", "PDF Shared");
+            return;
+        }
 
         await appAlert(
-            "PDF blob generation failed: " +
+            "This device/browser does not support direct PDF sharing. Please use Review / Print PDF as a fallback.",
+            "PDF Share Not Available"
+        );
+    } catch (err) {
+        console.error("Share PDF failed:", err);
+
+        if (err && err.name === "AbortError") {
+            await appAlert("PDF sharing was cancelled.", "PDF Share Cancelled");
+            return;
+        }
+
+        await appAlert(
+            "The PDF could not be shared: " +
             (err && err.message ? err.message : err),
-            "PDF Share Test Failed"
+            "PDF Share Failed"
         );
     } finally {
         if (wrapper) {
