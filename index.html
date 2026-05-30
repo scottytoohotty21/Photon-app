@@ -16507,7 +16507,18 @@ console.log("Share PDF started");
     }
 }
 async function shareListedInventoryPdf() {
-    await appAlert("Share function reached.", "Test");
+    if (!currentJob) {
+        await appAlert("No active job found.", "Share PDF Test");
+        return;
+    }
+
+    const allItems = getListedInventoryItems();
+    const filteredItems = filterListedInventoryItems(allItems);
+
+    await appAlert(
+        "Share function reached. Listed items found: " + filteredItems.length,
+        "Share PDF Test"
+    );
 }
 async function saveListedInventoryPdfToDevice() {
     try {
