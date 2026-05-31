@@ -15919,6 +15919,13 @@ function getPrintableResponsibilitiesHtml(summary, items) {
         return String(note || "").trim();
     });
 
+    const customerNotes = []
+        .concat(responsibilities.autoNotes || [])
+        .concat(responsibilities.exclusionNotes || [])
+        .filter(function(note) {
+            return String(note || "").trim();
+        });
+
     return `
         <div class="pdf-responsibility-list">
             <div class="pdf-mini-head">Excluded Items (${summary.excludedCount || 0})</div>
@@ -15931,31 +15938,25 @@ function getPrintableResponsibilitiesHtml(summary, items) {
             }
 
             <div class="pdf-mini-head space-top">Additional Customer Responsibilities</div>
-${
-    editableNotes.length
-        ? editableNotes.map(function(note) {
-            return `<div>${escapeHtml(note)}</div>`;
-        }).join("")
-        : `<div>None recorded</div>`
-}
+            ${
+                editableNotes.length
+                    ? editableNotes.map(function(note) {
+                        return `<div>${escapeHtml(note)}</div>`;
+                    }).join("")
+                    : `<div>None recorded</div>`
+            }
 
-<div class="pdf-mini-head space-top">Customer Responsibility Notes</div>
-${
-    responsibilities.autoNotes.length || responsibilities.exclusionNotes.length
-        ? `
-            ${responsibilities.autoNotes.map(function(note) {
-                return `<div>${escapeHtml(note)}</div>`;
-            }).join("")}
-            ${responsibilities.exclusionNotes.map(function(note) {
-                return `<div>${escapeHtml(note)}</div>`;
-            }).join("")}
-        `
-        : `<div>None</div>`
-}
+            <div class="pdf-mini-head space-top">Customer Responsibility Notes</div>
+            ${
+                customerNotes.length
+                    ? customerNotes.map(function(note) {
+                        return `<div>${escapeHtml(note)}</div>`;
+                    }).join("")
+                    : ``
+            }
         </div>
     `;
 }
-
 function getPrintableCrewInstructionsHtml(items) {
     const crew = buildCrewInstructionsSummary(items);
 
