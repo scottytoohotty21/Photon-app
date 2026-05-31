@@ -5629,7 +5629,7 @@ Enter as: Surname, First Name
 <div class="listed-pdf-actions">
     <button
         type="button"
-        onclick="shareListedInventoryPdf()"
+        onclick="prepareAndShareListedInventoryPdf()"
         class="listed-pdf-btn listed-pdf-share-btn"
     >
         Share PDF
@@ -16366,6 +16366,19 @@ function getListedInventoryDownloadCss() {
     `;
 }
 
+async function prepareAndShareListedInventoryPdf() {
+    if (typeof saveToDevice === "function") {
+        saveToDevice();
+    }
+
+    if (typeof renderListedInventory === "function") {
+        renderListedInventory();
+    }
+
+    setTimeout(function() {
+        shareListedInventoryPdf();
+    }, 150);
+}
 async function shareListedInventoryPdf() {
     if (!currentJob) {
         await appAlert("No active job found.", "Share PDF");
