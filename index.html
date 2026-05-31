@@ -16366,18 +16366,45 @@ function getListedInventoryDownloadCss() {
     `;
 }
 
+let listedInventoryShareInProgress = false;
+
+function waitForMovePilotRender(ms) {
+    return new Promise(function(resolve) {
+        setTimeout(resolve, ms || 150);
+    });
+}
+
 async function prepareAndShareListedInventoryPdf() {
-    if (typeof saveToDevice === "function") {
-        saveToDevice();
+    if (listedInventoryShareInProgress) {
+        await appAlert("PDF share is already being prepared. Please wait a moment.", "Share PDF");
+        return;
     }
 
-    if (typeof renderListedInventory === "function") {
-        renderListedInventory();
-    }
+    listedInventoryShareInProgress = true;
 
-    setTimeout(function() {
-        shareListedInventoryPdf();
-    }, 150);
+    try {
+        if (typeof saveToDevice === "function") {
+            saveToDevice();
+        }
+
+        if (typeof renderListedInventory === "function") {
+            renderListedInventory();
+        }
+
+        await waitForMovePilotRender(250);
+
+        await shareListedInventoryPdf();
+    } catch (err) {
+        console.error("Prepare and share PDF failed:", err);
+
+        await appAlert(
+            "The PDF share could not be started: " +
+            (err && err.message ? err.message : err),
+            "Share PDF Failed"
+        );
+    } finally {
+        listedInventoryShareInProgress = false;
+    }
 }
 async function shareListedInventoryPdf() {
     if (!currentJob) {
@@ -16581,10 +16608,14 @@ return;
             "PDF Share Failed"
         );
     } finally {
-        if (wrapper) {
-            wrapper.remove();
-        }
+    if (wrapper) {
+        wrapper.remove();
     }
+
+    if (typeof renderListedInventory === "function") {
+        renderListedInventory();
+    }
+}
 }
 async function saveListedInventoryPdfToDevice() {
     try {
