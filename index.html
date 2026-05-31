@@ -14606,10 +14606,10 @@ function formatListedItemRoomLine(entry, baseLine) {
     const roomLabel = getListedItemRoomLabel(entry);
 
     if (!roomLabel) {
-        return cleanBaseLine + " (" + roomLabel + ")";
+        return cleanBaseLine;
     }
 
-    return cleanBaseLine + ": " + roomLabel;
+    return cleanBaseLine + " (" + roomLabel + ")";
 }
 function buildCrewInstructionsSummary(items) {
     const summary = {
