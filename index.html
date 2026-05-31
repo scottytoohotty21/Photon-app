@@ -5629,7 +5629,7 @@ Enter as: Surname, First Name
 <div class="listed-pdf-actions">
     <button
         type="button"
-        onclick="prepareAndShareListedInventoryPdf()"
+        onclick="shareListedInventoryPdf()"
         class="listed-pdf-btn listed-pdf-share-btn"
     >
         Share PDF
@@ -16578,14 +16578,14 @@ if (typeof saveToDevice === "function") {
     saveToDevice();
 }
 
-await appAlert(
-    "PDF shared successfully. The app will refresh so another PDF can be shared.",
-    "PDF Shared"
-);
-
+/*
+    Android/Web Share can leave the page in a stale share state.
+    Reload immediately after the share completes so the next inventory
+    can be shared without the user manually refreshing.
+*/
 setTimeout(function() {
     window.location.reload();
-}, 500);
+}, 300);
 
 return;
         }
