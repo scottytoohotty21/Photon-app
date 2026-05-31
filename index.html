@@ -14360,8 +14360,23 @@ function ensureCustomerResponsibilityNotes() {
     if (!currentJob) return [];
 
     if (!Array.isArray(currentJob.customerResponsibilityNotes)) {
-        currentJob.customerResponsibilityNotes = DEFAULT_CUSTOMER_RESPONSIBILITY_NOTES.slice();
+        currentJob.customerResponsibilityNotes = [];
     }
+
+    /*
+        Old versions stored the default customer responsibility notes
+        inside the editable notes array. Remove exact default matches so
+        this array only contains user-added notes.
+    */
+    currentJob.customerResponsibilityNotes = currentJob.customerResponsibilityNotes.filter(function(note) {
+        const cleanNote = String(note || "").trim();
+
+        if (!cleanNote) return true;
+
+        return !DEFAULT_CUSTOMER_RESPONSIBILITY_NOTES.some(function(defaultNote) {
+            return cleanNote === String(defaultNote || "").trim();
+        });
+    });
 
     return currentJob.customerResponsibilityNotes;
 }
@@ -14463,7 +14478,7 @@ function buildResponsibilitiesSummary(summary, items) {
     const exclusionNotes = Array.isArray(summary.exclusionNotes) ? summary.exclusionNotes : [];
     const editableNotes = ensureCustomerResponsibilityNotes();
 
-    const autoNotes = [];
+    const autoNotes = DEFAULT_CUSTOMER_RESPONSIBILITY_NOTES.slice();
 
     const handymanItems = [];
 const pianoItems = [];
