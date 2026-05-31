@@ -16499,7 +16499,7 @@ alert("INSIDE SHARE FUNCTION");
             await appAlert("PDF element could not be found.", "PDF Share Failed");
             return;
         }
-
+alert("PDF WRAPPER READY - ABOUT TO CREATE PDF");
         await appAlert("Creating PDF now. This may take a few seconds on older tablets.", "PDF Share");
 
         const pdfBlob = await html2pdf()
