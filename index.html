@@ -16407,6 +16407,7 @@ async function prepareAndShareListedInventoryPdf() {
     }
 }
 async function shareListedInventoryPdf() {
+await appAlert("Share PDF function started.", "Share Debug");
     if (!currentJob) {
         await appAlert("No active job found.", "Share PDF");
         return;
