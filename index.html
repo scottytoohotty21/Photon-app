@@ -16500,7 +16500,7 @@ alert("INSIDE SHARE FUNCTION");
             return;
         }
 alert("PDF WRAPPER READY - ABOUT TO CREATE PDF");
-        await appAlert("Creating PDF now. This may take a few seconds on older tablets.", "PDF Share");
+        console.log("Creating PDF now...");
 
         const pdfBlob = await html2pdf()
             .set({
