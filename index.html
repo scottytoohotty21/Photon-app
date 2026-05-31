@@ -3007,6 +3007,27 @@ body {
     border-bottom-color: #166534;
 }
 
+@keyframes listedPdfPulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.45);
+    }
+
+    70% {
+        transform: scale(1.04);
+        box-shadow: 0 0 0 10px rgba(22, 163, 74, 0);
+    }
+
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(22, 163, 74, 0);
+    }
+}
+
+.listed-pdf-share-btn.is-ready-to-send {
+    animation: listedPdfPulse 1.1s infinite;
+}
+
 .listed-pdf-preview-btn {
     background: #2563eb;
     color: #ffffff;
@@ -3025,18 +3046,6 @@ body {
     transform: scale(0.98);
 }
 
-.listed-pdf-btn:active {
-    transform: scale(0.98);
-}
-
-.listed-pdf-help {
-    margin-top: 8px;
-    font-size: 10px;
-    font-weight: 800;
-    line-height: 1.35;
-    color: #64748b;
-    text-transform: uppercase;
-}
 .listed-photo-review {
     margin-top: 16px;
 }
@@ -16400,12 +16409,18 @@ if (typeof saveToDevice === "function") {
 
 const shareButtons = document.querySelectorAll(".listed-pdf-share-btn");
 shareButtons.forEach(function(btn) {
-    btn.innerText = "Share PDF";
+    btn.innerText = "Send PDF";
+    btn.classList.add("is-ready-to-send");
 });
 
 return;
         } catch (err) {
             console.error("Prepared PDF share failed:", err);
+            const shareButtons = document.querySelectorAll(".listed-pdf-share-btn");
+shareButtons.forEach(function(btn) {
+    btn.innerText = "Share PDF";
+    btn.classList.remove("is-ready-to-send");
+});
 
             if (err && err.name === "AbortError") {
                 await appAlert("PDF sharing was cancelled.", "PDF Share Cancelled");
@@ -16589,9 +16604,10 @@ return;
             preparedListedInventoryShareFileName = fileName;
 
             const shareButtons = document.querySelectorAll(".listed-pdf-share-btn");
-            shareButtons.forEach(function(btn) {
-                btn.innerText = "Send PDF";
-            });
+shareButtons.forEach(function(btn) {
+    btn.innerText = "Share PDF";
+    btn.classList.remove("is-ready-to-send");
+});
 
             await appAlert(
                 "PDF ready. Press Send PDF to share.",
