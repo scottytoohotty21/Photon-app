@@ -2998,11 +2998,18 @@ body {
     box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
 }
 
+.listed-pdf-share-btn {
+    background: #16a34a;
+    color: #ffffff;
+    border: 1.5px solid #15803d;
+    border-bottom-color: #166534;
+}
+
 .listed-pdf-preview-btn {
-    background: #dc2626;
-    color: white;
-    border: 1.5px solid #b91c1c;
-    border-bottom-color: #991b1b;
+    background: #ffffff;
+    color: #334155;
+    border: 1.5px solid #cbd5e1;
+    border-bottom-color: #94a3b8;
 }
 
 .listed-pdf-save-btn {
@@ -3014,6 +3021,15 @@ body {
 
 .listed-pdf-btn:active {
     transform: scale(0.98);
+}
+
+.listed-pdf-help {
+    margin-top: 8px;
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 1.35;
+    color: #64748b;
+    text-transform: uppercase;
 }
 .listed-photo-review {
     margin-top: 16px;
@@ -5607,29 +5623,24 @@ Enter as: Surname, First Name
 <div class="listed-pdf-actions">
     <button
         type="button"
+        onclick="shareListedInventoryPdf()"
+        class="listed-pdf-btn listed-pdf-share-btn"
+    >
+        Share PDF
+    </button>
+
+    <button
+        type="button"
         onclick="printListedInventoryPdf()"
         class="listed-pdf-btn listed-pdf-preview-btn"
     >
         Review / Print PDF
     </button>
+</div>
 
-    <button
-        type="button"
-        onclick="shareListedInventoryPdf()"
-        class="listed-pdf-btn listed-pdf-preview-btn"
-    >
-        Share PDF
-    </button>
-
-           <!-- Save PDF to Device paused for tablet testing.
-<button
-    onclick="saveListedInventoryPdfToDevice()"
-    class="listed-pdf-btn listed-pdf-save-btn"
->
-    Save PDF to Device
-</button>
--->
-        </div>
+<div class="listed-pdf-help">
+    Use Share PDF to send the listed inventory by Outlook/email. Use Review / Print PDF as a fallback.
+</div>
     </div>
 
     <div class="grid grid-cols-12 gap-3 mb-4">
