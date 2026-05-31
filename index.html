@@ -5629,7 +5629,7 @@ Enter as: Surname, First Name
 <div class="listed-pdf-actions">
     <button
     type="button"
-    id="listed-share-pdf-btn"
+    onclick="shareListedInventoryPdf()"
     class="listed-pdf-btn listed-pdf-share-btn"
 >
     Share PDF
@@ -16377,29 +16377,8 @@ function waitForMovePilotRender(ms) {
 async function prepareAndShareListedInventoryPdf() {
     return shareListedInventoryPdf();
 }
-document.addEventListener("click", function(e) {
-    const shareBtn = e.target.closest("#listed-share-pdf-btn");
-    if (!shareBtn) return;
 
-    e.preventDefault();
-    e.stopPropagation();
-
-    if (shareBtn.dataset.busy === "1") {
-        return;
-    }
-
-    shareBtn.dataset.busy = "1";
-
-    Promise.resolve()
-        .then(function() {
-            return shareListedInventoryPdf();
-        })
-        .finally(function() {
-            shareBtn.dataset.busy = "";
-        });
-});
 async function shareListedInventoryPdf() {
-await appAlert("Share PDF function started.", "Share Debug");
     if (!currentJob) {
         await appAlert("No active job found.", "Share PDF");
         return;
@@ -16570,15 +16549,6 @@ await appAlert("Share PDF function started.", "Share Debug");
 if (typeof saveToDevice === "function") {
     saveToDevice();
 }
-
-/*
-    Android/Web Share can leave the page in a stale share state.
-    Reload immediately after the share completes so the next inventory
-    can be shared without the user manually refreshing.
-*/
-setTimeout(function() {
-    window.location.reload();
-}, 300);
 
 return;
         }
