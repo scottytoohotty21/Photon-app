@@ -16601,20 +16601,20 @@ shareButtons.forEach(function(btn) {
             navigator.canShare({ files: [pdfFile] })
         ) {
             preparedListedInventorySharePayload = sharePayload;
-            preparedListedInventoryShareFileName = fileName;
+preparedListedInventoryShareFileName = fileName;
 
-            const shareButtons = document.querySelectorAll(".listed-pdf-share-btn");
+const shareButtons = document.querySelectorAll(".listed-pdf-share-btn");
 shareButtons.forEach(function(btn) {
-    btn.innerText = "Share PDF";
-    btn.classList.remove("is-ready-to-send");
+    btn.innerText = "Send PDF";
+    btn.classList.add("is-ready-to-send");
 });
 
-            await appAlert(
-                "PDF ready. Press Send PDF to share.",
-                "PDF Ready"
-            );
+await appAlert(
+    "PDF ready. Press Send PDF to share.",
+    "PDF Ready"
+);
 
-            return;
+return;
         }
 
         await appAlert(
