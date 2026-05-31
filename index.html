@@ -5628,12 +5628,12 @@ Enter as: Surname, First Name
         </div>
 <div class="listed-pdf-actions">
     <button
-        type="button"
-        onclick="shareListedInventoryPdf()"
-        class="listed-pdf-btn listed-pdf-share-btn"
-    >
-        Share PDF
-    </button>
+    type="button"
+    id="listed-share-pdf-btn"
+    class="listed-pdf-btn listed-pdf-share-btn"
+>
+    Share PDF
+</button>
 
     <button
         type="button"
@@ -16375,37 +16375,29 @@ function waitForMovePilotRender(ms) {
 }
 
 async function prepareAndShareListedInventoryPdf() {
-    if (listedInventoryShareInProgress) {
-        await appAlert("PDF share is already being prepared. Please wait a moment.", "Share PDF");
+    return shareListedInventoryPdf();
+}
+document.addEventListener("click", function(e) {
+    const shareBtn = e.target.closest("#listed-share-pdf-btn");
+    if (!shareBtn) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (shareBtn.dataset.busy === "1") {
         return;
     }
 
-    listedInventoryShareInProgress = true;
+    shareBtn.dataset.busy = "1";
 
-    try {
-        if (typeof saveToDevice === "function") {
-            saveToDevice();
-        }
-
-        if (typeof renderListedInventory === "function") {
-            renderListedInventory();
-        }
-
-        await waitForMovePilotRender(250);
-
-        await shareListedInventoryPdf();
-    } catch (err) {
-        console.error("Prepare and share PDF failed:", err);
-
-        await appAlert(
-            "The PDF share could not be started: " +
-            (err && err.message ? err.message : err),
-            "Share PDF Failed"
-        );
-    } finally {
-        listedInventoryShareInProgress = false;
-    }
-}
+    Promise.resolve()
+        .then(function() {
+            return shareListedInventoryPdf();
+        })
+        .finally(function() {
+            shareBtn.dataset.busy = "";
+        });
+});
 async function shareListedInventoryPdf() {
 await appAlert("Share PDF function started.", "Share Debug");
     if (!currentJob) {
