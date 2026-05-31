@@ -2983,8 +2983,10 @@ body {
                 /* --- LISTED INVENTORY PHOTO REVIEW --- */
         .listed-pdf-actions {
     display: flex;
-    gap: 8px;
+    justify-content: flex-end;
     align-items: center;
+    gap: 8px;
+    margin-top: 10px;
 }
 
 .listed-pdf-btn {
@@ -3006,10 +3008,10 @@ body {
 }
 
 .listed-pdf-preview-btn {
-    background: #ffffff;
-    color: #334155;
-    border: 1.5px solid #cbd5e1;
-    border-bottom-color: #94a3b8;
+    background: #2563eb;
+    color: #ffffff;
+    border: 1.5px solid #1d4ed8;
+    border-bottom-color: #1e40af;
 }
 
 .listed-pdf-save-btn {
@@ -3017,6 +3019,10 @@ body {
     color: #1e3a8a;
     border: 1.5px solid #bfdbfe;
     border-bottom-color: #93c5fd;
+}
+
+.listed-pdf-btn:active {
+    transform: scale(0.98);
 }
 
 .listed-pdf-btn:active {
@@ -5634,12 +5640,8 @@ Enter as: Surname, First Name
         onclick="printListedInventoryPdf()"
         class="listed-pdf-btn listed-pdf-preview-btn"
     >
-        Review / Print PDF
+        Review PDF
     </button>
-</div>
-
-<div class="listed-pdf-help">
-    Use Share PDF to send the listed inventory by Outlook/email. Use Review / Print PDF as a fallback.
 </div>
     </div>
 
