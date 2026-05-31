@@ -16527,6 +16527,7 @@ alert("PDF WRAPPER READY - ABOUT TO CREATE PDF");
             })
             .from(pdfElement)
             .outputPdf("blob");
+            alert("PDF BLOB CREATED: " + pdfBlob.size + " bytes");
 
         const pdfFile = new File(
             [pdfBlob],
@@ -16559,9 +16560,10 @@ return;
             "PDF Share Not Available"
         );
     } catch (err) {
-        console.error("Share PDF failed:", err);
+    console.error("Share PDF failed:", err);
+    alert("SHARE PDF ERROR: " + (err && err.message ? err.message : err));
 
-        if (err && err.name === "AbortError") {
+    if (err && err.name === "AbortError") {
             await appAlert("PDF sharing was cancelled.", "PDF Share Cancelled");
             return;
         }
