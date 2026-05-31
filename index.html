@@ -14874,56 +14874,55 @@ ${getSurveyorSignatureHtml()}
         </div>
 
         <div>
-            <div class="text-slate-400 pb-1">Auto Responsibilities</div>
-            ${
-                responsibilities.autoNotes.length || responsibilities.exclusionNotes.length
-                    ? `
-                        ${responsibilities.autoNotes.map(function(note) {
-                            return `<div>${escapeHtml(note)}</div>`;
-                        }).join("")}
-                        ${responsibilities.exclusionNotes.map(function(note) {
-                            return `<div>${escapeHtml(note)}</div>`;
-                        }).join("")}
-                    `
-                    : `<div class="text-slate-400 italic">None</div>`
-            }
-        </div>
+    <div class="text-slate-400 pb-1">Additional Customer Responsibilities</div>
 
-        <div>
-            <div class="text-slate-400 pb-1">Editable Customer Responsibility Notes</div>
+    ${
+        responsibilities.editableNotes.length
+            ? responsibilities.editableNotes.map(function(note, index) {
+                return `
+                    <div class="customer-responsibility-edit-row">
+                        <textarea
+                            class="customer-responsibility-input"
+                            oninput="updateCustomerResponsibilityNote(${index}, this.value)"
+                        >${escapeHtml(note)}</textarea>
 
-            ${
-                responsibilities.editableNotes.length
-                    ? responsibilities.editableNotes.map(function(note, index) {
-                        return `
-                            <div class="customer-responsibility-edit-row">
-                                <textarea
-                                    class="customer-responsibility-input"
-                                    oninput="updateCustomerResponsibilityNote(${index}, this.value)"
-                                >${escapeHtml(note)}</textarea>
+                        <button
+                            type="button"
+                            class="customer-responsibility-delete"
+                            onclick="deleteCustomerResponsibilityNote(${index})"
+                            title="Remove responsibility note"
+                            aria-label="Remove responsibility note"
+                        >×</button>
+                    </div>
+                `;
+            }).join("")
+            : `<div class="text-slate-400 italic">No additional responsibility notes</div>`
+    }
 
-                                <button
-                                    type="button"
-                                    class="customer-responsibility-delete"
-                                    onclick="deleteCustomerResponsibilityNote(${index})"
-                                    title="Remove responsibility note"
-                                    aria-label="Remove responsibility note"
-                                >×</button>
-                            </div>
-                        `;
-                    }).join("")
-                    : `<div class="text-slate-400 italic">No editable responsibility notes</div>`
-            }
+    <button
+        type="button"
+        class="customer-responsibility-add"
+        onclick="addCustomerResponsibilityNote()"
+    >
+        + Add Responsibility Note
+    </button>
+</div>
 
-            <button
-                type="button"
-                class="customer-responsibility-add"
-                onclick="addCustomerResponsibilityNote()"
-            >
-                + Add Responsibility Note
-            </button>
-        </div>
-    </div>
+<div>
+    <div class="text-slate-400 pb-1">Customer Responsibility Notes</div>
+    ${
+        responsibilities.autoNotes.length || responsibilities.exclusionNotes.length
+            ? `
+                ${responsibilities.autoNotes.map(function(note) {
+                    return `<div>${escapeHtml(note)}</div>`;
+                }).join("")}
+                ${responsibilities.exclusionNotes.map(function(note) {
+                    return `<div>${escapeHtml(note)}</div>`;
+                }).join("")}
+            `
+            : `<div class="text-slate-400 italic">None</div>`
+    }
+</div>    </div>
 </div>
 
                 <div class="listed-stat-card">
@@ -15931,28 +15930,28 @@ function getPrintableResponsibilitiesHtml(summary, items) {
                     : `<div>None</div>`
             }
 
-            <div class="pdf-mini-head space-top">Customer Responsibility Notes</div>
-            ${
-                editableNotes.length
-                    ? editableNotes.map(function(note) {
-                        return `<div>${escapeHtml(note)}</div>`;
-                    }).join("")
-                    : `<div>None recorded</div>`
-            }
-
             <div class="pdf-mini-head space-top">Additional Customer Responsibilities</div>
-            ${
-                responsibilities.autoNotes.length || responsibilities.exclusionNotes.length
-                    ? `
-                        ${responsibilities.autoNotes.map(function(note) {
-                            return `<div>${escapeHtml(note)}</div>`;
-                        }).join("")}
-                        ${responsibilities.exclusionNotes.map(function(note) {
-                            return `<div>${escapeHtml(note)}</div>`;
-                        }).join("")}
-                    `
-                    : `<div>None</div>`
-            }
+${
+    editableNotes.length
+        ? editableNotes.map(function(note) {
+            return `<div>${escapeHtml(note)}</div>`;
+        }).join("")
+        : `<div>None recorded</div>`
+}
+
+<div class="pdf-mini-head space-top">Customer Responsibility Notes</div>
+${
+    responsibilities.autoNotes.length || responsibilities.exclusionNotes.length
+        ? `
+            ${responsibilities.autoNotes.map(function(note) {
+                return `<div>${escapeHtml(note)}</div>`;
+            }).join("")}
+            ${responsibilities.exclusionNotes.map(function(note) {
+                return `<div>${escapeHtml(note)}</div>`;
+            }).join("")}
+        `
+        : `<div>None</div>`
+}
         </div>
     `;
 }
