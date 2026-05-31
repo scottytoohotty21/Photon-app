@@ -5629,7 +5629,7 @@ Enter as: Surname, First Name
 <div class="listed-pdf-actions">
     <button
     type="button"
-    onclick="alert('RAW SHARE BUTTON CLICKED'); shareListedInventoryPdf()"
+    onclick="shareListedInventoryPdf()"
     class="listed-pdf-btn listed-pdf-share-btn"
 >
     Share PDF
@@ -16378,8 +16378,44 @@ async function prepareAndShareListedInventoryPdf() {
     return shareListedInventoryPdf();
 }
 
+let preparedListedInventorySharePayload = null;
+let preparedListedInventoryShareFileName = "";
+
+function clearPreparedListedInventoryShare() {
+    preparedListedInventorySharePayload = null;
+    preparedListedInventoryShareFileName = "";
+}
 async function shareListedInventoryPdf() {
-alert("INSIDE SHARE FUNCTION");
+    if (preparedListedInventorySharePayload) {
+        try {
+            const payloadToShare = preparedListedInventorySharePayload;
+
+            clearPreparedListedInventoryShare();
+
+            await navigator.share(payloadToShare);
+
+            if (typeof saveToDevice === "function") {
+                saveToDevice();
+            }
+
+            return;
+        } catch (err) {
+            console.error("Prepared PDF share failed:", err);
+
+            if (err && err.name === "AbortError") {
+                await appAlert("PDF sharing was cancelled.", "PDF Share Cancelled");
+                return;
+            }
+
+            await appAlert(
+                "The prepared PDF could not be shared: " +
+                (err && err.message ? err.message : err),
+                "PDF Share Failed"
+            );
+
+            return;
+        }
+    }
     if (!currentJob) {
         await appAlert("No active job found.", "Share PDF");
         return;
@@ -16499,7 +16535,6 @@ alert("INSIDE SHARE FUNCTION");
             await appAlert("PDF element could not be found.", "PDF Share Failed");
             return;
         }
-alert("PDF WRAPPER READY - ABOUT TO CREATE PDF");
         console.log("Creating PDF now...");
 
         const pdfBlob = await html2pdf()
@@ -16527,8 +16562,7 @@ alert("PDF WRAPPER READY - ABOUT TO CREATE PDF");
             })
             .from(pdfElement)
             .outputPdf("blob");
-            alert("PDF BLOB CREATED: " + pdfBlob.size + " bytes");
-
+            
         const pdfFile = new File(
             [pdfBlob],
             fileName,
@@ -16541,19 +16575,21 @@ alert("PDF WRAPPER READY - ABOUT TO CREATE PDF");
             files: [pdfFile]
         };
 
-        if (
-            navigator.share &&
-            navigator.canShare &&
-            navigator.canShare({ files: [pdfFile] })
-        ) {
-            await navigator.share(sharePayload);
+       if (
+    navigator.share &&
+    navigator.canShare &&
+    navigator.canShare({ files: [pdfFile] })
+) {
+    preparedListedInventorySharePayload = sharePayload;
+    preparedListedInventoryShareFileName = fileName;
 
-if (typeof saveToDevice === "function") {
-    saveToDevice();
+    await appAlert(
+        "PDF is ready. Tap Share PDF again to send it.",
+        "PDF Ready"
+    );
+
+    return;
 }
-
-return;
-        }
 
         await appAlert(
             "This device/browser does not support direct PDF sharing. Please use Review / Print PDF as a fallback.",
@@ -16561,8 +16597,7 @@ return;
         );
     } catch (err) {
     console.error("Share PDF failed:", err);
-    alert("SHARE PDF ERROR: " + (err && err.message ? err.message : err));
-
+    
     if (err && err.name === "AbortError") {
             await appAlert("PDF sharing was cancelled.", "PDF Share Cancelled");
             return;
