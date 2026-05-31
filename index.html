@@ -16395,11 +16395,16 @@ async function shareListedInventoryPdf() {
 
             await navigator.share(payloadToShare);
 
-            if (typeof saveToDevice === "function") {
-                saveToDevice();
-            }
+if (typeof saveToDevice === "function") {
+    saveToDevice();
+}
 
-            return;
+const shareButtons = document.querySelectorAll(".listed-pdf-share-btn");
+shareButtons.forEach(function(btn) {
+    btn.innerText = "Share PDF";
+});
+
+return;
         } catch (err) {
             console.error("Prepared PDF share failed:", err);
 
@@ -16582,15 +16587,19 @@ async function shareListedInventoryPdf() {
     navigator.canShare({ files: [pdfFile] })
 ) {
     preparedListedInventorySharePayload = sharePayload;
-    preparedListedInventoryShareFileName = fileName;
+preparedListedInventoryShareFileName = fileName;
 
-    await appAlert(
-        "PDF is ready. Tap Share PDF again to send it.",
-        "PDF Ready"
-    );
+const shareButtons = document.querySelectorAll(".listed-pdf-share-btn");
+shareButtons.forEach(function(btn) {
+    btn.innerText = "Send PDF";
+});
 
-    return;
-}
+await appAlert(
+    "PDF ready. Press Send PDF to share.",
+    "PDF Ready"
+);
+
+return;
 
         await appAlert(
             "This device/browser does not support direct PDF sharing. Please use Review / Print PDF as a fallback.",
