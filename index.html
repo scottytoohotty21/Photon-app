@@ -16387,40 +16387,71 @@ async function prepareAndShareListedInventoryPdf() {
     return shareListedInventoryPdf();
 }
 
-let preparedListedInventorySharePayload = null;
+let preparedListedInventoryShareBlob = null;
 let preparedListedInventoryShareFileName = "";
+let preparedListedInventoryShareCustomerName = "";
 
 function clearPreparedListedInventoryShare() {
-    preparedListedInventorySharePayload = null;
+    preparedListedInventoryShareBlob = null;
     preparedListedInventoryShareFileName = "";
+    preparedListedInventoryShareCustomerName = "";
 }
 async function shareListedInventoryPdf() {
-    if (preparedListedInventorySharePayload) {
+    if (preparedListedInventoryShareBlob) {
         try {
-            const payloadToShare = preparedListedInventorySharePayload;
+            const pdfBlob = preparedListedInventoryShareBlob;
+            const fileName = preparedListedInventoryShareFileName || "MovePilot_Listed_Inventory.pdf";
+            const customerName = preparedListedInventoryShareCustomerName || "customer";
 
-            clearPreparedListedInventoryShare();
+            const pdfFile = new File(
+                [pdfBlob],
+                fileName,
+                { type: "application/pdf" }
+            );
+
+            const payloadToShare = {
+                title: "MovePilot Listed Inventory",
+                text: "Listed inventory PDF for " + customerName,
+                files: [pdfFile]
+            };
+
+            if (
+                !navigator.share ||
+                !navigator.canShare ||
+                !navigator.canShare({ files: [pdfFile] })
+            ) {
+                await appAlert(
+                    "This device/browser does not support direct PDF sharing.",
+                    "PDF Share Not Available"
+                );
+                return;
+            }
 
             await navigator.share(payloadToShare);
 
-if (typeof saveToDevice === "function") {
-    saveToDevice();
-}
+            clearPreparedListedInventoryShare();
 
-const shareButtons = document.querySelectorAll(".listed-pdf-share-btn");
-shareButtons.forEach(function(btn) {
-    btn.innerText = "Send PDF";
-    btn.classList.add("is-ready-to-send");
-});
+            if (typeof saveToDevice === "function") {
+                saveToDevice();
+            }
 
-return;
+            const shareButtons = document.querySelectorAll(".listed-pdf-share-btn");
+            shareButtons.forEach(function(btn) {
+                btn.innerText = "Share PDF";
+                btn.classList.remove("is-ready-to-send");
+            });
+
+            return;
         } catch (err) {
             console.error("Prepared PDF share failed:", err);
+
+            clearPreparedListedInventoryShare();
+
             const shareButtons = document.querySelectorAll(".listed-pdf-share-btn");
-shareButtons.forEach(function(btn) {
-    btn.innerText = "Share PDF";
-    btn.classList.remove("is-ready-to-send");
-});
+            shareButtons.forEach(function(btn) {
+                btn.innerText = "Share PDF";
+                btn.classList.remove("is-ready-to-send");
+            });
 
             if (err && err.name === "AbortError") {
                 await appAlert("PDF sharing was cancelled.", "PDF Share Cancelled");
@@ -16436,6 +16467,7 @@ shareButtons.forEach(function(btn) {
             return;
         }
     }
+
     if (!currentJob) {
         await appAlert("No active job found.", "Share PDF");
         return;
@@ -16443,7 +16475,7 @@ shareButtons.forEach(function(btn) {
 
     if (typeof html2pdf === "undefined") {
         await appAlert(
-            "PDF generator is not loaded. The file html2pdf.bundle.min.js may not be available on this device.",
+            "PDF generator is not loaded. The embedded PDF generator may not be available on this device.",
             "PDF Library Missing"
         );
         return;
@@ -16555,7 +16587,6 @@ shareButtons.forEach(function(btn) {
             await appAlert("PDF element could not be found.", "PDF Share Failed");
             return;
         }
-        console.log("Creating PDF now...");
 
         const pdfBlob = await html2pdf()
             .set({
@@ -16582,49 +16613,44 @@ shareButtons.forEach(function(btn) {
             })
             .from(pdfElement)
             .outputPdf("blob");
-            
-        const pdfFile = new File(
+
+        const testFile = new File(
             [pdfBlob],
             fileName,
             { type: "application/pdf" }
         );
 
-        const sharePayload = {
-            title: "MovePilot Listed Inventory",
-            text: "Listed inventory PDF for " + customerName,
-            files: [pdfFile]
-        };
-
-               if (
+        if (
             navigator.share &&
             navigator.canShare &&
-            navigator.canShare({ files: [pdfFile] })
+            navigator.canShare({ files: [testFile] })
         ) {
-            preparedListedInventorySharePayload = sharePayload;
-preparedListedInventoryShareFileName = fileName;
+            preparedListedInventoryShareBlob = pdfBlob;
+            preparedListedInventoryShareFileName = fileName;
+            preparedListedInventoryShareCustomerName = customerName;
 
-const shareButtons = document.querySelectorAll(".listed-pdf-share-btn");
-shareButtons.forEach(function(btn) {
-    btn.innerText = "Send PDF";
-    btn.classList.add("is-ready-to-send");
-});
+            const shareButtons = document.querySelectorAll(".listed-pdf-share-btn");
+            shareButtons.forEach(function(btn) {
+                btn.innerText = "Send PDF";
+                btn.classList.add("is-ready-to-send");
+            });
 
-await appAlert(
-    "PDF ready. Press Send PDF to share.",
-    "PDF Ready"
-);
+            await appAlert(
+                "PDF ready. Press Send PDF to share.",
+                "PDF Ready"
+            );
 
-return;
+            return;
         }
 
         await appAlert(
-            "This device/browser does not support direct PDF sharing. Please use Review / Print PDF as a fallback.",
+            "This device/browser does not support direct PDF sharing. Please use Review PDF as a fallback.",
             "PDF Share Not Available"
         );
     } catch (err) {
-    console.error("Share PDF failed:", err);
-    
-    if (err && err.name === "AbortError") {
+        console.error("Share PDF failed:", err);
+
+        if (err && err.name === "AbortError") {
             await appAlert("PDF sharing was cancelled.", "PDF Share Cancelled");
             return;
         }
@@ -16635,10 +16661,10 @@ return;
             "PDF Share Failed"
         );
     } finally {
-    if (wrapper) {
-        wrapper.remove();
+        if (wrapper) {
+            wrapper.remove();
+        }
     }
-}
 }
 async function saveListedInventoryPdfToDevice() {
     try {
