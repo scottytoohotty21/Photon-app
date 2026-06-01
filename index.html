@@ -3015,6 +3015,24 @@ body {
 .listed-pdf-btn:active {
     transform: scale(0.98);
 }
+.listed-pdf-copy-btn {
+    background: #16a34a; /* green */
+    color: #ffffff;
+    border: 1.5px solid #15803d;
+    border-bottom-color: #166534;
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+    line-height: 1.1;
+    white-space: nowrap;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+}
+
+.listed-pdf-copy-btn:active {
+    transform: scale(0.98);
+}
 .listed-photo-review {
     margin-top: 16px;
 }
@@ -5613,13 +5631,15 @@ Enter as: Surname, First Name
         Review / Print PDF
     </button>
 
+    <div class="listed-pdf-actions">
     <button
         type="button"
-        onclick="shareListedInventoryPdf()"
-        class="listed-pdf-btn listed-pdf-preview-btn"
+        onclick="copyListedInventoryPdf()"
+        class="listed-pdf-btn listed-pdf-copy-btn"
     >
-        Share PDF
+        Copy PDF
     </button>
+</div>
 
            <!-- Save PDF to Device paused for tablet testing.
 <button
@@ -16735,6 +16755,42 @@ async function saveListedInventoryPdfToDevice() {
         );
     } finally {
         wrapper.remove();
+    }
+}
+async function copyListedInventoryPdf() {
+    if (!currentJob) {
+        await appAlert("No active job found.", "Copy PDF");
+        return;
+    }
+
+    const wrapper = document.querySelector(".listed-inventory-wrapper");
+    if (!wrapper) {
+        await appAlert("No inventory content found to copy.", "Copy PDF");
+        return;
+    }
+
+    try {
+        await appAlert("Generating PDF… This may take a few seconds.", "Copy PDF");
+
+        // Generate PDF blob
+        const pdfBlob = await html2pdf()
+            .set({ filename: 'Inventory.pdf', margin: 10, html2canvas: { scale: 2 } })
+            .from(wrapper)
+            .outputPdf('blob');
+
+        // Copy PDF blob to clipboard
+        await navigator.clipboard.write([
+            new ClipboardItem({ "application/pdf": pdfBlob })
+        ]);
+
+        await appAlert("PDF copied to clipboard. Open your email app and paste it to attach.", "PDF Copied");
+
+    } catch (err) {
+        console.error("Copy PDF failed:", err);
+        await appAlert(
+            "Failed to copy PDF. Please try again: " + (err && err.message ? err.message : err),
+            "Copy PDF Error"
+        );
     }
 }
 async function printListedInventoryPdf() {
