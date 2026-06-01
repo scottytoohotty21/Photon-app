@@ -16763,7 +16763,7 @@ async function copyListedInventoryPdf() {
         return;
     }
 
-    const wrapper = document.querySelector(".listed-inventory-wrapper");
+    const wrapper = document.getElementById("listed-inventory-output");
     if (!wrapper) {
         await appAlert("No inventory content found to copy.", "Copy PDF");
         return;
