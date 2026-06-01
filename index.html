@@ -2983,10 +2983,8 @@ body {
                 /* --- LISTED INVENTORY PHOTO REVIEW --- */
         .listed-pdf-actions {
     display: flex;
-    justify-content: flex-end;
-    align-items: center;
     gap: 8px;
-    margin-top: 10px;
+    align-items: center;
 }
 
 .listed-pdf-btn {
@@ -3000,39 +2998,11 @@ body {
     box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
 }
 
-.listed-pdf-share-btn {
-    background: #16a34a;
-    color: #ffffff;
-    border: 1.5px solid #15803d;
-    border-bottom-color: #166534;
-}
-
-@keyframes listedPdfPulse {
-    0% {
-        transform: scale(1);
-        box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.45);
-    }
-
-    70% {
-        transform: scale(1.04);
-        box-shadow: 0 0 0 10px rgba(22, 163, 74, 0);
-    }
-
-    100% {
-        transform: scale(1);
-        box-shadow: 0 0 0 0 rgba(22, 163, 74, 0);
-    }
-}
-
-.listed-pdf-share-btn.is-ready-to-send {
-    animation: listedPdfPulse 1.1s infinite;
-}
-
 .listed-pdf-preview-btn {
-    background: #2563eb;
-    color: #ffffff;
-    border: 1.5px solid #1d4ed8;
-    border-bottom-color: #1e40af;
+    background: #dc2626;
+    color: white;
+    border: 1.5px solid #b91c1c;
+    border-bottom-color: #991b1b;
 }
 
 .listed-pdf-save-btn {
@@ -3045,7 +3015,6 @@ body {
 .listed-pdf-btn:active {
     transform: scale(0.98);
 }
-
 .listed-photo-review {
     margin-top: 16px;
 }
@@ -5637,21 +5606,30 @@ Enter as: Surname, First Name
         </div>
 <div class="listed-pdf-actions">
     <button
-    type="button"
-    onclick="shareListedInventoryPdf()"
-    class="listed-pdf-btn listed-pdf-share-btn"
->
-    Share PDF
-</button>
-
-    <button
         type="button"
         onclick="printListedInventoryPdf()"
         class="listed-pdf-btn listed-pdf-preview-btn"
     >
-        Review PDF
+        Review / Print PDF
     </button>
-</div>
+
+    <button
+        type="button"
+        onclick="shareListedInventoryPdf()"
+        class="listed-pdf-btn listed-pdf-preview-btn"
+    >
+        Share PDF
+    </button>
+
+           <!-- Save PDF to Device paused for tablet testing.
+<button
+    onclick="saveListedInventoryPdfToDevice()"
+    class="listed-pdf-btn listed-pdf-save-btn"
+>
+    Save PDF to Device
+</button>
+-->
+        </div>
     </div>
 
     <div class="grid grid-cols-12 gap-3 mb-4">
@@ -14382,23 +14360,8 @@ function ensureCustomerResponsibilityNotes() {
     if (!currentJob) return [];
 
     if (!Array.isArray(currentJob.customerResponsibilityNotes)) {
-        currentJob.customerResponsibilityNotes = [];
+        currentJob.customerResponsibilityNotes = DEFAULT_CUSTOMER_RESPONSIBILITY_NOTES.slice();
     }
-
-    /*
-        Old versions stored the default customer responsibility notes
-        inside the editable notes array. Remove exact default matches so
-        this array only contains user-added notes.
-    */
-    currentJob.customerResponsibilityNotes = currentJob.customerResponsibilityNotes.filter(function(note) {
-        const cleanNote = String(note || "").trim();
-
-        if (!cleanNote) return true;
-
-        return !DEFAULT_CUSTOMER_RESPONSIBILITY_NOTES.some(function(defaultNote) {
-            return cleanNote === String(defaultNote || "").trim();
-        });
-    });
 
     return currentJob.customerResponsibilityNotes;
 }
@@ -14500,7 +14463,7 @@ function buildResponsibilitiesSummary(summary, items) {
     const exclusionNotes = Array.isArray(summary.exclusionNotes) ? summary.exclusionNotes : [];
     const editableNotes = ensureCustomerResponsibilityNotes();
 
-    const autoNotes = DEFAULT_CUSTOMER_RESPONSIBILITY_NOTES.slice();
+    const autoNotes = [];
 
     const handymanItems = [];
 const pianoItems = [];
@@ -14911,55 +14874,56 @@ ${getSurveyorSignatureHtml()}
         </div>
 
         <div>
-    <div class="text-slate-400 pb-1">Additional Customer Responsibilities</div>
+            <div class="text-slate-400 pb-1">Auto Responsibilities</div>
+            ${
+                responsibilities.autoNotes.length || responsibilities.exclusionNotes.length
+                    ? `
+                        ${responsibilities.autoNotes.map(function(note) {
+                            return `<div>${escapeHtml(note)}</div>`;
+                        }).join("")}
+                        ${responsibilities.exclusionNotes.map(function(note) {
+                            return `<div>${escapeHtml(note)}</div>`;
+                        }).join("")}
+                    `
+                    : `<div class="text-slate-400 italic">None</div>`
+            }
+        </div>
 
-    ${
-        responsibilities.editableNotes.length
-            ? responsibilities.editableNotes.map(function(note, index) {
-                return `
-                    <div class="customer-responsibility-edit-row">
-                        <textarea
-                            class="customer-responsibility-input"
-                            oninput="updateCustomerResponsibilityNote(${index}, this.value)"
-                        >${escapeHtml(note)}</textarea>
+        <div>
+            <div class="text-slate-400 pb-1">Editable Customer Responsibility Notes</div>
 
-                        <button
-                            type="button"
-                            class="customer-responsibility-delete"
-                            onclick="deleteCustomerResponsibilityNote(${index})"
-                            title="Remove responsibility note"
-                            aria-label="Remove responsibility note"
-                        >×</button>
-                    </div>
-                `;
-            }).join("")
-            : `<div class="text-slate-400 italic">No additional responsibility notes</div>`
-    }
+            ${
+                responsibilities.editableNotes.length
+                    ? responsibilities.editableNotes.map(function(note, index) {
+                        return `
+                            <div class="customer-responsibility-edit-row">
+                                <textarea
+                                    class="customer-responsibility-input"
+                                    oninput="updateCustomerResponsibilityNote(${index}, this.value)"
+                                >${escapeHtml(note)}</textarea>
 
-    <button
-        type="button"
-        class="customer-responsibility-add"
-        onclick="addCustomerResponsibilityNote()"
-    >
-        + Add Responsibility Note
-    </button>
-</div>
+                                <button
+                                    type="button"
+                                    class="customer-responsibility-delete"
+                                    onclick="deleteCustomerResponsibilityNote(${index})"
+                                    title="Remove responsibility note"
+                                    aria-label="Remove responsibility note"
+                                >×</button>
+                            </div>
+                        `;
+                    }).join("")
+                    : `<div class="text-slate-400 italic">No editable responsibility notes</div>`
+            }
 
-<div>
-    <div class="text-slate-400 pb-1">Customer Responsibility Notes</div>
-    ${
-        responsibilities.autoNotes.length || responsibilities.exclusionNotes.length
-            ? `
-                ${responsibilities.autoNotes.map(function(note) {
-                    return `<div>${escapeHtml(note)}</div>`;
-                }).join("")}
-                ${responsibilities.exclusionNotes.map(function(note) {
-                    return `<div>${escapeHtml(note)}</div>`;
-                }).join("")}
-            `
-            : `<div class="text-slate-400 italic">None</div>`
-    }
-</div>    </div>
+            <button
+                type="button"
+                class="customer-responsibility-add"
+                onclick="addCustomerResponsibilityNote()"
+            >
+                + Add Responsibility Note
+            </button>
+        </div>
+    </div>
 </div>
 
                 <div class="listed-stat-card">
@@ -15956,13 +15920,6 @@ function getPrintableResponsibilitiesHtml(summary, items) {
         return String(note || "").trim();
     });
 
-    const customerNotes = []
-        .concat(responsibilities.autoNotes || [])
-        .concat(responsibilities.exclusionNotes || [])
-        .filter(function(note) {
-            return String(note || "").trim();
-        });
-
     return `
         <div class="pdf-responsibility-list">
             <div class="pdf-mini-head">Excluded Items (${summary.excludedCount || 0})</div>
@@ -15974,7 +15931,7 @@ function getPrintableResponsibilitiesHtml(summary, items) {
                     : `<div>None</div>`
             }
 
-            <div class="pdf-mini-head space-top">Customer Responsibilities</div>
+            <div class="pdf-mini-head space-top">Customer Responsibility Notes</div>
             ${
                 editableNotes.length
                     ? editableNotes.map(function(note) {
@@ -15983,17 +15940,23 @@ function getPrintableResponsibilitiesHtml(summary, items) {
                     : `<div>None recorded</div>`
             }
 
-            <div class="pdf-mini-head space-top">Standard Customer Responsibility Notes</div>
+            <div class="pdf-mini-head space-top">Additional Customer Responsibilities</div>
             ${
-                customerNotes.length
-                    ? customerNotes.map(function(note) {
-                        return `<div>${escapeHtml(note)}</div>`;
-                    }).join("")
-                    : ``
+                responsibilities.autoNotes.length || responsibilities.exclusionNotes.length
+                    ? `
+                        ${responsibilities.autoNotes.map(function(note) {
+                            return `<div>${escapeHtml(note)}</div>`;
+                        }).join("")}
+                        ${responsibilities.exclusionNotes.map(function(note) {
+                            return `<div>${escapeHtml(note)}</div>`;
+                        }).join("")}
+                    `
+                    : `<div>None</div>`
             }
         </div>
     `;
 }
+
 function getPrintableCrewInstructionsHtml(items) {
     const crew = buildCrewInstructionsSummary(items);
 
@@ -16375,99 +16338,7 @@ function getListedInventoryDownloadCss() {
     `;
 }
 
-let listedInventoryShareInProgress = false;
-
-function waitForMovePilotRender(ms) {
-    return new Promise(function(resolve) {
-        setTimeout(resolve, ms || 150);
-    });
-}
-
-async function prepareAndShareListedInventoryPdf() {
-    return shareListedInventoryPdf();
-}
-
-let preparedListedInventoryShareBlob = null;
-let preparedListedInventoryShareFileName = "";
-let preparedListedInventoryShareCustomerName = "";
-
-function clearPreparedListedInventoryShare() {
-    preparedListedInventoryShareBlob = null;
-    preparedListedInventoryShareFileName = "";
-    preparedListedInventoryShareCustomerName = "";
-}
 async function shareListedInventoryPdf() {
-    if (preparedListedInventoryShareBlob) {
-        try {
-            const pdfBlob = preparedListedInventoryShareBlob;
-            const fileName = preparedListedInventoryShareFileName || "MovePilot_Listed_Inventory.pdf";
-            const customerName = preparedListedInventoryShareCustomerName || "customer";
-
-            const pdfFile = new File(
-                [pdfBlob],
-                fileName,
-                { type: "application/pdf" }
-            );
-
-            const payloadToShare = {
-                title: "MovePilot Listed Inventory",
-                text: "Listed inventory PDF for " + customerName,
-                files: [pdfFile]
-            };
-
-            if (
-                !navigator.share ||
-                !navigator.canShare ||
-                !navigator.canShare({ files: [pdfFile] })
-            ) {
-                await appAlert(
-                    "This device/browser does not support direct PDF sharing.",
-                    "PDF Share Not Available"
-                );
-                return;
-            }
-
-            await navigator.share(payloadToShare);
-
-            clearPreparedListedInventoryShare();
-
-            if (typeof saveToDevice === "function") {
-                saveToDevice();
-            }
-
-            const shareButtons = document.querySelectorAll(".listed-pdf-share-btn");
-            shareButtons.forEach(function(btn) {
-                btn.innerText = "Share PDF";
-                btn.classList.remove("is-ready-to-send");
-            });
-
-            return;
-        } catch (err) {
-            console.error("Prepared PDF share failed:", err);
-
-            clearPreparedListedInventoryShare();
-
-            const shareButtons = document.querySelectorAll(".listed-pdf-share-btn");
-            shareButtons.forEach(function(btn) {
-                btn.innerText = "Share PDF";
-                btn.classList.remove("is-ready-to-send");
-            });
-
-            if (err && err.name === "AbortError") {
-                await appAlert("PDF sharing was cancelled.", "PDF Share Cancelled");
-                return;
-            }
-
-            await appAlert(
-                "The prepared PDF could not be shared: " +
-                (err && err.message ? err.message : err),
-                "PDF Share Failed"
-            );
-
-            return;
-        }
-    }
-
     if (!currentJob) {
         await appAlert("No active job found.", "Share PDF");
         return;
@@ -16475,7 +16346,7 @@ async function shareListedInventoryPdf() {
 
     if (typeof html2pdf === "undefined") {
         await appAlert(
-            "PDF generator is not loaded. The embedded PDF generator may not be available on this device.",
+            "PDF generator is not loaded. The file html2pdf.bundle.min.js may not be available on this device.",
             "PDF Library Missing"
         );
         return;
@@ -16588,6 +16459,8 @@ async function shareListedInventoryPdf() {
             return;
         }
 
+        await appAlert("Creating PDF now. This may take a few seconds on older tablets.", "PDF Share");
+
         const pdfBlob = await html2pdf()
             .set({
                 margin: [8, 8, 8, 8],
@@ -16614,37 +16487,43 @@ async function shareListedInventoryPdf() {
             .from(pdfElement)
             .outputPdf("blob");
 
-        const testFile = new File(
+        const pdfFile = new File(
             [pdfBlob],
             fileName,
             { type: "application/pdf" }
         );
 
+        const sharePayload = {
+            title: "MovePilot Listed Inventory",
+            text: "Listed inventory PDF for " + customerName,
+            files: [pdfFile]
+        };
+
         if (
             navigator.share &&
             navigator.canShare &&
-            navigator.canShare({ files: [testFile] })
+            navigator.canShare({ files: [pdfFile] })
         ) {
-            preparedListedInventoryShareBlob = pdfBlob;
-            preparedListedInventoryShareFileName = fileName;
-            preparedListedInventoryShareCustomerName = customerName;
+            await navigator.share(sharePayload);
 
-            const shareButtons = document.querySelectorAll(".listed-pdf-share-btn");
-            shareButtons.forEach(function(btn) {
-                btn.innerText = "Send PDF";
-                btn.classList.add("is-ready-to-send");
-            });
+if (typeof saveToDevice === "function") {
+    saveToDevice();
+}
 
-            await appAlert(
-                "PDF ready. Press Send PDF to share.",
-                "PDF Ready"
-            );
+await appAlert(
+    "PDF shared successfully. The app will refresh so another PDF can be shared.",
+    "PDF Shared"
+);
 
-            return;
+setTimeout(function() {
+    window.location.reload();
+}, 500);
+
+return;
         }
 
         await appAlert(
-            "This device/browser does not support direct PDF sharing. Please use Review PDF as a fallback.",
+            "This device/browser does not support direct PDF sharing. Please use Review / Print PDF as a fallback.",
             "PDF Share Not Available"
         );
     } catch (err) {
@@ -17341,27 +17220,14 @@ movePilotPrintWindowWatcher = setInterval(function() {
                     <div class="pdf-sub">Exported: ${new Date().toLocaleString("en-GB")}</div>
                 </div>
             </div>
-           <div class="pdf-screen-actions">
+            <div class="pdf-screen-actions">
     <div class="pdf-screen-actions-text">
-        <strong>Review Copy:</strong> Check this with the customer. Use Print / Save PDF if needed.
+        <strong>Review Copy:</strong> Check this with the customer. Use Print / Save PDF when ready.
     </div>
 
     <div class="pdf-screen-actions-buttons">
-        <button
-            type="button"
-            class="pdf-screen-btn"
-            onclick="window.print()"
-        >
-            Print / Save PDF
-        </button>
-
-        <button
-            type="button"
-            class="pdf-screen-btn secondary"
-            onclick="window.close()"
-        >
-            Close Preview
-        </button>
+        <button type="button" class="pdf-screen-btn" onclick="window.print()">Print / Save PDF</button>
+        <button type="button" class="pdf-screen-btn secondary" onclick="window.close()">Close Preview</button>
     </div>
 </div>
 
