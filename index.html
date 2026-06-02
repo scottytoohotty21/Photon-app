@@ -3015,24 +3015,6 @@ body {
 .listed-pdf-btn:active {
     transform: scale(0.98);
 }
-.listed-pdf-copy-btn {
-    background: #16a34a; /* green */
-    color: #ffffff;
-    border: 1.5px solid #15803d;
-    border-bottom-color: #166534;
-    border-radius: 12px;
-    padding: 12px 14px;
-    font-size: 10px;
-    font-weight: 900;
-    text-transform: uppercase;
-    line-height: 1.1;
-    white-space: nowrap;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
-}
-
-.listed-pdf-copy-btn:active {
-    transform: scale(0.98);
-}
 .listed-photo-review {
     margin-top: 16px;
 }
@@ -5631,15 +5613,13 @@ Enter as: Surname, First Name
         Review / Print PDF
     </button>
 
-    <div class="listed-pdf-actions">
     <button
         type="button"
-        onclick="copyListedInventoryPdf()"
-        class="listed-pdf-btn listed-pdf-copy-btn"
+        onclick="shareListedInventoryPdf()"
+        class="listed-pdf-btn listed-pdf-preview-btn"
     >
-        Copy PDF
+        Share PDF
     </button>
-</div>
 
            <!-- Save PDF to Device paused for tablet testing.
 <button
@@ -14343,17 +14323,14 @@ function buildListedSummary(items) {
         if (entry.excluded) {
             excludedCount += Number(entry.qty || 0);
 
-            const itemLabel = formatListedItemRoomLine(
-    entry,
-    `${Number(entry.qty || 0)} x ${String(entry.itemName || "-").toUpperCase()}`
-);
+            const itemLabel = `${Number(entry.qty || 0)} x ${String(entry.itemName || "-").toUpperCase()}`;
             excludedItems.push(itemLabel);
 
             if (entry.note && String(entry.note).trim()) {
-    exclusionNotes.push(
-        `${itemLabel} — ${String(entry.note).trim()}`
-    );
-}
+                exclusionNotes.push(
+                    `${String(entry.itemName || "-").toUpperCase()}: ${String(entry.note).trim()}`
+                );
+            }
         } else {
             includedVolume += Number(entry.totalVolume || 0);
         }
@@ -14609,28 +14586,6 @@ function activeSequenceShouldCondenseExportWrapSummary() {
 
     return String(seq.packOption || "").trim().toLowerCase() === "full export pack and wrap";
 }
-function getListedItemRoomLabel(entry) {
-    if (!entry) return "";
-
-    return String(
-        entry.roomName ||
-        entry.room ||
-        entry.roomLabel ||
-        entry.location ||
-        ""
-    ).trim();
-}
-
-function formatListedItemRoomLine(entry, baseLine) {
-    const cleanBaseLine = String(baseLine || "").trim();
-    const roomLabel = getListedItemRoomLabel(entry);
-
-    if (!roomLabel) {
-        return cleanBaseLine;
-    }
-
-    return cleanBaseLine + " (" + roomLabel + ")";
-}
 function buildCrewInstructionsSummary(items) {
     const summary = {
     dismantle: [],
@@ -14668,7 +14623,6 @@ const condenseExportWrapSummary = activeSequenceShouldCondenseExportWrapSummary(
             : "";
 
         const baseLine = `${qty} x ${itemName}${bedSuffix}`;
-        const roomLine = formatListedItemRoomLine(entry, baseLine);
         const isPianoItem =
     itemName === "PIANO (UPRIGHT)" ||
     itemName === "PIANO (ELECTRIC)" ||
@@ -14679,8 +14633,8 @@ if (isPianoItem) {
     const pianoListedTag = getPianoDetailsListedTag(entry.pianoDetails);
     summary.specialHandling.push(
         pianoListedTag
-            ? `${roomLine} — ${pianoListedTag}`
-            : roomLine
+            ? `${baseLine} — ${pianoListedTag}`
+            : baseLine
     );
 }
 
@@ -14689,42 +14643,42 @@ if (itemName === "SAFE") {
 
     summary.specialHandling.push(
         safeListedTag
-            ? `${roomLine} — ${safeListedTag}`
-            : roomLine
+            ? `${baseLine} — ${safeListedTag}`
+            : baseLine
     );
 }
 
         if (entry.dismantle) {
-    if (isWardrobeInventoryItem(entry.itemName)) {
-        summary.dismantle.push(
-            `${roomLine} — ${String(formatWardrobeTypes(entry)).toUpperCase()}`
-        );
-    } else {
-        summary.dismantle.push(roomLine);
-    }
-}
+            if (isWardrobeInventoryItem(entry.itemName)) {
+                summary.dismantle.push(
+                    `${qty} x ${itemName} — ${String(formatWardrobeTypes(entry)).toUpperCase()}`
+                );
+            } else {
+                summary.dismantle.push(baseLine);
+            }
+        }
 
         if (entry.expWrap && !condenseExportWrapSummary) {
-    summary.exportWrap.push(roomLine);
+    summary.exportWrap.push(baseLine);
 }
 
         if (entry.crated) {
-    if (entry.crateDims) {
-        summary.crate.push(
-            `${roomLine} — ${entry.crateDims.l} x ${entry.crateDims.w} x ${entry.crateDims.h} ${entry.crateDims.unit}`
-        );
-    } else {
-        summary.crate.push(roomLine);
-    }
-}
+            if (entry.crateDims) {
+                summary.crate.push(
+                    `${baseLine} — ${entry.crateDims.l} x ${entry.crateDims.w} x ${entry.crateDims.h} ${entry.crateDims.unit}`
+                );
+            } else {
+                summary.crate.push(baseLine);
+            }
+        }
 
         if (entry.disconnect) {
-    summary.disconnect.push(roomLine);
-}
+            summary.disconnect.push(baseLine);
+        }
 
         if (entry.damage) {
-    summary.damage.push(`${roomLine} — ${String(entry.damage).trim()}`);
-}
+            summary.damage.push(`${baseLine} — ${String(entry.damage).trim()}`);
+        }
 
         const noteBelongsToCustomerResponsibilities =
     entry.handyman ||
@@ -14735,7 +14689,7 @@ if (
     String(entry.note).trim() &&
     !noteBelongsToCustomerResponsibilities
 ) {
-    summary.notes.push(`${roomLine} — ${String(entry.note).trim()}`);
+    summary.notes.push(`${baseLine} — ${String(entry.note).trim()}`);
 }
     });
 
@@ -16525,21 +16479,8 @@ async function shareListedInventoryPdf() {
             navigator.canShare({ files: [pdfFile] })
         ) {
             await navigator.share(sharePayload);
-
-if (typeof saveToDevice === "function") {
-    saveToDevice();
-}
-
-await appAlert(
-    "PDF shared successfully. The app will refresh so another PDF can be shared.",
-    "PDF Shared"
-);
-
-setTimeout(function() {
-    window.location.reload();
-}, 500);
-
-return;
+            await appAlert("PDF shared successfully.", "PDF Shared");
+            return;
         }
 
         await appAlert(
@@ -16755,42 +16696,6 @@ async function saveListedInventoryPdfToDevice() {
         );
     } finally {
         wrapper.remove();
-    }
-}
-async function copyListedInventoryPdf() {
-    if (!currentJob) {
-        await appAlert("No active job found.", "Copy PDF");
-        return;
-    }
-
-    const wrapper = document.getElementById("listed-inventory-output");
-    if (!wrapper) {
-        await appAlert("No inventory content found to copy.", "Copy PDF");
-        return;
-    }
-
-    try {
-        await appAlert("Generating PDF… This may take a few seconds.", "Copy PDF");
-
-        // Generate PDF blob
-        const pdfBlob = await html2pdf()
-            .set({ filename: 'Inventory.pdf', margin: 10, html2canvas: { scale: 2 } })
-            .from(wrapper)
-            .outputPdf('blob');
-
-        // Copy PDF blob to clipboard
-        await navigator.clipboard.write([
-            new ClipboardItem({ "application/pdf": pdfBlob })
-        ]);
-
-        await appAlert("PDF copied to clipboard. Open your email app and paste it to attach.", "PDF Copied");
-
-    } catch (err) {
-        console.error("Copy PDF failed:", err);
-        await appAlert(
-            "Failed to copy PDF. Please try again: " + (err && err.message ? err.message : err),
-            "Copy PDF Error"
-        );
     }
 }
 async function printListedInventoryPdf() {
