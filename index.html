@@ -14323,12 +14323,16 @@ function buildListedSummary(items) {
         if (entry.excluded) {
             excludedCount += Number(entry.qty || 0);
 
-            const itemLabel = `${Number(entry.qty || 0)} x ${String(entry.itemName || "-").toUpperCase()}`;
+            const itemLabel = formatListedItemRoomLine(
+                entry,
+                `${Number(entry.qty || 0)} x ${String(entry.itemName || "-").toUpperCase()}`
+            );
+
             excludedItems.push(itemLabel);
 
             if (entry.note && String(entry.note).trim()) {
                 exclusionNotes.push(
-                    `${String(entry.itemName || "-").toUpperCase()}: ${String(entry.note).trim()}`
+                    `${itemLabel} — ${String(entry.note).trim()}`
                 );
             }
         } else {
@@ -14586,6 +14590,28 @@ function activeSequenceShouldCondenseExportWrapSummary() {
 
     return String(seq.packOption || "").trim().toLowerCase() === "full export pack and wrap";
 }
+function getListedItemRoomLabel(entry) {
+    if (!entry) return "";
+
+    return String(
+        entry.roomName ||
+        entry.room ||
+        entry.roomLabel ||
+        entry.location ||
+        ""
+    ).trim();
+}
+
+function formatListedItemRoomLine(entry, baseLine) {
+    const cleanBaseLine = String(baseLine || "").trim();
+    const roomLabel = getListedItemRoomLabel(entry);
+
+    if (!roomLabel) {
+        return cleanBaseLine;
+    }
+
+    return cleanBaseLine + " (" + roomLabel + ")";
+}
 function buildCrewInstructionsSummary(items) {
     const summary = {
     dismantle: [],
@@ -14623,6 +14649,7 @@ const condenseExportWrapSummary = activeSequenceShouldCondenseExportWrapSummary(
             : "";
 
         const baseLine = `${qty} x ${itemName}${bedSuffix}`;
+        const roomLine = formatListedItemRoomLine(entry, baseLine);
         const isPianoItem =
     itemName === "PIANO (UPRIGHT)" ||
     itemName === "PIANO (ELECTRIC)" ||
@@ -14633,8 +14660,8 @@ if (isPianoItem) {
     const pianoListedTag = getPianoDetailsListedTag(entry.pianoDetails);
     summary.specialHandling.push(
         pianoListedTag
-            ? `${baseLine} — ${pianoListedTag}`
-            : baseLine
+            ? `${roomLine} — ${pianoListedTag}`
+            : roomLine
     );
 }
 
@@ -14643,42 +14670,42 @@ if (itemName === "SAFE") {
 
     summary.specialHandling.push(
         safeListedTag
-            ? `${baseLine} — ${safeListedTag}`
-            : baseLine
+            ? `${roomLine} — ${safeListedTag}`
+            : roomLine
     );
 }
 
         if (entry.dismantle) {
-            if (isWardrobeInventoryItem(entry.itemName)) {
-                summary.dismantle.push(
-                    `${qty} x ${itemName} — ${String(formatWardrobeTypes(entry)).toUpperCase()}`
-                );
-            } else {
-                summary.dismantle.push(baseLine);
-            }
-        }
+    if (isWardrobeInventoryItem(entry.itemName)) {
+        summary.dismantle.push(
+            `${roomLine} — ${String(formatWardrobeTypes(entry)).toUpperCase()}`
+        );
+    } else {
+        summary.dismantle.push(roomLine);
+    }
+}
 
         if (entry.expWrap && !condenseExportWrapSummary) {
-    summary.exportWrap.push(baseLine);
+    summary.exportWrap.push(roomLine);
 }
 
         if (entry.crated) {
-            if (entry.crateDims) {
-                summary.crate.push(
-                    `${baseLine} — ${entry.crateDims.l} x ${entry.crateDims.w} x ${entry.crateDims.h} ${entry.crateDims.unit}`
-                );
-            } else {
-                summary.crate.push(baseLine);
-            }
-        }
+    if (entry.crateDims) {
+        summary.crate.push(
+            `${roomLine} — ${entry.crateDims.l} x ${entry.crateDims.w} x ${entry.crateDims.h} ${entry.crateDims.unit}`
+        );
+    } else {
+        summary.crate.push(roomLine);
+    }
+}
 
         if (entry.disconnect) {
-            summary.disconnect.push(baseLine);
-        }
+    summary.disconnect.push(roomLine);
+}
 
         if (entry.damage) {
-            summary.damage.push(`${baseLine} — ${String(entry.damage).trim()}`);
-        }
+    summary.damage.push(`${roomLine} — ${String(entry.damage).trim()}`);
+}
 
         const noteBelongsToCustomerResponsibilities =
     entry.handyman ||
@@ -14689,7 +14716,7 @@ if (
     String(entry.note).trim() &&
     !noteBelongsToCustomerResponsibilities
 ) {
-    summary.notes.push(`${baseLine} — ${String(entry.note).trim()}`);
+    summary.notes.push(`${roomLine} — ${String(entry.note).trim()}`);
 }
     });
 
