@@ -15991,7 +15991,16 @@ function getPrintableCrewInstructionsHtml(items) {
     return `
         <div class="pdf-materials-grid">
             <div>
-                <div class="pdf-mini-head">Dismantle / Reassemble</div>
+                <div class="pdf-mini-head">Notes</div>
+                ${
+                    crew.notes.length
+                        ? crew.notes.map(function(item) {
+                            return `<div>${escapeHtml(item)}</div>`;
+                        }).join("")
+                        : `<div>None</div>`
+                }
+
+                <div class="pdf-mini-head space-top">Dismantle / Reassemble</div>
                 ${
                     crew.dismantle.length
                         ? crew.dismantle.map(function(item) {
@@ -16020,25 +16029,16 @@ function getPrintableCrewInstructionsHtml(items) {
             </div>
 
             <div>
-                <div class="pdf-mini-head">Notes</div>
-${
-    crew.notes.length
-        ? crew.notes.map(function(item) {
-            return `<div>${escapeHtml(item)}</div>`;
-        }).join("")
-        : `<div>None</div>`
-}
+                <div class="pdf-mini-head">Condition</div>
+                ${
+                    crew.damage.length
+                        ? crew.damage.map(function(item) {
+                            return `<div>${escapeHtml(item)}</div>`;
+                        }).join("")
+                        : `<div>None</div>`
+                }
 
-<div class="pdf-mini-head space-top">Special Handling</div>
-${
-    crew.specialHandling.length
-        ? crew.specialHandling.map(function(item) {
-            return `<div>${escapeHtml(item)}</div>`;
-        }).join("")
-        : `<div>None</div>`
-}
-
-<div class="pdf-mini-head space-top">Disconnect</div>
+                <div class="pdf-mini-head space-top">Disconnect</div>
                 ${
                     crew.disconnect.length
                         ? crew.disconnect.map(function(item) {
@@ -16047,10 +16047,10 @@ ${
                         : `<div>None</div>`
                 }
 
-                <div class="pdf-mini-head space-top">Condition</div>
+                <div class="pdf-mini-head space-top">Special Handling</div>
                 ${
-                    crew.damage.length
-                        ? crew.damage.map(function(item) {
+                    crew.specialHandling.length
+                        ? crew.specialHandling.map(function(item) {
                             return `<div>${escapeHtml(item)}</div>`;
                         }).join("")
                         : `<div>None</div>`
