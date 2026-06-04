@@ -3991,13 +3991,14 @@ min-height: 48px;
 }
 
 .schedule-overtime-btn{
-    height:32px;
-    border-radius:8px;
+    height:40px;              /* taller for easier tapping */
+    min-width:120px;           /* ensure wide enough */
+    border-radius:10px;       /* slightly rounder */
     border:1px solid #bfdbfe;
     background:#eff6ff;
     color:#1d4ed8;
-    padding:0 10px;
-    font-size:10px;
+    padding:0 14px;           /* more horizontal padding */
+    font-size:12px;           /* bigger text */
     font-weight:900;
     text-transform:uppercase;
     cursor:pointer;
@@ -22827,12 +22828,12 @@ function renderSchedulePlanner(){
 
                     <div class="schedule-row-actions">
                         <button
-                            type="button"
-                            class="schedule-overtime-btn"
-                            onclick="addOneHourOvertimeToScheduleDay('${day.id}')"
-                        >
-                            +1 HR${Number(day.overtimeHours || 0) > 0 ? ' · ' + Number(day.overtimeHours || 0) + ' HR' : ''}
-                        </button>
+    type="button"
+    class="schedule-overtime-btn"
+    onclick="addOneHourOvertimeToScheduleDay('${day.id}')"
+>
+    Overtime + 1HR${Number(day.overtimeHours || 0) > 0 ? ' · ' + Number(day.overtimeHours || 0) + ' HR' : ''}
+</button>
 
                         ${
                             Number(day.overtimeHours || 0) > 0
