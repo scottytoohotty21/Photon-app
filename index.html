@@ -3960,6 +3960,22 @@ min-height: 48px;
     background:#fff;
     padding:12px;
 }
+/* --- SCHEDULE ACTIVE ROW HIGHLIGHT --- */
+.schedule-row {
+    transition: background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.schedule-row:focus-within {
+    background: #ffffff !important;
+    border-color: #3b82f6 !important;
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.16);
+}
+
+.schedule-row:focus-within .schedule-row-title-pill {
+    background: #2563eb;
+    color: #ffffff;
+    border-color: #1d4ed8;
+}
 
 .schedule-row.schedule-row-accent{
     border-left:4px solid #3b82f6;
