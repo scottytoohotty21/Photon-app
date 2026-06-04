@@ -10570,11 +10570,7 @@ function renderDashboard() {
                     <div class="flex flex-col gap-2 items-end">
                         <button onclick="handleUploadClick(event, ${j.id})" class="btn-upload-flat">Upload ↑</button>
 
-                        ${
-                            isDevMode
-                                ? `<button onclick="deleteDashboardJob(event, ${j.id})" class="btn-dashboard-delete">Delete</button>`
-                                : ""
-                        }
+                        <button type="button" onclick="event.stopPropagation(); event.preventDefault(); deleteDashboardJob(event, ${j.id}); return false;" class="btn-dashboard-delete">Delete</button>
                     </div>
                 </div>
             </div>`;
