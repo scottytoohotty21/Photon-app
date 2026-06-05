@@ -3428,7 +3428,6 @@ body {
     display: flex;
     align-items: center;
     gap: 6px;
-    flex: 1 1 140px;
     min-width: 0;
 }
 
@@ -3460,19 +3459,20 @@ body {
 }
 
 .inventory-search-clear {
+    min-width: 120px;
+    width: 120px;
+    max-width: 120px;
     height: 48px;
-min-height: 48px;
+    flex: 0 0 120px;
+    border-radius: 10px;
     border: 1.5px solid #cbd5e1;
     border-bottom-color: #94a3b8;
-    border-radius: 10px;
     background: #ffffff;
     color: #334155;
     font-size: 10px;
-    font-weight: 850;
+    font-weight: 900;
     text-transform: uppercase;
-    letter-spacing: 0.01em;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
-    font-family: 'Inter', sans-serif;
+    cursor: pointer;
 }
 
 .inventory-search-clear:active {
