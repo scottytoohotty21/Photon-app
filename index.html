@@ -883,14 +883,16 @@ body {
 
 #tool-photos,
 #tool-disconnect,
-#tool-handyman {
+#tool-handyman,
+#tool-custom-item {
     min-width: 120px;
     width: 120px;
     max-width: 120px;
     height: 48px;
     flex: 0 0 120px;
 }
-#tool-handyman {
+#tool-handyman,
+#tool-custom-item {
     flex-grow: 0 !important;
 }
         .inv-tool-btn.active {
@@ -5597,14 +5599,22 @@ Enter as: Surname, First Name
         </button>
 
         <button
-            id="tool-handyman"
-            class="inv-tool-btn inventory-search-tool"
-            onclick="toggleItemAction('handyman')"
-        >
-            Handyman
-        </button>
+    id="tool-handyman"
+    class="inv-tool-btn inventory-search-tool"
+    onclick="toggleItemAction('handyman')"
+>
+    Handyman
+</button>
 
-        <div class="inventory-search-box">
+<button
+    id="tool-custom-item"
+    class="inv-tool-btn inventory-search-tool"
+    onclick="openCustomInventoryItemModal()"
+>
+    Custom<br>Item
+</button>
+
+<div class="inventory-search-box">
             <input
                 type="text"
                 id="inventory-search-input"
@@ -9319,16 +9329,26 @@ async function resetInventoryButtonOrder() {
         : itemsToShow.filter(function(itemName) {
             return itemName.toLowerCase().includes(search);
         });
+            const customInventoryItems = getCustomInventoryItems();
+
+    const filteredCustomItems = !search
+        ? customInventoryItems
+        : customInventoryItems.filter(function(item) {
+            return String(item.name || "").toLowerCase().includes(search);
+        });
 
     if (countEl) {
-        if (!search) {
-            countEl.innerText = `Showing all items (${itemsToShow.length})`;
-        } else {
-            countEl.innerText = `Showing ${filteredItems.length} of ${itemsToShow.length} items`;
-        }
-    }
+    const totalButtonCount = itemsToShow.length + customInventoryItems.length;
+    const filteredButtonCount = filteredItems.length + filteredCustomItems.length;
 
-    if (!filteredItems.length) {
+    if (!search) {
+        countEl.innerText = `Showing all items (${totalButtonCount})`;
+    } else {
+        countEl.innerText = `Showing ${filteredButtonCount} of ${totalButtonCount} items`;
+    }
+}
+
+    if (!filteredItems.length && !filteredCustomItems.length) {
         grid.innerHTML = `
             <div class="col-span-4 bg-slate-50 border border-slate-200 rounded-xl p-4 text-center text-[10px] font-black uppercase text-slate-400">
                 No matching items
@@ -9370,7 +9390,23 @@ async function resetInventoryButtonOrder() {
         `;
     }).join('');
 
-    grid.innerHTML = itemButtonsHtml;
+        const customButtonsHtml = filteredCustomItems.map(function(item) {
+        const safeCustomId = String(item.id || "").replace(/'/g, "\\'");
+        const safeName = escapeHtml(String(item.name || "").trim());
+        const safeVolume = escapeHtml(String(item.volume || 0));
+
+        return `
+            <button
+                class="item-btn inventory-furniture-btn"
+                onclick="addSavedCustomInventoryItem('${safeCustomId}')"
+                title="Custom item · ${safeVolume} cuft"
+            >
+                ${safeName}
+            </button>
+        `;
+    }).join('');
+
+    grid.innerHTML = customButtonsHtml + itemButtonsHtml;
 updateInventoryReorderHeaderButton();
 }
 
@@ -11675,6 +11711,136 @@ if (isBedInventoryItem(item.item)) {
 if (isWardrobeInventoryItem(item.item)) {
     addOrEditWardrobeType();
 }
+}
+const CUSTOM_INVENTORY_ITEMS_STORAGE_KEY = "MOVEPILOT_CUSTOM_INVENTORY_ITEMS";
+
+function getCustomInventoryItems() {
+    try {
+        const raw = localStorage.getItem(CUSTOM_INVENTORY_ITEMS_STORAGE_KEY);
+        const parsed = raw ? JSON.parse(raw) : [];
+
+        return Array.isArray(parsed) ? parsed : [];
+    } catch (err) {
+        console.warn("Could not load custom inventory items", err);
+        return [];
+    }
+}
+
+function saveCustomInventoryItems(items) {
+    try {
+        localStorage.setItem(
+            CUSTOM_INVENTORY_ITEMS_STORAGE_KEY,
+            JSON.stringify(Array.isArray(items) ? items : [])
+        );
+    } catch (err) {
+        console.warn("Could not save custom inventory items", err);
+    }
+}
+
+function createCustomInventoryItemId() {
+    return "custom_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7);
+}
+
+function openCustomInventoryItemModal() {
+    closeAllMovePilotModals("custom-item-overlay");
+
+    const overlay = document.getElementById("custom-item-overlay");
+    const nameInput = document.getElementById("custom-item-name-input");
+    const volumeInput = document.getElementById("custom-item-volume-input");
+
+    if (!overlay || !nameInput || !volumeInput) return;
+
+    nameInput.value = "";
+    volumeInput.value = "";
+    setModalErrorText("custom-item-error-text", "");
+
+    nameInput.oninput = function () {
+        setModalErrorText("custom-item-error-text", "");
+    };
+
+    volumeInput.oninput = function () {
+        setModalErrorText("custom-item-error-text", "");
+    };
+
+    overlay.style.display = "flex";
+
+    setTimeout(function () {
+        nameInput.focus();
+    }, 50);
+}
+
+function closeCustomInventoryItemModal() {
+    const overlay = document.getElementById("custom-item-overlay");
+    const nameInput = document.getElementById("custom-item-name-input");
+    const volumeInput = document.getElementById("custom-item-volume-input");
+
+    if (overlay) overlay.style.display = "none";
+    if (nameInput) nameInput.value = "";
+    if (volumeInput) volumeInput.value = "";
+    setModalErrorText("custom-item-error-text", "");
+}
+
+function saveCustomInventoryItemModal() {
+    const nameInput = document.getElementById("custom-item-name-input");
+    const volumeInput = document.getElementById("custom-item-volume-input");
+
+    if (!nameInput || !volumeInput) return;
+
+    const cleanName = nameInput.value.trim();
+    const unitVolume = Number(volumeInput.value);
+
+    if (!cleanName && (!volumeInput.value || String(volumeInput.value).trim() === "")) {
+        setModalErrorText("custom-item-error-text", "Enter item name and unit volume");
+        return;
+    }
+
+    if (!cleanName) {
+        setModalErrorText("custom-item-error-text", "Enter an item name");
+        return;
+    }
+
+    if (isNaN(unitVolume) || unitVolume <= 0) {
+        setModalErrorText("custom-item-error-text", "Unit volume must be greater than 0");
+        return;
+    }
+
+    const items = getCustomInventoryItems();
+    const duplicate = items.find(function(item) {
+        return String(item.name || "").trim().toLowerCase() === cleanName.toLowerCase();
+    });
+
+    if (duplicate) {
+        duplicate.name = cleanName;
+        duplicate.volume = unitVolume;
+    } else {
+        items.push({
+            id: createCustomInventoryItemId(),
+            name: cleanName,
+            volume: unitVolume
+        });
+    }
+
+    saveCustomInventoryItems(items);
+    closeCustomInventoryItemModal();
+    renderInventoryButtons();
+}
+
+function addSavedCustomInventoryItem(customItemId) {
+    const item = getCustomInventoryItems().find(function(customItem) {
+        return String(customItem.id) === String(customItemId);
+    });
+
+    if (!item) return;
+
+    const nameInput = document.getElementById("misc-name-input");
+    const volumeInput = document.getElementById("misc-volume-input");
+
+    if (!nameInput || !volumeInput) return;
+
+    nameInput.value = String(item.name || "").trim();
+    volumeInput.value = Number(item.volume || 0);
+
+    saveMiscModal();
 }
 function addMiscItem() {
     closeAllMovePilotModals("misc-overlay");
@@ -24562,6 +24728,42 @@ document.addEventListener('DOMContentLoaded', function () {
         <div class="misc-actions">
             <button type="button" class="misc-cancel-btn" onclick="closeMiscModal()">Cancel</button>
             <button type="button" class="misc-save-btn" onclick="saveMiscModal()">Add Item</button>
+        </div>
+    </div>
+</div>
+<!-- CUSTOM INVENTORY ITEM MODAL -->
+<div id="custom-item-overlay" class="misc-overlay" onclick="closeCustomInventoryItemModal()">
+    <div class="misc-panel" onclick="event.stopPropagation()">
+        <div class="misc-title">Save Custom Item</div>
+        <div class="misc-subtitle">Create a reusable inventory button for this device</div>
+
+        <div class="misc-field-wrap">
+            <label class="misc-label" for="custom-item-name-input">Item Name</label>
+            <input
+                type="text"
+                id="custom-item-name-input"
+                class="misc-input"
+                placeholder="e.g. Peloton"
+            >
+        </div>
+
+        <div class="misc-field-wrap">
+            <label class="misc-label" for="custom-item-volume-input">Unit Volume (CUFT)</label>
+            <input
+                type="number"
+                id="custom-item-volume-input"
+                class="misc-input"
+                placeholder="e.g. 12"
+                min="1"
+                step="0.5"
+            >
+        </div>
+
+        <div id="custom-item-error-text" class="modal-error-text"></div>
+
+        <div class="misc-actions">
+            <button type="button" class="misc-cancel-btn" onclick="closeCustomInventoryItemModal()">Cancel</button>
+            <button type="button" class="misc-save-btn" onclick="saveCustomInventoryItemModal()">Save Button</button>
         </div>
     </div>
 </div>
