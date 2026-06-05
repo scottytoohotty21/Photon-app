@@ -3955,6 +3955,18 @@ min-height: 48px;
 }
 .schedule-title{font-size:10px;font-weight:900;text-transform:uppercase;color:var(--slate-400);}
 .schedule-btn{height:38px;border-radius:10px;border:1px solid var(--slate-300);background:#fff;color:var(--slate-700);padding:0 14px;font-size:11px;font-weight:900;text-transform:uppercase;cursor:pointer;}
+.schedule-add-leg-btn{
+    height:40px;
+    min-width:120px;
+    border-radius:10px;
+    border:1px solid #bfdbfe;
+    background:#eff6ff;
+    color:#1d4ed8;
+    padding:0 14px;
+    font-size:12px;
+    font-weight:900;
+    text-transform:uppercase;
+}
 .schedule-list{display:grid;gap:12px;}
 .schedule-row{
     border:1px solid #cbd5e1;
@@ -4005,13 +4017,14 @@ min-height: 48px;
 }
 
 .schedule-overtime-clear-btn{
-    height:32px;
-    border-radius:8px;
+    height:40px;
+    min-width:120px;
+    border-radius:10px;
     border:1px solid var(--red-200);
     background:var(--red-50);
     color:var(--red-800);
-    padding:0 10px;
-    font-size:10px;
+    padding:0 14px;
+    font-size:12px;
     font-weight:900;
     text-transform:uppercase;
     cursor:pointer;
@@ -4043,15 +4056,28 @@ min-height: 48px;
     font-weight: 900;
     line-height: 1;
 }
-.schedule-remove{height:32px;border-radius:8px;border:1px solid var(--red-200);background:var(--red-50);color:var(--red-800);padding:0 10px;font-size:10px;font-weight:900;text-transform:uppercase;cursor:pointer;}
+.schedule-remove{
+    height:40px;
+    min-width:120px;
+    border-radius:10px;
+    border:1px solid var(--red-200);
+    background:var(--red-50);
+    color:var(--red-800);
+    padding:0 14px;
+    font-size:12px;
+    font-weight:900;
+    text-transform:uppercase;
+    cursor:pointer;
+}
 .schedule-leg-delete-btn {
-    width: 34px;
-    height: 34px;
+    width: 44px;
+    min-width: 44px;
+    height: 38px;
     border-radius: 9px;
     border: 1px solid #fecaca;
     background: #fef2f2;
     color: #dc2626;
-    font-size: 18px;
+    font-size: 19px;
     font-weight: 900;
     line-height: 1;
     display: inline-flex;
@@ -20496,7 +20522,7 @@ function renderScheduleLegs(day, state, totals) {
 
                 <button
                     type="button"
-                    class="schedule-btn"
+                    class="schedule-btn schedule-add-leg-btn"
                     onclick="addScheduleLeg('${day.id}')"
                 >
                     Add Leg
