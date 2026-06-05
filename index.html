@@ -3411,9 +3411,9 @@ body {
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.75), 0 1px 2px rgba(15, 23, 42, 0.06);
 }
 
-.inventory-search-row {
+.inventory-search-row { 
     display: grid;
-    grid-template-columns: 120px 120px 120px minmax(0, 1fr);
+    grid-template-columns: 120px 120px 120px 120px minmax(0, 1fr);
     gap: 8px;
     align-items: stretch;
 }
@@ -3425,10 +3425,10 @@ body {
 }
 
 .inventory-search-box {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 86px;
-    gap: 8px;
-    align-items: stretch;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1 1 140px;
     min-width: 0;
 }
 
@@ -3451,6 +3451,7 @@ body {
 
 .inventory-search-input-short {
     width: 100%;
+    min-width: 0;
 }
 
 .inventory-search-input:focus {
