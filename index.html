@@ -2242,6 +2242,39 @@ body {
     text-transform: uppercase;
     cursor: pointer;
 }
+.custom-item-delete-row-confirm {
+    border-color: #fed7aa;
+    background: #fff7ed;
+}
+
+.custom-item-delete-confirm-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+}
+
+.custom-item-delete-cancel-btn,
+.custom-item-delete-confirm-btn {
+    height: 38px;
+    border-radius: 10px;
+    font-size: 9px;
+    font-weight: 950;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
+.custom-item-delete-cancel-btn {
+    border: 1.5px solid #cbd5e1;
+    background: #ffffff;
+    color: #334155;
+}
+
+.custom-item-delete-confirm-btn {
+    border: 1.5px solid #fecaca;
+    border-bottom-color: #f87171;
+    background: #dc2626;
+    color: #ffffff;
+}
 
 .custom-item-delete-empty {
     padding: 16px;
@@ -11781,6 +11814,7 @@ if (isWardrobeInventoryItem(item.item)) {
 }
 }
 const CUSTOM_INVENTORY_ITEMS_STORAGE_KEY = "MOVEPILOT_CUSTOM_INVENTORY_ITEMS";
+let pendingCustomInventoryDeleteId = "";
 
 function getCustomInventoryItems() {
     try {
@@ -11923,6 +11957,8 @@ function openDeleteCustomInventoryItemModal() {
 function closeDeleteCustomInventoryItemModal() {
     const overlay = document.getElementById("custom-item-delete-overlay");
     if (overlay) overlay.style.display = "none";
+
+    pendingCustomInventoryDeleteId = "";
 }
 
 function renderCustomInventoryDeleteList() {
@@ -11932,6 +11968,8 @@ function renderCustomInventoryDeleteList() {
     const items = getCustomInventoryItems();
 
     if (!items.length) {
+        pendingCustomInventoryDeleteId = "";
+
         list.innerHTML = `
             <div class="custom-item-delete-empty">
                 No custom items saved
@@ -11944,6 +11982,36 @@ function renderCustomInventoryDeleteList() {
         const safeId = String(item.id || "").replace(/'/g, "\\'");
         const safeName = escapeHtml(String(item.name || "").trim());
         const safeVolume = escapeHtml(String(item.volume || 0));
+        const isPendingDelete = String(item.id || "") === String(pendingCustomInventoryDeleteId || "");
+
+        if (isPendingDelete) {
+            return `
+                <div class="custom-item-delete-row custom-item-delete-row-confirm">
+                    <div>
+                        <div class="custom-item-delete-name">Delete ${safeName}?</div>
+                        <div class="custom-item-delete-volume">${safeVolume} CUFT · This only removes the saved button</div>
+                    </div>
+
+                    <div class="custom-item-delete-confirm-actions">
+                        <button
+                            type="button"
+                            class="custom-item-delete-cancel-btn"
+                            onclick="cancelDeleteCustomInventoryItem()"
+                        >
+                            Cancel
+                        </button>
+
+                        <button
+                            type="button"
+                            class="custom-item-delete-confirm-btn"
+                            onclick="confirmDeleteCustomInventoryItem('${safeId}')"
+                        >
+                            Confirm
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
 
         return `
             <div class="custom-item-delete-row">
@@ -11965,23 +12033,23 @@ function renderCustomInventoryDeleteList() {
 }
 
 function deleteCustomInventoryItem(customItemId) {
+    pendingCustomInventoryDeleteId = String(customItemId || "");
+    renderCustomInventoryDeleteList();
+}
+
+function cancelDeleteCustomInventoryItem() {
+    pendingCustomInventoryDeleteId = "";
+    renderCustomInventoryDeleteList();
+}
+
+function confirmDeleteCustomInventoryItem(customItemId) {
     const items = getCustomInventoryItems();
-
-    const itemToDelete = items.find(function(item) {
-        return String(item.id) === String(customItemId);
-    });
-
-    if (!itemToDelete) return;
-
-    const itemName = String(itemToDelete.name || "this custom item").trim();
-
-    if (!confirm("Delete custom item: " + itemName + "?")) {
-        return;
-    }
 
     const remainingItems = items.filter(function(item) {
         return String(item.id) !== String(customItemId);
     });
+
+    pendingCustomInventoryDeleteId = "";
 
     saveCustomInventoryItems(remainingItems);
     renderInventoryButtons();
