@@ -2194,6 +2194,66 @@ body {
     font-weight: 900;
     text-transform: uppercase;
 }
+.custom-item-delete-list {
+    display: grid;
+    gap: 8px;
+    margin-top: 14px;
+    margin-bottom: 14px;
+}
+
+.custom-item-delete-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 92px;
+    gap: 8px;
+    align-items: center;
+    padding: 10px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 12px;
+    background: #f8fafc;
+}
+
+.custom-item-delete-name {
+    min-width: 0;
+    font-size: 12px;
+    font-weight: 900;
+    text-transform: uppercase;
+    color: #0f172a;
+    line-height: 1.2;
+    overflow-wrap: break-word;
+}
+
+.custom-item-delete-volume {
+    margin-top: 3px;
+    font-size: 10px;
+    font-weight: 800;
+    color: #64748b;
+    text-transform: uppercase;
+}
+
+.custom-item-delete-btn {
+    height: 38px;
+    border-radius: 10px;
+    border: 1.5px solid #fecaca;
+    border-bottom-color: #f87171;
+    background: #fef2f2;
+    color: #991b1b;
+    font-size: 10px;
+    font-weight: 950;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
+.custom-item-delete-empty {
+    padding: 16px;
+    border: 1.5px dashed #cbd5e1;
+    border-radius: 12px;
+    background: #f8fafc;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 900;
+    text-align: center;
+    text-transform: uppercase;
+}
         /* --- JOB HEADER --- */
         .job-header {
             background: #0f172a;
@@ -5445,6 +5505,13 @@ Enter as: Surname, First Name
     type="button"
 >
     Reset Order
+</button>
+<button
+    class="job-header-mini-btn reset"
+    onclick="openDeleteCustomInventoryItemModal()"
+    type="button"
+>
+    Delete Custom
 </button>
     </div>
 
@@ -11842,6 +11909,83 @@ function addSavedCustomInventoryItem(customItemId) {
     volumeInput.value = Number(item.volume || 0);
 
     saveMiscModal();
+}
+function openDeleteCustomInventoryItemModal() {
+    closeAllMovePilotModals("custom-item-delete-overlay");
+
+    const overlay = document.getElementById("custom-item-delete-overlay");
+    if (!overlay) return;
+
+    renderCustomInventoryDeleteList();
+    overlay.style.display = "flex";
+}
+
+function closeDeleteCustomInventoryItemModal() {
+    const overlay = document.getElementById("custom-item-delete-overlay");
+    if (overlay) overlay.style.display = "none";
+}
+
+function renderCustomInventoryDeleteList() {
+    const list = document.getElementById("custom-item-delete-list");
+    if (!list) return;
+
+    const items = getCustomInventoryItems();
+
+    if (!items.length) {
+        list.innerHTML = `
+            <div class="custom-item-delete-empty">
+                No custom items saved
+            </div>
+        `;
+        return;
+    }
+
+    list.innerHTML = items.map(function(item) {
+        const safeId = String(item.id || "").replace(/'/g, "\\'");
+        const safeName = escapeHtml(String(item.name || "").trim());
+        const safeVolume = escapeHtml(String(item.volume || 0));
+
+        return `
+            <div class="custom-item-delete-row">
+                <div>
+                    <div class="custom-item-delete-name">${safeName}</div>
+                    <div class="custom-item-delete-volume">${safeVolume} CUFT</div>
+                </div>
+
+                <button
+                    type="button"
+                    class="custom-item-delete-btn"
+                    onclick="deleteCustomInventoryItem('${safeId}')"
+                >
+                    Delete
+                </button>
+            </div>
+        `;
+    }).join("");
+}
+
+function deleteCustomInventoryItem(customItemId) {
+    const items = getCustomInventoryItems();
+
+    const itemToDelete = items.find(function(item) {
+        return String(item.id) === String(customItemId);
+    });
+
+    if (!itemToDelete) return;
+
+    const itemName = String(itemToDelete.name || "this custom item").trim();
+
+    if (!confirm("Delete custom item: " + itemName + "?")) {
+        return;
+    }
+
+    const remainingItems = items.filter(function(item) {
+        return String(item.id) !== String(customItemId);
+    });
+
+    saveCustomInventoryItems(remainingItems);
+    renderInventoryButtons();
+    renderCustomInventoryDeleteList();
 }
 function addMiscItem() {
     closeAllMovePilotModals("misc-overlay");
@@ -24765,6 +24909,19 @@ document.addEventListener('DOMContentLoaded', function () {
         <div class="misc-actions">
             <button type="button" class="misc-cancel-btn" onclick="closeCustomInventoryItemModal()">Cancel</button>
             <button type="button" class="misc-save-btn" onclick="saveCustomInventoryItemModal()">Save Button</button>
+        </div>
+    </div>
+</div>
+<!-- DELETE CUSTOM INVENTORY ITEM MODAL -->
+<div id="custom-item-delete-overlay" class="misc-overlay" onclick="closeDeleteCustomInventoryItemModal()">
+    <div class="misc-panel" onclick="event.stopPropagation()">
+        <div class="misc-title">Delete Custom Item</div>
+        <div class="misc-subtitle">Remove saved custom inventory buttons from this device</div>
+
+        <div id="custom-item-delete-list" class="custom-item-delete-list"></div>
+
+        <div class="misc-actions">
+            <button type="button" class="misc-cancel-btn" onclick="closeDeleteCustomInventoryItemModal()">Close</button>
         </div>
     </div>
 </div>
