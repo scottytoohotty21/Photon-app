@@ -23398,7 +23398,75 @@ function buildPlannerCoverageMeta(kind, rowCapacityHours, remainingBeforeHours, 
         remainingAfterCuft: remainingAfterCuft
     };
 }
-function buildLoadDebugLine(day, taskMode, men, taskHours, equivalentLoadHours, state, plannerDayLabel, coverageMeta) {
+function buildScheduleRowTimelineLinesForNotes(day, state, totals) {
+    ensureScheduleRowShape(day);
+
+    const bounds = getRowWindowBounds(day.dayPart, day.overtimeHours || 0);
+    const windowStart = bounds.start;
+    const completionCutoff = 13 * 60;
+    const isCompletionDay = String(day.completionWindow || "None") === "Completion Day";
+
+    const legs = Array.isArray(day.legs) ? day.legs : [];
+    const taskBlocks = getPlannerTaskBlocks(day, state, totals);
+
+    const lines = [];
+    let cursor = windowStart;
+
+    const maxSteps = Math.max(legs.length, taskBlocks.length);
+
+    for (let i = 0; i < maxSteps; i++) {
+        const leg = legs[i];
+
+        if (leg) {
+            const legStart = cursor;
+            const legEnd = cursor + Math.max(0, Number(leg.minutes || 0));
+
+            lines.push(
+                minutesToClock(legStart) + "–" +
+                minutesToClock(legEnd) +
+                " Travel: " +
+                getScheduleLocationLabel(leg.from) +
+                " → " +
+                getScheduleLocationLabel(leg.to)
+            );
+
+            cursor = legEnd;
+        }
+
+        const taskBlock = taskBlocks[i];
+
+        if (taskBlock && taskBlock.minutes > 0) {
+            const isUnloadBlock = String(taskBlock.label || "").toLowerCase().includes("unload");
+
+            if (isCompletionDay && isUnloadBlock && cursor < completionCutoff) {
+                lines.push(
+                    minutesToClock(cursor) + "–" +
+                    minutesToClock(completionCutoff) +
+                    " Wait: completion window starts at 13:00"
+                );
+
+                cursor = completionCutoff;
+            }
+
+            const taskStart = cursor;
+            const taskEnd = cursor + taskBlock.minutes;
+
+            lines.push(
+                minutesToClock(taskStart) + "–" +
+                minutesToClock(taskEnd) +
+                " Work: " +
+                String(taskBlock.label || "").replace("Task: ", "")
+            );
+
+            cursor = taskEnd;
+        }
+    }
+
+    lines.push("Finish: " + minutesToClock(cursor));
+
+    return lines;
+}
+function buildLoadDebugLine(day, taskMode, men, taskHours, equivalentLoadHours, state, plannerDayLabel, coverageMeta, plannerTotals) {
     const loadingProfile = state && state.loadingProfile ? state.loadingProfile : {};
 
     const cleanTaskMode = String(taskMode || "").trim();
@@ -23536,11 +23604,12 @@ function buildLoadDebugLine(day, taskMode, men, taskHours, equivalentLoadHours, 
     ];
 
     return {
-        title: title,
-        allowed: allowed,
-        basedOn: basedOn,
-        checks: checks
-    };
+    title: title,
+    timeline: buildScheduleRowTimelineLinesForNotes(day, state, plannerTotals),
+    allowed: allowed,
+    basedOn: basedOn,
+    checks: checks
+};
 }
 function calcScheduleValidation(packing, loading, unloading, special, state){
     const loadingProfile = getLoadingProfile(state.loadingVariant, state.loadingScenario);
@@ -23655,7 +23724,8 @@ loadDebugLines.push(
             rowLoadAllocation,
             loadRemainingBefore,
             plannerLoadingRate
-        )
+        ),
+plannerTotals
     )
 );
 
@@ -23685,7 +23755,8 @@ loadDebugLines.push(
             rowUnloadAllocation,
             unloadRemainingBefore,
             plannerUnloadingRate
-        )
+        ),
+plannerTotals
     )
 );
 
@@ -23729,7 +23800,8 @@ loadDebugLines.push(
             rowLoadAllocation,
             packLoadRemainingBefore,
             plannerLoadingRate
-        )
+        ),
+plannerTotals
     )
 );
 
@@ -23778,7 +23850,8 @@ if (toLoad > 0) {
                 toLoad,
                 loadUnloadLoadRemainingBefore,
                 plannerLoadingRate
-            )
+            ),
+plannerTotals
         )
     );
 }
@@ -23798,7 +23871,8 @@ if (toUnload > 0) {
                 toUnload,
                 loadUnloadUnloadRemainingBefore,
                 plannerUnloadingRate
-            )
+            ),
+plannerTotals
         )
     );
 }
@@ -23973,6 +24047,18 @@ function buildPlannerNotesCardHtml(noteItems) {
                                         return `
                                             <div class="planner-note-block">
                                                 <div class="planner-note-title">${escapeHtml(note.title || "Schedule Note")}</div>
+                                                ${
+    Array.isArray(note.timeline) && note.timeline.length
+        ? `
+            <div class="planner-note-group">
+                <div class="planner-note-group-title">Day Timeline</div>
+                ${note.timeline.map(function(line) {
+                    return `<div class="planner-note-line">• ${escapeHtml(line)}</div>`;
+                }).join("")}
+            </div>
+        `
+        : ""
+}
 
                                                 <div class="planner-note-group">
                                                     <div class="planner-note-group-title">Planner Assumption</div>
