@@ -23921,7 +23921,7 @@ function buildPlannerNotesCardHtml(noteItems) {
                     allNotes.push(note);
                 } else if (String(note || "").trim()) {
                     allNotes.push({
-                        title: "Planner Note",
+                        title: "Schedule Note",
                         allowed: [String(note).trim()],
                         basedOn: [],
                         checks: []
@@ -23937,9 +23937,9 @@ function buildPlannerNotesCardHtml(noteItems) {
         <div class="planner-notes-card ${plannerNotesExpanded ? "open" : ""}">
             <div class="planner-notes-head">
                 <div>
-                    <div class="planner-notes-title">Planner Notes</div>
+                    <div class="planner-notes-title">Schedule Notes</div>
                     <div class="planner-notes-subtitle">
-                        ${hasNotes ? "Current planner interpretation available" : "No planner notes available"}
+                        ${hasNotes ? "Helpful checks and assumptions for this schedule" : "No schedule notes available"}
                     </div>
                 </div>
 
@@ -23961,40 +23961,40 @@ function buildPlannerNotesCardHtml(noteItems) {
                                     ? allNotes.map(function(note) {
                                         return `
                                             <div class="planner-note-block">
-                                                <div class="planner-note-title">${escapeHtml(note.title || "Planner Note")}</div>
+                                                <div class="planner-note-title">${escapeHtml(note.title || "Schedule Note")}</div>
 
                                                 <div class="planner-note-group">
-                                                    <div class="planner-note-group-title">Allowed</div>
+                                                    <div class="planner-note-group-title">Planner Assumption</div>
                                                     ${(note.allowed || []).map(function(line) {
                                                         return `<div class="planner-note-line">• ${escapeHtml(line)}</div>`;
                                                     }).join("")}
                                                 </div>
 
                                                 <div class="planner-note-group">
-                                                    <div class="planner-note-group-title">Based on</div>
+                                                    <div class="planner-note-group-title">Based On</div>
                                                     ${
                                                         (note.basedOn || []).length
                                                             ? (note.basedOn || []).map(function(line) {
                                                                 return `<div class="planner-note-line">• ${escapeHtml(line)}</div>`;
                                                             }).join("")
-                                                            : `<div class="planner-note-line">• No extra basis notes</div>`
+                                                            : `<div class="planner-note-line">• Standard schedule settings</div>`
                                                     }
                                                 </div>
 
                                                 <div class="planner-note-group">
-                                                    <div class="planner-note-group-title">Checks</div>
+                                                    <div class="planner-note-group-title">Check Before Confirming</div>
                                                     ${
                                                         (note.checks || []).length
                                                             ? (note.checks || []).map(function(line) {
                                                                 return `<div class="planner-note-line">• ${escapeHtml(line)}</div>`;
                                                             }).join("")
-                                                            : `<div class="planner-note-line">• No checks raised</div>`
+                                                            : `<div class="planner-note-line">• No extra checks raised</div>`
                                                     }
                                                 </div>
                                             </div>
                                         `;
                                     }).join("")
-                                    : `<div class="planner-notes-empty">No detailed notes generated yet.</div>`
+                                    : `<div class="planner-notes-empty">No detailed schedule notes generated yet.</div>`
                             }
                         </div>
                     `
