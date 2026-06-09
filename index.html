@@ -23467,54 +23467,84 @@ function buildScheduleRowTimelineLinesForNotes(day, state, totals) {
     const lines = [];
     let cursor = windowStart;
 
+    function addTaskBlock(taskBlock) {
+        if (!taskBlock || taskBlock.minutes <= 0) return;
+
+        const isUnloadBlock = String(taskBlock.label || "").toLowerCase().includes("unload");
+
+        if (isCompletionDay && isUnloadBlock && cursor < completionCutoff) {
+            lines.push(
+                minutesToClock(cursor) + "–" +
+                minutesToClock(completionCutoff) +
+                " Wait: completion window starts at 13:00"
+            );
+
+            cursor = completionCutoff;
+        }
+
+        const taskStart = cursor;
+        const taskEnd = cursor + Math.max(0, Number(taskBlock.minutes || 0));
+
+        lines.push(
+            minutesToClock(taskStart) + "–" +
+            minutesToClock(taskEnd) +
+            " Work: " +
+            String(taskBlock.label || "").replace("Task: ", "")
+        );
+
+        cursor = taskEnd;
+    }
+
+    function addTravelLeg(leg) {
+        if (!leg) return;
+
+        const legStart = cursor;
+        const legEnd = cursor + Math.max(0, Number(leg.minutes || 0));
+
+        lines.push(
+            minutesToClock(legStart) + "–" +
+            minutesToClock(legEnd) +
+            " Travel: " +
+            getScheduleLocationLabel(leg.from) +
+            " → " +
+            getScheduleLocationLabel(leg.to)
+        );
+
+        cursor = legEnd;
+    }
+
+    const firstLeg = legs[0] || null;
+    const firstLegFrom = firstLeg ? String(getScheduleLocationLabel(firstLeg.from) || "").toLowerCase() : "";
+    const firstLegTo = firstLeg ? String(getScheduleLocationLabel(firstLeg.to) || "").toLowerCase() : "";
+    const firstTaskLabel = taskBlocks[0] ? String(taskBlocks[0].label || "").toLowerCase() : "";
+
+    const looksLikeReturnToDepot =
+        firstLeg &&
+        firstLegFrom.includes("delivery") &&
+        firstLegTo.includes("depot");
+
+    const looksLikeDeliveryWork =
+        firstTaskLabel.includes("unload") ||
+        firstTaskLabel.includes("deliver");
+
+    if (looksLikeReturnToDepot && looksLikeDeliveryWork) {
+        taskBlocks.forEach(function(taskBlock) {
+            addTaskBlock(taskBlock);
+        });
+
+        legs.forEach(function(leg) {
+            addTravelLeg(leg);
+        });
+
+        lines.push("Finish: " + minutesToClock(cursor));
+        return lines;
+    }
+
     const maxSteps = Math.max(legs.length, taskBlocks.length);
 
     for (let i = 0; i < maxSteps; i++) {
-        const leg = legs[i];
-
-        if (leg) {
-            const legStart = cursor;
-            const legEnd = cursor + Math.max(0, Number(leg.minutes || 0));
-
-            lines.push(
-                minutesToClock(legStart) + "–" +
-                minutesToClock(legEnd) +
-                " Travel: " +
-                getScheduleLocationLabel(leg.from) +
-                " → " +
-                getScheduleLocationLabel(leg.to)
-            );
-
-            cursor = legEnd;
-        }
-
-        const taskBlock = taskBlocks[i];
-
-        if (taskBlock && taskBlock.minutes > 0) {
-            const isUnloadBlock = String(taskBlock.label || "").toLowerCase().includes("unload");
-
-            if (isCompletionDay && isUnloadBlock && cursor < completionCutoff) {
-                lines.push(
-                    minutesToClock(cursor) + "–" +
-                    minutesToClock(completionCutoff) +
-                    " Wait: completion window starts at 13:00"
-                );
-
-                cursor = completionCutoff;
-            }
-
-            const taskStart = cursor;
-            const taskEnd = cursor + taskBlock.minutes;
-
-            lines.push(
-                minutesToClock(taskStart) + "–" +
-                minutesToClock(taskEnd) +
-                " Work: " +
-                String(taskBlock.label || "").replace("Task: ", "")
-            );
-
-            cursor = taskEnd;
-        }
+        addTravelLeg(legs[i]);
+        addTaskBlock(taskBlocks[i]);
     }
 
     lines.push("Finish: " + minutesToClock(cursor));
