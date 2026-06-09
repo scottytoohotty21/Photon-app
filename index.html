@@ -2194,6 +2194,20 @@ body {
     font-weight: 900;
     text-transform: uppercase;
 }
+.listed-pdf-ready-name {
+    margin: 14px 0;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1.5px solid #dbeafe;
+    background: #eff6ff;
+    color: #1e3a8a;
+    font-size: 11px;
+    font-weight: 900;
+    text-align: center;
+    text-transform: uppercase;
+    line-height: 1.35;
+    overflow-wrap: break-word;
+}
 .custom-item-delete-list {
     display: grid;
     gap: 8px;
@@ -5805,7 +5819,7 @@ Enter as: Surname, First Name
     Share PDF
 </button>
 
-           <!-- Save PDF to Device paused for tablet testing.
+           <!-- Save PDF to Device fallback paused for tablet testing.
 <button
     onclick="saveListedInventoryPdfToDevice()"
     class="listed-pdf-btn listed-pdf-save-btn"
@@ -16785,8 +16799,12 @@ function getListedInventoryDownloadCss() {
 }
     `;
 }
-
+let listedInventoryPreparedSharePayload = null;
+let listedInventoryPreparedShareFileName = "";
 async function shareListedInventoryPdf() {
+    listedInventoryPreparedSharePayload = null;
+    listedInventoryPreparedShareFileName = "";
+
     if (!currentJob) {
         await appAlert("No active job found.", "Share PDF");
         return;
@@ -16941,28 +16959,80 @@ async function shareListedInventoryPdf() {
             { type: "application/pdf" }
         );
 
-        const sharePayload = {
+        if (
+            !navigator.share ||
+            !navigator.canShare ||
+            !navigator.canShare({ files: [pdfFile] })
+        ) {
+            await appAlert(
+                "This device/browser does not support direct PDF sharing. Please use Review / Print PDF as a fallback.",
+                "PDF Share Not Available"
+            );
+            return;
+        }
+
+        listedInventoryPreparedSharePayload = {
             title: "MovePilot Listed Inventory",
             text: "Listed inventory PDF for " + customerName,
             files: [pdfFile]
         };
 
-        if (
-            navigator.share &&
-            navigator.canShare &&
-            navigator.canShare({ files: [pdfFile] })
-        ) {
-            await navigator.share(sharePayload);
-            await appAlert("PDF shared successfully.", "PDF Shared");
-            return;
-        }
+        listedInventoryPreparedShareFileName = fileName;
 
-        await appAlert(
-            "This device/browser does not support direct PDF sharing. Please use Review / Print PDF as a fallback.",
-            "PDF Share Not Available"
-        );
+        openListedPdfReadyModal();
     } catch (err) {
         console.error("Share PDF failed:", err);
+
+        await appAlert(
+            "The PDF could not be prepared for sharing: " +
+            (err && err.message ? err.message : err),
+            "PDF Share Failed"
+        );
+    } finally {
+        if (wrapper) {
+            wrapper.remove();
+        }
+    }
+}
+function openListedPdfReadyModal() {
+    const overlay = document.getElementById("listed-pdf-ready-overlay");
+    const nameEl = document.getElementById("listed-pdf-ready-name");
+
+    if (!overlay) return;
+
+    if (nameEl) {
+        nameEl.innerText = listedInventoryPreparedShareFileName || "PDF ready to share";
+    }
+
+    overlay.style.display = "flex";
+}
+
+function closeListedPdfReadyModal() {
+    const overlay = document.getElementById("listed-pdf-ready-overlay");
+
+    if (overlay) {
+        overlay.style.display = "none";
+    }
+}
+
+async function sharePreparedListedInventoryPdf() {
+    if (!listedInventoryPreparedSharePayload) {
+        await appAlert("No prepared PDF was found. Please create the PDF again.", "Share PDF");
+        closeListedPdfReadyModal();
+        return;
+    }
+
+    try {
+        await navigator.share(listedInventoryPreparedSharePayload);
+
+        listedInventoryPreparedSharePayload = null;
+        listedInventoryPreparedShareFileName = "";
+
+        closeListedPdfReadyModal();
+
+        await appAlert("PDF shared successfully.", "PDF Shared");
+    } catch (err) {
+        console.error("Prepared PDF share failed:", err);
 
         if (err && err.name === "AbortError") {
             await appAlert("PDF sharing was cancelled.", "PDF Share Cancelled");
@@ -16974,52 +17044,6 @@ async function shareListedInventoryPdf() {
             (err && err.message ? err.message : err),
             "PDF Share Failed"
         );
-    } finally {
-        if (wrapper) {
-            wrapper.remove();
-        }
-    }
-}
-async function prepareAndShareListedInventoryPdf() {
-    if (listedInventoryShareInProgress) {
-        await appAlert("PDF share is already being prepared. Please wait a moment.", "Share PDF");
-        return;
-    }
-
-    listedInventoryShareInProgress = true;
-
-    try {
-        if (typeof saveToDevice === "function") saveToDevice();
-        if (typeof renderListedInventory === "function") renderListedInventory();
-
-        await waitForMovePilotRender(250); // ensure inventory rendered
-
-        const wrapper = document.querySelector(".listed-inventory-wrapper");
-        if (!wrapper) throw new Error("No inventory content found to share");
-
-        const pdfBlob = await html2pdf()
-            .set({ filename: 'Inventory.pdf', margin: 10, html2canvas: { scale: 2 } })
-            .from(wrapper)
-            .outputPdf('blob');
-
-        const file = new File([pdfBlob], 'Inventory.pdf', { type: 'application/pdf' });
-
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            await navigator.share({ files: [file], title: 'Inventory PDF' });
-        } else {
-            await appAlert("Sharing not supported on this device/browser.", "Share PDF Error");
-        }
-    } catch (err) {
-        console.error("Share PDF failed:", err);
-        await appAlert("Failed to share PDF: " + (err.message || err), "Share PDF Error");
-    } finally {
-        listedInventoryShareInProgress = false;
-        const shareBtn = document.getElementById("listed-pdf-review-share-btn");
-if (shareBtn) shareBtn.classList.add("pulse");
-
-shareBtn.addEventListener('click', () => {
-    shareBtn.classList.remove('pulse');
-});
     }
 }
 async function saveListedInventoryPdfToDevice() {
@@ -24995,7 +25019,22 @@ document.addEventListener('DOMContentLoaded', function () {
         </div>
     </div>
 </div>
+<!-- LISTED INVENTORY PDF READY MODAL -->
+<div id="listed-pdf-ready-overlay" class="misc-overlay" onclick="closeListedPdfReadyModal()">
+    <div class="misc-panel" onclick="event.stopPropagation()">
+        <div class="misc-title">PDF Ready</div>
+        <div class="misc-subtitle">
+            Your listed inventory PDF has been created. Tap Share Now to open the tablet share options.
+        </div>
 
+        <div id="listed-pdf-ready-name" class="listed-pdf-ready-name"></div>
+
+        <div class="misc-actions">
+            <button type="button" class="misc-cancel-btn" onclick="closeListedPdfReadyModal()">Close</button>
+            <button type="button" class="misc-save-btn" onclick="sharePreparedListedInventoryPdf()">Share Now</button>
+        </div>
+    </div>
+</div>
 <!-- APP SETTINGS MODAL -->
 <div id="app-settings-overlay" class="app-settings-overlay" onclick="closeAppSettingsModal()">
     <div class="app-settings-panel" onclick="event.stopPropagation()">
