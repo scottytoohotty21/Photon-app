@@ -22974,10 +22974,65 @@ function buildScheduleRowTimeBreakdown(day, state, totals) {
     const isCompletionDay = String(day.completionWindow || "None") === "Completion Day";
 
     const legs = Array.isArray(day.legs) ? day.legs : [];
-    const taskBlocks = getPlannerTaskBlocks(day, state, totals);
+const taskBlocks = getPlannerTaskBlocks(day, state, totals);
+const taskMode = getPlannerTaskMode(day);
 
-    const lines = [];
-    let cursor = windowStart;
+const lines = [];
+let cursor = windowStart;
+
+/*
+    Delivery rows should unload first, then travel back to depot.
+    Load rows still travel to collection first, then load, then travel to delivery.
+*/
+if (taskMode === "unload" && taskBlocks.length && legs.length) {
+    const taskBlock = taskBlocks[0];
+
+    if (taskBlock && taskBlock.minutes > 0) {
+        const isUnloadBlock = String(taskBlock.label || "").toLowerCase().includes("unload");
+
+        if (isCompletionDay && isUnloadBlock && cursor < completionCutoff) {
+            lines.push(
+                minutesToClock(cursor) + "–" +
+                minutesToClock(completionCutoff) +
+                " Wait: completion window starts at 13:00"
+            );
+
+            cursor = completionCutoff;
+        }
+
+        const taskStart = cursor;
+        const taskEnd = cursor + taskBlock.minutes;
+
+        lines.push(
+            minutesToClock(taskStart) + "–" +
+            minutesToClock(taskEnd) +
+            " Work: " +
+            String(taskBlock.label || "").replace("Task: ", "")
+        );
+
+        cursor = taskEnd;
+    }
+
+    legs.forEach(function(leg) {
+        const legStart = cursor;
+        const legEnd = cursor + Math.max(0, Number(leg.minutes || 0));
+
+        lines.push(
+            minutesToClock(legStart) + "–" +
+            minutesToClock(legEnd) +
+            " Travel: " +
+            getScheduleLocationLabel(leg.from) +
+            " → " +
+            getScheduleLocationLabel(leg.to)
+        );
+
+        cursor = legEnd;
+    });
+
+    lines.push("Finish: " + minutesToClock(cursor));
+
+    return lines;
+}
 
     lines.push({
         text: "Window: " + minutesToClock(windowStart) + "–" + minutesToClock(windowEnd),
