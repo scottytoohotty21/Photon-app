@@ -22994,13 +22994,13 @@ function buildScheduleRowTimeBreakdown(day, state, totals) {
             const legEnd = cursor + Math.max(0, Number(leg.minutes || 0));
 
             lines.push({
-                text:
-                    "Leg " + (i + 1) + ": " +
-                    getScheduleLocationLabel(leg.from) + " → " +
-                    getScheduleLocationLabel(leg.to) + ", " +
-                    minutesToClock(legStart) + "–" + minutesToClock(legEnd),
-                className: ""
-            });
+    text:
+        minutesToClock(legStart) + "–" + minutesToClock(legEnd) +
+        " Travel: " +
+        getScheduleLocationLabel(leg.from) + " → " +
+        getScheduleLocationLabel(leg.to),
+    className: ""
+});
 
             cursor = legEnd;
         }
@@ -23024,11 +23024,12 @@ function buildScheduleRowTimeBreakdown(day, state, totals) {
             const taskEnd = cursor + taskBlock.minutes;
 
             lines.push({
-                text:
-                    taskBlock.label + ", " +
-                    minutesToClock(taskStart) + "–" + minutesToClock(taskEnd),
-                className: ""
-            });
+    text:
+        minutesToClock(taskStart) + "–" + minutesToClock(taskEnd) +
+        " Work: " +
+        String(taskBlock.label || "").replace("Task: ", ""),
+    className: ""
+});
 
             cursor = taskEnd;
         }
@@ -23056,11 +23057,12 @@ function buildScheduleRowTimeBreakdown(day, state, totals) {
             const taskEnd = cursor + taskBlock.minutes;
 
             lines.push({
-                text:
-                    taskBlock.label + ", " +
-                    minutesToClock(taskStart) + "–" + minutesToClock(taskEnd),
-                className: ""
-            });
+    text:
+        minutesToClock(taskStart) + "–" + minutesToClock(taskEnd) +
+        " Work: " +
+        String(taskBlock.label || "").replace("Task: ", ""),
+    className: ""
+});
 
             cursor = taskEnd;
         }
@@ -23136,11 +23138,11 @@ function buildScheduleRowCompactTimeSummary(day, state, totals) {
             const legEnd = cursor + Math.max(0, Number(leg.minutes || 0));
 
             parts.push(
-                "Leg " + (i + 1) + " " +
-                getScheduleLocationLabel(leg.from) + " → " +
-                getScheduleLocationLabel(leg.to) + " " +
-                minutesToClock(legStart) + "–" + minutesToClock(legEnd) + "."
-            );
+    minutesToClock(legStart) + "–" + minutesToClock(legEnd) +
+    " Travel: " +
+    getScheduleLocationLabel(leg.from) + " → " +
+    getScheduleLocationLabel(leg.to) + "."
+);
 
             cursor = legEnd;
         }
@@ -23163,10 +23165,10 @@ function buildScheduleRowCompactTimeSummary(day, state, totals) {
             const taskEnd = cursor + taskBlock.minutes;
 
             parts.push(
-                taskBlock.label.replace("Task: ", "Task ").toLowerCase() +
-                " " +
-                minutesToClock(taskStart) + "–" + minutesToClock(taskEnd) + "."
-            );
+    minutesToClock(taskStart) + "–" + minutesToClock(taskEnd) +
+    " Work: " +
+    String(taskBlock.label || "").replace("Task: ", "") + "."
+);
 
             cursor = taskEnd;
         }
@@ -23418,111 +23420,120 @@ function buildLoadDebugLine(day, taskMode, men, taskHours, equivalentLoadHours, 
     const dayPart = String(day.dayPart || "").trim();
     const taskLabel = String(day.task || taskMode || "Schedule row").trim();
     const completionWindow = String(day.completionWindow || "").trim();
-    const travelHours = typeof getRowLegHours === "function"
-    ? getRowLegHours(day)
-    : 0;
 
-const travelText = travelHours > 0
-    ? formatHoursAndMinutes(travelHours)
-    : "None";
+    const travelHours = typeof getRowLegHours === "function"
+        ? getRowLegHours(day)
+        : 0;
+
+    const travelText = travelHours > 0
+        ? formatHoursAndMinutes(travelHours)
+        : "No travel time added";
 
     const titleParts = [];
 
-if (plannerDayLabel) {
-    titleParts.push(plannerDayLabel);
-}
+    if (plannerDayLabel) {
+        titleParts.push(plannerDayLabel);
+    }
 
-if (dayPart) {
-    titleParts.push(dayPart);
-}
+    if (dayPart) {
+        titleParts.push(dayPart);
+    }
 
-titleParts.push(taskLabel);
+    titleParts.push(taskLabel);
 
-const title = titleParts.join(" — ");
+    const title = titleParts.join(" — ");
 
     const crewText = Number(men || 0) === 1
-        ? "1 man"
-        : Number(men || 0) + " men";
+        ? "1 crew member"
+        : Number(men || 0) + " crew members";
 
     const vehicleCount = Number(day.vans || day.vehicles || 0);
     const vehicleText = vehicleCount === 1
-        ? "1 vehicle"
+        ? "1 vehicle planned"
         : vehicleCount > 1
-            ? vehicleCount + " vehicles"
+            ? vehicleCount + " vehicles planned"
             : "";
 
     let capacityLabel = "";
-let coverageCheck = "";
+    let coverageCheck = "";
 
-if (coverageMeta && coverageMeta.kind === "loading") {
-    if (coverageMeta.remainingAfterCuft > 0) {
-        capacityLabel =
-            "Loading capacity in this row: " +
-            coverageMeta.capacityCuft.toLocaleString("en-GB") +
-            " cuft";
+    if (coverageMeta && coverageMeta.kind === "loading") {
+        if (coverageMeta.remainingAfterCuft > 0) {
+            capacityLabel =
+                "This row can cover around " +
+                coverageMeta.capacityCuft.toLocaleString("en-GB") +
+                " cuft of loading";
 
-        coverageCheck =
-            "Remaining loading volume continues onto another row: " +
-            coverageMeta.remainingAfterCuft.toLocaleString("en-GB") +
-            " cuft";
-    } else if (coverageMeta.coveredCuft > 0) {
-        capacityLabel =
-            "Loading covered by this row: " +
-            coverageMeta.coveredCuft.toLocaleString("en-GB") +
-            " cuft";
+            coverageCheck =
+                coverageMeta.remainingAfterCuft.toLocaleString("en-GB") +
+                " cuft may still need loading on another row";
+        } else if (coverageMeta.coveredCuft > 0) {
+            capacityLabel =
+                "This row covers the remaining loading volume";
 
-        coverageCheck = "Loading allowance covers the remaining volume";
+            coverageCheck = "No remaining loading volume is expected after this row";
+        }
     }
-}
 
-if (coverageMeta && coverageMeta.kind === "unloading") {
-    if (coverageMeta.remainingAfterCuft > 0) {
-        capacityLabel =
-            "Unloading capacity in this row: " +
-            coverageMeta.capacityCuft.toLocaleString("en-GB") +
-            " cuft";
+    if (coverageMeta && coverageMeta.kind === "unloading") {
+        if (coverageMeta.remainingAfterCuft > 0) {
+            capacityLabel =
+                "This row can cover around " +
+                coverageMeta.capacityCuft.toLocaleString("en-GB") +
+                " cuft of delivery";
 
-        coverageCheck =
-            "Remaining delivery volume continues onto another row: " +
-            coverageMeta.remainingAfterCuft.toLocaleString("en-GB") +
-            " cuft";
-    } else if (coverageMeta.coveredCuft > 0) {
-        capacityLabel =
-            "Unloading covered by this row: " +
-            coverageMeta.coveredCuft.toLocaleString("en-GB") +
-            " cuft";
+            coverageCheck =
+                coverageMeta.remainingAfterCuft.toLocaleString("en-GB") +
+                " cuft may still need delivering on another row";
+        } else if (coverageMeta.coveredCuft > 0) {
+            capacityLabel =
+                "This row covers the remaining delivery volume";
 
-        coverageCheck = "Unloading allowance covers the remaining delivery volume";
+            coverageCheck = "No remaining delivery volume is expected after this row";
+        }
     }
-}
 
-if (!capacityLabel && capacityCuft > 0) {
-    if (isUnloadMode) {
-        capacityLabel = "Equivalent unloading allowance available";
-    } else if (isLoadMode) {
-        capacityLabel = "Equivalent loading allowance available";
+    if (!capacityLabel && capacityCuft > 0) {
+        if (isUnloadMode) {
+            capacityLabel =
+                "Delivery allowance has been calculated from the available working time";
+        } else if (isLoadMode) {
+            capacityLabel =
+                "Loading allowance has been calculated from the available working time";
+        }
     }
-}
+
+    function getFriendlyTaskModeLabel(mode) {
+        const cleanMode = String(mode || "").trim();
+
+        if (cleanMode === "pack") return "Packing";
+        if (cleanMode === "load") return "Loading";
+        if (cleanMode === "unload") return "Delivery / unloading";
+        if (cleanMode === "pack_load") return "Packing and loading";
+        if (cleanMode === "load_unload") return "Loading and delivery";
+        if (cleanMode === "travel") return "Travel";
+        return "Schedule row";
+    }
 
     const allowed = [
-        "Crew: " + crewText,
+        "Crew planned: " + crewText,
         vehicleText,
-        "Travel allowed: " + travelText,
-"Working time available: " + formatHoursAndMinutes(taskHours),
+        "Travel allowance: " + travelText,
+        "Working time available: " + formatHoursAndMinutes(taskHours),
         capacityLabel
     ].filter(Boolean);
 
     const basedOn = [
-        "Planner mode: " + String(taskMode || "-"),
+        "Task type: " + getFriendlyTaskModeLabel(taskMode),
         completionWindow && completionWindow.toLowerCase() !== "none"
-            ? "Completion window: " + completionWindow
+            ? "Completion rule: " + completionWindow
             : "",
-        "Rate profile: " + String(state.loadingVariant || "Standard")
+        "Planner setting: " + String(state.loadingVariant || "Standard")
     ].filter(Boolean);
 
     const checks = [
-    coverageCheck || "Check against validation cards above"
-];
+        coverageCheck || "Check the schedule warning cards above before confirming"
+    ];
 
     return {
         title: title,
