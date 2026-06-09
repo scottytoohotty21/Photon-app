@@ -3264,26 +3264,28 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 4px;
+    gap: 6px;
+    flex-wrap: nowrap;
 }
 
 .listed-action-btn {
-    min-width: 26px;
-    height: 26px;
-    padding: 0 6px;
-    border-radius: 8px;
-    border: 1px solid #cbd5e1;
-    background: #f8fafc;
+    min-height: 38px;
+    min-width: 54px;
+    padding: 0 10px;
+    border-radius: 10px;
+    border: 1.5px solid #cbd5e1;
+    border-bottom-color: #94a3b8;
+    background: #ffffff;
     color: #334155;
-    font-size: 9px;
-    font-weight: 900;
+    font-size: 10px;
+    font-weight: 950;
     text-transform: uppercase;
     line-height: 1;
-}
-.listed-action-btn {
     white-space: nowrap;
     overflow: visible;
     text-overflow: clip;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
 }
 
 .listed-action-qty {
@@ -3331,12 +3333,17 @@ body {
     transform: scale(0.97);
 }
 
+.listed-action-delete,
 .listed-action-btn.delete {
-    background: #fef2f2;
+    min-width: 42px;
+    width: 42px;
+    padding: 0;
     border-color: #fecaca;
+    border-bottom-color: #f87171;
+    background: #fef2f2;
     color: #dc2626;
-    font-size: 14px;
-    font-weight: 900;
+    font-size: 18px;
+    font-weight: 950;
 }
 .signature-wrap {
     border: 1px solid #e2e8f0;
