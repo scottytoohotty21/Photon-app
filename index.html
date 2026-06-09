@@ -21560,10 +21560,15 @@ function closeAppModal(result) {
     }
 
     if (typeof appModalResolve === "function") {
-        appModalResolve(result);
+        // Resolve on the next tick to let overlay visually disappear first
+        const resolve = appModalResolve;
+        appModalResolve = null;
+        setTimeout(function() {
+            resolve(result);
+        }, 0);
+    } else {
+        appModalResolve = null;
     }
-
-    appModalResolve = null;
 }
 
 function showAppModal(options) {
