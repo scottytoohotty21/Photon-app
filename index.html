@@ -16966,8 +16966,9 @@ async function shareListedInventoryPdf() {
             { type: "application/pdf" }
         );
 
-        // Open the PDF Ready modal with Share / Download (handles older tablets safely)
-openPdfReadyModal(pdfFile);
+       // Show PDF Ready modal and bind share button
+document.getElementById("pdf-ready-overlay").style.display = "flex";
+bindPdfShareButton(pdfFile);
     } catch (err) {
         console.error("Share PDF failed:", err);
 
@@ -21546,54 +21547,36 @@ function closeAppModal(result) {
 
     appModalResolve = null;
 }
-
-// --------------------------
-// PDF Ready modal helpers
-// --------------------------
-function openPdfReadyModal(pdfFile) {
-    const overlay = document.getElementById("pdf-ready-overlay");
+function bindPdfShareButton(pdfFile) {
     const shareBtn = document.getElementById("pdf-share-now-btn");
     const downloadLink = document.getElementById("pdf-download-link");
-
-    if (!overlay || !shareBtn || !downloadLink) return;
-
-    overlay.style.display = "flex";
+    if (!shareBtn || !downloadLink) return;
 
     // Reset download link
     downloadLink.style.display = "none";
     downloadLink.href = "";
 
-    // Remove previous click handlers
-    shareBtn.onclick = null;
-
+    // Remove any old click handlers
     shareBtn.onclick = async function() {
         if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
             try {
                 await navigator.share({ files: [pdfFile] });
-                closePdfReadyModal();
+                document.getElementById("pdf-ready-overlay").style.display = "none";
             } catch (err) {
                 console.warn("PDF share failed:", err);
-
-                // fallback to download
-                alert("Sharing not supported. You can download the PDF instead.");
-                const blobUrl = URL.createObjectURL(pdfFile);
-                downloadLink.href = blobUrl;
+                alert("Sharing failed. Use Download PDF instead.");
+                downloadLink.href = URL.createObjectURL(pdfFile);
                 downloadLink.style.display = "inline-block";
             }
         } else {
-            // fallback to download
-            const blobUrl = URL.createObjectURL(pdfFile);
-            downloadLink.href = blobUrl;
+            // fallback download link
+            downloadLink.href = URL.createObjectURL(pdfFile);
             downloadLink.style.display = "inline-block";
-            alert("Sharing not supported on this device. Use the Download PDF link.");
+            alert("Sharing not supported. Use the Download PDF link.");
         }
     };
 }
 
-function closePdfReadyModal() {
-    const overlay = document.getElementById("pdf-ready-overlay");
-    if (overlay) overlay.style.display = "none";
-}
 function showAppModal(options) {
     options = options || {};
 
@@ -25166,7 +25149,7 @@ document.addEventListener('DOMContentLoaded', function () {
         <div class="pdf-ready-actions">
             <button type="button" id="pdf-share-now-btn" class="btn-primary">Share Now</button>
             <a href="#" id="pdf-download-link" class="btn-secondary" style="display:none;" download>Download PDF</a>
-            <button type="button" class="btn-cancel" onclick="closePdfReadyModal()">Close</button>
+            <button type="button" class="btn-cancel" onclick="document.getElementById('pdf-ready-overlay').style.display='none'">Close</button>
         </div>
     </div>
 </div>
