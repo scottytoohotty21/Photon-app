@@ -21560,15 +21560,10 @@ function closeAppModal(result) {
     }
 
     if (typeof appModalResolve === "function") {
-        // Resolve on the next tick to let overlay visually disappear first
-        const resolve = appModalResolve;
-        appModalResolve = null;
-        setTimeout(function() {
-            resolve(result);
-        }, 0);
-    } else {
-        appModalResolve = null;
+        appModalResolve(result);
     }
+
+    appModalResolve = null;
 }
 
 function showAppModal(options) {
@@ -22979,152 +22974,96 @@ function buildScheduleRowTimeBreakdown(day, state, totals) {
     const isCompletionDay = String(day.completionWindow || "None") === "Completion Day";
 
     const legs = Array.isArray(day.legs) ? day.legs : [];
-const taskBlocks = getPlannerTaskBlocks(day, state, totals);
-const taskMode = getPlannerTaskMode(day);
+    const taskBlocks = getPlannerTaskBlocks(day, state, totals);
 
-const lines = [];
-let cursor = windowStart;
+    const lines = [];
+    let cursor = windowStart;
 
-/*
-    Delivery rows should unload first, then travel back to depot.
-    Load rows still travel to collection first, then load, then travel to delivery.
-*/
-if (taskMode === "unload" && taskBlocks.length && legs.length) {
-    const taskBlock = taskBlocks[0];
+    function addTravelLeg(leg) {
+        if (!leg) return;
 
-    if (taskBlock && taskBlock.minutes > 0) {
+        const legStart = cursor;
+        const legEnd = cursor + Math.max(0, Number(leg.minutes || 0));
+
+        lines.push({
+            text:
+                minutesToClock(legStart) + "–" +
+                minutesToClock(legEnd) +
+                " Travel: " +
+                getScheduleLocationLabel(leg.from) +
+                " → " +
+                getScheduleLocationLabel(leg.to),
+            className: ""
+        });
+
+        cursor = legEnd;
+    }
+
+    function addTaskBlock(taskBlock) {
+        if (!taskBlock || taskBlock.minutes <= 0) return;
+
         const isUnloadBlock = String(taskBlock.label || "").toLowerCase().includes("unload");
 
         if (isCompletionDay && isUnloadBlock && cursor < completionCutoff) {
-            lines.push(
-                minutesToClock(cursor) + "–" +
-                minutesToClock(completionCutoff) +
-                " Wait: completion window starts at 13:00"
-            );
+            lines.push({
+                text:
+                    minutesToClock(cursor) + "–" +
+                    minutesToClock(completionCutoff) +
+                    " Wait: completion window starts at 13:00",
+                className: ""
+            });
 
             cursor = completionCutoff;
         }
 
         const taskStart = cursor;
-        const taskEnd = cursor + taskBlock.minutes;
+        const taskEnd = cursor + Math.max(0, Number(taskBlock.minutes || 0));
 
-        lines.push(
-            minutesToClock(taskStart) + "–" +
-            minutesToClock(taskEnd) +
-            " Work: " +
-            String(taskBlock.label || "").replace("Task: ", "")
-        );
+        lines.push({
+            text:
+                minutesToClock(taskStart) + "–" +
+                minutesToClock(taskEnd) +
+                " Work: " +
+                String(taskBlock.label || "").replace("Task: ", ""),
+            className: ""
+        });
 
         cursor = taskEnd;
     }
-
-    legs.forEach(function(leg) {
-        const legStart = cursor;
-        const legEnd = cursor + Math.max(0, Number(leg.minutes || 0));
-
-        lines.push(
-            minutesToClock(legStart) + "–" +
-            minutesToClock(legEnd) +
-            " Travel: " +
-            getScheduleLocationLabel(leg.from) +
-            " → " +
-            getScheduleLocationLabel(leg.to)
-        );
-
-        cursor = legEnd;
-    });
-
-    lines.push("Finish: " + minutesToClock(cursor));
-
-    return lines;
-}
 
     lines.push({
         text: "Window: " + minutesToClock(windowStart) + "–" + minutesToClock(windowEnd),
         className: ""
     });
 
-    const maxSteps = Math.max(legs.length, taskBlocks.length);
+    const firstLeg = legs[0] || null;
+    const firstLegFrom = firstLeg ? String(getScheduleLocationLabel(firstLeg.from) || "").toLowerCase() : "";
+    const firstLegTo = firstLeg ? String(getScheduleLocationLabel(firstLeg.to) || "").toLowerCase() : "";
+    const firstTaskLabel = taskBlocks[0] ? String(taskBlocks[0].label || "").toLowerCase() : "";
 
-    for (let i = 0; i < maxSteps; i++) {
-        const leg = legs[i];
+    const looksLikeReturnToDepot =
+        firstLeg &&
+        firstLegFrom.includes("delivery") &&
+        firstLegTo.includes("depot");
 
-        if (leg) {
-            const legStart = cursor;
-            const legEnd = cursor + Math.max(0, Number(leg.minutes || 0));
+    const looksLikeDeliveryWork =
+        firstTaskLabel.includes("unload") ||
+        firstTaskLabel.includes("deliver");
 
-            lines.push({
-    text:
-        minutesToClock(legStart) + "–" + minutesToClock(legEnd) +
-        " Travel: " +
-        getScheduleLocationLabel(leg.from) + " → " +
-        getScheduleLocationLabel(leg.to),
-    className: ""
-});
+    if (looksLikeReturnToDepot && looksLikeDeliveryWork) {
+        taskBlocks.forEach(function(taskBlock) {
+            addTaskBlock(taskBlock);
+        });
 
-            cursor = legEnd;
-        }
+        legs.forEach(function(leg) {
+            addTravelLeg(leg);
+        });
+    } else {
+        const maxSteps = Math.max(legs.length, taskBlocks.length);
 
-        const taskBlock = taskBlocks[i];
-        if (taskBlock && taskBlock.minutes > 0) {
-            const isUnloadBlock = String(taskBlock.label || "").toLowerCase().includes("unload");
-
-            if (isCompletionDay && isUnloadBlock && cursor < completionCutoff) {
-                lines.push({
-                    text:
-                        "Wait: " +
-                        minutesToClock(cursor) + "–" + minutesToClock(completionCutoff),
-                    className: ""
-                });
-
-                cursor = completionCutoff;
-            }
-
-            const taskStart = cursor;
-            const taskEnd = cursor + taskBlock.minutes;
-
-            lines.push({
-    text:
-        minutesToClock(taskStart) + "–" + minutesToClock(taskEnd) +
-        " Work: " +
-        String(taskBlock.label || "").replace("Task: ", ""),
-    className: ""
-});
-
-            cursor = taskEnd;
-        }
-    }
-
-    if (taskBlocks.length > legs.length) {
-        for (let i = legs.length; i < taskBlocks.length; i++) {
-            const taskBlock = taskBlocks[i];
-            if (!taskBlock || taskBlock.minutes <= 0) continue;
-
-            const isUnloadBlock = String(taskBlock.label || "").toLowerCase().includes("unload");
-
-            if (isCompletionDay && isUnloadBlock && cursor < completionCutoff) {
-                lines.push({
-                    text:
-                        "Wait: " +
-                        minutesToClock(cursor) + "–" + minutesToClock(completionCutoff),
-                    className: ""
-                });
-
-                cursor = completionCutoff;
-            }
-
-            const taskStart = cursor;
-            const taskEnd = cursor + taskBlock.minutes;
-
-            lines.push({
-    text:
-        minutesToClock(taskStart) + "–" + minutesToClock(taskEnd) +
-        " Work: " +
-        String(taskBlock.label || "").replace("Task: ", ""),
-    className: ""
-});
-
-            cursor = taskEnd;
+        for (let i = 0; i < maxSteps; i++) {
+            addTravelLeg(legs[i]);
+            addTaskBlock(taskBlocks[i]);
         }
     }
 
@@ -23170,6 +23109,52 @@ function buildScheduleRowCompactTimeSummary(day, state, totals) {
     let cursor = windowStart;
     const parts = [];
 
+    function addTravelLeg(leg) {
+        if (!leg) return;
+
+        const legStart = cursor;
+        const legEnd = cursor + Math.max(0, Number(leg.minutes || 0));
+
+        parts.push(
+            minutesToClock(legStart) + "–" +
+            minutesToClock(legEnd) +
+            " Travel: " +
+            getScheduleLocationLabel(leg.from) +
+            " → " +
+            getScheduleLocationLabel(leg.to) + "."
+        );
+
+        cursor = legEnd;
+    }
+
+    function addTaskBlock(taskBlock) {
+        if (!taskBlock || taskBlock.minutes <= 0) return;
+
+        const isUnloadBlock = String(taskBlock.label || "").toLowerCase().includes("unload");
+
+        if (isCompletionDay && isUnloadBlock && cursor < completionCutoff) {
+            parts.push(
+                minutesToClock(cursor) + "–" +
+                minutesToClock(completionCutoff) +
+                " Wait: completion window starts at 13:00."
+            );
+
+            cursor = completionCutoff;
+        }
+
+        const taskStart = cursor;
+        const taskEnd = cursor + Math.max(0, Number(taskBlock.minutes || 0));
+
+        parts.push(
+            minutesToClock(taskStart) + "–" +
+            minutesToClock(taskEnd) +
+            " Work: " +
+            String(taskBlock.label || "").replace("Task: ", "") + "."
+        );
+
+        cursor = taskEnd;
+    }
+
     parts.push(
         "Travel applied: " + getRowLegHours(day).toFixed(2) + " hrs."
     );
@@ -23188,49 +23173,34 @@ function buildScheduleRowCompactTimeSummary(day, state, totals) {
         "Window " + minutesToClock(windowStart) + "–" + minutesToClock(windowEnd) + "."
     );
 
-    const maxSteps = Math.max(legs.length, taskBlocks.length);
+    const firstLeg = legs[0] || null;
+    const firstLegFrom = firstLeg ? String(getScheduleLocationLabel(firstLeg.from) || "").toLowerCase() : "";
+    const firstLegTo = firstLeg ? String(getScheduleLocationLabel(firstLeg.to) || "").toLowerCase() : "";
+    const firstTaskLabel = taskBlocks[0] ? String(taskBlocks[0].label || "").toLowerCase() : "";
 
-    for (let i = 0; i < maxSteps; i++) {
-        const leg = legs[i];
+    const looksLikeReturnToDepot =
+        firstLeg &&
+        firstLegFrom.includes("delivery") &&
+        firstLegTo.includes("depot");
 
-        if (leg) {
-            const legStart = cursor;
-            const legEnd = cursor + Math.max(0, Number(leg.minutes || 0));
+    const looksLikeDeliveryWork =
+        firstTaskLabel.includes("unload") ||
+        firstTaskLabel.includes("deliver");
 
-            parts.push(
-    minutesToClock(legStart) + "–" + minutesToClock(legEnd) +
-    " Travel: " +
-    getScheduleLocationLabel(leg.from) + " → " +
-    getScheduleLocationLabel(leg.to) + "."
-);
+    if (looksLikeReturnToDepot && looksLikeDeliveryWork) {
+        taskBlocks.forEach(function(taskBlock) {
+            addTaskBlock(taskBlock);
+        });
 
-            cursor = legEnd;
-        }
+        legs.forEach(function(leg) {
+            addTravelLeg(leg);
+        });
+    } else {
+        const maxSteps = Math.max(legs.length, taskBlocks.length);
 
-        const taskBlock = taskBlocks[i];
-
-        if (taskBlock && taskBlock.minutes > 0) {
-            const isUnloadBlock = String(taskBlock.label || "").toLowerCase().includes("unload");
-
-            if (isCompletionDay && isUnloadBlock && cursor < completionCutoff) {
-                parts.push(
-                    "Wait " +
-                    minutesToClock(cursor) + "–" + minutesToClock(completionCutoff) + "."
-                );
-
-                cursor = completionCutoff;
-            }
-
-            const taskStart = cursor;
-            const taskEnd = cursor + taskBlock.minutes;
-
-            parts.push(
-    minutesToClock(taskStart) + "–" + minutesToClock(taskEnd) +
-    " Work: " +
-    String(taskBlock.label || "").replace("Task: ", "") + "."
-);
-
-            cursor = taskEnd;
+        for (let i = 0; i < maxSteps; i++) {
+            addTravelLeg(legs[i]);
+            addTaskBlock(taskBlocks[i]);
         }
     }
 
@@ -23458,7 +23428,7 @@ function buildPlannerCoverageMeta(kind, rowCapacityHours, remainingBeforeHours, 
         remainingAfterCuft: remainingAfterCuft
     };
 }
-function buildScheduleRowTimelineLinesForNotes(day, state, totals) {
+function buildPlannerNoteTimelineLines(day, taskMode, taskHours, state) {
     ensureScheduleRowShape(day);
 
     const bounds = getRowWindowBounds(day.dayPart, day.overtimeHours || 0);
@@ -23467,17 +23437,27 @@ function buildScheduleRowTimelineLinesForNotes(day, state, totals) {
     const isCompletionDay = String(day.completionWindow || "None") === "Completion Day";
 
     const legs = Array.isArray(day.legs) ? day.legs : [];
-    const taskBlocks = getPlannerTaskBlocks(day, state, totals);
+    const taskMinutes = Math.max(0, Math.round(Number(taskHours || 0) * 60));
+    const cleanMode = String(taskMode || "").trim();
 
     const lines = [];
     let cursor = windowStart;
 
-    function addTaskBlock(taskBlock) {
-        if (!taskBlock || taskBlock.minutes <= 0) return;
+    function getWorkLabel() {
+        if (cleanMode === "pack") return "Pack";
+        if (cleanMode === "load") return "Load";
+        if (cleanMode === "unload") return "Unload";
+        if (cleanMode === "pack_load") return "Pack / Load";
+        if (cleanMode === "load_unload") return "Load / Unload";
+        return "Work";
+    }
 
-        const isUnloadBlock = String(taskBlock.label || "").toLowerCase().includes("unload");
+    function addWork() {
+        if (taskMinutes <= 0) return;
 
-        if (isCompletionDay && isUnloadBlock && cursor < completionCutoff) {
+        const isUnloadWork = cleanMode === "unload" || cleanMode === "load_unload";
+
+        if (isCompletionDay && isUnloadWork && cursor < completionCutoff) {
             lines.push(
                 minutesToClock(cursor) + "–" +
                 minutesToClock(completionCutoff) +
@@ -23488,19 +23468,19 @@ function buildScheduleRowTimelineLinesForNotes(day, state, totals) {
         }
 
         const taskStart = cursor;
-        const taskEnd = cursor + Math.max(0, Number(taskBlock.minutes || 0));
+        const taskEnd = cursor + taskMinutes;
 
         lines.push(
             minutesToClock(taskStart) + "–" +
             minutesToClock(taskEnd) +
             " Work: " +
-            String(taskBlock.label || "").replace("Task: ", "")
+            getWorkLabel()
         );
 
         cursor = taskEnd;
     }
 
-    function addTravelLeg(leg) {
+    function addTravel(leg) {
         if (!leg) return;
 
         const legStart = cursor;
@@ -23521,42 +23501,32 @@ function buildScheduleRowTimelineLinesForNotes(day, state, totals) {
     const firstLeg = legs[0] || null;
     const firstLegFrom = firstLeg ? String(getScheduleLocationLabel(firstLeg.from) || "").toLowerCase() : "";
     const firstLegTo = firstLeg ? String(getScheduleLocationLabel(firstLeg.to) || "").toLowerCase() : "";
-    const firstTaskLabel = taskBlocks[0] ? String(taskBlocks[0].label || "").toLowerCase() : "";
 
     const looksLikeReturnToDepot =
         firstLeg &&
         firstLegFrom.includes("delivery") &&
         firstLegTo.includes("depot");
 
-    const looksLikeDeliveryWork =
-        firstTaskLabel.includes("unload") ||
-        firstTaskLabel.includes("deliver");
-
-    if (looksLikeReturnToDepot && looksLikeDeliveryWork) {
-        taskBlocks.forEach(function(taskBlock) {
-            addTaskBlock(taskBlock);
-        });
+    if (cleanMode === "unload" || looksLikeReturnToDepot) {
+        addWork();
 
         legs.forEach(function(leg) {
-            addTravelLeg(leg);
+            addTravel(leg);
         });
+    } else {
+        if (legs[0]) addTravel(legs[0]);
+        addWork();
 
-        lines.push("Finish: " + minutesToClock(cursor));
-        return lines;
-    }
-
-    const maxSteps = Math.max(legs.length, taskBlocks.length);
-
-    for (let i = 0; i < maxSteps; i++) {
-        addTravelLeg(legs[i]);
-        addTaskBlock(taskBlocks[i]);
+        for (let i = 1; i < legs.length; i++) {
+            addTravel(legs[i]);
+        }
     }
 
     lines.push("Finish: " + minutesToClock(cursor));
 
     return lines;
 }
-function buildLoadDebugLine(day, taskMode, men, taskHours, equivalentLoadHours, state, plannerDayLabel, coverageMeta, plannerTotals) {
+function buildLoadDebugLine(day, taskMode, men, taskHours, equivalentLoadHours, state, plannerDayLabel, coverageMeta) {
     const loadingProfile = state && state.loadingProfile ? state.loadingProfile : {};
 
     const cleanTaskMode = String(taskMode || "").trim();
@@ -23695,7 +23665,7 @@ function buildLoadDebugLine(day, taskMode, men, taskHours, equivalentLoadHours, 
 
     return {
     title: title,
-    timeline: buildScheduleRowTimelineLinesForNotes(day, state, plannerTotals),
+    timeline: buildPlannerNoteTimelineLines(day, taskMode, taskHours, state),
     allowed: allowed,
     basedOn: basedOn,
     checks: checks
