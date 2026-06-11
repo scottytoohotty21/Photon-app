@@ -3648,6 +3648,50 @@ body {
     background: #cbd5e1;
     border-radius: 999px;
 }
+#pdf-ready-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+}
+
+#pdf-ready-overlay .app-popup-body {
+    background: var(--card,#ffffff);
+    border-radius: 14px;
+    padding: 20px;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    box-shadow: var(--shadow,0 10px 30px rgba(15,23,42,0.08));
+}
+
+#pdf-ready-overlay .app-popup-header {
+    font-weight: 800;
+    font-size: 18px;
+    margin-bottom: 12px;
+}
+
+#pdf-ready-overlay .app-popup-actions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+}
+
+#pdf-ready-overlay .app-btn.primary {
+    background-color: var(--blue-2,#2563eb);
+    color: #fff;
+}
+
+#pdf-ready-overlay .app-btn.secondary {
+    background-color: var(--slate-200,#e2e8f0);
+    color: var(--slate-900,#0f172a);
+}
 /* SCHEDULE CALCULATOR LAYOUT */
 .layout{display:grid;grid-template-columns:430px 1fr;gap:16px;align-items:start;}
 .schedule-left-sticky{
@@ -16994,25 +17038,17 @@ bindPdfShareButton(pdfFile);
         }
     }
 }
-function openListedPdfReadyModal() {
-    const overlay = document.getElementById("listed-pdf-ready-overlay");
-    const nameEl = document.getElementById("listed-pdf-ready-name");
-
-    if (!overlay) return;
-
-    if (nameEl) {
-        nameEl.innerText = listedInventoryPreparedShareFileName || "PDF ready to share";
-    }
-
+function openListedPdfReadyModal(message) {
+    const overlay = document.getElementById("pdf-ready-overlay");
+    const msgEl = document.getElementById("pdf-ready-message");
+    if (!overlay || !msgEl) return;
+    msgEl.innerText = message;
     overlay.style.display = "flex";
 }
 
 function closeListedPdfReadyModal() {
-    const overlay = document.getElementById("listed-pdf-ready-overlay");
-
-    if (overlay) {
-        overlay.style.display = "none";
-    }
+    const overlay = document.getElementById("pdf-ready-overlay");
+    if (overlay) overlay.style.display = "none";
 }
 
 async function sharePreparedListedInventoryPdf() {
@@ -17738,6 +17774,17 @@ movePilotPrintWindowWatcher = setInterval(function() {
             </style>
         </head>
         <body>
+            <!-- MovePilot PDF Ready Modal -->
+<div id="pdf-ready-overlay" class="app-popup" style="display:none;">
+    <div class="app-popup-body">
+        <div class="app-popup-header">PDF READY</div>
+        <p id="pdf-ready-message">Your listed inventory PDF has been created. Tap Share Now to open the tablet share options.</p>
+        <div class="app-popup-actions">
+            <button class="app-btn primary" onclick="sharePreparedListedInventoryPdf()">SHARE NOW</button>
+            <button class="app-btn secondary" onclick="closeListedPdfReadyModal()">CLOSE</button>
+        </div>
+    </div>
+</div>
             <div class="pdf-topbar">
                 <div>
                     <div class="pdf-title">MovePilot Listed Inventory</div>
