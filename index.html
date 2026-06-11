@@ -17999,18 +17999,19 @@ movePilotPrintWindowWatcher = setInterval(function() {
         page-break-inside: avoid;
         break-inside: avoid;
     }
-    /* PDF Ready Modal Styling */
+  }
+  /* PDF Ready Modal Styling */
 #pdf-ready-overlay {
-    position: fixed;       /* float above all content */
+    position: fixed;       
     top: 0;
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(0, 0, 0, 0.5);  /* semi-transparent overlay */
-    display: none;         /* hidden by default */
+    background: rgba(0, 0, 0, 0.5);  
+    display: none;         
     justify-content: center;
     align-items: center;
-    z-index: 10000;        /* make sure it’s above everything */
+    z-index: 10000;        
 }
 
 #pdf-ready-overlay .app-popup-body {
@@ -18036,14 +18037,6 @@ movePilotPrintWindowWatcher = setInterval(function() {
     gap: 12px;
 }
 
-#pdf-ready-overlay .app-btn {
-    padding: 10px 16px;
-    border: none;
-    border-radius: 8px;
-    font-weight: 700;
-    cursor: pointer;
-}
-
 #pdf-ready-overlay .app-btn.primary {
     background-color: #2563eb;
     color: white;
@@ -18052,7 +18045,6 @@ movePilotPrintWindowWatcher = setInterval(function() {
 #pdf-ready-overlay .app-btn.secondary {
     background-color: #e5e7eb;
     color: #111827;
-}
 }
             </style>
         </head>
