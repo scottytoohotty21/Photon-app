@@ -17296,15 +17296,29 @@ function closeListedPdfReadyModal() {
     }
 }
 
+// --- Updated Share Function with Photon-style Modal ---
 async function sharePreparedListedInventoryPdf() {
+    const overlay = document.getElementById("pdf-ready-overlay");
+    const msgEl = document.getElementById("pdf-ready-message");
+
     if (!listedInventoryPreparedSharePayload) {
-        await appAlert("No prepared PDF was found. Please create the PDF again.", "Share PDF");
-        closeListedPdfReadyModal();
+        // Show error in the same styled modal
+        if (overlay && msgEl) {
+            overlay.classList.add("error");   // optional: add error styling
+            msgEl.innerText = "No prepared PDF was found. Please create the PDF again.";
+            overlay.style.display = "flex";
+        } else {
+            // Fallback if modal not available
+            await appAlert("No prepared PDF was found. Please create the PDF again.", "Share PDF");
+        }
         return;
     }
 
+    // Remove error styling if present
+    overlay.classList.remove("error");
+
     try {
-        // Modern devices
+        // Modern devices with native share
         if (navigator.share) {
             await navigator.share(listedInventoryPreparedSharePayload);
 
@@ -17312,11 +17326,16 @@ async function sharePreparedListedInventoryPdf() {
             listedInventoryPreparedShareFileName = "";
             closeListedPdfReadyModal();
 
-            await appAlert("PDF shared successfully.", "PDF Shared");
+            if (overlay && msgEl) {
+                msgEl.innerText = "PDF shared successfully.";
+                overlay.style.display = "flex";
+            } else {
+                await appAlert("PDF shared successfully.", "PDF Shared");
+            }
             return;
         }
 
-        // Fallback for older tablets
+        // Fallback for older tablets / devices without navigator.share
         const blob = listedInventoryPreparedSharePayload.files[0];
         const url = URL.createObjectURL(blob);
 
@@ -17335,22 +17354,35 @@ async function sharePreparedListedInventoryPdf() {
         listedInventoryPreparedShareFileName = "";
         closeListedPdfReadyModal();
 
-        await appAlert(
-            "Your device does not support direct sharing. PDF downloaded instead. You can share manually from your downloads.",
-            "PDF Downloaded"
-        );
+        if (overlay && msgEl) {
+            msgEl.innerText = "Your device does not support direct sharing. PDF downloaded instead. You can share manually from your downloads.";
+            overlay.style.display = "flex";
+        } else {
+            await appAlert(
+                "Your device does not support direct sharing. PDF downloaded instead. You can share manually from your downloads.",
+                "PDF Downloaded"
+            );
+        }
     } catch (err) {
         console.error("Prepared PDF share failed:", err);
 
         if (err && err.name === "AbortError") {
-            await appAlert("PDF sharing was cancelled.", "PDF Share Cancelled");
+            if (overlay && msgEl) {
+                msgEl.innerText = "PDF sharing was cancelled.";
+                overlay.style.display = "flex";
+            } else {
+                await appAlert("PDF sharing was cancelled.", "PDF Share Cancelled");
+            }
             return;
         }
 
-        await appAlert(
-            "The PDF could not be shared: " + (err && err.message ? err.message : err),
-            "PDF Share Failed"
-        );
+        const errorMessage = "The PDF could not be shared: " + (err && err.message ? err.message : err);
+        if (overlay && msgEl) {
+            msgEl.innerText = errorMessage;
+            overlay.style.display = "flex";
+        } else {
+            await appAlert(errorMessage, "PDF Share Failed");
+        }
     }
 }
 async function saveListedInventoryPdfToDevice() {
