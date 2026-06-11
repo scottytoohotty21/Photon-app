@@ -17296,46 +17296,41 @@ function closeListedPdfReadyModal() {
     }
 }
 
-// --- Updated Share Function with Photon-style Modal ---
+// --- Photon-style Share Function ---
 async function sharePreparedListedInventoryPdf() {
     const overlay = document.getElementById("pdf-ready-overlay");
     const msgEl = document.getElementById("pdf-ready-message");
 
+    // Ensure modal exists
+    if (!overlay || !msgEl) return;
+
+    // Check if payload exists
     if (!listedInventoryPreparedSharePayload) {
-        // Show error in the same styled modal
-        if (overlay && msgEl) {
-            overlay.classList.add("error");   // optional: add error styling
-            msgEl.innerText = "No prepared PDF was found. Please create the PDF again.";
-            overlay.style.display = "flex";
-        } else {
-            // Fallback if modal not available
-            await appAlert("No prepared PDF was found. Please create the PDF again.", "Share PDF");
-        }
+        overlay.classList.add("error");   // optional error styling
+        msgEl.innerText = "No prepared PDF was found. Please create the PDF again.";
+        overlay.style.display = "flex";
         return;
     }
 
-    // Remove error styling if present
     overlay.classList.remove("error");
+    msgEl.innerText = "Your PDF is ready to share.";
+
+    // Show modal immediately
+    overlay.style.display = "flex";
 
     try {
-        // Modern devices with native share
+        // Modern device sharing
         if (navigator.share) {
             await navigator.share(listedInventoryPreparedSharePayload);
 
             listedInventoryPreparedSharePayload = null;
             listedInventoryPreparedShareFileName = "";
             closeListedPdfReadyModal();
-
-            if (overlay && msgEl) {
-                msgEl.innerText = "PDF shared successfully.";
-                overlay.style.display = "flex";
-            } else {
-                await appAlert("PDF shared successfully.", "PDF Shared");
-            }
+            msgEl.innerText = "PDF shared successfully.";
             return;
         }
 
-        // Fallback for older tablets / devices without navigator.share
+        // Fallback for older tablets
         const blob = listedInventoryPreparedSharePayload.files[0];
         const url = URL.createObjectURL(blob);
 
@@ -17343,46 +17338,19 @@ async function sharePreparedListedInventoryPdf() {
         fallbackLink.href = url;
         fallbackLink.download = listedInventoryPreparedShareFileName || "ListedInventory.pdf";
         fallbackLink.style.display = "none";
-
         document.body.appendChild(fallbackLink);
         fallbackLink.click();
         fallbackLink.remove();
-
         URL.revokeObjectURL(url);
 
         listedInventoryPreparedSharePayload = null;
         listedInventoryPreparedShareFileName = "";
-        closeListedPdfReadyModal();
 
-        if (overlay && msgEl) {
-            msgEl.innerText = "Your device does not support direct sharing. PDF downloaded instead. You can share manually from your downloads.";
-            overlay.style.display = "flex";
-        } else {
-            await appAlert(
-                "Your device does not support direct sharing. PDF downloaded instead. You can share manually from your downloads.",
-                "PDF Downloaded"
-            );
-        }
+        msgEl.innerText = "PDF downloaded. You can share manually from your downloads.";
     } catch (err) {
-        console.error("Prepared PDF share failed:", err);
-
-        if (err && err.name === "AbortError") {
-            if (overlay && msgEl) {
-                msgEl.innerText = "PDF sharing was cancelled.";
-                overlay.style.display = "flex";
-            } else {
-                await appAlert("PDF sharing was cancelled.", "PDF Share Cancelled");
-            }
-            return;
-        }
-
-        const errorMessage = "The PDF could not be shared: " + (err && err.message ? err.message : err);
-        if (overlay && msgEl) {
-            msgEl.innerText = errorMessage;
-            overlay.style.display = "flex";
-        } else {
-            await appAlert(errorMessage, "PDF Share Failed");
-        }
+        console.error("PDF share failed:", err);
+        msgEl.innerText =
+            "The PDF could not be shared: " + (err && err.message ? err.message : err);
     }
 }
 async function saveListedInventoryPdfToDevice() {
