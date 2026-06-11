@@ -350,7 +350,7 @@ body {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0,0,0,0.5);
     display: none;
     justify-content: center;
     align-items: center;
@@ -358,14 +358,13 @@ body {
 }
 
 #pdf-ready-overlay .app-popup-body {
-    background-color: #ffffff;
+    background-color: #fff;
     border-radius: 16px;
     padding: 24px 32px;
     box-shadow: 0 20px 40px rgba(0,0,0,0.15);
     max-width: 420px;
     width: 90%;
     text-align: center;
-    font-family: 'Inter', sans-serif;
 }
 
 #pdf-ready-overlay .app-popup-header {
@@ -373,12 +372,6 @@ body {
     font-weight: 900;
     color: #1e293b;
     margin-bottom: 16px;
-}
-
-#pdf-ready-overlay #pdf-ready-message {
-    font-size: 14px;
-    color: #334155;
-    margin-bottom: 24px;
 }
 
 #pdf-ready-overlay .app-popup-actions {
@@ -18021,12 +18014,13 @@ movePilotPrintWindowWatcher = setInterval(function() {
         <body>
 
         <!-- PDF Ready Pop-up -->
+<!-- Correct HTML structure -->
 <div id="pdf-ready-overlay" class="app-popup" style="display:none;">
-    <div class="app-popup-header">PDF Ready</div>
     <div class="app-popup-body">
-        <p id="pdf-ready-message">Your PDF is ready to share or download.</p>
+        <div class="app-popup-header">PDF Ready</div>
+        <p id="pdf-ready-message">Your listed inventory PDF has been created.</p>
         <div class="app-popup-actions">
-            <button class="app-btn primary" onclick="sharePreparedListedInventoryPdf()">Share / Download PDF</button>
+            <button class="app-btn primary" onclick="sharePreparedListedInventoryPdf()">Share Now</button>
             <button class="app-btn secondary" onclick="closeListedPdfReadyModal()">Close</button>
         </div>
     </div>
