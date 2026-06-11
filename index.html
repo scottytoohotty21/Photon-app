@@ -5425,34 +5425,6 @@ body {
     font-weight: 900;
     text-transform: uppercase;
 }
-#pdf-ready-overlay {
-    position: fixed;
-    top:0; left:0;
-    width: 100vw; height: 100vh;
-    background: rgba(0,0,0,0.5);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 10000;
-}
-#pdf-ready-body {
-    background: #ffffff;
-    padding: 20px;
-    border-radius: 14px;
-    max-width: 400px;
-    width: 90%;
-    text-align: center;
-    box-shadow: 0 10px 30px rgba(15,23,42,0.08);
-}
-#pdf-ready-actions button {
-    margin: 0 5px;
-    padding: 10px 18px;
-    border-radius: 8px;
-    font-weight: 700;
-    cursor: pointer;
-}
-#pdf-share-btn { background:#2563eb; color:#fff; border:none; }
-#pdf-close-btn { background:#e5e7eb; color:#111827; border:none; }
     </style>
 </head>
 <body class="p-4 pb-12">
@@ -16848,7 +16820,64 @@ function getHtml2CanvasScale() {
     return isOldTablet() ? 1.0 : 1.35;
 }
 
+// --- Safe Share Function ---
+async function sharePreparedListedInventoryPdf() {
+    if (!listedInventoryPreparedSharePayload) {
+        await appAlert("No prepared PDF was found. Please create the PDF again.", "Share PDF");
+        closeListedPdfReadyModal();
+        return;
+    }
 
+    try {
+        // Modern devices
+        if (navigator.share) {
+            await navigator.share(listedInventoryPreparedSharePayload);
+
+            listedInventoryPreparedSharePayload = null;
+            listedInventoryPreparedShareFileName = "";
+            closeListedPdfReadyModal();
+
+            await appAlert("PDF shared successfully.", "PDF Shared");
+            return;
+        }
+
+        // Fallback for older tablets
+        const blob = listedInventoryPreparedSharePayload.files[0];
+        const url = URL.createObjectURL(blob);
+
+        const fallbackLink = document.createElement("a");
+        fallbackLink.href = url;
+        fallbackLink.download = listedInventoryPreparedShareFileName || "ListedInventory.pdf";
+        fallbackLink.style.display = "none";
+
+        document.body.appendChild(fallbackLink);
+        fallbackLink.click();
+        fallbackLink.remove();
+
+        URL.revokeObjectURL(url);
+
+        listedInventoryPreparedSharePayload = null;
+        listedInventoryPreparedShareFileName = "";
+        closeListedPdfReadyModal();
+
+        await appAlert(
+            "Your device does not support direct sharing. PDF downloaded instead. You can share manually from your downloads.",
+            "PDF Downloaded"
+        );
+    } catch (err) {
+        console.error("Prepared PDF share failed:", err);
+
+        if (err && err.name === "AbortError") {
+            await appAlert("PDF sharing was cancelled.", "PDF Share Cancelled");
+            return;
+        }
+
+        await appAlert(
+            "The PDF could not be shared: " + (err && err.message ? err.message : err),
+            "PDF Share Failed"
+        );
+    }
+}
 
 // --- Safe Save Function ---
 async function saveListedInventoryPdfToDevice() {
@@ -17227,14 +17256,7 @@ function closeListedPdfReadyModal() {
     const overlay = document.getElementById("pdf-ready-overlay");
     if (overlay) overlay.style.display = "none";   // Hide modal
 }
-const overlay = document.getElementById("pdf-ready-overlay");
-const messageEl = document.getElementById("pdf-ready-message");
-document.getElementById("pdf-close-btn").onclick = () => overlay.style.display = "none";
-document.getElementById("pdf-share-btn").onclick = () => sharePreparedListedInventoryPdf();
-function openPdfReadyModal(msg) {
-    if (msg) messageEl.innerText = msg;
-    overlay.style.display = "flex";
-}
+
 async function sharePreparedListedInventoryPdf() {
     if (!listedInventoryPreparedSharePayload) {
         await appAlert("No prepared PDF was found. Please create the PDF again.", "Share PDF");
@@ -17959,13 +17981,13 @@ movePilotPrintWindowWatcher = setInterval(function() {
         </head>
         <body>
             <!-- PDF Ready Pop-up -->
-<div id="pdf-ready-overlay" style="display:none;">
-    <div id="pdf-ready-body">
-        <div id="pdf-ready-header">PDF Ready</div>
-        <p id="pdf-ready-message">Your PDF has been created.</p>
-        <div id="pdf-ready-actions">
-            <button id="pdf-share-btn">Share / Download PDF</button>
-            <button id="pdf-close-btn">Close</button>
+<div id="pdf-ready-overlay" class="app-popup" style="display:none;">
+    <div class="app-popup-header">PDF Ready</div>
+    <div class="app-popup-body">
+        <p>Your PDF is ready to share or download.</p>
+        <div class="app-popup-actions">
+            <button class="app-btn primary" onclick="sharePreparedListedInventoryPdf()">Share / Download PDF</button>
+            <button class="app-btn secondary" onclick="closeListedPdfReadyModal()">Close</button>
         </div>
     </div>
 </div>
