@@ -18021,13 +18021,21 @@ movePilotPrintWindowWatcher = setInterval(function() {
         <body>
 
         <!-- PDF Ready Pop-up -->
-<div id="pdf-ready-overlay" class="app-popup">
+<div id=<div id="pdf-ready-overlay" class="app-popup" style="display:none;">
     <div class="app-popup-body">
-        <div class="app-popup-header">PDF Ready</div>
-        <p id="pdf-ready-message">Your listed inventory PDF has been created.</p>
+        <div class="app-popup-header">PDF READY</div>
+        <p id="pdf-ready-message">
+            Your listed inventory PDF has been created. Tap Share Now to open the tablet share options.
+        </p>
         <div class="app-popup-actions">
-            <button class="app-btn primary" onclick="sharePreparedListedInventoryPdf()">Share Now</button>
-            <button class="app-btn secondary" onclick="closeListedPdfReadyModal()">Close</button>
+            <!-- Button to trigger Share function -->
+            <button class="app-btn primary" onclick="sharePreparedListedInventoryPdf()">
+                SHARE NOW
+            </button>
+            <!-- Close button -->
+            <button class="app-btn secondary" onclick="closeListedPdfReadyModal()">
+                CLOSE
+            </button>
         </div>
     </div>
 </div>
