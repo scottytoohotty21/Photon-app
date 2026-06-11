@@ -343,14 +343,14 @@ body {
 }
 /* -----------------------------
    PDF Ready Modal Styling - Photon style
-   ----------------------------- */
+----------------------------- */
 #pdf-ready-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100vw;
     height: 100vh;
-    background-color: rgba(0,0,0,0.5);
+    background-color: rgba(0, 0, 0, 0.5);
     display: none;
     justify-content: center;
     align-items: center;
@@ -358,13 +358,14 @@ body {
 }
 
 #pdf-ready-overlay .app-popup-body {
-    background-color: #fff;
+    background-color: #ffffff;
     border-radius: 16px;
     padding: 24px 32px;
     box-shadow: 0 20px 40px rgba(0,0,0,0.15);
     max-width: 420px;
     width: 90%;
     text-align: center;
+    font-family: 'Inter', sans-serif;
 }
 
 #pdf-ready-overlay .app-popup-header {
@@ -372,6 +373,12 @@ body {
     font-weight: 900;
     color: #1e293b;
     margin-bottom: 16px;
+}
+
+#pdf-ready-overlay #pdf-ready-message {
+    font-size: 14px;
+    color: #334155;
+    margin-bottom: 24px;
 }
 
 #pdf-ready-overlay .app-popup-actions {
@@ -17086,12 +17093,12 @@ function openListedPdfReadyModal(message) {
     const msgEl = document.getElementById("pdf-ready-message");
     if (!overlay) return;
     if (message) msgEl.innerText = message;
-    overlay.style.display = "flex";   // show modal
+    overlay.style.display = "flex";
 }
 
 function closeListedPdfReadyModal() {
     const overlay = document.getElementById("pdf-ready-overlay");
-    if (overlay) overlay.style.display = "none";   // hide modal
+    if (overlay) overlay.style.display = "none";
 }
 async function shareListedInventoryPdf() {
     listedInventoryPreparedSharePayload = null;
@@ -17252,7 +17259,7 @@ async function shareListedInventoryPdf() {
         );
 
        // Show PDF Ready modal and bind share button
-document.getElementById("pdf-ready-overlay").style.display = "flex";
+openListedPdfReadyModal();
 bindPdfShareButton(pdfFile);
     } catch (err) {
         console.error("Share PDF failed:", err);
@@ -18014,8 +18021,7 @@ movePilotPrintWindowWatcher = setInterval(function() {
         <body>
 
         <!-- PDF Ready Pop-up -->
-<!-- Correct HTML structure -->
-<div id="pdf-ready-overlay" class="app-popup" style="display:none;">
+<div id="pdf-ready-overlay" class="app-popup">
     <div class="app-popup-body">
         <div class="app-popup-header">PDF Ready</div>
         <p id="pdf-ready-message">Your listed inventory PDF has been created.</p>
