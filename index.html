@@ -17230,7 +17230,7 @@ async function shareListedInventoryPdf() {
         );
 
        // Show PDF Ready modal and bind share button
-document.getElementById("pdf-ready-overlay").style.display = "flex";
+openListedPdfReadyModal();
 bindPdfShareButton(pdfFile);
     } catch (err) {
         console.error("Share PDF failed:", err);
@@ -17247,24 +17247,14 @@ bindPdfShareButton(pdfFile);
     }
 }
 function openListedPdfReadyModal() {
-    const overlay = document.getElementById("listed-pdf-ready-overlay");
-    const nameEl = document.getElementById("listed-pdf-ready-name");
-
+    const overlay = document.getElementById("pdf-ready-overlay");
     if (!overlay) return;
-
-    if (nameEl) {
-        nameEl.innerText = listedInventoryPreparedShareFileName || "PDF ready to share";
-    }
-
-    overlay.style.display = "flex";
+    overlay.style.display = "flex";   // Show modal
 }
 
 function closeListedPdfReadyModal() {
-    const overlay = document.getElementById("listed-pdf-ready-overlay");
-
-    if (overlay) {
-        overlay.style.display = "none";
-    }
+    const overlay = document.getElementById("pdf-ready-overlay");
+    if (overlay) overlay.style.display = "none";   // Hide modal
 }
 
 async function sharePreparedListedInventoryPdf() {
@@ -17990,6 +17980,17 @@ movePilotPrintWindowWatcher = setInterval(function() {
             </style>
         </head>
         <body>
+            <!-- PDF Ready Pop-up -->
+<div id="pdf-ready-overlay" class="app-popup" style="display:none;">
+    <div class="app-popup-header">PDF Ready</div>
+    <div class="app-popup-body">
+        <p>Your PDF is ready to share or download.</p>
+        <div class="app-popup-actions">
+            <button class="app-btn primary" onclick="sharePreparedListedInventoryPdf()">Share / Download PDF</button>
+            <button class="app-btn secondary" onclick="closeListedPdfReadyModal()">Close</button>
+        </div>
+    </div>
+</div>
             <div class="pdf-topbar">
                 <div>
                     <div class="pdf-title">MovePilot Listed Inventory</div>
