@@ -3648,6 +3648,9 @@ body {
     background: #cbd5e1;
     border-radius: 999px;
 }
+/* -----------------------------
+   MovePilot PDF Ready Modal Styling
+----------------------------- */
 #pdf-ready-overlay {
     position: fixed;
     top: 0;
@@ -3664,8 +3667,8 @@ body {
 #pdf-ready-overlay .app-popup-body {
     background: var(--card,#ffffff);
     border-radius: 14px;
-    padding: 20px;
-    max-width: 400px;
+    padding: 20px 24px;
+    max-width: 420px;
     width: 90%;
     text-align: center;
     box-shadow: var(--shadow,0 10px 30px rgba(15,23,42,0.08));
@@ -3674,7 +3677,14 @@ body {
 #pdf-ready-overlay .app-popup-header {
     font-weight: 800;
     font-size: 18px;
+    color: var(--slate-900,#0f172a);
     margin-bottom: 12px;
+}
+
+#pdf-ready-overlay #pdf-ready-message {
+    font-size: 14px;
+    color: var(--slate-700,#334155);
+    margin-bottom: 20px;
 }
 
 #pdf-ready-overlay .app-popup-actions {
@@ -3683,15 +3693,36 @@ body {
     gap: 12px;
 }
 
+#pdf-ready-overlay .app-btn {
+    font-size: 14px;
+    font-weight: 700;
+    padding: 10px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    min-width: 100px;
+}
+
 #pdf-ready-overlay .app-btn.primary {
     background-color: var(--blue-2,#2563eb);
     color: #fff;
+    border: none;
+}
+
+#pdf-ready-overlay .app-btn.primary:hover {
+    background-color: #1d4ed8;
 }
 
 #pdf-ready-overlay .app-btn.secondary {
     background-color: var(--slate-200,#e2e8f0);
     color: var(--slate-900,#0f172a);
+    border: none;
 }
+
+#pdf-ready-overlay .app-btn.secondary:hover {
+    background-color: #d1d5db;
+}
+
 /* SCHEDULE CALCULATOR LAYOUT */
 .layout{display:grid;grid-template-columns:430px 1fr;gap:16px;align-items:start;}
 .schedule-left-sticky{
@@ -17778,7 +17809,9 @@ movePilotPrintWindowWatcher = setInterval(function() {
 <div id="pdf-ready-overlay" class="app-popup" style="display:none;">
     <div class="app-popup-body">
         <div class="app-popup-header">PDF READY</div>
-        <p id="pdf-ready-message">Your listed inventory PDF has been created. Tap Share Now to open the tablet share options.</p>
+        <p id="pdf-ready-message">
+            Your listed inventory PDF has been created. Tap Share Now to open the tablet share options.
+        </p>
         <div class="app-popup-actions">
             <button class="app-btn primary" onclick="sharePreparedListedInventoryPdf()">SHARE NOW</button>
             <button class="app-btn secondary" onclick="closeListedPdfReadyModal()">CLOSE</button>
