@@ -3153,6 +3153,95 @@ body {
 .listed-pdf-share-btn.pulse {
     animation: pulse 1s infinite;
 }
+/* --- LIVE PDF READY MODAL STYLING --- */
+.pdf-ready-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(2px);
+    align-items: center;
+    justify-content: center;
+    z-index: 2400;
+    padding: 18px;
+}
+
+.pdf-ready-panel {
+    width: 92%;
+    max-width: 420px;
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
+    border: 1px solid #e2e8f0;
+}
+
+.pdf-ready-title {
+    font-size: 16px;
+    font-weight: 900;
+    text-transform: uppercase;
+    color: #0f172a;
+    text-align: center;
+    letter-spacing: 0.02em;
+}
+
+.pdf-ready-message {
+    font-size: 12px;
+    font-weight: 700;
+    color: #64748b;
+    text-align: center;
+    margin-top: 6px;
+    margin-bottom: 18px;
+    line-height: 1.45;
+}
+
+.pdf-ready-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+}
+
+.btn-primary,
+.btn-secondary,
+.btn-cancel {
+    width: 100%;
+    min-height: 42px;
+    border-radius: 12px;
+    padding: 12px;
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+    text-align: center;
+    text-decoration: none;
+    line-height: 1.2;
+    font-family: 'Inter', sans-serif;
+    box-sizing: border-box;
+}
+
+.btn-primary {
+    background: #3b82f6;
+    color: #ffffff;
+    border: 1px solid #2563eb;
+}
+
+.btn-secondary {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+    display: inline-block;
+}
+
+.btn-cancel {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+}
+
+.btn-primary:active,
+.btn-secondary:active,
+.btn-cancel:active {
+    transform: scale(0.98);
+}
+
 
 /* Photo review block spacing */
 .listed-photo-review {
