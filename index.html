@@ -2208,6 +2208,79 @@ body {
     line-height: 1.35;
     overflow-wrap: break-word;
 }
+#pdf-ready-overlay {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background: rgba(15, 23, 42, 0.55);
+    z-index: 99999;
+    pointer-events: auto;
+}
+
+#pdf-ready-overlay .pdf-ready-panel {
+    width: 92%;
+    max-width: 420px;
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 18px;
+    box-shadow: 0 14px 34px rgba(15, 23, 42, 0.22);
+    position: relative;
+    z-index: 100000;
+    pointer-events: auto;
+}
+
+#pdf-ready-overlay .pdf-ready-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+#pdf-ready-overlay .pdf-ready-actions > * {
+    flex: 1 1 120px;
+    position: relative;
+    z-index: 100001;
+    pointer-events: auto;
+    touch-action: manipulation;
+}
+
+#pdf-share-now-btn,
+#pdf-download-link {
+    pointer-events: auto;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.listed-share-toast {
+    position: fixed;
+    left: 50%;
+    bottom: 18px;
+    transform: translateX(-50%) translateY(16px);
+    background: rgba(15, 23, 42, 0.96);
+    color: #ffffff;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.35;
+    max-width: calc(100vw - 24px);
+    z-index: 100002;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.listed-share-toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
 .custom-item-delete-list {
     display: grid;
     gap: 8px;
@@ -17317,6 +17390,13 @@ async function shareListedInventoryPdf() {
             fileName,
             { type: "application/pdf" }
         );
+                listedInventoryPreparedSharePayload = {
+            files: [pdfFile],
+            title: fileName,
+            text: "MovePilot listed inventory PDF"
+        };
+        listedInventoryPreparedShareFileName = fileName;
+
 
        // Show PDF Ready modal and bind share button
 openListedPdfReadyModal();
@@ -17342,67 +17422,24 @@ function openListedPdfReadyModal() {
 }
 
 function closeListedPdfReadyModal() {
-    const overlay = document.getElementById("pdf-ready-overlay");
-    if (overlay) overlay.style.display = "none";   // Hide modal
+    closeAllListedPdfShareOverlays();
 }
 
-async function sharePreparedListedInventoryPdf() {
-    if (!listedInventoryPreparedSharePayload) {
+
+async function sharePreparedListedInventoryPdf(event) {
+    var preparedFile = null;
+    var downloadLink = document.getElementById("pdf-download-link");
+
+    if (!listedInventoryPreparedSharePayload || !listedInventoryPreparedSharePayload.files || !listedInventoryPreparedSharePayload.files[0]) {
         await appAlert("No prepared PDF was found. Please create the PDF again.", "Share PDF");
         closeListedPdfReadyModal();
         return;
     }
 
-    try {
-        // Modern devices
-        if (navigator.share) {
-            await navigator.share(listedInventoryPreparedSharePayload);
-
-            listedInventoryPreparedSharePayload = null;
-            listedInventoryPreparedShareFileName = "";
-            closeListedPdfReadyModal();
-
-            await appAlert("PDF shared successfully.", "PDF Shared");
-            return;
-        }
-
-        // Fallback for older tablets
-        const blob = listedInventoryPreparedSharePayload.files[0];
-        const url = URL.createObjectURL(blob);
-
-        const fallbackLink = document.createElement("a");
-        fallbackLink.href = url;
-        fallbackLink.download = listedInventoryPreparedShareFileName || "ListedInventory.pdf";
-        fallbackLink.style.display = "none";
-
-        document.body.appendChild(fallbackLink);
-        fallbackLink.click();
-        fallbackLink.remove();
-
-        URL.revokeObjectURL(url);
-
-        listedInventoryPreparedSharePayload = null;
-        listedInventoryPreparedShareFileName = "";
-        closeListedPdfReadyModal();
-
-        await appAlert(
-            "Your device does not support direct sharing. PDF downloaded instead. You can share manually from your downloads.",
-            "PDF Downloaded"
-        );
-    } catch (err) {
-        console.error("Prepared PDF share failed:", err);
-
-        if (err && err.name === "AbortError") {
-            await appAlert("PDF sharing was cancelled.", "PDF Share Cancelled");
-            return;
-        }
-
-        await appAlert(
-            "The PDF could not be shared: " + (err && err.message ? err.message : err),
-            "PDF Share Failed"
-        );
-    }
+    preparedFile = listedInventoryPreparedSharePayload.files[0];
+    return tryShareListedInventoryPdfFromGesture(preparedFile, downloadLink, event);
 }
+
 async function saveListedInventoryPdfToDevice() {
     try {
         if (typeof closeAllMovePilotModals === "function") {
@@ -21928,35 +21965,288 @@ function closeAppModal(result) {
 
     appModalResolve = null;
 }
-function bindPdfShareButton(pdfFile) {
-    const shareBtn = document.getElementById("pdf-share-now-btn");
-    const downloadLink = document.getElementById("pdf-download-link");
-    if (!shareBtn || !downloadLink) return;
+let listedInventoryShareBusy = false;
+let listedInventoryShareLastTapAt = 0;
+let listedInventoryDownloadObjectUrl = "";
 
-    // Reset download link
-    downloadLink.style.display = "none";
-    downloadLink.href = "";
+function closeAllListedPdfShareOverlays() {
+    var overlayIds = ["pdf-ready-overlay", "listed-pdf-ready-overlay"];
+    var i;
+    var overlay;
 
-    // Remove any old click handlers
-    shareBtn.onclick = async function() {
-        if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
-            try {
-                await navigator.share({ files: [pdfFile] });
-                document.getElementById("pdf-ready-overlay").style.display = "none";
-            } catch (err) {
-                console.warn("PDF share failed:", err);
-                alert("Sharing failed. Use Download PDF instead.");
-                downloadLink.href = URL.createObjectURL(pdfFile);
-                downloadLink.style.display = "inline-block";
-            }
-        } else {
-            // fallback download link
-            downloadLink.href = URL.createObjectURL(pdfFile);
-            downloadLink.style.display = "inline-block";
-            alert("Sharing not supported. Use the Download PDF link.");
+    for (i = 0; i < overlayIds.length; i += 1) {
+        overlay = document.getElementById(overlayIds[i]);
+        if (overlay) {
+            overlay.style.display = "none";
         }
-    };
+    }
 }
+
+function cleanupListedInventoryDownloadUrl() {
+    if (!listedInventoryDownloadObjectUrl) {
+        return;
+    }
+
+    try {
+        URL.revokeObjectURL(listedInventoryDownloadObjectUrl);
+    } catch (err) {
+        console.warn("Could not revoke listed inventory download URL:", err);
+    }
+
+    listedInventoryDownloadObjectUrl = "";
+}
+
+function setListedInventoryDownloadLink(pdfFile, downloadLink) {
+    if (!pdfFile) {
+        return "";
+    }
+
+    cleanupListedInventoryDownloadUrl();
+    listedInventoryDownloadObjectUrl = URL.createObjectURL(pdfFile);
+
+    if (downloadLink) {
+        downloadLink.href = listedInventoryDownloadObjectUrl;
+        downloadLink.download = pdfFile.name || "ListedInventory.pdf";
+        downloadLink.style.display = "inline-block";
+    }
+
+    return listedInventoryDownloadObjectUrl;
+}
+
+function triggerListedInventoryDownload(pdfFile, downloadLink) {
+    var objectUrl = setListedInventoryDownloadLink(pdfFile, downloadLink);
+    var fallbackLink;
+
+    if (!objectUrl) {
+        return;
+    }
+
+    fallbackLink = document.createElement("a");
+    fallbackLink.href = objectUrl;
+    fallbackLink.download = pdfFile.name || "ListedInventory.pdf";
+    fallbackLink.style.display = "none";
+    document.body.appendChild(fallbackLink);
+    fallbackLink.click();
+    fallbackLink.remove();
+}
+
+function getListedInventorySharePageUrl() {
+    var href;
+
+    try {
+        href = String(window.location.href || "");
+    } catch (err) {
+        href = "";
+    }
+
+    if (/^https?:\/\//i.test(href)) {
+        return href;
+    }
+
+    return "";
+}
+
+function canNativeShareListedInventoryFile(pdfFile) {
+    if (!pdfFile) {
+        return false;
+    }
+
+    if (typeof navigator === "undefined") {
+        return false;
+    }
+
+    if (typeof navigator.share !== "function") {
+        return false;
+    }
+
+    if (typeof navigator.canShare !== "function") {
+        return false;
+    }
+
+    try {
+        return navigator.canShare({ files: [pdfFile] });
+    } catch (err) {
+        return false;
+    }
+}
+
+function showListedInventoryShareToast(message) {
+    var toast = document.getElementById("listed-share-toast");
+
+    if (!toast) {
+        toast = document.createElement("div");
+        toast.id = "listed-share-toast";
+        toast.className = "listed-share-toast";
+        document.body.appendChild(toast);
+    }
+
+    toast.textContent = message;
+    toast.classList.add("show");
+
+    if (showListedInventoryShareToast._timer) {
+        clearTimeout(showListedInventoryShareToast._timer);
+    }
+
+    showListedInventoryShareToast._timer = setTimeout(function() {
+        toast.classList.remove("show");
+    }, 2600);
+}
+
+async function copyTextToClipboardCompat(text) {
+    var temp;
+    var copied = false;
+
+    if (!text) {
+        return false;
+    }
+
+    if (navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext) {
+        try {
+            await navigator.clipboard.writeText(text);
+            return true;
+        } catch (err) {
+        }
+    }
+
+    temp = document.createElement("textarea");
+    temp.value = text;
+    temp.setAttribute("readonly", "readonly");
+    temp.style.position = "fixed";
+    temp.style.left = "-9999px";
+    temp.style.top = "0";
+
+    document.body.appendChild(temp);
+    temp.focus();
+    temp.select();
+
+    try {
+        copied = document.execCommand("copy");
+    } catch (err) {
+        copied = false;
+    }
+
+    temp.remove();
+    return copied;
+}
+
+async function tryShareListedInventoryPdfFromGesture(pdfFile, downloadLink, event) {
+    var now = Date.now();
+    var pageUrl = getListedInventorySharePageUrl();
+    var copied;
+
+    if (!pdfFile) {
+        showListedInventoryShareToast("No PDF file was prepared.");
+        return;
+    }
+
+    if (event && typeof event.preventDefault === "function") {
+        event.preventDefault();
+    }
+
+    if (event && typeof event.stopPropagation === "function") {
+        event.stopPropagation();
+    }
+
+    if (listedInventoryShareBusy) {
+        return;
+    }
+
+    if (now - listedInventoryShareLastTapAt < 700) {
+        return;
+    }
+
+    listedInventoryShareLastTapAt = now;
+    listedInventoryShareBusy = true;
+
+    try {
+        if (canNativeShareListedInventoryFile(pdfFile)) {
+            await navigator.share({
+                files: [pdfFile],
+                title: pdfFile.name || "Listed inventory PDF",
+                text: "MovePilot listed inventory PDF"
+            });
+
+            closeAllListedPdfShareOverlays();
+            showListedInventoryShareToast("PDF shared.");
+            return;
+        }
+
+        if (pageUrl && typeof navigator.share === "function") {
+            await navigator.share({
+                title: "MovePilot Listed Inventory",
+                text: "Open the listed inventory page.",
+                url: pageUrl
+            });
+
+            showListedInventoryShareToast("Link shared. This device cannot attach the PDF directly.");
+            return;
+        }
+
+        triggerListedInventoryDownload(pdfFile, downloadLink);
+
+        if (pageUrl) {
+            copied = await copyTextToClipboardCompat(pageUrl);
+            if (copied) {
+                showListedInventoryShareToast("Sharing not supported here. Link copied and PDF downloaded.");
+                return;
+            }
+        }
+
+        showListedInventoryShareToast("Sharing not supported here. PDF downloaded.");
+    } catch (err) {
+        if (err && err.name === "AbortError") {
+            showListedInventoryShareToast("Share cancelled.");
+            return;
+        }
+
+        console.warn("Listed inventory share failed:", err);
+        triggerListedInventoryDownload(pdfFile, downloadLink);
+
+        if (pageUrl) {
+            copied = await copyTextToClipboardCompat(pageUrl);
+            if (copied) {
+                showListedInventoryShareToast("Share failed. Link copied and PDF downloaded.");
+                return;
+            }
+        }
+
+        showListedInventoryShareToast("Share failed. PDF downloaded instead.");
+    } finally {
+        listedInventoryShareBusy = false;
+    }
+}
+
+function bindPdfShareButton(pdfFile) {
+    var oldShareBtn = document.getElementById("pdf-share-now-btn");
+    var shareBtn;
+    var downloadLink = document.getElementById("pdf-download-link");
+    var handler;
+
+    if (!oldShareBtn) {
+        return;
+    }
+
+    shareBtn = oldShareBtn.cloneNode(true);
+    oldShareBtn.parentNode.replaceChild(shareBtn, oldShareBtn);
+
+    if (downloadLink) {
+        downloadLink.style.display = "none";
+        downloadLink.removeAttribute("href");
+        downloadLink.download = pdfFile && pdfFile.name ? pdfFile.name : "ListedInventory.pdf";
+    }
+
+    handler = function(event) {
+        return tryShareListedInventoryPdfFromGesture(pdfFile, downloadLink, event);
+    };
+
+    shareBtn.addEventListener("click", handler, false);
+    shareBtn.addEventListener("touchend", handler, { passive: false });
+
+    if (window.PointerEvent) {
+        shareBtn.addEventListener("pointerup", handler, false);
+    }
+}
+
 
 function showAppModal(options) {
     options = options || {};
