@@ -17422,8 +17422,22 @@ function openListedPdfReadyModal() {
 }
 
 function closeListedPdfReadyModal() {
-    closeAllListedPdfShareOverlays();
+    const overlay = document.getElementById("pdf-ready-overlay");
+    const downloadLink = document.getElementById("pdf-download-link");
+
+    if (downloadLink && downloadLink.dataset.objectUrl) {
+        try {
+            URL.revokeObjectURL(downloadLink.dataset.objectUrl);
+        } catch (err) {}
+
+        downloadLink.dataset.objectUrl = "";
+        downloadLink.href = "#";
+        downloadLink.style.display = "none";
+    }
+
+    if (overlay) overlay.style.display = "none";
 }
+
 
 
 async function sharePreparedListedInventoryPdf(event) {
@@ -22215,37 +22229,61 @@ async function tryShareListedInventoryPdfFromGesture(pdfFile, downloadLink, even
         listedInventoryShareBusy = false;
     }
 }
+function preparePdfDownloadLink(downloadLink, pdfFile) {
+    if (!downloadLink || !pdfFile) return;
+
+    if (downloadLink.dataset.objectUrl) {
+        try {
+            URL.revokeObjectURL(downloadLink.dataset.objectUrl);
+        } catch (err) {}
+    }
+
+    var objectUrl = URL.createObjectURL(pdfFile);
+    downloadLink.dataset.objectUrl = objectUrl;
+    downloadLink.href = objectUrl;
+    downloadLink.download = pdfFile.name || "ListedInventory.pdf";
+    downloadLink.style.display = "inline-block";
+}
 
 function bindPdfShareButton(pdfFile) {
-    var oldShareBtn = document.getElementById("pdf-share-now-btn");
-    var shareBtn;
+    var shareBtn = document.getElementById("pdf-share-now-btn");
     var downloadLink = document.getElementById("pdf-download-link");
-    var handler;
+    var canSharePdf = false;
 
-    if (!oldShareBtn) {
-        return;
+    if (!shareBtn || !downloadLink || !pdfFile) return;
+
+    preparePdfDownloadLink(downloadLink, pdfFile);
+
+    if (navigator.share && navigator.canShare) {
+        try {
+            canSharePdf = navigator.canShare({ files: [pdfFile] });
+        } catch (err) {
+            console.warn("navigator.canShare failed:", err);
+            canSharePdf = false;
+        }
     }
 
-    shareBtn = oldShareBtn.cloneNode(true);
-    oldShareBtn.parentNode.replaceChild(shareBtn, oldShareBtn);
+    shareBtn.onclick = async function() {
+        if (!canSharePdf) {
+            alert("This device cannot open the native PDF share sheet. Please use Download PDF.");
+            return;
+        }
 
-    if (downloadLink) {
-        downloadLink.style.display = "none";
-        downloadLink.removeAttribute("href");
-        downloadLink.download = pdfFile && pdfFile.name ? pdfFile.name : "ListedInventory.pdf";
-    }
+        try {
+            await navigator.share({ files: [pdfFile] });
+            closeListedPdfReadyModal();
+        } catch (err) {
+            console.warn("PDF share failed:", err);
 
-    handler = function(event) {
-        return tryShareListedInventoryPdfFromGesture(pdfFile, downloadLink, event);
+            if (err && err.name === "AbortError") {
+                return;
+            }
+
+            alert("Sharing failed on this device. Please use Download PDF instead.");
+        }
     };
-
-    shareBtn.addEventListener("click", handler, false);
-    shareBtn.addEventListener("touchend", handler, { passive: false });
-
-    if (window.PointerEvent) {
-        shareBtn.addEventListener("pointerup", handler, false);
-    }
 }
+
 
 
 function showAppModal(options) {
@@ -25815,12 +25853,13 @@ document.addEventListener('DOMContentLoaded', function () {
 <div id="pdf-ready-overlay" class="pdf-ready-overlay" style="display:none;">
     <div class="pdf-ready-panel">
         <div class="pdf-ready-title">PDF Ready</div>
-        <div class="pdf-ready-message">Your listed inventory PDF has been created.</div>
+        <div class="pdf-ready-message">Your listed inventory PDF is ready. If Share PDF does not open on this device, use Download PDF.</div>
 
         <div class="pdf-ready-actions">
-            <button type="button" id="pdf-share-now-btn" class="btn-primary">Share Now</button>
+            <button type="button" id="pdf-share-now-btn" class="btn-primary">Share PDF</button>
             <a href="#" id="pdf-download-link" class="btn-secondary" style="display:none;" download>Download PDF</a>
-            <button type="button" class="btn-cancel" onclick="document.getElementById('pdf-ready-overlay').style.display='none'">Close</button>
+            <button type="button" class="btn-cancel" onclick="closeListedPdfReadyModal()">Close</button>
+
         </div>
     </div>
 </div>
